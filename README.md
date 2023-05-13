@@ -7,6 +7,19 @@ The scripts in this repository are currently in the alpha stage of development a
 
 Until an official public announcement is made indicating a transition to the beta phase, it is important to understand that these scripts are not intended for production or commercial use. They are subject to frequent updates, changes, and bug fixes as development progresses.
 
+## Requirements:
+
+AutoHotkey must be installed to run the scripts
+(https://www.autohotkey.com/download/ahk-v2.exe)
+
+## NotePad++ for Configuration Files:
+
+For better readability and ease of editing, it is recommended to use NotePad++ for working with the configuration files. NotePad++ provides syntax highlighting and other useful features that can enhance your editing experience.
+
+## Acknowledgments:
+
+Special thanks to maestrith.com for the creation of AHK-Studio, a powerful AutoHotkey integrated development environment (IDE). I highly recommend AHK-Studio for developing and managing AutoHotkey scripts.
+
 ## Responsibility and Liability:
 
 The creator of this repository and the associated scripts assumes no responsibility or liability for any consequences arising from the use or misuse of these scripts. It is crucial to exercise caution and perform thorough testing before applying any scripts to your environment. Use them at your own risk.
