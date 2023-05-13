@@ -1,4 +1,5 @@
 # RuneScape-Public
+###For **RuneScape3** not Old School RuneScape (OSRS)
 
 ## Disclaimer: Alpha Release - Educational Purposes Only
 
