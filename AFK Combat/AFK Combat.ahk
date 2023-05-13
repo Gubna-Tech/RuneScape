@@ -401,6 +401,8 @@ if option=true
 	tooltip
 }
 
+return
+
 Agro:
 {
 	winactivate, RuneScape
