@@ -1,8 +1,8 @@
-# Modifying Config.ini and LLARS Config.ini
+# Modifying LLARS Config.ini
 
-In order to customize the settings for this project, you may need to make changes to the Config.ini and LLARS Config.ini files. These files contain important configuration options that can be adjusted according to your requirements.
+In order to customize the settings for this project, you may need to make changes to the LLARS Config.ini files. This file contain important configuration options that can be adjusted according to your requirements.
 
-Please note that modifying these files should be done with caution and understanding of their impact. Incorrect changes to the configurations may lead to unexpected behavior or errors in the project.
+Please note that modifying this file should be done with caution and understanding of their impact. Incorrect changes to the configurations may lead to unexpected behavior or errors in the project.
 
 Before making any modifications, it is advisable to review the provided documentation or seek guidance from the project creator to ensure you understand the purpose and effect of each configuration option.
 
@@ -16,7 +16,6 @@ Saving the config file ensures that the script uses the updated configurations y
 
 Remember to save the config file before launching the script to ensure that the changes you have made are applied correctly.
 
-# LLARS Config (LLARS Config.ini)
 ## HotKey Configuration
 
 To configure hotkeys for the LLARS script, you will need to make changes in the LLARS Config.ini file. This file contains the settings related to hotkeys used within the script.
