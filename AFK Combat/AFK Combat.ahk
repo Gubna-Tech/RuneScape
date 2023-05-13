@@ -183,9 +183,6 @@ GuiControl,,State3, Running
 
 winactivate, RuneScape	
 
-GuiControl,,ScriptBlue, %scriptname%
-GuiControl,,State3, Running
-
 IniRead, option,Config.ini, Agro, option
 if option=true
 {
