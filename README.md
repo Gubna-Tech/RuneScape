@@ -1,5 +1,5 @@
-# **Important Note for Script Usage:**
-Please note that the scripts in this repository are specifically designed for RuneScape3 (RS3) and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
+# Important Note for Script Us
+Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
 
 ## Disclaimer: Alpha Release - Educational Purposes Only
 The scripts in this repository are currently in the alpha stage of development and are not yet considered stable or feature-complete. They are provided solely for educational purposes and to gather feedback from the community. Please note that using these scripts may result in unexpected behavior or errors.
