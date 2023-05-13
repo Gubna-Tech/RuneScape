@@ -26,6 +26,6 @@ The creator of this repository and the associated scripts assumes no responsibil
 These scripts are intended to serve as educational resources to aid in the understanding and exploration of automation techniques. They are not designed or recommended for automating activities in the official RuneScape 3 game or any other online game. Usage of these scripts in any game may violate the terms of service or user agreements of the respective game, and it is the sole responsibility of the user to ensure compliance with applicable rules and regulations.
 
 ## Support and Questions:
-If you require assistance, have questions, or want to provide feedback on these scripts, please feel free to reach out to the creator on Discord. You can contact **Gubna#0001** on Discord for support or any inquiries related to this project.
+If you require assistance, have questions, or want to provide feedback on these scripts, please feel free to reach out to the creator on Discord. You can contact [Gubna#0001](https://discordapp.com/users/616070790319964160) on Discord for support or any inquiries related to this project.
 
 Remember, using these scripts responsibly and respecting the terms of service and rules of the games you play is essential.
