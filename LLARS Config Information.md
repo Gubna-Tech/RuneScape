@@ -1,5 +1,4 @@
 # Modifying LLARS Config.ini
-
 In order to customize the settings for this project, you may need to make changes to the LLARS Config.ini files. This file contain important configuration options that can be adjusted according to your requirements.
 
 Please note that modifying this file should be done with caution and understanding of their impact. Incorrect changes to the configurations may lead to unexpected behavior or errors in the project.
@@ -9,7 +8,6 @@ Before making any modifications, it is advisable to review the provided document
 Remember to back up the original configuration files before making any changes, so you can easily revert back if needed.
 
 ## Saving the Config File
-
 Before starting the script, it is crucial to save the configuration file with your desired settings. Ensure that any modifications or changes made to the config file are saved properly.
 
 Saving the config file ensures that the script uses the updated configurations you have set. It allows the script to function according to your preferences and requirements.
@@ -17,7 +15,6 @@ Saving the config file ensures that the script uses the updated configurations y
 Remember to save the config file before launching the script to ensure that the changes you have made are applied correctly.
 
 ## HotKey Configuration
-
 To configure hotkeys for the LLARS script, you will need to make changes in the LLARS Config.ini file. This file contains the settings related to hotkeys used within the script.
 
 When assigning hotkeys, it is important to ensure they do not conflict with any existing hotkeys set in the script or the program itself. You can find a list of available hotkey names at [AutoHotKey KeyList](https://www.autohotkey.com/docs/v2/KeyList.htm).
@@ -27,7 +24,6 @@ To avoid conflicts, it is recommended to review the hotkeys set in both the LLAR
 Make sure to carefully choose unique hotkey combinations and avoid overlapping with any pre-defined hotkeys. Conflicting hotkeys can lead to unexpected behavior or interfere with the proper functioning of the script.
 
 ## Logout Configuration
-
 The logout functionality in the script can be configured based on the value of the option setting in the configuration file.
 
 If **option=false** When the script finishes running, no specific action will be taken for logging out.
@@ -41,4 +37,17 @@ To set the coordinates for the logout button, follow these steps:
 3. Next, hover over the bottom right corner of the logout button and press the hotkey.
 4. Press the hotkey once more to clear the tooltip message.
 5. The coordinates for the logout button will now be saved to your clipboard and can be easily pasted into the configuration file.
+
 By configuring the correct coordinates, the script will be able to accurately locate and interact with the logout button within the game.
+
+## GUI Position Configuration
+Configuring the GUI position involves adjusting the **guix** and **guiy** settings in the configuration file. These settings determine the coordinates on your screen where the top-left corner of the GUI will be positioned.
+
+To configure the GUI position, follow these steps:
+
+1. Utilize the built-in AutoHotKey tool called Window Spy. This tool provides information about windows and their coordinates on the screen.
+2. Open the Window Spy tool and locate the desired coordinates on your screen where you want the top-left corner of the GUI to be positioned.
+3. Take note of the coordinates displayed by the Window Spy tool. These coordinates will be used to set the guix and guiy values in the configuration file.
+4. In the configuration file, adjust the guix setting to match the X-coordinate value of the desired GUI position, and adjust the guiy setting to match the Y-coordinate value.
+
+By correctly configuring the guix and guiy settings with the appropriate coordinates, the GUI of the script will be positioned exactly where you want it on your screen.
