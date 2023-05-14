@@ -16,9 +16,6 @@ For better readability and ease of editing, it is recommended to use Notepad++ f
 
 [Notepad++  Download](https://notepad-plus-plus.org/downloads/)
 
-## Acknowledgments:
-Special thanks to maestrith.com for the creation of AHK-Studio, a powerful AutoHotkey integrated development environment (IDE). I highly recommend AHK-Studio for developing and managing AutoHotkey scripts.
-
 ## Free Open Source Software:
 This software is distributed as Free Open Source Software (FOSS), which means it is available for use, modification, and distribution under an open-source license. As a FOSS project, this software will never require a one-time purchase fee or impose any monthly subscription costs. You are free to use and modify the software according to the terms of the applicable license.
 
@@ -32,3 +29,10 @@ These scripts are intended to serve as educational resources to aid in the under
 If you require assistance, have questions, or want to provide feedback on these scripts, please feel free to reach out to the creator on Discord. You can contact [Gubna#0001](https://discordapp.com/users/616070790319964160) on Discord for support or any inquiries related to this project.
 
 Remember, using these scripts responsibly and respecting the terms of service and rules of the games you play is essential.
+
+## Acknowledgments:
+Special thanks to [maestrith.com](https://www.maestrith.com/) for the creation of AHK-Studio, a powerful AutoHotkey integrated development environment (IDE). I highly recommend AHK-Studio for developing and managing AutoHotkey scripts.
+
+[AHK Studio Download](https://www.maestrith.com/ahk-studio/)
+
+I would also like to extend my gratitude to ***B O I L*** for their valuable contributions in providing items for testing the scripts. Their support has been instrumental in improving the functionality and reliability of this project.
