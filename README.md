@@ -7,7 +7,9 @@ The scripts in this repository are currently in the alpha stage of development a
 Until an official public announcement is made indicating a transition to the beta phase, it is important to understand that these scripts are not intended for production or commercial use. They are subject to frequent updates, changes, and bug fixes as development progresses.
 
 ## Requirements:
-AutoHotkey must be installed to run the scripts.
+To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
+
+If you haven't installed AutoHotkey yet, you can download it from the official AutoHotkey website. Visit the following link to download the AHK installer:
 
 [AutoHotKey Download](https://www.autohotkey.com/download/ahk-v2.exe)
 
