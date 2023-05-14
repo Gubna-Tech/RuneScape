@@ -6,6 +6,11 @@ The scripts in this repository are currently in the alpha stage of development a
 
 Until an official public announcement is made indicating a transition to the beta phase, it is important to understand that these scripts are not intended for production or commercial use. They are subject to frequent updates, changes, and bug fixes as development progresses.
 
+### Note: 
+Please be aware that scripts will be added to the repository over time, and these additions will not be announced ahead of time. However, you are welcome to contact me on Discord if you are interested in becoming a beta tester for upcoming script releases.
+
+Discord:[Gubna#0001](https://discordapp.com/users/616070790319964160)
+
 ## Requirements:
 To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
 
