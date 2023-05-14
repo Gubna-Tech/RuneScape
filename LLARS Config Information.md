@@ -7,6 +7,11 @@ Before making any modifications, it is advisable to review the provided document
 
 Remember to back up the original configuration files before making any changes, so you can easily revert back if needed.
 
+## Notepad++ for Configuration Files:
+For better readability and ease of editing, it is recommended to use Notepad++ for working with the configuration files. Notepad++ provides syntax highlighting and other useful features that can enhance your editing experience.
+
+[Notepad++  Download](https://notepad-plus-plus.org/downloads/)
+
 ## Saving the Config File
 Before starting the script, it is crucial to save the configuration file with your desired settings. Ensure that any modifications or changes made to the config file are saved properly.
 
