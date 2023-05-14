@@ -14,7 +14,13 @@ If you haven't installed AutoHotkey yet, you can download it from the official A
 [AutoHotKey Download](https://www.autohotkey.com/download/ahk-v2.exe)
 
 ## Notepad++ for Configuration Files:
-For better readability and ease of editing, it is recommended to use Notepad++ for working with the configuration files. Notepad++ provides syntax highlighting and other useful features that can enhance your editing experience.
+While you can use any text editor to work with the configuration files, it is worth noting that using Notepad++ can greatly enhance your editing experience.
+
+Notepad++ is a popular text editor that provides several useful features, including syntax highlighting. Syntax highlighting helps in visually distinguishing different elements in the configuration files, making them easier to read and understand.
+
+By using Notepad++, you can take advantage of its enhanced functionality and improved readability when working with the configuration files.
+
+If you are unfamiliar with .ini files or find them challenging to read and edit, using Notepad++ can be particularly beneficial. Notepad++ simplifies the process by highlighting important sections, keywords, and values, making it easier to navigate and modify the configuration files.
 
 [Notepad++  Download](https://notepad-plus-plus.org/downloads/)
 
