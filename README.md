@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="350" height="350" src="https://i.ibb.co/NZG6ns2/LLARS-Logo.png">
+</p>
+
 # Important Note for Script Use
 Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
 
