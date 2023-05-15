@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="350" height="350" src="https://i.ibb.co/NZG6ns2/LLARS-Logo.png">
+  <img width="300" height="300" src="https://i.ibb.co/NZG6ns2/LLARS-Logo.png">
 </p>
 
 # Important Note for Script Use
