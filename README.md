@@ -1,6 +1,6 @@
 <p align="center">
-  <img width="300" height="300" src="https://i.ibb.co/NZG6ns2/LLARS-Logo.png">
-  <img width="300" height="300" src="https://i.ibb.co/xMjZWf5/AHK-Logo.png">
+  <img width="250" height="250" src="https://i.ibb.co/NZG6ns2/LLARS-Logo.png">
+  <img width="250" height="250" src="https://i.ibb.co/xMjZWf5/AHK-Logo.png">
 </p>
 
 # Important Note for Script Use
