@@ -56,7 +56,7 @@ Special thanks to [maestrith.com](https://www.maestrith.com/) for the creation o
 I would also like to extend my gratitude to ***B O I L*** for their valuable contributions in providing items for testing the scripts. Their support has been instrumental in improving the functionality and reliability of this project.
 
 <p align="center">
-  <img width="150" height="150" src="https://i.ibb.co/yg6jd6Y/Support-BOIL.png">
-  <img width="150" height="150" src="https://i.ibb.co/R0zCwkV/Support-Chernabog.png">
-  <img width="150" height="150" src="https://i.ibb.co/g4K2nH1/Support-LJmods.png">
+  <img width="150" height="150" src="https://i.ibb.co/DrMHKrr/Support-BOIL.png">
+  <img width="150" height="150" src="https://i.ibb.co/6RQjVGy/Support-Chernabog.png">
+  <img width="150" height="150" src="https://i.ibb.co/CsBLK4v/Support-LJmods.png">
 </p>
