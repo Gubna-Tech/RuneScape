@@ -7,11 +7,14 @@ The script automates the actions of going to a bank, taking logs, pressing a hot
 ## Config File
 Before using the script, please ensure the following configurations in the LLARS Config file:
 
-1. Bank Coords: Set the Bank Coords in the LLARS Config file to match the location of the bank in your game. Refer to the LLARS Config file instructions for detailed guidance on setting coordinates in config files.
+1. **Bank Coords:**
+ Set the Bank Coords in the LLARS Config file to match the location of the bank in your game. Refer to the LLARS Config file instructions for detailed guidance on setting coordinates in config files.
 
-2. Bank Hotkey: Change the Bank Hotkey in the config file to match your in-game hotkey for accessing the bank. Additionally, set the hotkey for your inventory or item switch as it will be used to interact with the logs.
+2. **Bank Hotkey:** 
+Change the Bank Hotkey in the config file to match your in-game hotkey for accessing the bank. Additionally, set the hotkey for your inventory or item switch as it will be used to interact with the logs.
 
-3. Bow Type - Item: Match the Item in the Bow Type subsection of the config file to an item listed in the config file. This ensures that the script selects the appropriate item for fletching. Make sure to enter the coordinates for the item upon first fletching in the config file.
+3. **Bow Type - Item:**
+ Match the Item in the Bow Type subsection of the config file to an item listed in the config file. This ensures that the script selects the appropriate item for fletching. Make sure to enter the coordinates for the item upon first fletching in the config file.
 
 ## Timers and Hotkeys
 By default, the timers and hotkeys are set to generic values. It is highly recommended to customize these settings according to your preferences and playstyle.
