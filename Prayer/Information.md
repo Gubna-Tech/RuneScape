@@ -4,10 +4,10 @@ This AutoHotKey (AHK) script is designed to automate the process of burying bone
 ## General Usage
 The script automates the actions of going to a bank, removing bones or ashes, and scattering or burying them. You can customize the script to fit your specific needs.
 
-1. Bank Coords:
+1. **Bank Coords:**
 Start by setting the Bank Coords in the LLARS Config file. These coordinates should match the location of the bank in your game. Refer to the LLARS Config file instructions for detailed guidance on setting coordinates in config files.
 
-2. Bank Hotkey: 
+2. **Bank Hotkey:**
 Change the Bank Hotkey in the config file to match your in-game hotkey for accessing the bank. Also, make sure to set the hotkey for your toolbar, as it will be used to scatter or bury the bones/ashes.
 
 ## Timers and Hotkeys: 
