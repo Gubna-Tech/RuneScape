@@ -4,10 +4,10 @@ This AutoHotKey (AHK) script is designed to automate the process of cleaning gri
 ## General Usage
 The script automates the actions of going to a bank, pressing a hotkey to access the inventory, and cleaning a full inventory of grimy herbs. The script can be customized to suit your specific needs.
 
-1. Bank Coords:
+1. **Bank Coords:**
 Start by setting the Bank Coords in the LLARS Config file. These coordinates should match the location of the bank in your game. Refer to the LLARS Config file instructions for detailed guidance on setting coordinates in config files.
 
-2. Bank Hotkey:
+2. **Bank Hotkey:**
 Change the Bank Hotkey in the config file to match your in-game hotkey for accessing the bank. Additionally, ensure that you set the hotkey for your inventory or item switch as it will be used to interact with the grimy herbs.
 
 ## Timers and Hotkeys:
