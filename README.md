@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="250" height="250" src="https://i.ibb.co/D9VSmYW/LLARS-Logo.png">
+  <img width="250" height="250" src="https://i.ibb.co/bWhdMyR/LLARS-Logo.png">
   <img width="250" height="250" src="https://i.ibb.co/xMjZWf5/AHK-Logo.png">
   <img width="250" height="250" src="https://i.ibb.co/0MftSJx/LLARS-Status.png">
 </p>
