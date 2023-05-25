@@ -1,17 +1,18 @@
-# Cooking Script Instructions
+# Bar Smelting Script Instructions
 This AutoHotKey (AHK) script is designed to automate the bar smelting process in RuneScape. Please follow the instructions below to properly set up and use the script:
 
 ## Config File
 Before using the script, please ensure the following configurations in the LLARS Config file:
 
-1. **Configure Bank Prime Coordinates:** While standing in front of the bank stall, select the Bank Prime Coordinates. These coordinates should represent the location of the bank stall. Make note of these coordinates for configuration in the Config file.
+1. **Select Smelter and Bar Coordinates:**
+ Before starting the script, you need to select the coordinates of the smelter and the specific metal bar you want to smelt. Make sure to enter these coordinates accurately to ensure the script can select the proper metal type during the smelting process.
+ 
+ 2. **Metal Type Selection:**
+Ensure the Metal Type at the top of the config file matches the metal type you wish to smelt.
 
-2. **Configure Range Coordinates:** Walk over to the range where you will be cooking and take note of the Range Coordinates. These coordinates should correspond to the location of the range.
+3. **Config File Setup:** Open the Config file located in the same directory as the script. Enter the gathered coordinates into the appropriate fields in the Config file.
 
-3. **Configure Bank Main Coordinates:** Move back to the bank as though you were cooking and obtain the Bank Main Coordinates. These coordinates should reflect the location of the bank.
-
-4. **Config File Setup:** Open the Config file located in the same directory as the script. Enter the gathered coordinates into the appropriate fields in the Config file.
-Timers and Hotkeys:
+## Timers and Hotkeys:
 By default, the timers and hotkeys are set to generic values. However, it is recommended to customize them to suit your preferences and playstyle.
 
 ## Starting the Script:
