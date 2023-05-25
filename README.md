@@ -13,7 +13,7 @@ The scripts in this repository are currently in the alpha stage of development a
 Until an official public announcement is made indicating a transition to the beta phase, it is important to understand that these scripts are not intended for production or commercial use. They are subject to frequent updates, changes, and bug fixes as development progresses.
 
 ### Note: 
-Please be aware that scripts will be added to the repository over time, and these additions will not be announced ahead of time. However, you are welcome to contact me on Discord if you are interested in becoming a beta tester for upcoming script releases.
+Please be aware that scripts will be added to the repository over time, and these additions will not be announced ahead of time. However, if you have any other inquiries or questions regarding this project, feel free to contact me. 
 
 Discord:[Gubna#0001](https://discordapp.com/users/616070790319964160)
 
