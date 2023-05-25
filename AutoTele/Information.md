@@ -11,8 +11,14 @@ Before using the script, ensure that the following configuration is correctly se
 Starting the Script
 Once the Skillbar Hotkey is correctly configured in the config file, you can start the script by executing it.
 
-## Script Execution
-The script will automatically perform the teleportation actions based on the desired number of times and the selected location. It will activate the specified hotkey on the skillbar to trigger the teleportation, allowing for efficient XP gains.
+## Timers and Hotkeys:
+By default, the timers and hotkeys are set to generic values. However, it is recommended to customize them to suit your preferences and playstyle.
+
+## Starting the Script:
+Once the config file is properly adjusted to your needs, you can start the script. Press the Start button on the GUI or use the designated start hotkey (default: F9, unless changed in the LLARS Config file).
+
+## Script Execution:
+The script will now proceed to the bank, remove the bones or ashes using the assigned hotkey, and scatter or bury them by holding down the hotkey associated with your toolbar item. This process will be repeated for the predetermined number of times.
 
 ## Important Considerations
 It is recommended to review and modify the timers, hotkeys, and other configurable options in the LLARS Config file to make them more unique and suitable for your specific gameplay.
