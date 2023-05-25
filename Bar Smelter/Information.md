@@ -1,5 +1,5 @@
 # Cooking Script Instructions
-This AutoHotKey (AHK) script is designed to automate the cooking process in RuneScape. Please follow the instructions below to properly set up and use the script:
+This AutoHotKey (AHK) script is designed to automate the bar smelting process in RuneScape. Please follow the instructions below to properly set up and use the script:
 
 ## Config File
 Before using the script, please ensure the following configurations in the LLARS Config file:
