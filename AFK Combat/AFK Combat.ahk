@@ -1,9 +1,3 @@
-;AutoHotKey script for afk-combat
-;Written by Gubna#0001
-;GNU GPL v3.0
-;https://www.gnu.org/licenses/gpl-3.0.en.html
-;https://www.autohotkey.com/docs/v2/
-
 #SingleInstance Force
 #Persistent
 SetBatchLines, -1
@@ -194,10 +188,11 @@ if option=true
 	IniRead, hk, Config.ini, Agro, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Agro, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -213,10 +208,11 @@ if option=true
 	IniRead, hk, Config.ini, Prayer, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Prayer, (xm+15), (ym+15),1
+		sleep 25		
 	}
 	tooltip	
 }
@@ -238,10 +234,11 @@ if option=true
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -257,10 +254,11 @@ if option=true
 	IniRead, hk, Config.ini, Strength, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Strength, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -276,10 +274,11 @@ if option=true
 	IniRead, hk, Config.ini, Attack, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Attack, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }
@@ -295,10 +294,11 @@ if option=true
 	IniRead, hk, Config.ini, Magic, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Magic, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -314,10 +314,11 @@ if option=true
 	IniRead, hk, Config.ini, Ranged, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Range, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -333,10 +334,11 @@ if option=true
 	IniRead, hk, Config.ini, Overload, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Overload, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -352,10 +354,11 @@ if option=true
 	IniRead, hk, Config.ini, Warmaster, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Warmaster, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }
@@ -371,10 +374,11 @@ if option=true
 	IniRead, hk, Config.ini, Antifire, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antifire, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }
@@ -390,10 +394,11 @@ if option=true
 	IniRead, hk, Config.ini, Antipoison, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antipoison, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }
@@ -411,10 +416,11 @@ Agro:
 	IniRead, hk, Config.ini, Agro, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Agro, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -437,10 +443,11 @@ AFK:
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -457,10 +464,11 @@ Strength:
 	IniRead, hk, Config.ini, Strength, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Strength, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -477,10 +485,11 @@ Attack:
 	IniRead, hk, Config.ini, Attack, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Attack, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -497,10 +506,11 @@ Magic:
 	IniRead, hk, Config.ini, Magic, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Magic, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -517,10 +527,11 @@ Ranged:
 	IniRead, hk, Config.ini, Ranged, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Range, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -537,10 +548,11 @@ Overload:
 	IniRead, hk, Config.ini, Overload, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Overload, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip	
 }
@@ -557,10 +569,11 @@ Warmaster:
 	IniRead, hk, Config.ini, Warmaster, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Warmaster, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }
@@ -577,10 +590,11 @@ Antifire:
 	IniRead, hk, Config.ini, Antifire, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antifire, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }
@@ -597,10 +611,11 @@ Antipoison:
 	IniRead, hk, Config.ini, Antipoison, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antipoison, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }
@@ -617,10 +632,11 @@ Prayer:
 	IniRead, hk, Config.ini, Prayer, hotkey
 	send {%hk%}
 	
-	loop 1000
+	loop 40
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Prayer, (xm+15), (ym+15),1
+		sleep 25
 	}
 	tooltip
 }

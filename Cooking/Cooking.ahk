@@ -1,11 +1,3 @@
-;AutoHotKey script for cooking
-;NOTE: Start this script in front of the Catherby bank stall
-;Special thank you to "B O I L" for helping fund this script with donated raw food
-;Written by Gubna#0001
-;GNU GPL v3.0
-;https://www.gnu.org/licenses/gpl-3.0.en.html
-;https://www.autohotkey.com/docs/v2/
-
 #SingleInstance Force
 #Persistent
 SetBatchLines, -1
