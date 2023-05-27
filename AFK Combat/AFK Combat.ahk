@@ -188,7 +188,7 @@ if option=true
 	IniRead, hk, Config.ini, Agro, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Agro, (xm+15), (ym+15),1
@@ -208,7 +208,7 @@ if option=true
 	IniRead, hk, Config.ini, Prayer, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Prayer, (xm+15), (ym+15),1
@@ -234,7 +234,7 @@ if option=true
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
@@ -254,7 +254,7 @@ if option=true
 	IniRead, hk, Config.ini, Strength, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Strength, (xm+15), (ym+15),1
@@ -274,7 +274,7 @@ if option=true
 	IniRead, hk, Config.ini, Attack, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Attack, (xm+15), (ym+15),1
@@ -294,7 +294,7 @@ if option=true
 	IniRead, hk, Config.ini, Magic, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Magic, (xm+15), (ym+15),1
@@ -314,7 +314,7 @@ if option=true
 	IniRead, hk, Config.ini, Ranged, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Range, (xm+15), (ym+15),1
@@ -334,7 +334,7 @@ if option=true
 	IniRead, hk, Config.ini, Overload, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Overload, (xm+15), (ym+15),1
@@ -354,7 +354,7 @@ if option=true
 	IniRead, hk, Config.ini, Warmaster, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Warmaster, (xm+15), (ym+15),1
@@ -374,7 +374,7 @@ if option=true
 	IniRead, hk, Config.ini, Antifire, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antifire, (xm+15), (ym+15),1
@@ -394,7 +394,7 @@ if option=true
 	IniRead, hk, Config.ini, Antipoison, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antipoison, (xm+15), (ym+15),1
@@ -416,7 +416,7 @@ Agro:
 	IniRead, hk, Config.ini, Agro, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Agro, (xm+15), (ym+15),1
@@ -443,7 +443,7 @@ AFK:
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
@@ -464,7 +464,7 @@ Strength:
 	IniRead, hk, Config.ini, Strength, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Strength, (xm+15), (ym+15),1
@@ -485,7 +485,7 @@ Attack:
 	IniRead, hk, Config.ini, Attack, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Attack, (xm+15), (ym+15),1
@@ -506,7 +506,7 @@ Magic:
 	IniRead, hk, Config.ini, Magic, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Magic, (xm+15), (ym+15),1
@@ -527,7 +527,7 @@ Ranged:
 	IniRead, hk, Config.ini, Ranged, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Range, (xm+15), (ym+15),1
@@ -548,7 +548,7 @@ Overload:
 	IniRead, hk, Config.ini, Overload, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Overload, (xm+15), (ym+15),1
@@ -569,7 +569,7 @@ Warmaster:
 	IniRead, hk, Config.ini, Warmaster, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Warmaster, (xm+15), (ym+15),1
@@ -590,7 +590,7 @@ Antifire:
 	IniRead, hk, Config.ini, Antifire, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antifire, (xm+15), (ym+15),1
@@ -611,7 +611,7 @@ Antipoison:
 	IniRead, hk, Config.ini, Antipoison, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Antipoison, (xm+15), (ym+15),1
@@ -632,7 +632,7 @@ Prayer:
 	IniRead, hk, Config.ini, Prayer, hotkey
 	send {%hk%}
 	
-	loop 40
+	loop 100
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Prayer, (xm+15), (ym+15),1
