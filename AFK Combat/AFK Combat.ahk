@@ -180,6 +180,8 @@ winactivate, RuneScape
 IniRead, option,Config.ini, Agro, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Agro, min
 	IniRead, sa2, Config.ini, Agro, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -200,6 +202,8 @@ if option=true
 IniRead, option,Config.ini, Prayer, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Prayer, min
 	IniRead, sa2, Config.ini, Prayer, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -220,6 +224,8 @@ if option=true
 IniRead, option,Config.ini, AFK, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, AFK, min
 	IniRead, sa2, Config.ini, AFK, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -246,6 +252,8 @@ if option=true
 IniRead, option,Config.ini, Strength, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Strength, min
 	IniRead, sa2, Config.ini, Strength, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -266,6 +274,8 @@ if option=true
 IniRead, option,Config.ini, Attack, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Attack, min
 	IniRead, sa2, Config.ini, Attack, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -286,6 +296,8 @@ if option=true
 IniRead, option,Config.ini, Magic, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Magic, min
 	IniRead, sa2, Config.ini, Magic, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -306,6 +318,8 @@ if option=true
 IniRead, option,Config.ini, Ranged, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Ranged, min
 	IniRead, sa2, Config.ini, Ranged, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -326,6 +340,8 @@ if option=true
 IniRead, option,Config.ini, Overload, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Overload, min
 	IniRead, sa2, Config.ini, Overload, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -346,6 +362,8 @@ if option=true
 IniRead, option,Config.ini, Warmaster, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Warmaster, min
 	IniRead, sa2, Config.ini, Warmaster, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -366,6 +384,8 @@ if option=true
 IniRead, option,Config.ini, Antifire, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Antifire, min
 	IniRead, sa2, Config.ini, Antifire, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -386,6 +406,8 @@ if option=true
 IniRead, option,Config.ini, Antipoison, option
 if option=true
 {
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Antipoison, min
 	IniRead, sa2, Config.ini, Antipoison, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -407,7 +429,8 @@ return
 
 Agro:
 {
-	winactivate, RuneScape
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Agro, min
 	IniRead, sa2, Config.ini, Agro, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -428,7 +451,8 @@ return
 
 AFK:
 {
-	winactivate, RuneScape
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, AFK, min
 	IniRead, sa2, Config.ini, AFK, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -455,7 +479,8 @@ return
 
 Strength:
 {
-	winactivate, RuneScape
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Strength, min
 	IniRead, sa2, Config.ini, Strength, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -476,7 +501,8 @@ return
 
 Attack:
 {
-	winactivate, RuneScape
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Attack, min
 	IniRead, sa2, Config.ini, Attack, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -497,7 +523,8 @@ return
 
 Magic:
 {
-	winactivate, RuneScape
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Magic, min
 	IniRead, sa2, Config.ini, Magic, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -518,7 +545,8 @@ return
 
 Ranged:
 {
-	winactivate, RuneScape
+	winactivate, RuneScape	
+	
 	IniRead, sa1, Config.ini, Ranged, min
 	IniRead, sa2, Config.ini, Ranged, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -539,7 +567,8 @@ return
 
 Overload:
 {
-	winactivate, RuneScape
+	winactivate, RuneScape	
+
 	IniRead, sa1, Config.ini, Overload, min
 	IniRead, sa2, Config.ini, Overload, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -561,6 +590,7 @@ return
 Warmaster:
 {
 	winactivate, RuneScape
+	
 	IniRead, sa1, Config.ini, Warmaster, min
 	IniRead, sa2, Config.ini, Warmaster, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -582,6 +612,7 @@ return
 Antifire:
 {
 	winactivate, RuneScape
+	
 	IniRead, sa1, Config.ini, Antifire, min
 	IniRead, sa2, Config.ini, Antifire, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -603,6 +634,7 @@ return
 Antipoison:
 {
 	winactivate, RuneScape
+	
 	IniRead, sa1, Config.ini, Antipoison, min
 	IniRead, sa2, Config.ini, Antipoison, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -624,6 +656,7 @@ return
 Prayer:
 {
 	winactivate, RuneScape
+	
 	IniRead, sa1, Config.ini, Prayer, min
 	IniRead, sa2, Config.ini, Prayer, max
 	Random, SleepAmount, %sa1%, %sa2%
