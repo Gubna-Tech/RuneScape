@@ -5,6 +5,7 @@
 </p>
 
 # Important Note for Script Use
+### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
 
 ## Disclaimer: Alpha Release - Educational Purposes Only
