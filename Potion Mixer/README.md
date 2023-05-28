@@ -1,4 +1,5 @@
 # Potion Mixing Script Instructions
+### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 This AutoHotKey (AHK) script is designed to automate the process of mixing potions in RuneScape. Please refer to the instructions below to properly set up and use the script:
 
 ## General Usage
