@@ -1,4 +1,5 @@
 # Modifying LLARS Config.ini
+### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 In order to customize the settings for this project, you may need to make changes to the LLARS Config.ini files. This file contain important configuration options that can be adjusted according to your requirements.
 
 Please note that modifying this file should be done with caution and understanding of their impact. Incorrect changes to the configurations may lead to unexpected behavior or errors in the project.
