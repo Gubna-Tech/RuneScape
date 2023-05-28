@@ -1,4 +1,5 @@
 # Bar Smelting Script Instructions
+### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 This AutoHotKey (AHK) script is designed to automate the bar smelting process in RuneScape. Please follow the instructions below to properly set up and use the script:
 
 ## Config File
