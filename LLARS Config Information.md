@@ -58,40 +58,4 @@ To configure the GUI position, follow these steps:
 
 By correctly configuring the guix and guiy settings with the appropriate coordinates, the GUI of the script will be positioned exactly where you want it on your screen.
 
-## Hotkey Message Configuration
-
-The hotkey message configuration determines whether a startup message displaying the configured hotkeys will appear when starting the script within the specified directory.
-
-If **option=false** No startup message will be displayed, and the hotkeys will not be shown when launching the script.
-
-If **option=true** A message box will appear upon script startup, displaying the hotkeys as configured in the LLARS Config.ini file.
-
-To configure the hotkey message behavior:
-
-1. Set the option value in the configuration file to either true or false based on your preference.
-
-When **option=false**, the script will run without showing a hotkey message.
-
-When **option=true**, a message box will display the configured hotkeys upon script startup.
-
-Ensure that the option setting reflects your desired behavior for displaying the hotkey message.
-
-## Thank You Message Configuration
-
-The thank you message configuration determines whether a message expressing gratitude will appear when closing the script.
-
-If **option=false** No thank you message will be displayed when closing the script.
-
-If **option=true** A message box will appear upon script closure, expressing a thank you message.
-
-To configure the thank you message behavior:
-
-Set the option value in the configuration file to either true or false based on your preference.
-
-When **option=false**, the script will close without displaying a thank you message.
-
-When **option=true**, a message box will be shown when closing the script, expressing a thank you message.
-
-Make sure the option setting accurately represents your desired behavior for displaying the thank you message.
-
 *If you have any questions or need assistance with configuring the LLARS Config file, feel free to reach out to [Gubna#0001](https://discordapp.com/users/616070790319964160) on Discord. They will be able to provide further guidance and help you with the configuration process.*
