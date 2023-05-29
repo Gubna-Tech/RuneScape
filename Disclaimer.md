@@ -1,15 +1,17 @@
 # Disclaimer
 
-The scripts provided in this repository are offered for educational purposes only. By using these scripts, you acknowledge that you are solely responsible for your actions and the consequences that may arise from using them.
+The scripts provided in this repository are offered solely for educational purposes. By choosing to use these scripts, you acknowledge and accept that you alone bear full responsibility for any actions you take and the potential consequences that may arise from using them.
 
-I, as the script creator, do not assume any responsibility or liability for any actions taken by individuals who use these scripts. This includes but is not limited to any violations of game rules, terms of service, or any negative consequences that may occur.
+As the script creator, I want to emphasize that I do not assume any responsibility or liability for the actions taken by individuals who utilize these scripts. This includes, but is not limited to, any violations of game rules, terms of service, or any negative outcomes that may occur as a result.
 
-It is essential to understand and comply with the rules and policies set forth by the game developers. Using automation scripts in violation of these rules can result in penalties, including but not limited to temporary or permanent bans on your game account.
+It is of utmost importance that you thoroughly understand and adhere to the rules and policies established by the game developers. The use of automation scripts in contravention of these guidelines may lead to penalties, such as temporary or permanent bans on your game account.
 
-I strongly advise you to use these scripts responsibly and within the boundaries defined by the game's terms of service. It is your responsibility to ensure that you use these scripts in a manner that is compliant with the rules and policies of the game.
+I strongly advise you to exercise responsible usage of these scripts and remain within the boundaries explicitly defined by the game's terms of service. It is your responsibility to ensure that your usage of these scripts complies with the rules and policies set forth by the game.
 
-Please exercise caution, make informed decisions, and understand the risks associated with using automation scripts.
+Please exercise caution, make well-informed decisions, and fully comprehend the risks associated with utilizing automation scripts.
 
-By using these scripts, you agree to hold me, the script creator, harmless from any liability or consequences that may arise from the use of these scripts.
+By choosing to use these scripts, you explicitly agree to hold me, the script creator, completely harmless from any form of liability or consequences that may arise from the use of these scripts.
 
-Remember, you are solely responsible for your actions while using these scripts.
+Remember, you bear the sole responsibility for your actions while utilizing these scripts, and it is crucial to proceed with diligence and accountability.
+
+***To ensure your safety while running the scripts, it is highly recommended to read the [Tips.md](Tips.md) file, which provides valuable guidance on best practices and precautions. Taking the time to familiarize yourself with the tips will help you navigate the process with increased awareness and mitigate potential risks effectively.***
