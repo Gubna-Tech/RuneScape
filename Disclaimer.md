@@ -14,4 +14,4 @@ By choosing to use these scripts, you explicitly agree to hold me, the script cr
 
 Remember, you bear the sole responsibility for your actions while utilizing these scripts, and it is crucial to proceed with diligence and accountability.
 
-***To ensure your safety while running the scripts, it is highly recommended to read the [Tips.md](Tips.md) file, which provides valuable guidance on best practices and precautions. Taking the time to familiarize yourself with the tips will help you navigate the process with increased awareness and mitigate potential risks effectively.***
+***To ensure your safety while running the scripts, it is highly recommended to read the [Tips](Tips.md) file, which provides valuable guidance on best practices and precautions. Taking the time to familiarize yourself with the tips will help you navigate the process with increased awareness and mitigate potential risks effectively.***
