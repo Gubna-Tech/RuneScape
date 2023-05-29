@@ -39,12 +39,6 @@ If you are unfamiliar with .ini files or find them challenging to read and edit,
 ## Free Open Source Software:
 This software is distributed as Free Open Source Software (FOSS), which means it is available for use, modification, and distribution under an open-source license. As a FOSS project, this software will never require a one-time purchase fee or impose any monthly subscription costs. You are free to use and modify the software according to the terms of the applicable license.
 
-## Responsibility and Liability:
-The creator of this repository and the associated scripts assumes no responsibility or liability for any consequences arising from the use or misuse of these scripts. It is crucial to exercise caution and perform thorough testing before applying any scripts to your environment. Use them at your own risk.
-
-## Educational Purpose:
-These scripts are intended to serve as educational resources to aid in the understanding and exploration of automation techniques. They are not designed or recommended for automating activities in the official RuneScape 3 game or any other online game. Usage of these scripts in any game may violate the terms of service or user agreements of the respective game, and it is the sole responsibility of the user to ensure compliance with applicable rules and regulations.
-
 ## Support and Questions:
 If you require assistance, have questions, or want to provide feedback on these scripts, please feel free to reach out to the creator on Discord. You can contact [Gubna#0001](https://discordapp.com/users/616070790319964160) on Discord for support or any inquiries related to this project.
 
