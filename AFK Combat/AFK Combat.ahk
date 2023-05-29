@@ -11,12 +11,6 @@ settimer, configcheck, 250
 
 scriptname := regexreplace(A_scriptname,"\..*","")
 
-IniRead, option, LLARS Config.ini, Hotkey Message, option
-if option=true
-{
-	MsgBox , 48, Hotkey Information, Below is the list of Hotkeys for LLARS.`n%lhk1% - Start Script`n%lhk2% - Coordinates/Pause`n%lhk3% - Config File/Resume`n%lhk4% - Exit, 8	
-}
-
 Hotkey %lhk1%, Start
 Hotkey %lhk2%, coordb
 Hotkey %lhk3%, Configb
@@ -127,11 +121,6 @@ return
 
 ExitB:
 guiclose:
-IniRead, option, LLARS Config.ini, Thank You Message, option
-if option=true
-{
-	MsgBox , 48, Thank You, Thank you for using LLARS.`n`nI hope this Free and Open Source Tool helps you with RuneScape and to learn more about AutoHotKey., 10
-}
 exitapp
 
 Start:
@@ -174,8 +163,6 @@ sleep 250
 
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
-
-winactivate, RuneScape	
 
 IniRead, option,Config.ini, Agro, option
 if option=true
