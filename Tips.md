@@ -35,3 +35,5 @@ Please exercise caution, stay informed about the latest developments, and be awa
 Remember, the ultimate responsibility lies with you as the user, and it is essential to make informed decisions and accept the associated risks.
 
 Happy botting, and stay safe!
+
+***If you haven't already done so, it is strongly advised to read both the [README](README.md) and [Disclaimer](Disclaimer.md) files. These documents contain essential information that will provide guidance and help ensure a safe and informed experience when using the scripts.***
