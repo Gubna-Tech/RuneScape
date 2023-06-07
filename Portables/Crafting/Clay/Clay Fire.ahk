@@ -224,7 +224,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
+		IniRead, hkbank, Config.ini, Bank Fire Preset, hotkey
 		send {%hkbank%}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min

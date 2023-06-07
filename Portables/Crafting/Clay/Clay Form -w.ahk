@@ -227,7 +227,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
+		IniRead, hkbank, Config.ini, Bank Form Preset, hotkey
 		send {%hkbank%}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
@@ -326,7 +326,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
+		IniRead, hkbank, Config.ini, Bank Form Preset, hotkey
 		send {%hkbank%}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
