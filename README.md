@@ -16,7 +16,7 @@ Until an official public announcement is made indicating a transition to the bet
 ### Note: 
 Please be aware that scripts will be added to the repository over time, and these additions will not be announced ahead of time. However, if you have any other inquiries or questions regarding this project, feel free to contact me. 
 
-Discord:[Gubna#0001](https://discordapp.com/users/616070790319964160)
+Discord: [Gubna](https://discordapp.com/users/616070790319964160)
 
 ## Requirements:
 To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
@@ -40,7 +40,7 @@ If you are unfamiliar with .ini files or find them challenging to read and edit,
 This software is distributed as Free Open Source Software (FOSS), which means it is available for use, modification, and distribution under an open-source license. As a FOSS project, this software will never require a one-time purchase fee or impose any monthly subscription costs. You are free to use and modify the software according to the terms of the applicable license.
 
 ## Support and Questions:
-If you require assistance, have questions, or want to provide feedback on these scripts, please feel free to reach out to the creator on Discord. You can contact [Gubna#0001](https://discordapp.com/users/616070790319964160) on Discord for support or any inquiries related to this project.
+If you require assistance, have questions, or want to provide feedback on these scripts, please feel free to reach out to the creator on Discord. You can contact [Gubna](https://discordapp.com/users/616070790319964160) on Discord for support or any inquiries related to this project.
 
 Remember, using these scripts responsibly and respecting the terms of service and rules of the games you play is essential.
 
