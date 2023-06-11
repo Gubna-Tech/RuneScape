@@ -1,8 +1,19 @@
 # Herb Cleaning Script Instructions
-### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
+
 This AutoHotKey (AHK) script is designed to automate the process of cleaning grimy herbs in RuneScape. Please follow the instructions below to properly set up and use the script:
 
-## General Usage
+## Requirements(Skillcape Cleaning Only)
+- 99 Herblore Skill
+- Herblore Skillcape
+
+To use the Herblore Skillcape perk with this script, please follow these additional steps:
+
+1. Place the Herblore Skillcape in your toolbar.
+2. Set the hotkey for the Herblore Skillcape in the config file to match the in-game hotkey.
+
+With the Herblore Skillcape perk, you will be able to clean a full inventory load of grimy herbs instantly.
+
+## General Usage(no requirements)
 The script automates the actions of going to a bank, pressing a hotkey to access the inventory, and cleaning a full inventory of grimy herbs. The script can be customized to suit your specific needs.
 
 1. **Bank Coords:**
