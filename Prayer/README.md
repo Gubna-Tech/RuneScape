@@ -16,6 +16,7 @@ By default, the timers and hotkeys are set to generic values. However, it is rec
 
 ## Starting the Script: 
 Once the config file is properly adjusted to your needs, you can start the script. Press the Start button on the GUI or use the designated start hotkey (default: F9, unless changed in the LLARS Config file).
+
 ## Script Execution:
 The script will now proceed to the bank, remove the bones or ashes using the assigned hotkey, and scatter or bury them by holding down the hotkey associated with your toolbar item. This process will be repeated for the predetermined number of times.
 
