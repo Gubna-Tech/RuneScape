@@ -29,6 +29,11 @@ Before using the script, please ensure the following configurations in the LLARS
 5. **Item Coordinates:**
    Find the item you want to smith in the config file using Ctrl+F to search. Ensure that the item coordinates in the respective section match the in-game item position.
 
+6. **Anvil Coordinates:**
+   Determine the coordinates of the anvil in the game. Enter the anvil coordinates in the [Anvil Coords] section of the config file:
+   - `xmin` and `xmax`: Specify the X-coordinate range for the anvil.
+   - `ymin` and `ymax`: Specify the Y-coordinate range for the anvil.
+
 ## Timers and Hotkeys:
 By default, the timers and hotkeys are set to generic values. However, it is recommended to customize them according to your preferences and playstyle.
 
