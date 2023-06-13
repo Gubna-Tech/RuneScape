@@ -206,6 +206,15 @@ loop % runcount
 	GuiControl,,ScriptBlue, %scriptname%
 	GuiControl,,State3, Running
 	
+	IniRead, option,Config.ini, Renew, option
+	if option=true
+	{
+		IniRead, portables, Config.ini, Renew, portables
+		remainingTime := portables * 5 * 60 * 1000
+		
+		SetTimer, UpdateTime, 1000
+	}
+	
 	IniRead, sa1, Config.ini, Sleep Short, min
 	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -253,6 +262,56 @@ loop % runcount
 	IniRead, sa2, Config.ini, Sleep Craft, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
+	
+	IniRead, option,Config.ini, Renew, option
+	if option=true
+		if (remainingTime <= 120000)
+		{	
+			CoordMode, Mouse, Screen
+			IniRead, x1, Config.ini, Bank Main Coords, xmin
+			IniRead, x2, Config.ini, Bank Main Coords, xmax
+			IniRead, y1, Config.ini, Bank Main Coords, ymin
+			IniRead, y2, Config.ini, Bank Main Coords, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, bank hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, toolbar hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			send {1}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount% ;*[Untitled1]
+			
+			IniRead, portables, Config.ini, Renew, portables
+			send {%portables%}{enter}
+			
+			IniRead, portables, Config.ini, Renew, portables
+			remainingTime := portables * 5 * 60 * 1000
+			
+			SetTimer, UpdateTime, 1000
+		}	
 }
 
 IniRead, option, LLARS Config.ini, Logout, option
@@ -286,4 +345,8 @@ GuiControl,,State1, Finished
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox , 48, LLARS Has Finished, LLARS has ran the %scriptname% script %runcount3% times.
 
+return
+
+UpdateTime:
+remainingTime -= 1000
 return
