@@ -8,8 +8,6 @@
 ### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
 
-# Notice: Scripts Designed for RuneScape3 Evolution of Combat (EOC)
-
 ## Disclaimer: Alpha Release - Educational Purposes Only
 The scripts in this repository are currently in the alpha stage of development and are not yet considered stable or feature-complete. They are provided solely for educational purposes and to gather feedback from the community. Please note that using these scripts may result in unexpected behavior or errors.
 
@@ -60,3 +58,5 @@ I would also like to extend my gratitude to ***B O I L*** for their valuable con
 </p>
 
 ***The [Disclaimer](Disclaimer.md) should be viewed as it clearly states that the scripts provided are for educational purposes only and holds the script creator harmless from any liability, emphasizing the users' responsibility for their actions and the potential consequences that may arise from using the scripts. It serves as a reminder to exercise caution, make informed decisions, and comply with the game's rules and policies while using automation scripts.***
+
+# Notice: Scripts Designed for RuneScape3 Evolution of Combat (EOC)
