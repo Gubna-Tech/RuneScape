@@ -215,6 +215,46 @@ loop % runcount
 			remainingTime := portables * 5 * 60 * 1000
 			
 			SetTimer, UpdateTime, 1000
+			
+			CoordMode, Mouse, Screen
+			IniRead, x1, Config.ini, Bank Main Coords, xmin
+			IniRead, x2, Config.ini, Bank Main Coords, xmax
+			IniRead, y1, Config.ini, Bank Main Coords, ymin
+			IniRead, y2, Config.ini, Bank Main Coords, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, bank hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, toolbar hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			send {1}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, portables, Config.ini, Renew, portables
+			send {%portables%}{enter}
 		}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
