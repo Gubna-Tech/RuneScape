@@ -187,7 +187,7 @@ GuiControl,,State3, Running
 
 runcount3 = %runcount%
 count2 = 0
-prime=0
+prime = 0
 
 loop % runcount
 { 	
