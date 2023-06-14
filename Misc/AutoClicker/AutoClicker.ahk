@@ -2,10 +2,6 @@
 #Persistent
 SetBatchLines, -1
 
-IniRead, hk1, Config.ini, Hotkey, start
-IniRead, hk2, Config.ini, Hotkey, exit
-
-
 isPaused := true
 
 F11::
