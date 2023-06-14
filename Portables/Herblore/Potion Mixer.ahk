@@ -188,6 +188,7 @@ GuiControl,,State3, Running
 runcount3 = %runcount%
 count2 = 0
 firstrun = 0
+prime =  0
 
 loop % runcount
 { 	
@@ -208,7 +209,9 @@ loop % runcount
 	
 	IniRead, option,Config.ini, Renew, option
 	if option=true
+		if prime = 0
 	{
+		++prime
 		IniRead, portables, Config.ini, Renew, portables
 		remainingTime := portables * 5 * 60 * 1000
 		
