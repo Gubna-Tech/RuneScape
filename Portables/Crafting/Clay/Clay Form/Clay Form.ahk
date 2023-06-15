@@ -254,7 +254,13 @@ loop % runcount
 			Sleep, %SleepAmount%
 			
 			IniRead, portables, Config.ini, Renew, portables
-			send {%portables%}{enter}
+			send {%portables%}
+			
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			Send {enter}
 		}
 		
 		IniRead, sa1, Config.ini, Sleep Brief, min
@@ -454,10 +460,16 @@ loop % runcount
 				IniRead, sa1, Config.ini, Sleep Short, min
 				IniRead, sa2, Config.ini, Sleep Short, max
 				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount% ;*[Untitled1]
+				Sleep, %SleepAmount%
 				
 				IniRead, portables, Config.ini, Renew, portables
-				send {%portables%}{enter}
+				send {%portables%}
+				
+				IniRead, sa1, Config.ini, Sleep Brief, min
+				IniRead, sa2, Config.ini, Sleep Brief, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				Send {enter}
 				
 				IniRead, portables, Config.ini, Renew, portables
 				remainingTime := portables * 5 * 60 * 1000
