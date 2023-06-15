@@ -255,7 +255,7 @@ loop % runcount
 			Sleep, %SleepAmount%
 			
 			IniRead, portables, Config.ini, Renew, portables
-			send {%portables%}
+			sendinput {%portables%}
 			
 			IniRead, sa1, Config.ini, Sleep Brief, min
 			IniRead, sa2, Config.ini, Sleep Brief, max
@@ -351,10 +351,10 @@ loop % runcount
 			IniRead, sa1, Config.ini, Sleep Short, min
 			IniRead, sa2, Config.ini, Sleep Short, max
 			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount% ;*[Untitled1]
+			Sleep, %SleepAmount%
 			
 			IniRead, portables, Config.ini, Renew, portables
-			send {%portables%}
+			sendinput {%portables%}
 			
 			IniRead, sa1, Config.ini, Sleep Brief, min
 			IniRead, sa2, Config.ini, Sleep Brief, max
