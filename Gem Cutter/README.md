@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="200" height="200"src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Skills/Artisan/Crafting.png">
+</p>
+
 # Gem Cutting Script Instructions
 ### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 This AutoHotKey (AHK) script is designed to automate the process of cutting uncut gems into cut gems in RuneScape. Please follow the instructions below to properly set up and use the script:
