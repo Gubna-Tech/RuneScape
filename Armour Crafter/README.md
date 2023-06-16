@@ -1,3 +1,7 @@
+<p align="center">
+  <img width="200" height="200"src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Skills/Artisan/Crafting.png">
+</p>
+
 # Armour Crafting Script Instructions
 
 This AutoHotKey (AHK) script is designed to automate the armour crafting process in RuneScape. Please follow the instructions below to properly set up and use the script:
