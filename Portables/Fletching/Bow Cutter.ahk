@@ -254,7 +254,7 @@ loop % runcount
 			Sleep, %SleepAmount%
 			
 			IniRead, portables, Config.ini, Renew, portables
-			sendinput {%portables%}
+			sendraw {%portables%}
 			
 			IniRead, sa1, Config.ini, Sleep Brief, min
 			IniRead, sa2, Config.ini, Sleep Brief, max
@@ -381,7 +381,7 @@ loop % runcount
 		
 		IniRead, option,Config.ini, Renew, option
 		if option=true
-			if (remainingTime <= 120000)
+			if (remainingTime <= 60000)
 			{	
 				CoordMode, Mouse, Screen
 				IniRead, x1, Config.ini, Bank Main Coords, xmin
@@ -421,7 +421,7 @@ loop % runcount
 				Sleep, %SleepAmount%
 				
 				IniRead, portables, Config.ini, Renew, portables
-				sendinput {%portables%}
+				sendraw {%portables%}
 				
 				IniRead, sa1, Config.ini, Sleep Brief, min
 				IniRead, sa2, Config.ini, Sleep Brief, max
