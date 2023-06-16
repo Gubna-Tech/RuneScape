@@ -49,4 +49,4 @@ I would also like to extend my gratitude to ***B O I L*** for their valuable con
 
 ***The [Disclaimer](Disclaimer.md) should be viewed as it clearly states that the scripts provided are for educational purposes only and holds the script creator harmless from any liability, emphasizing the users' responsibility for their actions and the potential consequences that may arise from using the scripts. It serves as a reminder to exercise caution, make informed decisions, and comply with the game's rules and policies while using automation scripts.***
 
-# Notice: Scripts Designed for RuneScape3 Evolution of Combat (EOC)
+# Notice: Scripts Designed for RuneScape3 Evolution of Combat (EoC)
