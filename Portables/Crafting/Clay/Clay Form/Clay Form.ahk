@@ -212,7 +212,7 @@ loop % runcount
 		if option=true
 		{
 			IniRead, portables, Config.ini, Renew, portables
-			remainingTime := portables * 5 * 60 * 1000
+			remainingTime :=( portables * 5 * 60 * 1000)+180000
 			
 			SetTimer, UpdateTime, 1000
 			
