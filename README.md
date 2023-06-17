@@ -45,6 +45,7 @@ I would also like to extend my gratitude to ***B O I L*** for their valuable con
   <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20BOIL.png">
   <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20Chernabog.png">
   <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20LJmods.png">
+  <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20Zika.png">
 </p>
 
 ***The [Disclaimer](Disclaimer.md) should be viewed as it clearly states that the scripts provided are for educational purposes only and holds the script creator harmless from any liability, emphasizing the users' responsibility for their actions and the potential consequences that may arise from using the scripts. It serves as a reminder to exercise caution, make informed decisions, and comply with the game's rules and policies while using automation scripts.***
