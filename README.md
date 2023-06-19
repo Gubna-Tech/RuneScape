@@ -11,7 +11,7 @@ Please note that the scripts in this repository are specifically designed for **
 ### Note: 
 Please be aware that scripts will be added to the repository over time, and these additions will not be announced ahead of time. However, if you have any other inquiries or questions regarding this project, feel free to contact me. 
 
-Discord: [Gubna](https://discordapp.com/users/616070790319964160)
+Discord: **Gubna** *formerly* **Gubna#0001**
 
 ## Requirements:
 To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
