@@ -13,6 +13,8 @@ Please be aware that scripts will be added to the repository over time, and thes
 
 Discord: **Gubna** *formerly* **Gubna#0001**
 
+[LLARS Support Discord Server](https://discord.gg/VmFXqQ9FhJ)
+
 ## Requirements:
 To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
 
@@ -51,3 +53,5 @@ I would also like to extend my gratitude to ***B O I L*** for their valuable con
 ***The [Disclaimer](Disclaimer.md) should be viewed as it clearly states that the scripts provided are for educational purposes only and holds the script creator harmless from any liability, emphasizing the users' responsibility for their actions and the potential consequences that may arise from using the scripts. It serves as a reminder to exercise caution, make informed decisions, and comply with the game's rules and policies while using automation scripts.***
 
 # Notice: Scripts Designed for RuneScape3 Evolution of Combat (EoC)
+## Scripts are set to work on NXT not Steam client(will be resolved soon)
+[LLARS Support Discord Server](https://discord.gg/VmFXqQ9FhJ)
