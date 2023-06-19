@@ -58,4 +58,4 @@ To configure the GUI position, follow these steps:
 
 By correctly configuring the guix and guiy settings with the appropriate coordinates, the GUI of the script will be positioned exactly where you want it on your screen.
 
-*If you have any questions or need assistance with configuring the LLARS Config file, feel free to reach out to [Gubna](https://discordapp.com/users/616070790319964160) on Discord. They will be able to provide further guidance and help you with the configuration process.*
+*If you have any questions or need assistance with configuring the LLARS Config file, feel free to reach out on Discord(**Gubna** *formerly* **Gubna#0001**). They will be able to provide further guidance and help you with the configuration process.*
