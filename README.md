@@ -13,14 +13,18 @@ Please be aware that scripts will be added to the repository over time, and thes
 
 Discord: **Gubna** *formerly* **Gubna#0001**
 
-[LLARS Support Discord Server](https://discord.gg/VmFXqQ9FhJ)
+<p align="center">
+  <a href="https://discord.gg/VmFXqQ9FhJ">LLARS Support Discord Server</a>
+</p>
 
 ## Requirements:
 To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
 
 If you haven't installed AutoHotkey yet, you can download it from the official AutoHotkey website. Visit the following link to download the AHK installer:
 
-[AutoHotKey Download](https://www.autohotkey.com/download/ahk-v2.exe)
+<p align="center">
+  <a href="https://www.autohotkey.com/download/ahk-install.exe">AutoHotKey Download</a>
+</p>
 
 ## Notepad++ for Configuration Files:
 While you can use any text editor to work with the configuration files, it is worth noting that using Notepad++ can greatly enhance your editing experience.
@@ -31,7 +35,9 @@ By using Notepad++, you can take advantage of its enhanced functionality and imp
 
 If you are unfamiliar with .ini files or find them challenging to read and edit, using Notepad++ can be particularly beneficial. Notepad++ simplifies the process by highlighting important sections, keywords, and values, making it easier to navigate and modify the configuration files.
 
-[Notepad++  Download](https://notepad-plus-plus.org/downloads/)
+<p align="center">
+  <a href="https://notepad-plus-plus.org/downloads/">Notepad++ Download</a>
+</p>
 
 ## Free Open Source Software:
 This software is distributed as Free Open Source Software (FOSS), which means it is available for use, modification, and distribution under an open-source license. As a FOSS project, this software will never require a one-time purchase fee or impose any monthly subscription costs. You are free to use and modify the software according to the terms of the applicable license.
@@ -39,7 +45,9 @@ This software is distributed as Free Open Source Software (FOSS), which means it
 ## Acknowledgments:
 Special thanks to [maestrith.com](https://www.maestrith.com/) for the creation of AHK-Studio, a powerful AutoHotkey integrated development environment (IDE). I highly recommend AHK-Studio for developing and managing AutoHotkey scripts.
 
-[AHK Studio Download](https://www.maestrith.com/ahk-studio/)
+<p align="center">
+  <a href="https://www.maestrith.com/ahk-studio/">AHK Studio Download</a>
+</p>
 
 I would also like to extend my gratitude to ***B O I L*** for their valuable contributions in providing items for testing the scripts. Their support has been instrumental in improving the functionality and reliability of this project.
 
