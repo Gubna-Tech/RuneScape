@@ -2,6 +2,9 @@
 #Persistent
 SetBatchLines, -1
 
+DetectHiddenWindows, On
+closeotherllars()
+
 IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
@@ -54,6 +57,16 @@ WM_LBUTTONDOWN() {
 }
 return
 
+CloseOtherLLARS()
+{
+	WinGet, hWndList, List, LLARS
+	
+	Loop, %hWndList%
+	{
+		hWnd := hWndList%A_Index%
+		WinClose, % "ahk_id " hWnd
+	}
+}
 CoordB:
 If (coordcount = 0)
 {
