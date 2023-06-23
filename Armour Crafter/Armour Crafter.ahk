@@ -179,6 +179,11 @@ else
 sleep 250
 
 InputBox, runcount, Run How Many Times?,,,250, 100
+if (runcount = "" or runcount = 0)
+{
+	MsgBox, Please enter a valid number greater than 0.
+	return
+}
 
 sleep 100
 
@@ -188,6 +193,7 @@ GuiControl,,State3, Running
 runcount3 = %runcount%
 count2 = 0
 firstrun = 0
+StartTime := A_TickCount
 
 loop % runcount
 { 	
@@ -197,11 +203,6 @@ loop % runcount
 		
 		++count
 		++count2
-		
-		SetFormat, Float, 03.0
-		runcount3 += 0.0
-		count2 += 0.0
-		count += 0.0
 		
 		GuiControl,,Counter, %count%
 		GuiControl,,Counter2, %count2% / %runcount3%
@@ -257,12 +258,7 @@ loop % runcount
 	{
 		++count
 		++count2
-		
-		SetFormat, Float, 03.0
-		runcount3 += 0.0
-		count2 += 0.0
-		count += 0.0
-		firstrun = 0
+		firstrun=0
 		
 		winactivate, RuneScape	
 		
@@ -342,7 +338,24 @@ if option=true
 GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished
 
+EndTime := A_TickCount
+TotalTime := (EndTime - StartTime) / 1000
+AverageTime := TotalTime / runcount3
+
+TotalTimeHours := Floor(TotalTime / 3600)
+TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
+TotalTimeSeconds := Mod(TotalTime, 60)
+
+AverageTimeMinutes := Floor(AverageTime / 60)
+AverageTimeSeconds := Mod(AverageTime, 60)
+
+TotalTimeHours := Round(TotalTimeHours)
+TotalTimeMinutes := Round(TotalTimeMinutes)
+TotalTimeSeconds := Round(TotalTimeSeconds)
+AverageTimeMinutes := Round(AverageTimeMinutes)
+AverageTimeSeconds := Round(AverageTimeSeconds)
+
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
-MsgBox, 48, %scriptname% has completed %runcount3% runs.
+MsgBox, 48, Finished, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours% hours : %TotalTimeMinutes% minutes : %TotalTimeSeconds% seconds.`n`nAverage time per loop:`n%AverageTimeMinutes% minutes : %AverageTimeSeconds% seconds.
 
 return
