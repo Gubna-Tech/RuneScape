@@ -535,16 +535,16 @@ loop % runcount
 		IniRead, sa2, Config.ini, Sleep Brief, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%	
-	}
-	
-	GuiControl,,ScriptGreen, %scriptname%
-	GuiControl,,State1, Finished
-	
-	SoundPlay, C:\Windows\Media\Ring06.wav, 1
-	MsgBox , 48, LLARS Has Finished, LLARS has ran the %scriptname% script %runcount3% times.
-	
-	return
-	
-	UpdateTime:
-	remainingTime -= 1000
-	return
+}
+
+GuiControl,,ScriptGreen, %scriptname%
+GuiControl,,State1, Finished
+
+SoundPlay, C:\Windows\Media\Ring06.wav, 1
+MsgBox, 48, %scriptname% has completed %runcount3% runs.
+
+return
+
+UpdateTime:
+remainingTime -= 1000
+return

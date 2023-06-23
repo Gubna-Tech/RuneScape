@@ -345,6 +345,6 @@ GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
-MsgBox , 48, LLARS Has Finished, LLARS has ran the %scriptname% script %runcount3% times.
+MsgBox, 48, %scriptname% has completed %runcount3% runs.
 
 return
