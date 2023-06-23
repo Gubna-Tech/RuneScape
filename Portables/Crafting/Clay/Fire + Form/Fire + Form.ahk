@@ -554,7 +554,7 @@ AverageTimeMinutes := Round(AverageTimeMinutes)
 AverageTimeSeconds := Round(AverageTimeSeconds)
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
-MsgBox, 48, Finished, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours% hours : %TotalTimeMinutes% minutes : %TotalTimeSeconds% seconds.`n`nAverage time per loop:`n%AverageTimeMinutes% minutes : %AverageTimeSeconds% seconds.
+MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours% hours : %TotalTimeMinutes% minutes : %TotalTimeSeconds% seconds`n`nAverage time per loop:`n%AverageTimeMinutes% minutes : %AverageTimeSeconds% seconds
 
 return
 
