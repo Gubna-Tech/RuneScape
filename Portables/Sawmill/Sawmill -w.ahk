@@ -208,6 +208,7 @@ runcount3 = %runcount%
 count2 = 0
 firstrun = 0
 StartTime := A_TickCount
+StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 
 loop % runcount
 { 	
@@ -367,6 +368,7 @@ loop % runcount
 	GuiControl,,ScriptGreen, %scriptname%
 	GuiControl,,State1, Finished
 	
+	EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%	
 	EndTime := A_TickCount
 	TotalTime := (EndTime - StartTime) / 1000
 	AverageTime := TotalTime / runcount3
@@ -385,6 +387,6 @@ loop % runcount
 	AverageTimeSeconds := Round(AverageTimeSeconds)
 	
 	SoundPlay, C:\Windows\Media\Ring06.wav, 1
-	MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours% hours : %TotalTimeMinutes% minutes : %TotalTimeSeconds% seconds`n`nAverage time per loop:`n%AverageTimeMinutes% minutes : %AverageTimeSeconds% seconds
+	MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%
 	
 	return
