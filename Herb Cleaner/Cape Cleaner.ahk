@@ -207,7 +207,8 @@ GuiControl,,State3, Running
 runcount3 = %runcount%
 count2 = 0
 StartTime := A_TickCount
-
+StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+v
 loop % runcount
 { 	
 	winactivate, RuneScape	
@@ -220,8 +221,8 @@ loop % runcount
 	GuiControl,,ScriptBlue, %scriptname%
 	GuiControl,,State3, Running
 	
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 	
@@ -291,6 +292,7 @@ if option=true
 GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished
 
+EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 EndTime := A_TickCount
 TotalTime := (EndTime - StartTime) / 1000
 AverageTime := TotalTime / runcount3
@@ -309,6 +311,6 @@ AverageTimeMinutes := Round(AverageTimeMinutes)
 AverageTimeSeconds := Round(AverageTimeSeconds)
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
-MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours% hours : %TotalTimeMinutes% minutes : %TotalTimeSeconds% seconds`n`nAverage time per loop:`n%AverageTimeMinutes% minutes : %AverageTimeSeconds% seconds
+MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%
 
 return
