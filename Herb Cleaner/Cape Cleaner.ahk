@@ -208,7 +208,7 @@ runcount3 = %runcount%
 count2 = 0
 StartTime := A_TickCount
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
-v
+
 loop % runcount
 { 	
 	winactivate, RuneScape	
