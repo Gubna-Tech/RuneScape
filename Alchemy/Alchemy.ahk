@@ -229,9 +229,9 @@ loop % runcount
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
 	if (hk = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
 		return
 	}
@@ -249,9 +249,9 @@ loop % runcount
 	IniRead, y2, Config.ini, Item, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter valid coordinates for [Item] in the config.
 		return
 	}
@@ -282,9 +282,9 @@ if option=true
 	IniRead, y2, LLARS Config.ini, Logout, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
 		return
 	}

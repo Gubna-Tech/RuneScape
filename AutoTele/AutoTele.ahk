@@ -227,6 +227,14 @@ loop % runcount
 	Sleep, %SleepAmount%
 	
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
+	if (hk = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		MsgBox, 48, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
+		return
+	}
 	send {%hk%}
 	
 	IniRead, saf1, Config.ini, Sleep Teleport, min
@@ -252,9 +260,9 @@ if option=true
 	IniRead, y2, LLARS Config.ini, Logout, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
 		return
 	}

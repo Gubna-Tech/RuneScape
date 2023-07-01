@@ -230,6 +230,14 @@ loop % runcount
 	IniRead, x2, Config.ini, Bank Coords, xmax
 	IniRead, y1, Config.ini, Bank Coords, ymin
 	IniRead, y2, Config.ini, Bank Coords, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Coords] in the config.
+		return
+	}
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
@@ -240,6 +248,14 @@ loop % runcount
 	Sleep, %SleepAmount%
 	
 	IniRead, hkbank, Config.ini, Bank Preset, hotkey
+	if (hkbank = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
+		return
+	}
 	send {%hkbank%}
 	
 	IniRead, sa1, Config.ini, Sleep Short, min
@@ -248,6 +264,14 @@ loop % runcount
 	Sleep, %SleepAmount%
 	
 	IniRead, hkdown, Config.ini, Skillbar Hotkey, hotkey
+	if (hkdown = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		MsgBox, 48, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
+		return
+	}
 	send {%hkdown% down}
 	
 	IniRead, sap1, Config.ini, Sleep Prayer, min
@@ -256,6 +280,14 @@ loop % runcount
 	Sleep, %SleepAmountPrayer%
 	
 	IniRead, hkup, Config.ini, Skillbar Hotkey, hotkey
+	if (hkup = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		MsgBox, 48, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
+		return
+	}
 	send {%hkup% up}
 }
 
@@ -276,9 +308,9 @@ if option=true
 	IniRead, y2, LLARS Config.ini, Logout, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
 		return
 	}
