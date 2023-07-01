@@ -529,3 +529,7 @@ SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%
 
 return
+
+UpdateTime:
+remainingTime -= 1000
+return
