@@ -268,7 +268,7 @@ loop % runcount
 			Run %A_ScriptDir%\Config.ini
 			GuiControl,,ScriptRed, %scriptname%		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Metal Type] in the config.
+			MsgBox, 48, Config Error, Please enter valid coordinates for your selected bar in [Metal Type] in the config.
 			return
 		}
 		Random, x, %x1%, %x2%

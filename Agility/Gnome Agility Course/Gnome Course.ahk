@@ -233,6 +233,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Log Balance Prime, xmax
 		IniRead, y1, Config.ini, Log Balance Prime, ymin
 		IniRead, y2, Config.ini, Log Balance Prime, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Log Balance Prime] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -265,6 +273,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Log Balance Main, xmax
 		IniRead, y1, Config.ini, Log Balance Main, ymin
 		IniRead, y2, Config.ini, Log Balance Main, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Log Balance Main] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%	
@@ -283,6 +299,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Obstacle Net 1, xmax
 		IniRead, y1, Config.ini, Obstacle Net 1, ymin
 		IniRead, y2, Config.ini, Obstacle Net 1, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Obstacle Net 1] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -297,6 +321,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Tree Branch 1, xmax
 		IniRead, y1, Config.ini, Tree Branch 1, ymin
 		IniRead, y2, Config.ini, Tree Branch 1, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Tree Branch 1] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -311,6 +343,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Balance Rope, xmax
 		IniRead, y1, Config.ini, Balance Rope, ymin
 		IniRead, y2, Config.ini, Balance Rope, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Balance Rope] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -325,6 +365,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Tree Branch 2, xmax
 		IniRead, y1, Config.ini, Tree Branch 2, ymin
 		IniRead, y2, Config.ini, Tree Branch 2, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Tree Branch 2] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -339,6 +387,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Obstacle Net 2, xmax
 		IniRead, y1, Config.ini, Obstacle Net 2, ymin
 		IniRead, y2, Config.ini, Obstacle Net 2, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Obstacle Net 2] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -353,6 +409,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Obstacle Pipe, xmax
 		IniRead, y1, Config.ini, Obstacle Pipe, ymin
 		IniRead, y2, Config.ini, Obstacle Pipe, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Obstacle Pipe] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -381,9 +445,9 @@ if option=true
 	IniRead, y2, LLARS Config.ini, Logout, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
 		return
 	}

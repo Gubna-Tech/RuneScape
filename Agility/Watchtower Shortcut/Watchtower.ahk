@@ -233,6 +233,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Trellis Prime, xmax
 		IniRead, y1, Config.ini, Trellis Prime, ymin
 		IniRead, y2, Config.ini, Trellis Prime, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Trellis Prime] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -260,6 +268,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Trellis Main, xmax
 		IniRead, y1, Config.ini, Trellis Main, ymin
 		IniRead, y2, Config.ini, Trellis Main, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Trellis Main] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%	
@@ -278,6 +294,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Ladder, xmax
 		IniRead, y1, Config.ini, Ladder, ymin
 		IniRead, y2, Config.ini, Ladder, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Ladder] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -306,9 +330,9 @@ if option=true
 	IniRead, y2, LLARS Config.ini, Logout, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
 		return
 	}
