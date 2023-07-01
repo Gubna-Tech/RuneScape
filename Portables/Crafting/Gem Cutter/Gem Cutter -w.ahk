@@ -218,7 +218,7 @@ loop % runcount
 		
 		++count
 		++count2
-
+		
 		GuiControl,,Counter, %count%
 		GuiControl,,Counter2, %count2% / %runcount3%
 		GuiControl,,ScriptBlue, %scriptname%
@@ -234,6 +234,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Bank Prime Coords, xmax
 		IniRead, y1, Config.ini, Bank Prime Coords, ymin
 		IniRead, y2, Config.ini, Bank Prime Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Prime Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -244,6 +252,14 @@ loop % runcount
 		Sleep, %SleepAmount%		
 		
 		IniRead, hkbank, Config.ini, Bank Preset, hotkey
+		if (hkbank = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
+			return
+		}
 		send {%hkbank%}
 		
 	}
@@ -261,6 +277,14 @@ loop % runcount
 		GuiControl,,State3, Running
 		
 		IniRead, hkbank, Config.ini, Bank Preset, hotkey
+		if (hkbank = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
+			return
+		}
 		send {%hkbank%}	
 	}
 	If firstrun = 0
@@ -277,6 +301,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
 		IniRead, y2, Config.ini, Crafter Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Crafter Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -298,6 +330,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
 		IniRead, y2, Config.ini, Bank Main Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -326,9 +366,9 @@ if option=true
 	IniRead, y2, LLARS Config.ini, Logout, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
+		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, %scriptname%		
 		GuiControl,,State2, ERROR
-		Run %A_ScriptDir%\Config.ini
 		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
 		return
 	}
