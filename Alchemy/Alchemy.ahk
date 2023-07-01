@@ -227,6 +227,14 @@ loop % runcount
 	Sleep, %SleepAmount%
 	
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
+	if (hk = "")
+	{
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		Run %A_ScriptDir%\Config.ini
+		MsgBox, 48, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
+		return
+	}
 	send {%hk%}
 	
 	IniRead, sa1, Config.ini, Sleep Normal, min
@@ -239,6 +247,14 @@ loop % runcount
 	IniRead, x2, Config.ini, Item, xmax
 	IniRead, y1, Config.ini, Item, ymin
 	IniRead, y2, Config.ini, Item, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		Run %A_ScriptDir%\Config.ini
+		MsgBox, 48, Config Error, Please enter valid coordinates for [Item] in the config.
+		return
+	}
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
@@ -264,6 +280,14 @@ if option=true
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin
 	IniRead, y2, LLARS Config.ini, Logout, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		Run %A_ScriptDir%\Config.ini
+		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
+		return
+	}
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
