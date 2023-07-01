@@ -195,7 +195,7 @@ sleep 250
 InputBox, runcount, Run How Many Times?,,,250, 100
 if (runcount = "" or runcount = 0)
 {
-	MsgBox, Please enter a valid number greater than 0.
+	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
 	return
 }
 
