@@ -207,6 +207,7 @@ GuiControl,,State3, Running
 runcount3 = %runcount%
 count2 = 0
 firstrun = 0
+prime = 0
 StartTime := A_TickCount
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 
@@ -227,6 +228,7 @@ loop % runcount
 		IniRead, option,Config.ini, Renew, option
 		if option=true
 		{
+			++prime
 			IniRead, portables, Config.ini, Renew, portables
 			remainingTime :=( portables * 5 * 60 * 1000)+180000
 			
@@ -237,6 +239,14 @@ loop % runcount
 			IniRead, x2, Config.ini, Bank Main Coords, xmax
 			IniRead, y1, Config.ini, Bank Main Coords, ymin
 			IniRead, y2, Config.ini, Bank Main Coords, ymax
+			if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+			{
+				Run %A_ScriptDir%\Config.ini
+				GuiControl,,ScriptRed, %scriptname%		
+				GuiControl,,State2, ERROR
+				MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+				return
+			}
 			Random, x, %x1%, %x2%
 			Random, y, %y1%, %y2%
 			Click, %x%, %y%
@@ -247,6 +257,14 @@ loop % runcount
 			Sleep, %SleepAmount%
 			
 			IniRead, hk, Config.ini, Renew, bank hotkey
+			if (hk = "")
+			{
+				Run %A_ScriptDir%\Config.ini
+				GuiControl,,ScriptRed, %scriptname%		
+				GuiControl,,State2, ERROR
+				MsgBox, 48, Config Error, Please enter a valid hotkey for Bank Hotkey in [Renew] in the config.
+				return
+			}
 			send {%hk%}
 			
 			IniRead, sa1, Config.ini, Sleep Short, min
@@ -255,6 +273,14 @@ loop % runcount
 			Sleep, %SleepAmount%
 			
 			IniRead, hk, Config.ini, Renew, toolbar hotkey
+			if (hk = "")
+			{
+				Run %A_ScriptDir%\Config.ini
+				GuiControl,,ScriptRed, %scriptname%		
+				GuiControl,,State2, ERROR
+				MsgBox, 48, Config Error, Please enter a valid hotkey for Toolbar Hotkey in [Renew] in the config.
+				return
+			}
 			send {%hk%}
 			
 			IniRead, sa1, Config.ini, Sleep Short, min
@@ -270,6 +296,14 @@ loop % runcount
 			Sleep, %SleepAmount%
 			
 			IniRead, portables, Config.ini, Renew, portables
+			if (portables = "")
+			{
+				Run %A_ScriptDir%\Config.ini
+				GuiControl,,ScriptRed, %scriptname%		
+				GuiControl,,State2, ERROR
+				MsgBox, 48, Config Error, Please enter a valid hotkey for Portables in [Renew] in the config.
+				return
+			}
 			sendraw {%portables%}
 			
 			IniRead, sa1, Config.ini, Sleep Brief, min
@@ -289,6 +323,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
 		IniRead, y2, Config.ini, Bank Main Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -299,6 +341,14 @@ loop % runcount
 		Sleep, %SleepAmount%
 		
 		IniRead, hkbank, Config.ini, Bank Form Preset, hotkey
+		if (hkbank = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Form Preset] in the config.
+			return
+		}
 		send {%hkbank%}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
@@ -311,6 +361,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
 		IniRead, y2, Config.ini, Crafter Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Crafter Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -332,6 +390,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Pottery Menu Coords, xmax
 		IniRead, y1, Config.ini, Pottery Menu Coords, ymin
 		IniRead, y2, Config.ini, Pottery Menu Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Pottery Menu Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -346,6 +412,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Pottery Sub-Menu Coords, xmax
 		IniRead, y1, Config.ini, Pottery Sub-Menu Coords, ymin
 		IniRead, y2, Config.ini, Pottery Sub-Menu Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Pottery Sub-Menu Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -361,6 +435,14 @@ loop % runcount
 		IniRead, x2, Config.ini, %item%, xmax
 		IniRead, y1, Config.ini, %item%, ymin
 		IniRead, y2, Config.ini, %item%, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for item in [Item Config] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -383,6 +465,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
 		IniRead, y2, Config.ini, Bank Main Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -393,6 +483,14 @@ loop % runcount
 		Sleep, %SleepAmount%
 		
 		IniRead, hkbank, Config.ini, Bank Form Preset, hotkey
+		if (hkbank = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Form Preset] in the config.
+			return
+		}
 		send {%hkbank%}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
@@ -405,6 +503,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
 		IniRead, y2, Config.ini, Crafter Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Crafter Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -442,6 +548,14 @@ loop % runcount
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
 		IniRead, y2, Config.ini, Crafter Coords, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for [Crafter Coords] in the config.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -474,6 +588,14 @@ loop % runcount
 				IniRead, x2, Config.ini, Bank Main Coords, xmax
 				IniRead, y1, Config.ini, Bank Main Coords, ymin
 				IniRead, y2, Config.ini, Bank Main Coords, ymax
+				if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+					return
+				}
 				Random, x, %x1%, %x2%
 				Random, y, %y1%, %y2%
 				Click, %x%, %y%
@@ -484,6 +606,14 @@ loop % runcount
 				Sleep, %SleepAmount%
 				
 				IniRead, hk, Config.ini, Renew, bank hotkey
+				if (hk = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter a valid hotkey for Bank Hotkey in [Renew] in the config.
+					return
+				}
 				send {%hk%}
 				
 				IniRead, sa1, Config.ini, Sleep Short, min
@@ -492,6 +622,14 @@ loop % runcount
 				Sleep, %SleepAmount%
 				
 				IniRead, hk, Config.ini, Renew, toolbar hotkey
+				if (hk = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter a valid hotkey for Toolbar Hotkey in [Renew] in the config.
+					return
+				}
 				send {%hk%}
 				
 				IniRead, sa1, Config.ini, Sleep Short, min
@@ -507,6 +645,14 @@ loop % runcount
 				Sleep, %SleepAmount%
 				
 				IniRead, portables, Config.ini, Renew, portables
+				if (portables = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter a valid hotkey for Portables in [Renew] in the config.
+					return
+				}
 				sendraw {%portables%}
 				
 				IniRead, sa1, Config.ini, Sleep Brief, min
@@ -540,9 +686,9 @@ loop % runcount
 		IniRead, y2, LLARS Config.ini, Logout, ymax
 		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 		{
+			Run %A_ScriptDir%\Config.ini
 			GuiControl,,ScriptRed, %scriptname%		
 			GuiControl,,State2, ERROR
-			Run %A_ScriptDir%\Config.ini
 			MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
 			return
 		}
