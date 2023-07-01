@@ -538,6 +538,14 @@ loop % runcount
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
 		IniRead, y2, LLARS Config.ini, Logout, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			Run %A_ScriptDir%\Config.ini
+			MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
+			return
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -546,7 +554,7 @@ loop % runcount
 		IniRead, sa2, Config.ini, Sleep Brief, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%	
-}
+	}
 
 GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished
