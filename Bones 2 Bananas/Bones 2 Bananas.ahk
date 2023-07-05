@@ -140,6 +140,20 @@ Configcheck:
 }
 return
 
+UpdateCountdown:
+RemainingTime := EndTime - A_TickCount
+if (RemainingTime > 0) {
+	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
+}
+return
+
+RandomSleepAmountToMinutesSeconds(time) {
+	minutes := Floor(time / 60000)
+	seconds := Mod(Floor(time / 1000), 60)
+	return minutes . "m " . seconds . "s"
+}
+return
+
 ExitB:
 guiclose:
 exitapp
@@ -263,6 +277,31 @@ loop % runcount
 	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
+	
+	IniRead, option, LLARS Config.ini, Random Sleep, option
+	if option = true
+	{
+		IniRead, chance, LLARS Config.ini, Random Sleep, chance
+		Random, RandomNumber, 1, 100
+		
+		if % RandomNumber <= chance
+		{
+			GuiControl,, ScriptBlue, Random Sleep
+			GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
+			
+			IniRead, rs1, LLARS Config.ini, Random Sleep, min
+			IniRead, rs2, LLARS Config.ini, Random Sleep, max
+			Random, RandomSleepAmount, %rs1%, %rs2%
+			
+			SetTimer, UpdateCountdown, 1000
+			EndTime := A_TickCount + RandomSleepAmount
+			Sleep, RandomSleepAmount
+			SetTimer, UpdateCountdown, Off
+			
+			GuiControl,,ScriptBlue, %scriptname%
+			GuiControl,,State3, Running
+		}
+	}
 	
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
 	if (hk = "")
