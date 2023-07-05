@@ -140,6 +140,24 @@ Configcheck:
 }
 return
 
+UpdateTime:
+PortableRemainingTime -= 1000
+return
+
+UpdateCountdown:
+RemainingTime := EndTime - A_TickCount
+if (RemainingTime > 0) {
+	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
+}
+return
+
+RandomSleepAmountToMinutesSeconds(time) {
+	minutes := Floor(time / 60000)
+	seconds := Mod(Floor(time / 1000), 60)
+	return minutes . "m " . seconds . "s"
+}
+return
+
 ExitB:
 guiclose:
 exitapp
@@ -227,91 +245,92 @@ loop % runcount
 		
 		IniRead, option,Config.ini, Renew, option
 		if option=true
-		{
-			++prime
-			IniRead, portables, Config.ini, Renew, portables
-			remainingTime :=( portables * 5 * 60 * 1000)+180000
-			
-			SetTimer, UpdateTime, 1000
-			
-			CoordMode, Mouse, Screen
-			IniRead, x1, Config.ini, Bank Main Coords, xmin
-			IniRead, x2, Config.ini, Bank Main Coords, xmax
-			IniRead, y1, Config.ini, Bank Main Coords, ymin
-			IniRead, y2, Config.ini, Bank Main Coords, ymax
-			if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+			if prime=0
 			{
-				Run %A_ScriptDir%\Config.ini
-				GuiControl,,ScriptRed, %scriptname%		
-				GuiControl,,State2, ERROR
-				MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
-				return
+				++prime
+				IniRead, portables, Config.ini, Renew, portables
+				PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
+				
+				SetTimer, UpdateTime, 1000
+				
+				CoordMode, Mouse, Screen
+				IniRead, x1, Config.ini, Bank Main Coords, xmin
+				IniRead, x2, Config.ini, Bank Main Coords, xmax
+				IniRead, y1, Config.ini, Bank Main Coords, ymin
+				IniRead, y2, Config.ini, Bank Main Coords, ymax
+				if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+					return
+				}
+				Random, x, %x1%, %x2%
+				Random, y, %y1%, %y2%
+				Click, %x%, %y%
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, hk, Config.ini, Renew, bank hotkey
+				if (hk = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter a valid hotkey for Bank Hotkey in [Renew] in the config.
+					return
+				}
+				send {%hk%}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, hk, Config.ini, Renew, toolbar hotkey
+				if (hk = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter a valid hotkey for Toolbar Hotkey in [Renew] in the config.
+					return
+				}
+				send {%hk%}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				send {1}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, portables, Config.ini, Renew, portables
+				if (portables = "")
+				{
+					Run %A_ScriptDir%\Config.ini
+					GuiControl,,ScriptRed, %scriptname%		
+					GuiControl,,State2, ERROR
+					MsgBox, 48, Config Error, Please enter a valid hotkey for Portables in [Renew] in the config.
+					return
+				}
+				sendraw {%portables%}
+				
+				IniRead, sa1, Config.ini, Sleep Brief, min
+				IniRead, sa2, Config.ini, Sleep Brief, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				Send {enter}
 			}
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			Click, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, hk, Config.ini, Renew, bank hotkey
-			if (hk = "")
-			{
-				Run %A_ScriptDir%\Config.ini
-				GuiControl,,ScriptRed, %scriptname%		
-				GuiControl,,State2, ERROR
-				MsgBox, 48, Config Error, Please enter a valid hotkey for Bank Hotkey in [Renew] in the config.
-				return
-			}
-			send {%hk%}
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, hk, Config.ini, Renew, toolbar hotkey
-			if (hk = "")
-			{
-				Run %A_ScriptDir%\Config.ini
-				GuiControl,,ScriptRed, %scriptname%		
-				GuiControl,,State2, ERROR
-				MsgBox, 48, Config Error, Please enter a valid hotkey for Toolbar Hotkey in [Renew] in the config.
-				return
-			}
-			send {%hk%}
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			send {1}
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, portables, Config.ini, Renew, portables
-			if (portables = "")
-			{
-				Run %A_ScriptDir%\Config.ini
-				GuiControl,,ScriptRed, %scriptname%		
-				GuiControl,,State2, ERROR
-				MsgBox, 48, Config Error, Please enter a valid hotkey for Portables in [Renew] in the config.
-				return
-			}
-			sendraw {%portables%}
-			
-			IniRead, sa1, Config.ini, Sleep Brief, min
-			IniRead, sa2, Config.ini, Sleep Brief, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			Send {enter}
-		}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
 		IniRead, sa2, Config.ini, Sleep Short, max
@@ -442,6 +461,32 @@ loop % runcount
 		}
 		send {%hkbank%}
 		
+		IniRead, option, LLARS Config.ini, Random Sleep, option
+		if option = true
+		{
+			IniRead, chance, LLARS Config.ini, Random Sleep, chance
+			Random, RandomNumber, 1, 100
+			
+			IniRead, rs2, LLARS Config.ini, Random Sleep, max
+			if  (RandomNumber <= chance and PortableRemainingTime >= rs2)
+			{
+				GuiControl,, ScriptBlue, Random Sleep
+				GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
+				
+				IniRead, rs1, LLARS Config.ini, Random Sleep, min
+				IniRead, rs2, LLARS Config.ini, Random Sleep, max
+				Random, RandomSleepAmount, %rs1%, %rs2%
+				
+				SetTimer, UpdateCountdown, 1000
+				EndTime := A_TickCount + RandomSleepAmount
+				Sleep, RandomSleepAmount
+				SetTimer, UpdateCountdown, Off
+				
+				GuiControl,,ScriptBlue, %scriptname%
+				GuiControl,,State3, Running
+			}
+		}
+		
 		IniRead, sa1, Config.ini, Sleep Short, min
 		IniRead, sa2, Config.ini, Sleep Short, max
 		Random, SleepAmount, %sa1%, %sa2%
@@ -482,7 +527,7 @@ loop % runcount
 		
 		IniRead, option,Config.ini, Renew, option
 		if option=true
-			if (remainingTime <= 60000)
+			if (PortableRemainingTime <= 60000)
 			{	
 				CoordMode, Mouse, Screen
 				IniRead, x1, Config.ini, Bank Main Coords, xmin
@@ -563,7 +608,7 @@ loop % runcount
 				Send {enter}
 				
 				IniRead, portables, Config.ini, Renew, portables
-				remainingTime := portables * 5 * 60 * 1000
+				PortableRemainingTime := portables * 5 * 60 * 1000
 				
 				SetTimer, UpdateTime, 1000
 			}
@@ -628,8 +673,4 @@ AverageTimeSeconds := Round(AverageTimeSeconds)
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%
 
-return
-
-UpdateTime:
-remainingTime -= 1000
 return

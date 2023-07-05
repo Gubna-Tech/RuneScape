@@ -140,6 +140,24 @@ Configcheck:
 }
 return
 
+UpdateTime:
+PortableRemainingTime -= 1000
+return
+
+UpdateCountdown:
+RemainingTime := EndTime - A_TickCount
+if (RemainingTime > 0) {
+	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
+}
+return
+
+RandomSleepAmountToMinutesSeconds(time) {
+	minutes := Floor(time / 60000)
+	seconds := Mod(Floor(time / 1000), 60)
+	return minutes . "m " . seconds . "s"
+}
+return
+
 ExitB:
 guiclose:
 exitapp
@@ -228,7 +246,7 @@ loop % runcount
 		{
 			++prime
 			IniRead, portables, Config.ini, Renew, portables
-			remainingTime :=( portables * 5 * 60 * 1000)+180000
+			PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
 			
 			SetTimer, UpdateTime, 1000
 			
@@ -349,6 +367,32 @@ loop % runcount
 	}
 	send {%hkbank%}
 	
+	IniRead, option, LLARS Config.ini, Random Sleep, option
+	if option = true
+	{
+		IniRead, chance, LLARS Config.ini, Random Sleep, chance
+		Random, RandomNumber, 1, 100
+		
+		IniRead, rs2, LLARS Config.ini, Random Sleep, max
+		if  (RandomNumber <= chance and PortableRemainingTime >= rs2)
+		{
+			GuiControl,, ScriptBlue, Random Sleep
+			GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
+			
+			IniRead, rs1, LLARS Config.ini, Random Sleep, min
+			IniRead, rs2, LLARS Config.ini, Random Sleep, max
+			Random, RandomSleepAmount, %rs1%, %rs2%
+			
+			SetTimer, UpdateCountdown, 1000
+			EndTime := A_TickCount + RandomSleepAmount
+			Sleep, RandomSleepAmount
+			SetTimer, UpdateCountdown, Off
+			
+			GuiControl,,ScriptBlue, %scriptname%
+			GuiControl,,State3, Running
+		}
+	}
+	
 	IniRead, sa1, Config.ini, Sleep Short, min
 	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -378,7 +422,7 @@ loop % runcount
 	
 	IniRead, option,Config.ini, Renew, option
 	if option=true
-		if (remainingTime <= 60000)
+		if (PortableRemainingTime <= 60000)
 		{	
 			CoordMode, Mouse, Screen
 			IniRead, x1, Config.ini, Bank Main Coords, xmin
@@ -459,10 +503,10 @@ loop % runcount
 			Send {enter}
 			
 			IniRead, portables, Config.ini, Renew, portables
-			remainingTime := portables * 5 * 60 * 1000
+			PortableRemainingTime := portables * 5 * 60 * 1000
 			
 			SetTimer, UpdateTime, 1000
-		}	
+		}
 }
 
 IniRead, option, LLARS Config.ini, Logout, option
@@ -522,8 +566,4 @@ AverageTimeSeconds := Round(AverageTimeSeconds)
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%
 
-return
-
-UpdateTime:
-remainingTime -= 1000
 return
