@@ -223,6 +223,7 @@ count2 = 0
 firstrun = 0
 StartTime := A_TickCount
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+sleepcount = 0
 
 loop % runcount
 { 	
@@ -309,6 +310,8 @@ loop % runcount
 			
 			if % RandomNumber <= chance
 			{
+				
+				++sleepcount
 				GuiControl,, ScriptBlue, Random Sleep
 				GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
 				
@@ -442,7 +445,10 @@ TotalTimeSeconds := Round(TotalTimeSeconds)
 AverageTimeMinutes := Round(AverageTimeMinutes)
 AverageTimeSeconds := Round(AverageTimeSeconds)
 
+percentage := Round((sleepcount / runcount) * 100)
+
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
-MsgBox, 48, LLARS Run Info, %scriptname% has completed %runcount3% runs.`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%
+IniRead, chance, LLARS Config.ini, Random Sleep, chance
+MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%
 
 return
