@@ -223,6 +223,7 @@ count2 = 0
 StartTime := A_TickCount
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 sleepcount = 0
+totalSleepTime := 0
 
 loop % runcount
 { 
@@ -260,6 +261,7 @@ loop % runcount
 			
 			SetTimer, UpdateCountdown, 1000
 			EndTime := A_TickCount + RandomSleepAmount
+			totalSleepTime += RandomSleepAmount
 			Sleep, RandomSleepAmount
 			SetTimer, UpdateCountdown, Off
 			
@@ -341,8 +343,13 @@ AverageTimeSeconds := Round(AverageTimeSeconds)
 
 percentage := Round((sleepcount / runcount) * 100)
 
+totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
+TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
+TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
+TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
+
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time:`n%TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`n`nAverage time per loop:`n%AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%
+MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 
 return
