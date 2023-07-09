@@ -332,12 +332,6 @@ loop % runcount
 		Sleep, %SleepAmount%
 		
 		send {1}
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%		
-		
 	}
 	If firstrun = 0
 	{
