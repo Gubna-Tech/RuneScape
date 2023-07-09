@@ -261,10 +261,9 @@ loop % runcount
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
-		Send {click}
 		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
+		IniRead, sa1, Config.ini, Sleep Normal, min
+		IniRead, sa2, Config.ini, Sleep Normal, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%		
 		
@@ -285,6 +284,11 @@ loop % runcount
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Brief, min
+		IniRead, sa2, Config.ini, Sleep Brief, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
 		send {click}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
@@ -310,11 +314,6 @@ loop % runcount
 		Random, y, %y1%, %y2%
 		mousemove, %x%, %y%
 		
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
 		IniRead, scroll1, Config.ini, Scroll, min
 		IniRead, scroll2, Config.ini, Scroll, max
 		Random, scrollrandom, %scroll1%, %scroll2%
@@ -330,8 +329,29 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		;FIX GHOST CLICKS
-		send {click}{click}
+		CoordMode, Mouse, Screen
+		IniRead, item, Config.ini, Item Config, item
+		IniRead, x1, Config.ini, %item%, xmin
+		IniRead, x2, Config.ini, %item%, xmax
+		IniRead, y1, Config.ini, %item%, ymin
+		IniRead, y2, Config.ini, %item%, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates for item in [Item Config] in the config.
+			return
+		}
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Brief, min
+		IniRead, sa2, Config.ini, Sleep Brief, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		send {click}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
 		IniRead, sa2, Config.ini, Sleep Short, max
@@ -355,6 +375,12 @@ loop % runcount
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Brief, min
+		IniRead, sa2, Config.ini, Sleep Brief, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		send {click}
 	}
 	If firstrun = 1
 	{
