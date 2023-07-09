@@ -275,6 +275,34 @@ loop % runcount
 	}
 	send {%hkbank%}
 	
+	IniRead, option, LLARS Config.ini, Random Sleep, option
+	if option = true
+	{
+		IniRead, chance, LLARS Config.ini, Random Sleep, chance
+		Random, RandomNumber, 1, 100
+		
+		if % RandomNumber <= chance
+		{
+			
+			++sleepcount
+			GuiControl,, ScriptBlue, Random Sleep
+			GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
+			
+			IniRead, rs1, LLARS Config.ini, Random Sleep, min
+			IniRead, rs2, LLARS Config.ini, Random Sleep, max
+			Random, RandomSleepAmount, %rs1%, %rs2%
+			
+			SetTimer, UpdateCountdown, 1000
+			EndTime := A_TickCount + RandomSleepAmount
+			totalSleepTime += RandomSleepAmount
+			Sleep, RandomSleepAmount
+			SetTimer, UpdateCountdown, Off
+			
+			GuiControl,,ScriptBlue, %scriptname%
+			GuiControl,,State3, Running
+		}
+	}
+	
 	IniRead, sa1, Config.ini, Sleep Short, min
 	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -317,34 +345,6 @@ loop % runcount
 	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
-	
-	IniRead, option, LLARS Config.ini, Random Sleep, option
-	if option = true
-	{
-		IniRead, chance, LLARS Config.ini, Random Sleep, chance
-		Random, RandomNumber, 1, 100
-		
-		if % RandomNumber <= chance
-		{
-			
-			++sleepcount
-			GuiControl,, ScriptBlue, Random Sleep
-			GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
-			
-			IniRead, rs1, LLARS Config.ini, Random Sleep, min
-			IniRead, rs2, LLARS Config.ini, Random Sleep, max
-			Random, RandomSleepAmount, %rs1%, %rs2%
-			
-			SetTimer, UpdateCountdown, 1000
-			EndTime := A_TickCount + RandomSleepAmount
-			totalSleepTime += RandomSleepAmount
-			Sleep, RandomSleepAmount
-			SetTimer, UpdateCountdown, Off
-			
-			GuiControl,,ScriptBlue, %scriptname%
-			GuiControl,,State3, Running
-		}
-	}
 	
 	send {space}
 	

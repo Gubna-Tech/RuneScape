@@ -301,16 +301,7 @@ loop % runcount
 			MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
 			return
 		}
-		send {%hkbank%}	
-	}
-	If firstrun = 0
-	{
-		++firstrun
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%	
+		send {%hkbank%}
 		
 		IniRead, option, LLARS Config.ini, Random Sleep, option
 		if option = true
@@ -339,6 +330,15 @@ loop % runcount
 				GuiControl,,State3, Running
 			}
 		}
+	}
+	If firstrun = 0
+	{
+		++firstrun
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%	
 		
 		CoordMode, Mouse, Screen
 		IniRead, x1, Config.ini, Range Coords, xmin

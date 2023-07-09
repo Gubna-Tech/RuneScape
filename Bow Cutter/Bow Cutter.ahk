@@ -370,31 +370,6 @@ loop % runcount
 		}
 		send {%hkbank%}
 		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-		if (hk = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
-			return
-		}
-		send {%hk%}
-	}
-	If firstrun = 0
-	{
-		++firstrun
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
 		IniRead, option, LLARS Config.ini, Random Sleep, option
 		if option = true
 		{
@@ -422,6 +397,31 @@ loop % runcount
 				GuiControl,,State3, Running
 			}
 		}
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
+			return
+		}
+		send {%hk%}
+	}
+	If firstrun = 0
+	{
+		++firstrun
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
 		
 		send {space}
 		
