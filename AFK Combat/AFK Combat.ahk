@@ -239,7 +239,8 @@ if option=true
 	IniRead, y2, Config.ini, AFK, ymax
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
-	Click, %x%, %y%
+	Random, RandomSpeed, 25, 100
+	mousemove, %x%, %y%, %RandomSpeed%
 	
 	loop 100
 	{
@@ -466,7 +467,8 @@ AFK:
 	IniRead, y2, Config.ini, AFK, ymax
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
-	Click, %x%, %y%
+	Random, RandomSpeed, 25, 100
+	mousemove, %x%, %y%, %RandomSpeed%
 	
 	loop 100
 	{
