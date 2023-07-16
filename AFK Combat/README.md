@@ -23,7 +23,7 @@ To use the AFK Combat script, you will need to have Aggression Potions or Flasks
 To avoid being logged out due to inactivity, the script includes an Anti-AFK feature. Configure the following settings in the config file:
 
 1. Set the option for Anti-AFK to true in the config file.
-2. Enter the coordinates to click on a "dead" space in the game, such as blank inventory spaces or the tops of windows like the minimap.
+2. Enter the coordinates of the game/play area for the mouse to move around in to prevent being logged out.
 
 ## Potion Configuration
 The script supports various optional potions. Configure the following settings in the config file for each desired potion:
