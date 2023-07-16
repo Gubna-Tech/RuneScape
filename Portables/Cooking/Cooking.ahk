@@ -517,6 +517,11 @@ loop % runcount
 			PortableRemainingTime := portables * 5 * 60 * 1000
 			
 			SetTimer, UpdateTime, 1000
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
 		}
 }
 	
