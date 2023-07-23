@@ -237,8 +237,8 @@ loop % runcount
 	GuiControl,,ScriptBlue, %scriptname%
 	GuiControl,,State3, Running
 	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
+	IniRead, sa1, Config.ini, Sleep Brief, min
+	IniRead, sa2, Config.ini, Sleep Brief, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 	
