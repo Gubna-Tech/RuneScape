@@ -14,12 +14,6 @@ settimer, configcheck, 250
 
 scriptname := regexreplace(A_scriptname,"\..*","")
 
-IniRead, option, LLARS Config.ini, Hotkey Message, option
-if option=true
-{
-	MsgBox , 48, Hotkey Information, Below is the list of Hotkeys for LLARS.`n%lhk1% - Start Script`n%lhk2% - Coordinates/Pause`n%lhk3% - Config File/Resume`n%lhk4% - Exit, 8	
-}
-
 Hotkey %lhk1%, Start
 Hotkey %lhk2%, coordb
 Hotkey %lhk3%, Configb
@@ -48,10 +42,16 @@ Gui, Add, Text, x8 y115 w125 h25 vScriptRed
 GuiControl,,State2, ** OFF **
 Gui, Add, Text, x8 y115 w125 h25, %scriptname%
 Gui, Show,w220 h170, LLARS
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
 WinMove A, ,%X%, %y%
+
+hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
+   	, uint, 1, int, 0, int, 0, uint, 0x10)
+SendMessage, 0x80, 0, hIcon
+SendMessage, 0x80, 1, hIcon
 
 coordcount = 0
 frcount = 0
