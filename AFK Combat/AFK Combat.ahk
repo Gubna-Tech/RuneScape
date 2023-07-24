@@ -206,6 +206,38 @@ if option=true
 	tooltip	
 }
 
+IniRead, option,Config.ini, AFK, option
+if option=true
+{
+	winactivate, RuneScape	
+	
+	IniRead, sa1, Config.ini, AFK, min
+	IniRead, sa2, Config.ini, AFK, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, AFK, %sleepamount%
+	
+	CoordMode, Mouse, Screen
+	IniRead, x1, Config.ini, AFK, xmin
+	IniRead, x2, Config.ini, AFK, xmax
+	IniRead, y1, Config.ini, AFK, ymin
+	IniRead, y2, Config.ini, AFK, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Random, RandomSpeed, 25, 100
+	mousemove, %x%, %y%, %RandomSpeed%
+	
+	loop 100
+	{
+	mousegetpos xm, ym
+	tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
+	sleep 25
+}
+	tooltip
+}
+
+
+
+
 IniRead, option,Config.ini, Prayer, option
 if option=true
 {
@@ -422,6 +454,35 @@ Agro:
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Agro, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip	
+}
+return
+
+AFK:
+{
+	winactivate, RuneScape	
+	
+	IniRead, sa1, Config.ini, AFK, min
+	IniRead, sa2, Config.ini, AFK, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, AFK, %sleepamount%
+	
+	CoordMode, Mouse, Screen
+	IniRead, x1, Config.ini, AFK, xmin
+	IniRead, x2, Config.ini, AFK, xmax
+	IniRead, y1, Config.ini, AFK, ymin
+	IniRead, y2, Config.ini, AFK, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Random, RandomSpeed, 25, 100
+	mousemove, %x%, %y%, %RandomSpeed%
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
 		sleep 25
 	}
 	tooltip	
