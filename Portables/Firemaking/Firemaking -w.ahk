@@ -391,6 +391,13 @@ if option=true
 {
 	send {esc}	
 	
+	IniRead, sa1, Config.ini, Sleep Brief, min
+	IniRead, sa2, Config.ini, Sleep Brief, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	send {esc}		
+	
 	IniRead, sa1, Config.ini, Sleep Short, min
 	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -412,11 +419,6 @@ if option=true
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
-	
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%	
 }
 
 GuiControl,,ScriptGreen, %scriptname%

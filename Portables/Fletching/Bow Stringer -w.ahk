@@ -429,9 +429,38 @@ loop % runcount
 	}	
 }
 
+CoordMode, Mouse, Screen
+IniRead, x1, Config.ini, Bank Main Coords, xmin
+IniRead, x2, Config.ini, Bank Main Coords, xmax
+IniRead, y1, Config.ini, Bank Main Coords, ymin
+IniRead, y2, Config.ini, Bank Main Coords, ymax
+if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+{
+	Run %A_ScriptDir%\Config.ini
+	GuiControl,,ScriptRed, %scriptname%		
+	GuiControl,,State2, ERROR
+	MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+	return
+}
+Random, x, %x1%, %x2%
+Random, y, %y1%, %y2%
+Click, %x%, %y%
+
+IniRead, sa1, Config.ini, Sleep Walk, min
+IniRead, sa2, Config.ini, Sleep Walk, max
+Random, SleepAmount, %sa1%, %sa2%
+Sleep, %SleepAmount%
+
 IniRead, option, LLARS Config.ini, Logout, option
 if option=true
 {
+	send {esc}	
+	
+	IniRead, sa1, Config.ini, Sleep Brief, min
+	IniRead, sa2, Config.ini, Sleep Brief, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
 	send {esc}	
 	
 	IniRead, sa1, Config.ini, Sleep Short, min
@@ -455,11 +484,6 @@ if option=true
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
-	
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%	
 }
 
 GuiControl,,ScriptGreen, %scriptname%
