@@ -213,7 +213,8 @@ if (runcount = "" or runcount = 0)
 	return
 }
 
-sleep 100
+sleep 250
+
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
 
@@ -238,12 +239,7 @@ loop % runcount
 		GuiControl,,Counter2, %count2% / %runcount3%
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
-		
-		IniRead, sa1, Config.ini, Sleep Normal, min
-		IniRead, sa2, Config.ini, Sleep Normal, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
+
 		CoordMode, Mouse, Screen
 		IniRead, x1, Config.ini, Smelter Coords, xmin
 		IniRead, x2, Config.ini, Smelter Coords, xmax
@@ -304,8 +300,8 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		IniRead, sa1, Config.ini, Sleep Normal, min
-		IniRead, sa2, Config.ini, Sleep Normal, max
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
@@ -376,7 +372,6 @@ loop % runcount
 		IniRead, sa2, Config.ini, Sleep Smelt, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
-		
 	}	
 }
 

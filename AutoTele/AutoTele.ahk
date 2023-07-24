@@ -213,7 +213,7 @@ if (runcount = "" or runcount = 0)
 	return
 }
 
-sleep 100
+sleep 250
 
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
@@ -236,11 +236,6 @@ loop % runcount
 	GuiControl,,Counter2, %count2% / %runcount3%
 	GuiControl,,ScriptBlue, %scriptname%
 	GuiControl,,State3, Running
-	
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%
 	
 	IniRead, option, LLARS Config.ini, Random Sleep, option
 	if option = true
