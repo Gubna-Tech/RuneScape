@@ -35,10 +35,16 @@ Gui, Add, Text, x8 y65 w125 h25 vScriptRed
 GuiControl,,State2, ** OFF **
 Gui, Add, Text, x8 y65 w125 h25, %scriptname%
 Gui, Show,w220 h120, LLARS
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
 WinMove A, ,%X%, %y%
+
+hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
+   	, uint, 1, int, 0, int, 0, uint, 0x10)
+SendMessage, 0x80, 0, hIcon
+SendMessage, 0x80, 1, hIcon
 
 coordcount = 0
 frcount = 0

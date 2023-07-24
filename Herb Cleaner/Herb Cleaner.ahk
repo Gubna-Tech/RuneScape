@@ -2,6 +2,9 @@
 #Persistent
 SetBatchLines, -1
 
+DetectHiddenWindows, On
+closeotherllars()
+
 IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
@@ -39,10 +42,16 @@ Gui, Add, Text, x8 y115 w125 h25 vScriptRed
 GuiControl,,State2, ** OFF **
 Gui, Add, Text, x8 y115 w125 h25, %scriptname%
 Gui, Show,w220 h170, LLARS
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
 WinMove A, ,%X%, %y%
+
+hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
+   	, uint, 1, int, 0, int, 0, uint, 0x10)
+SendMessage, 0x80, 0, hIcon
+SendMessage, 0x80, 1, hIcon
 
 coordcount = 0
 frcount = 0
@@ -53,6 +62,17 @@ WM_LBUTTONDOWN() {
 		PostMessage, 0xA1, 2
 }
 return
+
+CloseOtherLLARS()
+{
+	WinGet, hWndList, List, LLARS
+	
+	Loop, %hWndList%
+	{
+		hWnd := hWndList%A_Index%
+		WinClose, % "ahk_id " hWnd
+	}
+}
 
 CoordB:
 If (coordcount = 0)
