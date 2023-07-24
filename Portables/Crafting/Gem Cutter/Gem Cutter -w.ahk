@@ -213,7 +213,7 @@ if (runcount = "" or runcount = 0)
 	return
 }
 
-sleep 100
+sleep 250
 
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
@@ -239,12 +239,7 @@ loop % runcount
 		GuiControl,,Counter2, %count2% / %runcount3%
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
+
 		CoordMode, Mouse, Screen
 		IniRead, x1, Config.ini, Bank Prime Coords, xmin
 		IniRead, x2, Config.ini, Bank Prime Coords, xmax
@@ -277,7 +272,6 @@ loop % runcount
 			return
 		}
 		send {%hkbank%}
-		
 	}
 	If firstrun = 1
 	{
