@@ -339,11 +339,6 @@ if option=true
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%
-	
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%	
 }
 
 GuiControl,,ScriptGreen, %scriptname%
