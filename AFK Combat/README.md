@@ -19,6 +19,12 @@ To use the AFK Combat script, you will need to have Aggression Potions or Flasks
 1. Set the toolbar hotkey for the Aggression Flask or Potion in the config file to match the in-game hotkey.
 2. Ensure that the option for Aggression Potions or Flasks is set to true in the config file.
 
+## Anti-AFK Configuration
+To avoid being logged out due to inactivity, the script includes an Anti-AFK feature. Configure the following settings in the config file:
+
+1. Set the option for Anti-AFK to true in the config file.
+2. Enter the coordinates of the game/play area for the mouse to move around in to prevent being logged out.
+
 ## Potion Configuration
 The script supports various optional potions. Configure the following settings in the config file for each desired potion:
 
