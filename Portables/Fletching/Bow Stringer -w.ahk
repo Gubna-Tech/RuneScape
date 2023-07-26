@@ -9,6 +9,7 @@ IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
 IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+IniRead, value, LLARS Config.ini, Transparent, value
 
 settimer, configcheck, 250
 
@@ -41,8 +42,9 @@ Gui, Add, Text, x135 y115 w70 h25 vState2
 Gui, Add, Text, x8 y115 w125 h25 vScriptRed
 GuiControl,,State2, ** OFF **
 Gui, Add, Text, x8 y115 w125 h25, %scriptname%
-Gui, Show,w220 h170, LLARS
 Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+WinSet, Transparent, %value%
+Gui, Show,w220 h170, LLARS
 
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
@@ -176,6 +178,7 @@ If (frcount = 0)
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
 	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	IniRead, value, LLARS Config.ini, Transparent, value
 	
 	Hotkey %lhk1%, Start
 	Hotkey %lhk2%, pauseb
@@ -206,6 +209,8 @@ If (frcount = 0)
 	Gui, Add, Text, x8 y115 w125 h25 vScriptRed
 	GuiControl,,State2, ** OFF **
 	Gui, Add, Text, x8 y115 w125 h25, %scriptname%
+	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+	WinSet, Transparent, %value%
 	Gui, Show,w220 h170, LLARS
 	WinMove, LLARS,, X, Y,
 	
