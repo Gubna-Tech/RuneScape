@@ -65,3 +65,5 @@ I would also like to extend my gratitude to ***B O I L*** for their valuable con
 <p align="center">
   <a href="https://discord.gg/VmFXqQ9FhJ">LLARS Support Discord Server</a>
 </p>
+
+*The primary purpose of the LLARS Support Discord Server is to share updates and provide information about recent developments, distinct from the usage of GitHub for the same purpose.*
