@@ -106,6 +106,14 @@ else if (coordcount = 2)
 }
 Return
 
+DisableButton(disable := true) {
+	Control, Disable,, start
+}
+
+EnableButton(enable := true) {
+	Control, Enable,, start
+}
+
 tooltipcoord1:
 mousegetpos xn, yn
 ToolTip,x=%X% y=%Y%, (xn+7), (yn+7),1
@@ -188,6 +196,7 @@ sleep 250
 
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
+DisableButton()
 
 IniRead, option,Config.ini, Agro, option
 if option=true
