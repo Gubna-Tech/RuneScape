@@ -166,6 +166,14 @@ RandomSleepAmountToMinutesSeconds(time) {
 }
 return
 
+DisableButton(disable := true) {
+	Control, Disable,, start
+}
+
+EnableButton(enable := true) {
+	Control, Enable,, start
+}
+
 ExitB:
 guiclose:
 exitapp
@@ -255,6 +263,7 @@ loop % runcount
 		GuiControl,,Counter2, %count2% / %runcount3%
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
+		DisableButton()
 		
 		IniRead, option,Config.ini, Renew, option
 		if option=true
@@ -689,4 +698,5 @@ SoundPlay, C:\Windows\Media\Ring06.wav, 1
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
 MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 
+EnableButton()
 return
