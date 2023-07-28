@@ -343,6 +343,13 @@ loop % runcount
 				return
 			}
 			sendraw {%portables%}
+			
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%	
+			
+			send {enter}
 		}
 	
 	IniRead, sa1, Config.ini, Sleep Short, min
@@ -525,6 +532,7 @@ loop % runcount
 			IniRead, sa2, Config.ini, Sleep Brief, max
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%
+			
 			Send {enter}
 			
 			IniRead, portables, Config.ini, Renew, portables
