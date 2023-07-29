@@ -186,8 +186,9 @@ if (remainingTimeMS <= 0 and startcheck=1)
 	SetTimer, Warmaster, Off
 	GuiControl,, TimerCount, Done
 	GuiControl,,State3, Done
-	Logout()
 	EnableButton()
+	Logout()
+	Goto EndMsg
 }
 return
 
@@ -781,31 +782,37 @@ Prayer:
 return
 
 Logout(){
-IniRead, option, LLARS Config.ini, Logout, option
-if option=true
-{
-	send {esc}	
-	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%	
-	
-	CoordMode, Mouse, Screen
-	IniRead, x1, LLARS Config.ini, Logout, xmin
-	IniRead, x2, LLARS Config.ini, Logout, xmax
-	IniRead, y1, LLARS Config.ini, Logout, ymin
-	IniRead, y2, LLARS Config.ini, Logout, ymax
-	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
 	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, %scriptname%		
-		GuiControl,,State2, ERROR
-		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
-		return
+		send {esc}	
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%	
+		
+		CoordMode, Mouse, Screen
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
+			return
+		}
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
 	}
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%
 }
-}
+
+EndMsg:
+hours := timeToRunMinutes // 60
+minutes := Mod(timeToRunMinutes, 60)
+MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m
+return

@@ -173,8 +173,9 @@ if (remainingTimeMS <= 0 and startcheck=1)
 	SetTimer, AFK, Off
 	GuiControl,, TimerCount, Done
 	GuiControl,,State3, Done
-	Logout()
 	EnableButton()
+	Logout()
+	Goto EndMsg
 }
 return
 
@@ -332,3 +333,9 @@ Logout(){
 		Click, %x%, %y%
 	}
 }
+
+EndMsg:
+hours := timeToRunMinutes // 60
+minutes := Mod(timeToRunMinutes, 60)
+MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m
+return
