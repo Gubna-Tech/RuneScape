@@ -26,10 +26,14 @@ Gui, font, bold
 Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
 Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
 Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
-Gui, Add, Button, x35 y90 w150 h25 gExitb , Exit LLARS
+Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 Gui, Font, cBlue
 Gui, Add, Text, x135 y65 w70 h25 vState3
 Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
+Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
+Gui, Add, Text, x135 y90 w70 h25 vTimerCount
+GuiControl,,TimerLabel, Remaining:
+GuiControl,,TimerCount, ** OFF **
 Gui, Font, cRed
 Gui, Add, Text, x135 y65 w70 h25 vState2
 Gui, Add, Text, x8 y65 w125 h25 vScriptRed
@@ -37,7 +41,7 @@ GuiControl,,State2, ** OFF **
 Gui, Add, Text, x8 y65 w125 h25, %scriptname%
 Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 WinSet, Transparent, %value%
-Gui, Show,w220 h120, LLARS
+Gui, Show,w220 h150, LLARS
 
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
@@ -108,10 +112,16 @@ Return
 
 DisableButton(disable := true) {
 	Control, Disable,, start
+	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	Hotkey, %lhk1%, off
 }
 
 EnableButton(enable := true) {
 	Control, Enable,, start
+	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	Hotkey, %lhk1%, On
 }
 
 tooltipcoord1:
@@ -149,6 +159,25 @@ Configcheck:
 }
 return
 
+Countdown:
+remainingTimeMS := endTime - A_TickCount
+remainingTimeMinutes := Floor(remainingTimeMS / 60000)
+remainingTimeSeconds := Mod(Floor(remainingTimeMS / 1000), 60)
+
+GuiControl,, TimerCount, %remainingTimeMinutes%m %remainingTimeSeconds%s
+DisableButton()
+
+if (remainingTimeMS <= 0 and startcheck=1)
+{
+	SetTimer, Countdown, off
+	SetTimer, AFK, Off
+	GuiControl,, TimerCount, Done
+	GuiControl,,State3, Done
+	Logout()
+	EnableButton()
+}
+return
+
 ExitB:
 guiclose:
 exitapp
@@ -173,12 +202,16 @@ If (frcount = 0)
 	Gui, Font, s11
 	Gui, font, bold
 	Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
-	Gui, Add, Button, x15 y35 w90 h25 gPauseb , Pause
-	Gui, Add, Button, x115 y35 w90 h25 gResumeb , Resume
-	Gui, Add, Button, x35 y90 w150 h25 gExitb , Exit LLARS
+	Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
+	Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
+	Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 	Gui, Font, cBlue
 	Gui, Add, Text, x135 y65 w70 h25 vState3
 	Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
+	Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
+	Gui, Add, Text, x135 y90 w70 h25 vTimerCount
+	GuiControl,,TimerLabel, Remaining:
+	GuiControl,,TimerCount, ** OFF **
 	Gui, Font, cRed
 	Gui, Add, Text, x135 y65 w70 h25 vState2
 	Gui, Add, Text, x8 y65 w125 h25 vScriptRed
@@ -186,7 +219,7 @@ If (frcount = 0)
 	Gui, Add, Text, x8 y65 w125 h25, %scriptname%
 	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 	WinSet, Transparent, %value%
-	Gui, Show,w220 h120, LLARS
+	Gui, Show,w220 h150, LLARS
 	WinMove, LLARS,, X, Y,
 }
 
@@ -194,9 +227,25 @@ else
 	
 sleep 250
 
+InputBox, timeToRunMinutes, Set Timer, Enter the time duration in minutes`n(example: 1 for 1 minute):,,250,150
+timeToRunMS := timeToRunMinutes * 60 * 1000
+
+endTime := A_TickCount + timeToRunMS
+
+if (timeToRunMinutes = "" or timeToRunMinutes = 0)
+{
+	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
+	return
+}
+
+SetTimer, Countdown, 1000
+
+sleep 250
+
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
 DisableButton()
+startcheck=1
 
 winactivate, RuneScape	
 
@@ -222,11 +271,12 @@ loop 100
 		sleep 25
 	}
 	tooltip	
-	return
+return
 
 AFK:
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, AFK, min
 	IniRead, sa2, Config.ini, AFK, max
@@ -252,3 +302,33 @@ AFK:
 	tooltip	
 }
 return
+
+Logout(){
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
+	{
+		send {esc}	
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%	
+		
+		CoordMode, Mouse, Screen
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
+			return
+		}
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
+	}
+}

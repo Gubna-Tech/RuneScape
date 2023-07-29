@@ -26,10 +26,14 @@ Gui, font, bold
 Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
 Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
 Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
-Gui, Add, Button, x35 y90 w150 h25 gExitb , Exit LLARS
+Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 Gui, Font, cBlue
 Gui, Add, Text, x135 y65 w70 h25 vState3
 Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
+Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
+Gui, Add, Text, x135 y90 w70 h25 vTimerCount
+GuiControl,,TimerLabel, Remaining:
+GuiControl,,TimerCount, ** OFF **
 Gui, Font, cRed
 Gui, Add, Text, x135 y65 w70 h25 vState2
 Gui, Add, Text, x8 y65 w125 h25 vScriptRed
@@ -37,7 +41,7 @@ GuiControl,,State2, ** OFF **
 Gui, Add, Text, x8 y65 w125 h25, %scriptname%
 Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 WinSet, Transparent, %value%
-Gui, Show,w220 h120, LLARS
+Gui, Show,w220 h150, LLARS
 
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
@@ -108,10 +112,16 @@ Return
 
 DisableButton(disable := true) {
 	Control, Disable,, start
+	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	Hotkey, %lhk1%, off
 }
 
 EnableButton(enable := true) {
 	Control, Enable,, start
+	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	Hotkey, %lhk1%, On
 }
 
 tooltipcoord1:
@@ -149,6 +159,38 @@ Configcheck:
 }
 return
 
+Countdown:
+DisableButton()
+remainingTimeMS := endTime - A_TickCount
+remainingTimeMinutes := Floor(remainingTimeMS / 60000)
+remainingTimeSeconds := Mod(Floor(remainingTimeMS / 1000), 60)
+
+GuiControl,, TimerCount, %remainingTimeMinutes%m %remainingTimeSeconds%s
+
+if (remainingTimeMS <= 360000) 
+{
+	SetTimer, Agro, Off
+}
+if (remainingTimeMS <= 0 and startcheck=1)
+{
+	SetTimer, Countdown, off
+	SetTimer, AFK, Off
+	SetTimer, Antifire, Off
+	SetTimer, Antipoison, Off
+	SetTimer, Attack, Off
+	SetTimer, Magic, Off
+	SetTimer, Overload, Off
+	SetTimer, Prayer, Off
+	SetTimer, Ranged, Off
+	SetTimer, Strength, Off
+	SetTimer, Warmaster, Off
+	GuiControl,, TimerCount, Done
+	GuiControl,,State3, Done
+	Logout()
+	EnableButton()
+}
+return
+
 ExitB:
 guiclose:
 exitapp
@@ -173,12 +215,16 @@ If (frcount = 0)
 	Gui, Font, s11
 	Gui, font, bold
 	Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
-	Gui, Add, Button, x15 y35 w90 h25 gPauseb , Pause
-	Gui, Add, Button, x115 y35 w90 h25 gResumeb , Resume
-	Gui, Add, Button, x35 y90 w150 h25 gExitb , Exit LLARS
+	Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
+	Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
+	Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 	Gui, Font, cBlue
 	Gui, Add, Text, x135 y65 w70 h25 vState3
 	Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
+	Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
+	Gui, Add, Text, x135 y90 w70 h25 vTimerCount
+	GuiControl,,TimerLabel, Remaining:
+	GuiControl,,TimerCount, ** OFF **
 	Gui, Font, cRed
 	Gui, Add, Text, x135 y65 w70 h25 vState2
 	Gui, Add, Text, x8 y65 w125 h25 vScriptRed
@@ -186,7 +232,7 @@ If (frcount = 0)
 	Gui, Add, Text, x8 y65 w125 h25, %scriptname%
 	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 	WinSet, Transparent, %value%
-	Gui, Show,w220 h120, LLARS
+	Gui, Show,w220 h150, LLARS
 	WinMove, LLARS,, X, Y,
 }
 
@@ -194,9 +240,24 @@ else
 	
 sleep 250
 
+InputBox, timeToRunMinutes, Set Timer, Enter script run time in minutes`nexample: 25 for 25 minute`nrun time needs to be more than 5 minutes,,300,165
+timeToRunMS := timeToRunMinutes * 60 * 1000
+endTime := A_TickCount + timeToRunMS
+
+if (timeToRunMinutes = "" or timeToRunMinutes <= 5)
+{
+	MsgBox, 48, Invalid Input, Please enter a run time greater than 5 minutes.
+	return
+}
+
+SetTimer, Countdown, 1000
+
+sleep 250
+
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
 DisableButton()
+startcheck=1
 
 IniRead, option,Config.ini, Agro, option
 if option=true
@@ -224,6 +285,7 @@ IniRead, option,Config.ini, AFK, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, AFK, min
 	IniRead, sa2, Config.ini, AFK, max
@@ -242,10 +304,10 @@ if option=true
 	
 	loop 100
 	{
-	mousegetpos xm, ym
-	tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
-	sleep 25
-}
+		mousegetpos xm, ym
+		tooltip, Activated Anti-AFK, (xm+15), (ym+15),1
+		sleep 25
+	}
 	tooltip
 }
 
@@ -253,6 +315,7 @@ IniRead, option,Config.ini, Prayer, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Prayer, min
 	IniRead, sa2, Config.ini, Prayer, max
@@ -275,6 +338,7 @@ IniRead, option,Config.ini, Strength, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Strength, min
 	IniRead, sa2, Config.ini, Strength, max
@@ -297,6 +361,7 @@ IniRead, option,Config.ini, Attack, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Attack, min
 	IniRead, sa2, Config.ini, Attack, max
@@ -319,6 +384,7 @@ IniRead, option,Config.ini, Magic, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Magic, min
 	IniRead, sa2, Config.ini, Magic, max
@@ -341,6 +407,7 @@ IniRead, option,Config.ini, Ranged, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Ranged, min
 	IniRead, sa2, Config.ini, Ranged, max
@@ -363,6 +430,7 @@ IniRead, option,Config.ini, Overload, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Overload, min
 	IniRead, sa2, Config.ini, Overload, max
@@ -385,6 +453,7 @@ IniRead, option,Config.ini, Warmaster, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Warmaster, min
 	IniRead, sa2, Config.ini, Warmaster, max
@@ -407,6 +476,7 @@ IniRead, option,Config.ini, Antifire, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antifire, min
 	IniRead, sa2, Config.ini, Antifire, max
@@ -429,6 +499,7 @@ IniRead, option,Config.ini, Antipoison, option
 if option=true
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antipoison, min
 	IniRead, sa2, Config.ini, Antipoison, max
@@ -452,6 +523,7 @@ return
 Agro:
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Agro, min
 	IniRead, sa2, Config.ini, Agro, max
@@ -474,6 +546,7 @@ return
 AFK:
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, AFK, min
 	IniRead, sa2, Config.ini, AFK, max
@@ -503,6 +576,7 @@ return
 Strength:
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Strength, min
 	IniRead, sa2, Config.ini, Strength, max
@@ -525,6 +599,7 @@ return
 Attack:
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Attack, min
 	IniRead, sa2, Config.ini, Attack, max
@@ -547,6 +622,7 @@ return
 Magic:
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Magic, min
 	IniRead, sa2, Config.ini, Magic, max
@@ -569,6 +645,7 @@ return
 Ranged:
 {
 	winactivate, RuneScape	
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Ranged, min
 	IniRead, sa2, Config.ini, Ranged, max
@@ -591,7 +668,8 @@ return
 Overload:
 {
 	winactivate, RuneScape	
-
+	DisableButton()
+	
 	IniRead, sa1, Config.ini, Overload, min
 	IniRead, sa2, Config.ini, Overload, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -613,6 +691,7 @@ return
 Warmaster:
 {
 	winactivate, RuneScape
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Warmaster, min
 	IniRead, sa2, Config.ini, Warmaster, max
@@ -635,6 +714,7 @@ return
 Antifire:
 {
 	winactivate, RuneScape
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antifire, min
 	IniRead, sa2, Config.ini, Antifire, max
@@ -657,6 +737,7 @@ return
 Antipoison:
 {
 	winactivate, RuneScape
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antipoison, min
 	IniRead, sa2, Config.ini, Antipoison, max
@@ -679,6 +760,7 @@ return
 Prayer:
 {
 	winactivate, RuneScape
+	DisableButton()
 	
 	IniRead, sa1, Config.ini, Prayer, min
 	IniRead, sa2, Config.ini, Prayer, max
@@ -697,3 +779,33 @@ Prayer:
 	tooltip
 }
 return
+
+Logout(){
+IniRead, option, LLARS Config.ini, Logout, option
+if option=true
+{
+	send {esc}	
+	
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%	
+	
+	CoordMode, Mouse, Screen
+	IniRead, x1, LLARS Config.ini, Logout, xmin
+	IniRead, x2, LLARS Config.ini, Logout, xmax
+	IniRead, y1, LLARS Config.ini, Logout, ymin
+	IniRead, y2, LLARS Config.ini, Logout, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, %scriptname%		
+		GuiControl,,State2, ERROR
+		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
+		return
+	}
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%
+}
+}
