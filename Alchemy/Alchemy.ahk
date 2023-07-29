@@ -164,10 +164,16 @@ return
 
 DisableButton(disable := true) {
 	Control, Disable,, start
+	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	Hotkey, %lhk1%, off
 }
 
 EnableButton(enable := true) {
 	Control, Enable,, start
+	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	Hotkey, %lhk1%, On
 }
 
 ExitB:
