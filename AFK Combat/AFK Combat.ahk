@@ -814,5 +814,6 @@ Logout(){
 EndMsg:
 hours := timeToRunMinutes // 60
 minutes := Mod(timeToRunMinutes, 60)
+SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m
 return
