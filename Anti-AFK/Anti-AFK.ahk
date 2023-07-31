@@ -248,7 +248,13 @@ GuiControl,,State3, Running
 DisableButton()
 startcheck=1
 
-winactivate, RuneScape	
+winactivate, RuneScape
+
+WinGetPos, RSx, RSy, RSw, RSh, RuneScape
+xmin := RSx
+xmax :=RSw + RSx
+ymin :=RSy
+ymax :=RSh + RSy
 
 IniRead, sa1, Config.ini, AFK, min
 IniRead, sa2, Config.ini, AFK, max
@@ -256,12 +262,8 @@ Random, SleepAmount, %sa1%, %sa2%
 settimer, AFK, %sleepamount%
 
 CoordMode, Mouse, Screen
-IniRead, x1, Config.ini, AFK, xmin
-IniRead, x2, Config.ini, AFK, xmax
-IniRead, y1, Config.ini, AFK, ymin
-IniRead, y2, Config.ini, AFK, ymax
-Random, x, %x1%, %x2%
-Random, y, %y1%, %y2%
+Random, x, %xmin%, %xmax%
+Random, y, %ymin%, %ymax%
 Random, RandomSpeed, 25, 100
 mousemove, %x%, %y%, %RandomSpeed%
 
@@ -279,18 +281,20 @@ AFK:
 	winactivate, RuneScape	
 	DisableButton()
 	
+	WinGetPos, RSx, RSy, RSw, RSh, RuneScape
+	xmin := RSx
+	xmax :=RSw + RSx
+	ymin :=RSy
+	ymax :=RSh + RSy
+	
 	IniRead, sa1, Config.ini, AFK, min
 	IniRead, sa2, Config.ini, AFK, max
 	Random, SleepAmount, %sa1%, %sa2%
 	settimer, AFK, %sleepamount%
 	
 	CoordMode, Mouse, Screen
-	IniRead, x1, Config.ini, AFK, xmin
-	IniRead, x2, Config.ini, AFK, xmax
-	IniRead, y1, Config.ini, AFK, ymin
-	IniRead, y2, Config.ini, AFK, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
+	Random, x, %xmin%, %xmax%
+	Random, y, %ymin%, %ymax%
 	Random, RandomSpeed, 25, 100
 	mousemove, %x%, %y%, %RandomSpeed%
 	
