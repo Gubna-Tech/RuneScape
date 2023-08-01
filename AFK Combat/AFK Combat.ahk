@@ -517,6 +517,52 @@ if option=true
 	tooltip
 }
 
+IniRead, option,Config.ini, Weapon Poison, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Weapon Poison, min
+	IniRead, sa2, Config.ini, Weapon Poison, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, WeaponPoison, %sleepamount%
+	
+	IniRead, hk, Config.ini, Weapon Poison, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Weapon Poison, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
+IniRead, option,Config.ini, Animate Dead, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Animate Dead, min
+	IniRead, sa2, Config.ini, Animate Dead, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, AnimateDead, %sleepamount%
+	
+	IniRead, hk, Config.ini, Animate Dead, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Animate Dead, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
 return
 
 Agro:
@@ -780,6 +826,50 @@ Prayer:
 	tooltip
 }
 return
+
+WeaponPoison:
+{
+		winactivate, RuneScape	
+		DisableButton()
+		
+		IniRead, sa1, Config.ini, Weapon Poison, min
+		IniRead, sa2, Config.ini, Weapon Poison, max
+		Random, SleepAmount, %sa1%, %sa2%
+		settimer, WeaponPoison, %sleepamount%
+		
+		IniRead, hk, Config.ini, Weapon Poison, hotkey
+		send {%hk%}
+		
+		loop 100
+		{
+			mousegetpos xm, ym
+			tooltip, Activated Weapon Poison, (xm+15), (ym+15),1
+			sleep 25
+		}
+		tooltip
+}
+
+AnimateDead:
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Animate Dead, min
+	IniRead, sa2, Config.ini, Animate Dead, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, AnimateDead, %sleepamount%
+	
+	IniRead, hk, Config.ini, Animate Dead, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Animate Dead, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
 
 Logout(){
 	IniRead, option, LLARS Config.ini, Logout, option
