@@ -175,6 +175,7 @@ if (remainingTimeMS <= 0 and startcheck=1)
 {
 	SetTimer, Countdown, off
 	SetTimer, AFK, Off
+	SetTimer, AnimateDead, Off
 	SetTimer, Antifire, Off
 	SetTimer, Antipoison, Off
 	SetTimer, Attack, Off
@@ -184,6 +185,7 @@ if (remainingTimeMS <= 0 and startcheck=1)
 	SetTimer, Ranged, Off
 	SetTimer, Strength, Off
 	SetTimer, Warmaster, Off
+	SetTimer, WeaponPoison, Off
 	GuiControl,, TimerCount, Done
 	GuiControl,,State3, Done
 	EnableButton()
