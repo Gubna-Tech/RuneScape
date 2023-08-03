@@ -8,12 +8,17 @@ Gui +LastFound +OwnDialogs +AlwaysOnTop
 Gui, Font, s11
 Gui, font, bold
 Gui, Add, Text, x15 y5 w240 h245, Press F10 to select the top-left coordinates`n`nPress F10 again for the bottom-right coordinates.`n`nThe coordinates will be saved in your clipboard for pasting.`n`nPress F10 a third time to clear the tooltip message.`n`nF12 to Exit
-
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 Gui, Show,w255 h240, LLARS
 
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
 WinMove A, ,%X%, %y%
+
+hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
+   	, uint, 1, int, 0, int, 0, uint, 0x10)
+SendMessage, 0x80, 0, hIcon
+SendMessage, 0x80, 1, hIcon
 
 OnMessage(0x0201, "WM_LBUTTONDOWN")
 WM_LBUTTONDOWN() {
