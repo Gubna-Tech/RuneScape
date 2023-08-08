@@ -284,6 +284,9 @@ if option=true
 	tooltip	
 }
 
+IniRead, option,Config.ini, AFk, option
+if option=true
+{
 	winactivate, RuneScape
 	DisableButton()
 	
@@ -311,6 +314,7 @@ if option=true
 		sleep 25
 	}
 	tooltip
+}
 
 IniRead, option,Config.ini, Prayer, option
 if option=true
