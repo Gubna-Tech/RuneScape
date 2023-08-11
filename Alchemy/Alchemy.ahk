@@ -12,6 +12,7 @@ IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 IniRead, value, LLARS Config.ini, Transparent, value
 
 settimer, configcheck, 250
+settimer, guicheck
 
 scriptname := regexreplace(A_scriptname,"\..*","")
 
@@ -63,6 +64,38 @@ WM_LBUTTONDOWN() {
 	If (A_Gui)
 		PostMessage, 0xA1, 2
 }
+return
+
+CheckPOS(){
+	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
+	xmin := GUIx
+	xmax :=GUIw + GUIx
+	ymin :=GUIy
+	ymax :=GUIh + GUIy
+	xadj :=A_ScreenWidth-GUIw
+	yadj :=A_ScreenHeight-GUIh
+	WinGetPos, X, Y,,, LLARS    
+     
+	if (xmin<0)
+	{
+		WinMove, LLARS,,0
+	}
+	if (ymin<0)
+	{
+		WinMove, LLARS,,,0
+	}
+	if (xmax>A_ScreenWidth)
+	{
+		WinMove, LLARS,,xadj    
+	}
+	if (ymax>A_ScreenHeight)
+	{
+		WinMove, LLARS,,,yadj
+	}
+}
+
+guicheck:
+checkpos()
 return
 
 CloseOtherLLARS()
