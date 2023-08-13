@@ -53,6 +53,8 @@ hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
 SendMessage, 0x80, 0, hIcon
 SendMessage, 0x80, 1, hIcon
 
+ConfigError()
+
 coordcount = 0
 frcount = 0
 
@@ -103,6 +105,163 @@ CloseOtherLLARS()
 	{
 		hWnd := hWndList%A_Index%
 		WinClose, % "ahk_id " hWnd
+	}
+}
+
+ConfigError(){
+	IniRead, option,Config.ini, Agro, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Agro, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Agro] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, AnimateDead, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, AnimateDead, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [AnimateDead] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, Antipoison, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Antipoison, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Antipoison] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, Attack, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Attack, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Attack] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, Magic, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Magic, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Magic] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, Overload, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Overload, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Overload] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, Prayer, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Prayer, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Prayer] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, Ranged, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Ranged, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Ranged] in the config.
+			return
+		}	
+	}
+	
+	
+	IniRead, option,Config.ini, Strength, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Strength, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Strength] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, Warmaster, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Warmaster, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [Warmaster] in the config.
+			return
+		}	
+	}
+	
+	IniRead, option,Config.ini, WeaponPoison, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, WeaponPoison, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,State2, ERROR
+			MsgBox, 48, Config Error, Please enter a valid hotkey for [WeaponPoison] in the config.
+			return
+		}	
 	}
 }
 
