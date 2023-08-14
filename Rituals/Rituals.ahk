@@ -569,21 +569,26 @@ loop % runcount
 			GuiControl,,State2, ERROR
 			MsgBox, 48, Config Error, Please enter valid coordinates for [Pedestal - Platform] in the config.
 			return
-		}
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
-		
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-	
-		send {esc}
-		
-	IniRead, option, LLARS Config.ini, Logout, option
-	if option=true
-	{
+}
+Random, x, %x1%, %x2%
+Random, y, %y1%, %y2%
+Click, %x%, %y%
+
+IniRead, sa1, Config.ini, Sleep Walk, min
+IniRead, sa2, Config.ini, Sleep Walk, max
+Random, SleepAmount, %sa1%, %sa2%
+Sleep, %SleepAmount%
+
+send {esc}
+
+IniRead, sa1, Config.ini, Sleep Brief, min
+IniRead, sa2, Config.ini, Sleep Brief, max
+Random, SleepAmount, %sa1%, %sa2%
+Sleep, %SleepAmount%	
+
+IniRead, option, LLARS Config.ini, Logout, option
+if option=true
+{
 		send {esc}	
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
