@@ -343,22 +343,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
-		IniRead, x1, Config.ini, Select Ritual Button, xmin
-		IniRead, x2, Config.ini, Select Ritual Button, xmax
-		IniRead, y1, Config.ini, Select Ritual Button, ymin
-		IniRead, y2, Config.ini, Select Ritual Button, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Select Ritual Button] in the config.
-			return
-		}
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
+		send {space}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
 		IniRead, sa2, Config.ini, Sleep Short, max
@@ -459,22 +444,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
-		IniRead, x1, Config.ini, Select Ritual Button, xmin
-		IniRead, x2, Config.ini, Select Ritual Button, xmax
-		IniRead, y1, Config.ini, Select Ritual Button, ymin
-		IniRead, y2, Config.ini, Select Ritual Button, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Select Ritual Button] in the config.
-			return
-		}
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
+		send {space}
 		
 		IniRead, option, LLARS Config.ini, Random Sleep, option
 		if option = true
