@@ -66,6 +66,52 @@ WM_LBUTTONDOWN() {
 }
 return
 
+ConfigError(){
+	IniRead, x1, Config.ini, Smelter Coords, xmin
+	IniRead, x2, Config.ini, Smelter Coords, xmax
+	IniRead, y1, Config.ini, Smelter Coords, ymin
+	IniRead, y2, Config.ini, Smelter Coords, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Smelter Coords] in the config.
+		reload
+	}
+	
+	IniRead, bar, Config.ini, Metal Type, bar
+	IniRead, x1, Config.ini, %bar%, xmin
+	IniRead, x2, Config.ini, %bar%, xmax
+	IniRead, y1, Config.ini, %bar%, ymin
+	IniRead, y2, Config.ini, %bar%, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for your selected bar in [Metal Type] in the config.
+		reload
+	}
+	
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
+	{
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\LLARS Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates in the LLARS Config for Logout.
+			reload
+		}
+	}
+}
+
 CheckPOS(){
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
 	xmin := GUIx
@@ -214,6 +260,7 @@ guiclose:
 exitapp
 
 Start:
+ConfigError()
 If (frcount = 0)
 {
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
@@ -304,14 +351,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Smelter Coords, xmax
 		IniRead, y1, Config.ini, Smelter Coords, ymin
 		IniRead, y2, Config.ini, Smelter Coords, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Smelter Coords] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -327,14 +366,6 @@ loop % runcount
 		IniRead, x2, Config.ini, %bar%, xmax
 		IniRead, y1, Config.ini, %bar%, ymin
 		IniRead, y2, Config.ini, %bar%, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for your selected bar in [Metal Type] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -362,14 +393,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Smelter Coords, xmax
 		IniRead, y1, Config.ini, Smelter Coords, ymin
 		IniRead, y2, Config.ini, Smelter Coords, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Smelter Coords] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%		
@@ -436,14 +459,6 @@ if option=true
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin
 	IniRead, y2, LLARS Config.ini, Logout, ymax
-	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, %scriptname%		
-		GuiControl,,State2, ERROR
-		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
-		return
-	}
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%

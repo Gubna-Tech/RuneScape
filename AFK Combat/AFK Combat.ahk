@@ -53,8 +53,6 @@ hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
 SendMessage, 0x80, 0, hIcon
 SendMessage, 0x80, 1, hIcon
 
-ConfigError()
-
 coordcount = 0
 frcount = 0
 
@@ -116,10 +114,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Agro] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Agro] in the config.
+			reload
 		}	
 	}
 	
@@ -130,10 +128,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG	
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [AnimateDead] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [AnimateDead] in the config.
+			reload
 		}	
 	}
 	
@@ -144,10 +142,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Antipoison] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Antipoison] in the config.
+			reload
 		}	
 	}
 	
@@ -158,10 +156,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Attack] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Attack] in the config.
+			reload
 		}	
 	}
 	
@@ -172,10 +170,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Magic] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Magic] in the config.
+			reload
 		}	
 	}
 	
@@ -186,10 +184,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Overload] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Overload] in the config.
+			reload
 		}	
 	}
 	
@@ -200,10 +198,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Prayer] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Prayer] in the config.
+			reload
 		}	
 	}
 	
@@ -214,10 +212,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Ranged] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Ranged] in the config.
+			reload
 		}	
 	}
 	
@@ -229,10 +227,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Strength] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Strength] in the config.
+			reload
 		}	
 	}
 	
@@ -243,10 +241,10 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Warmaster] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Warmaster] in the config.
+			reload
 		}	
 	}
 	
@@ -257,11 +255,28 @@ ConfigError(){
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
+			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [WeaponPoison] in the config.
-			return
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [WeaponPoison] in the config.
+			reload
 		}	
+	}
+	
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
+	{
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\LLARS Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates in the LLARS Config for Logout.
+			reload
+		}
 	}
 }
 
@@ -391,6 +406,7 @@ guiclose:
 exitapp
 
 Start:
+ConfigError()
 If (frcount = 0)
 {
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
@@ -1085,14 +1101,6 @@ Logout(){
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
 		IniRead, y2, LLARS Config.ini, Logout, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
