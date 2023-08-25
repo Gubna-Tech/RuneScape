@@ -65,7 +65,9 @@ WM_LBUTTONDOWN() {
 		PostMessage, 0xA1, 2
 }
 
-returnConfigError(){
+return
+
+ConfigError(){
 	IniRead, x1, Config.ini, Bank Coords, xmin
 	IniRead, x2, Config.ini, Bank Coords, xmax
 	IniRead, y1, Config.ini, Bank Coords, ymin
