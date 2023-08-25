@@ -66,6 +66,108 @@ WM_LBUTTONDOWN() {
 }
 return
 
+ConfigError(){
+	IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
+	IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
+	IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
+	IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Pedestal - Pedestal] in the config.
+		reload
+	}
+	
+	CoordMode, Mouse, Screen
+	IniRead, x1, Config.ini, Pedestal - Platform, xmin
+	IniRead, x2, Config.ini, Pedestal - Platform, xmax
+	IniRead, y1, Config.ini, Pedestal - Platform, ymin
+	IniRead, y2, Config.ini, Pedestal - Platform, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Pedestal - Platform] in the config.
+		reload
+	}
+	
+	IniRead, x1, Config.ini, Ritual Type, xmin
+	IniRead, x2, Config.ini, Ritual Type, xmax
+	IniRead, y1, Config.ini, Ritual Type, ymin
+	IniRead, y2, Config.ini, Ritual Type, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Ritual Type] in the config.
+		reload
+	}
+	
+	IniRead, option, Config.ini, Input, scroll
+	if (%option% = true)
+	{
+		IniRead, x1, Config.ini, Input Scroll, xmin
+		IniRead, x2, Config.ini, Input Scroll, xmax
+		IniRead, y1, Config.ini, Input Scroll, ymin
+		IniRead, y2, Config.ini, Input Scroll, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates for [Input Scroll] in the config.
+			reload
+		}
+	}
+	
+	IniRead, x1, Config.ini, Input, xmin
+	IniRead, x2, Config.ini, Input, xmax
+	IniRead, y1, Config.ini, Input, ymin
+	IniRead, y2, Config.ini, Input, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Input] in the config.
+		reload
+	}
+	
+	IniRead, x1, Config.ini, Platform, xmin
+	IniRead, x2, Config.ini, Platform, xmax
+	IniRead, y1, Config.ini, Platform, ymin
+	IniRead, y2, Config.ini, Platform, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Platform] in the config.
+		reload
+	}
+	
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
+	{
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\LLARS Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates in the LLARS Config for Logout.
+			reload
+		}
+	}
+}
+
 CheckPOS(){
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
 	xmin := GUIx
@@ -214,6 +316,7 @@ guiclose:
 exitapp
 
 Start:
+ConfigError()
 If (frcount = 0)
 {
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
@@ -304,14 +407,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
 		IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
 		IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Pedestal - Pedestal] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -326,14 +421,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Ritual Type, xmax
 		IniRead, y1, Config.ini, Ritual Type, ymin
 		IniRead, y2, Config.ini, Ritual Type, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Ritual Type] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -380,14 +467,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Input, xmax
 		IniRead, y1, Config.ini, Input, ymin
 		IniRead, y2, Config.ini, Input, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Input] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -410,14 +489,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Pedestal - Platform, xmax
 		IniRead, y1, Config.ini, Pedestal - Platform, ymin
 		IniRead, y2, Config.ini, Pedestal - Platform, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Pedestal - Platform] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -476,14 +547,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
 		IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
 		IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Pedestal - Pedestal] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		MouseClick, r, %x%, %y%
@@ -518,14 +581,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Platform, xmax
 		IniRead, y1, Config.ini, Platform, ymin
 		IniRead, y2, Config.ini, Platform, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Platform] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -547,17 +602,9 @@ loop % runcount
 		IniRead, x2, Config.ini, Pedestal - Platform, xmax
 		IniRead, y1, Config.ini, Pedestal - Platform, ymin
 		IniRead, y2, Config.ini, Pedestal - Platform, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Pedestal - Platform] in the config.
-			return
-}
-Random, x, %x1%, %x2%
-Random, y, %y1%, %y2%
-Click, %x%, %y%
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
 
 IniRead, sa1, Config.ini, Sleep Walk, min
 IniRead, sa2, Config.ini, Sleep Walk, max
@@ -586,14 +633,6 @@ if option=true
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
 		IniRead, y2, LLARS Config.ini, Logout, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
