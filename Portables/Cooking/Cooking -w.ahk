@@ -66,6 +66,116 @@ WM_LBUTTONDOWN() {
 }
 return
 
+ConfigError(){
+	IniRead, x1, Config.ini, Bank Prime Coords, xmin
+	IniRead, x2, Config.ini, Bank Prime Coords, xmax
+	IniRead, y1, Config.ini, Bank Prime Coords, ymin
+	IniRead, y2, Config.ini, Bank Prime Coords, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Prime Coords] in the config.
+		reload
+	}
+	
+	IniRead, x1, Config.ini, Bank Main Coords, xmin
+	IniRead, x2, Config.ini, Bank Main Coords, xmax
+	IniRead, y1, Config.ini, Bank Main Coords, ymin
+	IniRead, y2, Config.ini, Bank Main Coords, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+		reload
+	}
+	
+	IniRead, hkbank, Config.ini, Bank Preset, hotkey
+	if (hkbank = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
+		reload
+	}
+	
+	IniRead, x1, Config.ini, Range Coords, xmin
+	IniRead, x2, Config.ini, Range Coords, xmax
+	IniRead, y1, Config.ini, Range Coords, ymin
+	IniRead, y2, Config.ini, Range Coords, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Range Coords] in the config.
+		reload
+	}
+	
+	IniRead, option,Config.ini, Renew, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Renew, bank hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for Bank Hotkey in [Renew] in the config.
+			reload
+		}
+	}
+	
+	IniRead, option,Config.ini, Renew, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Renew, toolbar hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for Toolbar Hotkey in [Renew] in the config.
+			reload
+		}
+	}
+	
+	IniRead, option,Config.ini, Renew, option
+	if option=true
+	{
+		IniRead, portables, Config.ini, Renew, portables
+		if (portables = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for Portables in [Renew] in the config.
+			reload
+		}
+	}
+	
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
+	{
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\LLARS Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates in the LLARS Config for Logout.
+			reload
+		}
+	}
+}
+
 CheckPOS(){
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
 	xmin := GUIx
@@ -214,6 +324,7 @@ guiclose:
 exitapp
 
 Start:
+ConfigError()
 If (frcount = 0)
 {
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
@@ -304,14 +415,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Bank Prime Coords, xmax
 		IniRead, y1, Config.ini, Bank Prime Coords, ymin
 		IniRead, y2, Config.ini, Bank Prime Coords, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Prime Coords] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -322,14 +425,6 @@ loop % runcount
 		Sleep, %SleepAmount%		
 		
 		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		if (hkbank = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
-			return
-		}
 		send {%hkbank%}
 		
 	}
@@ -347,14 +442,6 @@ loop % runcount
 		GuiControl,,State3, Running
 		
 		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		if (hkbank = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
-			return
-		}
 		send {%hkbank%}
 		
 		IniRead, option, LLARS Config.ini, Random Sleep, option
@@ -399,14 +486,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Range Coords, xmax
 		IniRead, y1, Config.ini, Range Coords, ymin
 		IniRead, y2, Config.ini, Range Coords, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Range Coords] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -428,14 +507,6 @@ loop % runcount
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
 		IniRead, y2, Config.ini, Bank Main Coords, ymax
-		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-		{
-			Run %A_ScriptDir%\Config.ini
-			GuiControl,,ScriptRed, %scriptname%		
-			GuiControl,,State2, ERROR
-			MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
-			return
-		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -469,14 +540,6 @@ if option=true
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin
 	IniRead, y2, LLARS Config.ini, Logout, ymax
-	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, %scriptname%		
-		GuiControl,,State2, ERROR
-		MsgBox, 48, Config Error, Please enter valid coordinates in the config for Logout.
-		return
-	}
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%	
