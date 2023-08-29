@@ -402,8 +402,8 @@ loop % runcount
 		
 		send {space}
 		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
+		IniRead, sa1, Config.ini, Sleep Normal, min
+		IniRead, sa2, Config.ini, Sleep Normal, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
@@ -507,8 +507,8 @@ loop % runcount
 			}
 		}
 		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
+		IniRead, sa1, Config.ini, Sleep Normal, min
+		IniRead, sa2, Config.ini, Sleep Normal, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
