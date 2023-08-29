@@ -77,32 +77,6 @@ ConfigError(){
 		reload
 	}
 	
-	IniRead, x1, Config.ini, Ink/Candle Drop-Down Menu, xmin
-	IniRead, x2, Config.ini, Ink/Candle Drop-Down Menu, xmax
-	IniRead, y1, Config.ini, Ink/Candle Drop-Down Menu, ymin
-	IniRead, y2, Config.ini, Ink/Candle Drop-Down Menu, ymax
-	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, CONFIG		
-		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Ink/Candle Drop-Down Menu] in the config.
-		reload
-	}
-	
-	IniRead, x1, Config.ini, Candle, xmin
-	IniRead, x2, Config.ini, Candle, xmax
-	IniRead, y1, Config.ini, Candle, ymin
-	IniRead, y2, Config.ini, Candle, ymax
-	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, CONFIG		
-		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Candle] in the config.
-		reload
-	}
-	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
 	{
@@ -359,34 +333,6 @@ loop % runcount
 	
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
 	send {%hk%}
-	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%
-	
-	CoordMode, Mouse, Screen
-	IniRead, x1, Config.ini, Ink/Candle Drop-Down Menu, xmin
-	IniRead, x2, Config.ini, Ink/Candle Drop-Down Menu, xmax
-	IniRead, y1, Config.ini, Ink/Candle Drop-Down Menu, ymin
-	IniRead, y2, Config.ini, Ink/Candle Drop-Down Menu, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%
-	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%
-	
-	CoordMode, Mouse, Screen
-	IniRead, x1, Config.ini, Candle, xmin
-	IniRead, x2, Config.ini, Candle, xmax
-	IniRead, y1, Config.ini, Candle, ymin
-	IniRead, y2, Config.ini, Candle, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%
 	
 	IniRead, sa1, Config.ini, Sleep Short, min
 	IniRead, sa2, Config.ini, Sleep Short, max
