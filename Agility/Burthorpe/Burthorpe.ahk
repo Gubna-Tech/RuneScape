@@ -449,12 +449,7 @@ loop % runcount
 		GuiControl,,Counter2, %count2% / %runcount3%
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
-		
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
+	
 		CoordMode, Mouse, Screen
 		IniRead, x1, Config.ini, Log Beam Main, xmin
 		IniRead, x2, Config.ini, Log Beam Main, xmax
@@ -498,20 +493,6 @@ loop % runcount
 		
 		IniRead, sa1, Config.ini, Balancing Ledge, min
 		IniRead, sa2, Config.ini, Balancing Ledge, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		CoordMode, Mouse, Screen
-		IniRead, x1, Config.ini, Balance Rope, xmin
-		IniRead, x2, Config.ini, Balance Rope, xmax
-		IniRead, y1, Config.ini, Balance Rope, ymin
-		IniRead, y2, Config.ini, Balance Rope, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
-		
-		IniRead, sa1, Config.ini, Rope, min
-		IniRead, sa2, Config.ini, Rope, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
