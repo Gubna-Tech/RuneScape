@@ -248,16 +248,72 @@ ConfigError(){
 		}	
 	}
 	
-	IniRead, option,Config.ini, WeaponPoison, option
+	IniRead, option,Config.ini, Weapon Poison, option
 	if option=true
 	{
-		IniRead, hk, Config.ini, WeaponPoison, hotkey
+		IniRead, hk, Config.ini, Weapon Poison, hotkey
 		if (hk = "")
 		{
 			Run %A_ScriptDir%\Config.ini
 			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 4112, Config Error, Please enter a valid hotkey for [WeaponPoison] in the config.
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Weapon Poison] in the config.
+			reload
+		}	
+	}
+	
+	IniRead, option,Config.ini, Ancient Elven Ritual Shard, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Ancient Elven Ritual Shard, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Ancient Elven Ritual Shard] in the config.
+			reload
+		}	
+	}
+	
+	IniRead, option,Config.ini, Vecna Skull, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Vecna Skull, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Vecna Skull] in the config.
+			reload
+		}	
+	}
+	
+	IniRead, option,Config.ini, Incense Sticks, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Incense Sticks, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Incense Sticks] in the config.
+			reload
+		}	
+	}
+	
+	IniRead, option,Config.ini, Prayer Powder, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Prayer Powder, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Prayer Powder] in the config.
 			reload
 		}	
 	}
@@ -773,6 +829,98 @@ if option=true
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Animate Dead, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
+IniRead, option,Config.ini, Vecna Skull, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Vecna Skull, min
+	IniRead, sa2, Config.ini, Vecna Skull, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Vecna Skull, %sleepamount%
+	
+	IniRead, hk, Config.ini, Vecna Skull, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Vecna Skull, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
+IniRead, option,Config.ini, Ancient Elven Ritual Shard, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Ancient Elven Ritual Shard, min
+	IniRead, sa2, Config.ini, Ancient Elven Ritual Shard, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Ancient Elven Ritual Shard, %sleepamount%
+	
+	IniRead, hk, Config.ini, Ancient Elven Ritual Shard, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Ancient Elven Ritual Shard, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
+IniRead, option,Config.ini, Incense Sticks, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Incense Sticks, min
+	IniRead, sa2, Config.ini, Incense Sticks, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Incense Sticks, %sleepamount%
+	
+	IniRead, hk, Config.ini, Incense Sticks, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Incense Sticks, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
+IniRead, option,Config.ini, Prayer Powder, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Prayer Powder, min
+	IniRead, sa2, Config.ini, Prayer Powder, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Prayer Powder, %sleepamount%
+	
+	IniRead, hk, Config.ini, Prayer Powder, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Prayer Powder, (xm+15), (ym+15),1
 		sleep 25
 	}
 	tooltip
