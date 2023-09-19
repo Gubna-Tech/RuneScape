@@ -972,7 +972,7 @@ if option=true
 	IniRead, sa1, Config.ini, Loot, min
 	IniRead, sa2, Config.ini, Loot, max
 	Random, SleepAmount, %sa1%, %sa2%
-	settimer, Summon, %sleepamount%
+	settimer, Loot, %sleepamount%
 	
 	loop 100
 	{
