@@ -963,6 +963,26 @@ if option=true
 	tooltip
 }
 
+IniRead, option,Config.ini, Loot, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Loot, min
+	IniRead, sa2, Config.ini, Loot, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Summon, %sleepamount%
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Auto-Loot Timer Set, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
 return
 
 Agro:
@@ -1380,6 +1400,28 @@ Summon:
 	{
 		mousegetpos xm, ym
 		tooltip, Familiar Summoned, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+return
+
+Loot:
+{
+	winactivate, RuneScape
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Loot, min
+	IniRead, sa2, Config.ini, Loot, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Loot, %sleepamount%	
+	
+	send {space}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Auto-Loot Activated, (xm+15), (ym+15),1
 		sleep 25
 	}
 	tooltip
