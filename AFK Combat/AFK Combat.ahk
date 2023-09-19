@@ -318,6 +318,20 @@ ConfigError(){
 		}	
 	}
 	
+	IniRead, option,Config.ini, Summon, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Summon, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Summon] in the config.
+			reload
+		}	
+	}
+	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
 	{
@@ -926,6 +940,29 @@ if option=true
 	tooltip
 }
 
+IniRead, option,Config.ini, Summon, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Summon, min
+	IniRead, sa2, Config.ini, Summon, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Summon, %sleepamount%
+	
+	IniRead, hk, Config.ini, Summon, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Familiar Summoned, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
 return
 
 Agro:
@@ -1320,6 +1357,29 @@ PrayerP:
 	{
 		mousegetpos xm, ym
 		tooltip, Activated Prayer Powder, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+return
+
+Summon:
+{
+	winactivate, RuneScape
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Summon, min
+	IniRead, sa2, Config.ini, Summon, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, Summon, %sleepamount%	
+	
+	IniRead, hk, Config.ini, Summon, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Familiar Summoned, (xm+15), (ym+15),1
 		sleep 25
 	}
 	tooltip
