@@ -459,10 +459,16 @@ if (remainingTimeMS <= 0 and startcheck=1)
 	SetTimer, Magic, Off
 	SetTimer, Overload, Off
 	SetTimer, Prayer, Off
+	SetTimer, PrayerP, Off
 	SetTimer, Ranged, Off
 	SetTimer, Strength, Off
 	SetTimer, Warmaster, Off
 	SetTimer, WeaponPoison, Off
+	SetTimer, Vecna, Off
+	SetTimer, Shard, Off
+	SetTimer, IncenseSticks, Off
+	SetTimer, Summon, Off
+	SetTimer, Loot, Off
 	GuiControl,, TimerCount, Done
 	GuiControl,,State3, Done
 	EnableButton()
