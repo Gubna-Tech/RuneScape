@@ -8,7 +8,7 @@
 Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
 
 ### Note: 
-Please be aware that scripts will be added to the repository over time, and these additions will not be announced ahead of time. However, if you have any other inquiries or questions regarding this project, feel free to contact me. 
+PIf you have any other inquiries or questions regarding this project, feel free to contact me. 
 
 Discord: **Gubna** *formerly* **Gubna#0001**
 
