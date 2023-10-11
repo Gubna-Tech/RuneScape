@@ -332,6 +332,20 @@ ConfigError(){
 		}	
 	}
 	
+	IniRead, option,Config.ini, Saradomin Brew, option
+	if option=true
+	{
+		IniRead, hk, Config.ini, Saradomin Brew, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Saradomin Brew] in the config.
+			reload
+		}	
+	}
+	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
 	{
@@ -467,6 +481,7 @@ if (remainingTimeMS <= 0 and startcheck=1)
 	SetTimer, Vecna, Off
 	SetTimer, Shard, Off
 	SetTimer, IncenseSticks, Off
+	SetTimer, SaraBrew, Off
 	SetTimer, Summon, Off
 	SetTimer, Loot, Off
 	GuiControl,, TimerCount, Done
@@ -969,6 +984,29 @@ if option=true
 	tooltip
 }
 
+IniRead, option,Config.ini, Saradomin Brew, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Saradomin Brew, min
+	IniRead, sa2, Config.ini, Saradomin Brew, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, SaraBrew, %sleepamount%
+	
+	IniRead, hk, Config.ini, Saradomin Brew, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Saradomin Brew Dose Consumed, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
 IniRead, option,Config.ini, Loot, option
 if option=true
 {
@@ -1406,6 +1444,29 @@ Summon:
 	{
 		mousegetpos xm, ym
 		tooltip, Familiar Summoned, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+return
+
+SaraBrew:
+{
+	winactivate, RuneScape
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Saradomin Brew, min
+	IniRead, sa2, Config.ini, Saradomin Brew, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, SaraBrew, %sleepamount%	
+	
+	IniRead, hk, Config.ini, Saradomin Brew, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Saradomin Brew Dose Consumed, (xm+15), (ym+15),1
 		sleep 25
 	}
 	tooltip
