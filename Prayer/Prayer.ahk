@@ -109,6 +109,36 @@ ConfigError(){
 		reload
 	}
 	
+	IniRead, option, Config.ini, Powder of burials, option
+	if (%option% = true)
+	{
+		
+		IniRead, hk, Config.ini, Powder of burials, hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [Powder of burials] in the config.
+			reload
+		}
+	}
+	
+	IniRead, option, Config.ini, Powder of burials, option
+	if (%option% = true)
+	{
+		
+		IniRead, hk, Config.ini, Powder of burials, bank preset
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid bank preset for [Powder of burials] in the config.
+			reload
+		}
+	}
+	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
 	{
@@ -249,6 +279,10 @@ if (RemainingTime > 0) {
 }
 return
 
+UpdateTime:
+powdertime -= 1000
+return
+
 RandomSleepAmountToMinutesSeconds(time) {
 	minutes := Floor(time / 60000)
 	seconds := Mod(Floor(time / 1000), 60)
@@ -344,6 +378,7 @@ StartTime := A_TickCount
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 sleepcount = 0
 totalSleepTime := 0
+prime = 0
 
 loop % runcount
 { 
@@ -356,6 +391,45 @@ loop % runcount
 	GuiControl,,ScriptBlue, %scriptname%
 	GuiControl,,State3, Running
 	DisableButton()
+	
+	IniRead, option, Config.ini, Powder of burials, option
+	if (%option% = true)
+		if prime=0
+		{
+			++prime
+			CoordMode, Mouse, Screen
+			IniRead, x1, Config.ini, Bank Coords, xmin
+			IniRead, x2, Config.ini, Bank Coords, xmax
+			IniRead, y1, Config.ini, Bank Coords, ymin
+			IniRead, y2, Config.ini, Bank Coords, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hkbank, Config.ini, Powder of burials, bank preset
+			send {%hkbank%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Powder of burials, hotkey
+			send {%hk%}
+			
+			powdertime := 1800000
+			settimer, UpdateTime, 1000
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+		}
 	
 	CoordMode, Mouse, Screen
 	IniRead, x1, Config.ini, Bank Coords, xmin
@@ -417,6 +491,44 @@ loop % runcount
 	
 	IniRead, hkup, Config.ini, Skillbar Hotkey, hotkey
 	send {%hkup% up}
+	
+	IniRead, option, Config.ini, Powder of burials, option
+	if (%option% = true)
+		if (powdertime <= 60000)
+		{
+			CoordMode, Mouse, Screen
+			IniRead, x1, Config.ini, Bank Coords, xmin
+			IniRead, x2, Config.ini, Bank Coords, xmax
+			IniRead, y1, Config.ini, Bank Coords, ymin
+			IniRead, y2, Config.ini, Bank Coords, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hkbank, Config.ini, Powder of burials, bank preset
+			send {%hkbank%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Powder of burials, hotkey
+			send {%hk%}
+			
+			powdertime := 1800000
+			settimer, UpdateTime, 1000
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%	
+		}
 }
 
 IniRead, option, LLARS Config.ini, Logout, option
