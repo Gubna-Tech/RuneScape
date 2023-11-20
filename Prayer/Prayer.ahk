@@ -139,6 +139,82 @@ ConfigError(){
 		}
 	}
 	
+	IniRead, option, Config.ini, Beast of Burden, option
+	if (%option% = true)
+	{
+		
+		IniRead, hk, Config.ini, Beast of Burden, bob icon hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [bob icon hotkey] in the config.
+			reload
+		}
+	}
+	
+	IniRead, option, Config.ini, Beast of Burden, option
+	if (%option% = true)
+	{
+		
+		IniRead, hk, Config.ini, Beast of Burden, bank preset
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid bank preset for [bank preset] in the config.
+			reload
+		}
+	}
+	
+	IniRead, option, Config.ini, Beast of Burden, option
+	if (%option% = true)
+	{
+		
+		IniRead, hk, Config.ini, Beast of Burden, bob hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [bob hotkey] in the config.
+			reload
+		}
+	}
+	
+	
+	IniRead, option, Config.ini, Beast of Burden, option
+	if (%option% = true)
+	{
+		
+		IniRead, hk, Config.ini, Beast of Burden, restore pot hotkey
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid hotkey for [restore pot hotkey] in the config.
+			reload
+		}
+	}
+	
+	IniRead, option, Config.ini, Beast of Burden, option
+	if (%option% = true)
+	{
+		
+		IniRead, hk, Config.ini, Beast of Burden, bob timer
+		if (hk = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter a valid time for [bob timer] in the config.
+			reload
+		}
+	}
+	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
 	{
@@ -283,6 +359,10 @@ UpdateTime:
 powdertime -= 1000
 return
 
+updatebob:
+bobtime -=1000
+return
+
 RandomSleepAmountToMinutesSeconds(time) {
 	minutes := Floor(time / 60000)
 	seconds := Mod(Floor(time / 1000), 60)
@@ -379,6 +459,7 @@ StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 sleepcount = 0
 totalSleepTime := 0
 prime = 0
+bobprime = 0
 
 loop % runcount
 { 
@@ -429,6 +510,55 @@ loop % runcount
 			IniRead, sa2, Config.ini, Sleep Short, max
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%
+		}
+	
+	IniRead, option, Config.ini, beast of burden, option
+	if (%option% = true)
+		if bobprime=0
+		{
+			++bobprime
+			
+			CoordMode, Mouse, Screen
+			IniRead, x1, Config.ini, Bank Coords, xmin
+			IniRead, x2, Config.ini, Bank Coords, xmax
+			IniRead, y1, Config.ini, Bank Coords, ymin
+			IniRead, y2, Config.ini, Bank Coords, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hkbank, Config.ini, beast of burden, bank preset
+			send {%hkbank%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, beast of burden, restore pot hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, beast of burden, bob hotkey
+			send {%hk%}
+			
+			IniRead, bobtimer, Config.ini, beast of burden, bob timer
+			bobtime := (bobtimer * 60 * 1000)
+			settimer, updatebob, 1000		
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%		
 		}
 	
 	CoordMode, Mouse, Screen
@@ -492,6 +622,86 @@ loop % runcount
 	IniRead, hkup, Config.ini, Skillbar Hotkey, hotkey
 	send {%hkup% up}
 	
+	IniRead, option, Config.ini, beast of burden, option
+	if (%option% = true)
+	{
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, hk, Config.ini, beast of burden, bob icon hotkey
+		send {%hk%}
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, hkdown, Config.ini, Skillbar Hotkey, hotkey
+		send {%hkdown% down}
+		
+		IniRead, sap1, Config.ini, Sleep Prayer Extra, min
+		IniRead, sap2, Config.ini, Sleep Prayer Extra, max
+		Random, SleepAmountPrayer, %sap1%, %sap2%
+		Sleep, %SleepAmountPrayer%
+		
+		IniRead, hkup, Config.ini, Skillbar Hotkey, hotkey
+		send {%hkup% up}
+		
+		IniRead, sa1, Config.ini, Sleep Brief, min
+		IniRead, sa2, Config.ini, Sleep Brief, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+	}
+	
+	IniRead, option, Config.ini, beast of burden, option
+	if (%option% = true)
+		if (bobtime <= 60000)		
+		{
+			CoordMode, Mouse, Screen
+			IniRead, x1, Config.ini, Bank Coords, xmin
+			IniRead, x2, Config.ini, Bank Coords, xmax
+			IniRead, y1, Config.ini, Bank Coords, ymin
+			IniRead, y2, Config.ini, Bank Coords, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hkbank, Config.ini, beast of burden, bank preset
+			send {%hkbank%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, beast of burden, restore pot hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, beast of burden, bob hotkey
+			send {%hk%}
+			
+			IniRead, bobtimer, Config.ini, beast of burden, bob timer
+			bobtime := (bobtimer * 60 * 1000)
+			settimer, updatebob, 1000		
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%			
+		}
+	
 	IniRead, option, Config.ini, Powder of burials, option
 	if (%option% = true)
 		if (powdertime <= 60000)
@@ -528,60 +738,60 @@ loop % runcount
 			IniRead, sa2, Config.ini, Sleep Short, max
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%	
-		}
+		}		
 }
-
-IniRead, option, LLARS Config.ini, Logout, option
-if option=true
-{
-	send {esc}	
 	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%	
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
+	{
+		send {esc}	
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%	
+		
+		CoordMode, Mouse, Screen
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
+	}
 	
-	CoordMode, Mouse, Screen
-	IniRead, x1, LLARS Config.ini, Logout, xmin
-	IniRead, x2, LLARS Config.ini, Logout, xmax
-	IniRead, y1, LLARS Config.ini, Logout, ymin
-	IniRead, y2, LLARS Config.ini, Logout, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%
-}
-
-GuiControl,,ScriptGreen, %scriptname%
-GuiControl,,State1, Finished
-
-EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
-EndTime := A_TickCount
-TotalTime := (EndTime - StartTime) / 1000
-AverageTime := TotalTime / runcount3
-
-TotalTimeHours := Floor(TotalTime / 3600)
-TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
-TotalTimeSeconds := Mod(TotalTime, 60)
-
-AverageTimeMinutes := Floor(AverageTime / 60)
-AverageTimeSeconds := Mod(AverageTime, 60)
-
-TotalTimeHours := Round(TotalTimeHours)
-TotalTimeMinutes := Round(TotalTimeMinutes)
-TotalTimeSeconds := Round(TotalTimeSeconds)
-AverageTimeMinutes := Round(AverageTimeMinutes)
-AverageTimeSeconds := Round(AverageTimeSeconds)
-
-percentage := Round((sleepcount / runcount) * 100)
-
-totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
-TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
-TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
-TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
-
-SoundPlay, C:\Windows\Media\Ring06.wav, 1
-IniRead, chance, LLARS Config.ini, Random Sleep, chance
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
-
-EnableButton()
-return
+	GuiControl,,ScriptGreen, %scriptname%
+	GuiControl,,State1, Finished
+	
+	EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+	EndTime := A_TickCount
+	TotalTime := (EndTime - StartTime) / 1000
+	AverageTime := TotalTime / runcount3
+	
+	TotalTimeHours := Floor(TotalTime / 3600)
+	TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
+	TotalTimeSeconds := Mod(TotalTime, 60)
+	
+	AverageTimeMinutes := Floor(AverageTime / 60)
+	AverageTimeSeconds := Mod(AverageTime, 60)
+	
+	TotalTimeHours := Round(TotalTimeHours)
+	TotalTimeMinutes := Round(TotalTimeMinutes)
+	TotalTimeSeconds := Round(TotalTimeSeconds)
+	AverageTimeMinutes := Round(AverageTimeMinutes)
+	AverageTimeSeconds := Round(AverageTimeSeconds)
+	
+	percentage := Round((sleepcount / runcount) * 100)
+	
+	totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
+	TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
+	TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
+	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
+	
+	SoundPlay, C:\Windows\Media\Ring06.wav, 1
+	IniRead, chance, LLARS Config.ini, Random Sleep, chance
+	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
+	
+	EnableButton()
+	return
