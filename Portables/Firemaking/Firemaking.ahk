@@ -204,9 +204,9 @@ ConfigError(){
 			hWnd := hWndList%A_Index%
 			WinClose, % "ahk_id " hWnd
 		}
-	}
-	
-	CoordB:
+}
+
+CoordB:
 Gui 1: Hide
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s11 Bold
@@ -214,10 +214,7 @@ Gui 2: Font, s11 Bold
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|renew|sleep walk|sleep fire|"
 
-ButtonHeight := 30
-ButtonSpacing := 5
-
-sectionList := "Make a Selection"
+sectionList := " ***** Make a Selection ***** "
 
 Loop, Parse, allContents, `n
 {
@@ -244,8 +241,8 @@ return
 DropDownChanged:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != "Make a Selection")
-    GoSub, ButtonClicked
+if (selectedSection != " ***** Make a Selection ***** ")
+	GoSub, ButtonClicked
 
 return
 
