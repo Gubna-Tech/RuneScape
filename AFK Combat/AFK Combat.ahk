@@ -372,10 +372,7 @@ Gui 2: Font, s11 Bold
 IniRead, allContents, Config.ini
 excludedSections := "Sleep Brief|Sleep Normal|Sleep Short|agro|prayer|afk|heal|strength|attack|magic|ranged|overload|warmaster|antifire|antipoison|weapon poison|animate dead|vecna skull|ancient elven ritual shard|incense sticks|prayer powder|summon|saradomin brew|loot|"
 
-ButtonHeight := 30
-ButtonSpacing := 5
-
-sectionList := "Make a Selection"
+sectionList := " ***** Make a Selection ***** "
 
 Loop, Parse, allContents, `n
 {
@@ -402,7 +399,7 @@ return
 DropDownChanged:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != "Make a Selection")
+if (selectedSection != " ***** Make a Selection ***** ")
 	GoSub, ButtonClicked
 
 return

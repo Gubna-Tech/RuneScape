@@ -175,10 +175,7 @@ Gui 2: Font, s11 Bold
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|Sleep Prayer Extra|skillbar hotkey|bank preset|sleep walk|sleep climb 1|sleep climb 2|sleep ladder|"
 
-ButtonHeight := 30
-ButtonSpacing := 5
-
-sectionList := "Make a Selection"
+sectionList := " ***** Make a Selection ***** "
 
 Loop, Parse, allContents, `n
 {
@@ -205,8 +202,8 @@ return
 DropDownChanged:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != "Make a Selection")
-    GoSub, ButtonClicked
+if (selectedSection != " ***** Make a Selection ***** ")
+	GoSub, ButtonClicked
 
 return
 
