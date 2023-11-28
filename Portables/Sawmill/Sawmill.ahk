@@ -217,50 +217,113 @@ CloseOtherLLARS()
 }
 
 CoordB:
-If (coordcount = 0)
-{
-	++coordcount
-	CoordMode, Mouse, Screen
-	MouseGetPos,X,Y
-	settimer, tooltipcoord1, 25	
-	return
-}
-else if (coordcount = 1)
-{	
-	++coordcount
-	CoordMode, Mouse, Screen	
-	MouseGetPos,X2,Y2
-	IniWrite,----------`nxmin=%x%`nxmax=%x2%`nymin=%y%`nymax=%y2%,Coordinates.ini, Coordinates [%A_Hour%:%A_Min%:%A_Sec%] - %A_MM%/%A_DD%
-	settimer, tooltipcoord1, OFF
-	settimer, tooltipcoord2, 100
-	clipboard =
-(
-xmin=%x%
-xmax=%x2%
-ymin=%y%
-ymax=%y2%
-)
-	ClipWait
-	clipboard := clipboard
-	return
-}
-else if (coordcount = 2)
-{
-	settimer, tooltipcoord2, off
-	ToolTip
-	coordcount = 0
-	return
-}
-Return
+Gui 1: Hide
+Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 2: Font, s11 Bold
 
-tooltipcoord1:
-mousegetpos xn, yn
-ToolTip,x=%X% y=%Y%, (xn+7), (yn+7),1
+IniRead, allContents, Config.ini
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep walk|renew|plank amount|"
+
+ButtonHeight := 30
+ButtonSpacing := 5
+
+sectionList := "Make a Selection"
+
+Loop, Parse, allContents, `n
+{
+    currentSection := A_LoopField
+
+    if !InStr(excludedSections, "|" currentSection "|")
+        sectionList .= "|" currentSection
+}
+
+Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged, % sectionList
+Gui, 2: Add, Button, w230 gClose, Close
+
+Gui, 2: Show, w250 h45 Center, Coordinates
+Gui 2: -Caption
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+WinSet, Transparent, %value%
 return
 
-tooltipcoord2:
+Close:
+Gui 2: Destroy
+Gui 1: Show
+return
+
+DropDownChanged:
+GuiControlGet, selectedSection,, SectionList
+
+if (selectedSection != "Make a Selection")
+    GoSub, ButtonClicked
+
+return
+
+ButtonClicked:
+Gui, 2: Hide
+
+WinActivate, RuneScape
+
+ClickCount := 0
+xmin := ""
+ymin := ""
+xmax := ""
+ymax := ""
+
+ButtonText := selectedSection
+
+SetTimer, CheckClicks, 10
+settimer, coordtt1, 10
+return
+
+CheckClicks:
+if GetKeyState("RButton", "P")
+{
+    MouseGetPos, MouseX, MouseY
+    settimer, coordtt1, off
+    settimer, coordtt2, 10
+    ClickCount++
+    if (ClickCount = 1)
+    {
+        xmin := MouseX
+        ymin := MouseY
+    }
+    else if (ClickCount = 2)
+    {
+        xmax := MouseX
+        ymax := MouseY
+        SetTimer, CheckClicks, Off
+        
+        IniWrite, %xmin%, Config.ini, %ButtonText%, xmin
+        IniWrite, %xmax%, Config.ini, %ButtonText%, xmax
+        IniWrite, %ymin%, Config.ini, %ButtonText%, ymin
+        IniWrite, %ymax%, Config.ini, %ButtonText%, ymax
+        
+        Gui, 2: Destroy
+        Gui, 1: Show
+        
+        Loop, 100
+        {
+            MouseGetPos, xm, ym
+            settimer, coordtt2, off
+            Tooltip, Coordinates have been updated in the config., %xm%+15, %ym%+15, 1
+            Sleep, 25
+        }
+        Tooltip
+    }
+    
+    Sleep, 250
+}
+return
+
+coordtt1:
 mousegetpos xn, yn
-ToolTip, xmin=%x%`nxmax=%x2%`nymin=%y%`nymax=%y2%`n`nCoordinates are stored in clipboard and`n%A_ScriptDir%\Coordinates.ini`n`nPress F10 to clear this message, (xn+7), (yn+7),1
+ToolTip,Right-click the top-left of the item you need the coordinates for., (xn+7), (yn+7),1
+return
+
+coordtt2:
+mousegetpos xn, yn
+ToolTip,Right-click the bottom-right of the item you need the coordinates for., (xn+7), (yn+7),1
 return
 
 ConfigB:
