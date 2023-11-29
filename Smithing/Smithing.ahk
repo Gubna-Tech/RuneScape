@@ -26,7 +26,7 @@ Gui, Font, s11
 Gui, font, bold
 Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
 Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
-Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
+Gui, Add, Button, x115 y35 w90 h25 gConfigb , Hotkeys
 Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
 Gui, Add, Text, x135 y90 w100 h25 vCounter
 Gui, Add, Text, x8 y90 w125 h25, Total Run Count
@@ -290,9 +290,66 @@ mousegetpos xn, yn
 ToolTip,Right-click the bottom-right of the item you need the coordinates for., (xn+7), (yn+7),1
 return
 
-ConfigB:
-Run %A_ScriptDir%\Config.ini
-Return
+configB:
+Gui 1: Hide
+Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 3: Font, s11 Bold
+
+IniRead, allContents, Config.ini
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|item config|scroll|base|1|2|3|4|5|burial|anvil coords|sleep smith|bronze wire|Bronze Bar|Iron Bar|Steel Bar|Mithril Bar|Adamant Bar|Rune Bar|Silver Bar|Gold Bar|Bronze Arrowhead|Bronze 2h sword|Bronze armoured boots|Bronze battleaxe|Bronze bolts|Bronze chainbody|Bronze claws|Bronze dagger|Bronze dart tip|Bronze full helm|Bronze gauntlets|Bronze hasta|Bronze hatchet|Bronze kiteshield|Bronze knife|Bronze limbs|Bronze longsword|Bronze mace|Bronze mattock|Bronze med helm|Bronze nails|Bronze off-hand battleaxe|Bronze off-hand claws|Bronze off-hand dagger|Bronze off-hand longsword|Bronze off-hand mace|Bronze off-hand scimitar|Bronze off-hand sword|Bronze off-hand warhammer|Bronze ore box|Bronze pickaxe|Bronze platebody|Bronze platelegs|Bronze plateskirt|Bronze scimitar|Bronze spear|Bronze square shield|Bronze sword|Bronze throwing axe|Bronze warhammer|Iron Arrowhead|Iron 2h sword|Iron armoured boots|Iron battleaxe|Iron bolts|Iron chainbody|Iron claws|Iron dagger|Iron dart tip|Iron full helm|Iron gauntlets|Iron hasta|Iron hatchet|Iron ingot|Iron kiteshield|Iron knife|Iron limbs|Iron longsword|Iron mace|Iron mattock|Iron med helm|Iron nails|Iron off-hand battleaxe|Iron off-hand claws|Iron off-hand dagger|Iron off-hand longsword|Iron off-hand mace|Iron off-hand scimitar|Iron off-hand sword|Iron off-hand warhammer|Iron ore box|Iron pickaxe|Iron platebody|Iron platelegs|Iron plateskirt|Iron railings|Iron scimitar|Iron spear|Iron spit|Iron square shield|Iron sword|Iron throwing axe|Iron warhammer|Off-hand iron knife|Off-hand iron throwing axe|Oil lantern frame|Steel Arrowhead|Bullseye lantern|Off-hand steel knife|Off-hand steel throwing axe|Steel 2h sword|Steel armoured boots|Steel battleaxe|Steel bolts|Steel chainbody|Steel claws|Steel dagger|Steel dart tip|Steel full helm|Steel gauntlets|Steel hasta|Steel hatchet|Steel ingot|Steel kite-shield|Steel knife|Steel limbs|Steel longsword|Steel mace|Steel mattock|Steel med helm|Steel nails|Steel off-hand battleaxe|Steel off-hand claws|Steel off-hand dagger|Steel off-hand longsword|Steel off-hand mace|Steel off-hand scimitar|Steel off-hand sword|Steel off-hand warhammer|Cannonball|Mithril Arrowhead|Mithril 2h sword|Mithril armoured boots|Mithril battleaxe|Mithril bolts|Mithril chainbody|Mithril claws|Mithril dagger|Mithril dart tip|Mithril full helm|Mithril gauntlets|Mithril grapple tip|Mithril hasta|Mithril hatchet|Mithril kiteshield|Mithril knife|Mithril limbs|Mithril longsword|Mithril mace|Mithril mattock|Mithril med helm|Mithril nails|Mithril off-hand battleaxe|Mithril off-hand claws|Mithril off-hand dagger|Mithril off-hand longsword|Mithril off-hand mace|Mithril off-hand scimitar|Mithril off-hand sword|Mithril off-hand warhammer|Mithril ore box|Mithril pickaxe|Mithril platebody|Mithril platelegs|Mithril plateskirt|Mithril scimitar|Mithril spear|Mithril square shield|Mithril sword|Adamant Arrowhead|Adamant 2h sword|Adamant armoured boots|Adamant battleaxe|Adamant bolts|Adamant chainbody|Adamant claws|Adamant dagger|Adamant dart tip|Adamant full helm|Adamant gauntlets|Adamant hasta|Adamant hatchet|Adamant kiteshield|Adamant knife|Adamant limbs|Adamant longsword|Adamant mace|Adamant mattock|Adamant med helm|Adamant nails|Adamant off-hand battleaxe|Adamant off-hand claws|Adamant off-hand dagger|Adamant off-hand longsword|Adamant off-hand mace|Adamant off-hand scimitar|Adamant off-hand sword|Adamant off-hand warhammer|Adamant ore box|Adamant pickaxe|Adamant platebody|Adamant platelegs|Adamant plateskirt|Adamant scimitar|Adamant spear|Adamant square shield|Adamant sword|Adamant throwing axe|Adamant warhammer|Rune Arrowhead|x|Off-hand rune knife|Off-hand rune throwing axe|Rune 2h sword|Rune armoured boots|Rune battleaxe|Rune bolts|Rune chainbody|Rune claws|Rune dagger|Rune dart tip|Rune full helm|Rune gauntlets|Rune hasta|Rune hatchet|Rune kiteshield|Rune knife|Rune limbs|Rune longsword|Rune mace|Rune mattock|Rune med helm|Rune nails|Rune off-hand battleaxe|Rune off-hand claws|Rune off-hand dagger|Rune off-hand longsword|Rune off-hand mace|Rune off-hand scimitar|Rune off-hand sword|Rune off-hand warhammer|Rune ore box|Rune pickaxe|Rune platebody|Rune platelegs|Orikalkum 2h warhammer|Orikalkum armoured boots|Orikalkum full helm|Orikalkum gauntlets|Orikalkum kiteshield|Orikalkum mattock|Orikalkum off hand warhammer|Orikalkum ore box|Orikalkum pickaxe|Orikalkum platebody|Orikalkum platelegs|Orikalkum warhammer|Necronium 2h greataxe|Necronium armoured boots|Necronium battleaxe|Necronium full helm|Necronium gauntlets|Necronium kiteshield|Necronium mattock|Necronium off hand battleaxe|Necronium ore box|Necronium pickaxe|Necronium platebody|Necronium platelegs|Bane 2h sword|Bane armoured boots|Bane full helm|Bane gauntlets|Bane longsword|Bane mattock|Bane off hand longsword|Bane ore box|Bane pickaxe|Bane platebody|Bane platelegs|Bane square shield|Elder rune 2h sword|Elder rune armoured boots|Elder rune full helm|Elder rune gauntlets|Elder rune longsword|Elder rune mattock|Elder rune off hand longsword|Elder rune ore box|Elder rune pickaxe|Elder rune platebody|Elder rune platelegs|Elder rune round shield|"
+
+sectionList := " ***** Make a Selection ***** "
+
+Loop, Parse, allContents, `n
+{
+    currentSection := A_LoopField
+
+    if !InStr(excludedSections, "|" currentSection "|")
+        sectionList .= "|" currentSection
+}
+
+Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
+Gui, 3: Add, Hotkey, x100 y60 w75 vChosenHotkey gHotkeyChanged Center, ** NONE **
+Gui, 3: Add, Button, x10 y90 w230 gClose2, Close
+
+Gui, 3: Show, w250 h100 Center, Hotkeys
+Gui 3: -Caption
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+WinSet, Transparent, %value%
+return
+
+Close2:
+Gui 3: Destroy
+Gui 1: Show
+return
+
+DropDownChanged2:
+GuiControlGet, selectedSection,, SectionList
+
+if (selectedSection != " ***** Make a Selection ***** ") {
+    GoSub, ButtonClicked2
+}
+
+return
+
+ButtonClicked2:
+GuiControl,, HotkeysText, Enter new hotkey
+GuiControl, Focus, ChosenHotkey
+return
+
+HotkeyChanged:
+IniWrite, %ChosenHotkey%, Config.ini, %selectedSection%, Hotkey
+Gui, 3: Destroy
+Gui, 1: Show
+Loop, 100
+{
+	MouseGetPos, xm, ym
+	Tooltip, Hotkey has been updated in the config file., %xm%+15, %ym%+15, 1
+	Sleep, 25
+}
+Tooltip
+return
 
 ResumeB:
 GuiControl,,State3, Running
