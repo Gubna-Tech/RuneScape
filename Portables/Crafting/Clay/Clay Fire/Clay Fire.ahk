@@ -26,7 +26,7 @@ Gui, Font, s11
 Gui, font, bold
 Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
 Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
-Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
+Gui, Add, Button, x115 y35 w90 h25 gConfigb , Hotkeys
 Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
 Gui, Add, Text, x135 y90 w100 h25 vCounter
 Gui, Add, Text, x8 y90 w125 h25, Total Run Count
@@ -314,9 +314,66 @@ ToolTip,Right-click the bottom-right of the item you need the coordinates for., 
 return
 
 
-ConfigB:
-Run %A_ScriptDir%\Config.ini
-Return
+configB:
+Gui 1: Hide
+Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 3: Font, s11 Bold
+
+IniRead, allContents, Config.ini
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep walk|renew|sleep fire|bank prime coords|bank main coords|crafter coords|pottery menu coords|pottery sub-menu coords|"
+
+sectionList := " ***** Make a Selection ***** "
+
+Loop, Parse, allContents, `n
+{
+    currentSection := A_LoopField
+
+    if !InStr(excludedSections, "|" currentSection "|")
+        sectionList .= "|" currentSection
+}
+
+Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
+Gui, 3: Add, Hotkey, x100 y60 w75 vChosenHotkey gHotkeyChanged Center, ** NONE **
+Gui, 3: Add, Button, x10 y90 w230 gClose2, Close
+
+Gui, 3: Show, w250 h100 Center, Hotkeys
+Gui 3: -Caption
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+WinSet, Transparent, %value%
+return
+
+Close2:
+Gui 3: Destroy
+Gui 1: Show
+return
+
+DropDownChanged2:
+GuiControlGet, selectedSection,, SectionList
+
+if (selectedSection != " ***** Make a Selection ***** ") {
+    GoSub, ButtonClicked2
+}
+
+return
+
+ButtonClicked2:
+GuiControl,, HotkeysText, Enter new hotkey
+GuiControl, Focus, ChosenHotkey
+return
+
+HotkeyChanged:
+IniWrite, %ChosenHotkey%, Config.ini, %selectedSection%, Hotkey
+Gui, 3: Destroy
+Gui, 1: Show
+Loop, 100
+{
+	MouseGetPos, xm, ym
+	Tooltip, Hotkey has been updated in the config file., %xm%+15, %ym%+15, 1
+	Sleep, 25
+}
+Tooltip
+return
 
 ResumeB:
 GuiControl,,State3, Running

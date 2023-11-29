@@ -26,7 +26,7 @@ Gui, Font, s11
 Gui, font, bold
 Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
 Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
-Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
+Gui, Add, Button, x115 y35 w90 h25 gConfigb , Hotkeys
 Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
 Gui, Add, Text, x135 y90 w100 h25 vCounter
 Gui, Add, Text, x8 y90 w125 h25, Total Run Count
@@ -327,9 +327,66 @@ mousegetpos xn, yn
 ToolTip,Right-click the bottom-right of the item you need the coordinates for., (xn+7), (yn+7),1
 return
 
-ConfigB:
-Run %A_ScriptDir%\Config.ini
-Return
+configB:
+Gui 1: Hide
+Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 3: Font, s11 Bold
+
+IniRead, allContents, Config.ini
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|item config|sleep craft|Bank Coords|Batwing book|Batwing boots|Batwing gloves|Batwing hood|Batwing legs|Batwing shield|Batwing torso|Batwing wand|Black dragonhide body|Black dragonhide boots|Black dragonhide chaps|Black dragonhide coif|Black dragonhide shield|Black dragonhide vambraces|Black wizard boots|Black wizard gloves|Black wizard hat|Black wizard robe skirt|Black wizard robe top|Black wizard shield|Blue dragonhide body|Blue dragonhide boots|Blue dragonhide chaps|Blue dragonhide coif|Blue dragonhide shield|Blue dragonhide vambraces|Carapace boots|Carapace gloves|Carapace helm|Carapace legs|Carapace shield|Carapace torso|Cryptbloom boots|Cryptbloom bottoms|Cryptbloom gloves|Cryptbloom helm|Cryptbloom top|Death Lotus chaps|Death Lotus chestplate|Death Lotus hood|Fremennik round shield|Fungal leggings|Fungal poncho|Fungal visor|Ganodermic leggings|Ganodermic poncho|Ganodermic visor|Green dragonhide body|Green dragonhide boots|Green dragonhide coif|Green dragonhide shield|Green dragonhide vambraces|Grifolic leggings|Grifolic poncho|Grifolic visor|Hard Leather Body|Hard Leather Boots|Hard Leather Chaps|Hard Leather Cowl|Hard Leather Gloves|Hard Leather Shield|Imphide Book|Imphide Boots|Imphide Gloves|Imphide Hood|Imphide Robe Bottom|Imphide Robe Top|Imphide Shield|Imphorn Wand|Leather Body|Leather Boots|Leather Chaps|Leather Cowl|Leather Gloves|Leather Shield|Leather Vambraces|Mystic boots|Mystic gloves|Mystic hat|Mystic orb|Mystic robe bottom|Mystic robe top|Mystic shield|Mystic wand|Red dragonhide body|Red dragonhide boots|Red dragonhide chaps|Red dragonhide coif|Red dragonhide shield|Red dragonhide vambraces|Green dragonhide chaps|Royal dragonhide body|Royal dragonhide boots|Royal dragonhide chaps|Royal dragonhide coif|Royal dragonhide vambraces|Snakeskin bandana|Snakeskin body|Snakeskin boots|Snakeskin chaps|Snakeskin vambraces|Spider orb|Spider silk boots|Spider silk gloves|Spider silk hood|Spider silk robe bottom|Spider silk robe top|Spider silk shield|Spider wand|Studded Body|Studded Chaps|Studded Leather Boots|Studded Leather Coif|Studded Leather Gloves|Studded Leather Shield|Superior Death Lotus chaps|Superior Death Lotus chestplate|Superior Death Lotus hood|Superior Death Lotus tabi|Superior Death Lotus teko|Wizard book|Wizard boots|Wizard gloves|Wizard hat|Wizard robe skirt|Wizard robe top|Wizard shield|Wizard wand|Yak-hide body|Yak-hide legs|sleep walk|renew|"
+
+sectionList := " ***** Make a Selection ***** "
+
+Loop, Parse, allContents, `n
+{
+    currentSection := A_LoopField
+
+    if !InStr(excludedSections, "|" currentSection "|")
+        sectionList .= "|" currentSection
+}
+
+Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
+Gui, 3: Add, Hotkey, x100 y60 w75 vChosenHotkey gHotkeyChanged Center, ** NONE **
+Gui, 3: Add, Button, x10 y90 w230 gClose2, Close
+
+Gui, 3: Show, w250 h100 Center, Hotkeys
+Gui 3: -Caption
+Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+WinSet, Transparent, %value%
+return
+
+Close2:
+Gui 3: Destroy
+Gui 1: Show
+return
+
+DropDownChanged2:
+GuiControlGet, selectedSection,, SectionList
+
+if (selectedSection != " ***** Make a Selection ***** ") {
+    GoSub, ButtonClicked2
+}
+
+return
+
+ButtonClicked2:
+GuiControl,, HotkeysText, Enter new hotkey
+GuiControl, Focus, ChosenHotkey
+return
+
+HotkeyChanged:
+IniWrite, %ChosenHotkey%, Config.ini, %selectedSection%, Hotkey
+Gui, 3: Destroy
+Gui, 1: Show
+Loop, 100
+{
+	MouseGetPos, xm, ym
+	Tooltip, Hotkey has been updated in the config file., %xm%+15, %ym%+15, 1
+	Sleep, 25
+}
+Tooltip
+return
 
 ResumeB:
 GuiControl,,State3, Running
