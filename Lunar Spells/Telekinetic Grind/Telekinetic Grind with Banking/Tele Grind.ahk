@@ -175,10 +175,25 @@ CloseOtherLLARS()
 	}
 }
 
+DisableCoord(disable := true) {
+	Control, Disable,, start
+	
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	Hotkey, %lhk2%, off
+}
+
+EnableCoord(enable := true) {
+	Control, Enable,, start
+	
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	Hotkey, %lhk2%, On
+}
+
 CoordB:
 Gui 1: Hide
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s11 Bold
+DisableCoord()
 
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep grind|"
@@ -205,6 +220,7 @@ return
 Close:
 Gui 2: Destroy
 Gui 1: Show
+EnableCoord()
 return
 
 DropDownChanged:
