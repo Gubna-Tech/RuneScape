@@ -364,10 +364,25 @@ ConfigError(){
 	}
 }
 
+DisableCoord(disable := true) {
+	Control, Disable,, start
+	
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	Hotkey, %lhk2%, off
+}
+
+EnableCoord(enable := true) {
+	Control, Enable,, start
+	
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	Hotkey, %lhk2%, On
+}
+
 CoordB:
 Gui 1: Hide
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s11 Bold
+DisableCoord()
 
 IniRead, allContents, Config.ini
 excludedSections := "Sleep Brief|Sleep Normal|Sleep Short|agro|prayer|afk|heal|strength|attack|magic|ranged|overload|warmaster|antifire|antipoison|weapon poison|animate dead|vecna skull|ancient elven ritual shard|incense sticks|prayer powder|summon|saradomin brew|loot|"
@@ -394,6 +409,7 @@ return
 Close:
 Gui 2: Destroy
 Gui 1: Show
+EnableCoord()
 return
 
 DropDownChanged:
