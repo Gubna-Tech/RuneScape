@@ -249,6 +249,15 @@ EnableButton(enable := true) {
 	Hotkey, %lhk1%, On
 }
 
+~Esc::
+IfWinActive, Coordinates
+	GoSub, close
+Else IfWinActive, Hotkeys
+	GoSub, close2
+Else
+	Return
+Return
+
 configB:
 Gui 1: Hide
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
