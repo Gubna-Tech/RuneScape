@@ -167,25 +167,31 @@ CloseOtherLLARS()
 	}
 }
 
-DisableCoord(disable := true) {
+DisableHotkey(disable := true) {
 	Control, Disable,, start
-	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	Hotkey, %lhk1%, off	
 	Hotkey, %lhk2%, off
+	Hotkey, %lhk3%, off
 }
 
-EnableCoord(enable := true) {
+EnableHotkey(enable := true) {
 	Control, Enable,, start
-	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
-	Hotkey, %lhk2%, On
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	Hotkey, %lhk1%, on	
+	Hotkey, %lhk2%, on
+	Hotkey, %lhk3%, on
 }
 
 CoordB:
 Gui 1: Hide
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s11 Bold
-DisableCoord()
+DisableHotkey()
 
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep make|sleep walk|"
@@ -212,7 +218,7 @@ return
 Close:
 Gui 2: Destroy
 Gui 1: Show
-EnableCoord()
+EnableHotkey()
 return
 
 DropDownChanged:
@@ -294,6 +300,7 @@ configB:
 Gui 1: Hide
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 3: Font, s11 Bold
+DisableHotkey()
 
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep make|crate of unfinished decorations|decoration bench|crate of finished decorations|sleep walk|"
@@ -322,6 +329,7 @@ return
 Close2:
 Gui 3: Destroy
 Gui 1: Show
+EnableHotkey()
 return
 
 DropDownChanged2:
