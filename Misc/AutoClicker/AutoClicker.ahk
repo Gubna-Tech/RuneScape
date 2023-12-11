@@ -281,6 +281,15 @@ EnableButton(enable := true) {
 	Hotkey, %lhk1%, On
 }
 
+
+~Esc::
+IfWinActive, Coordinates
+	GoSub, close
+Else
+	Return
+Return
+
+
 ConfigB:
 Run %A_ScriptDir%\Config.ini
 Return

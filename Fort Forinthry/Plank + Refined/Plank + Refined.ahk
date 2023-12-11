@@ -320,6 +320,15 @@ mousegetpos xn, yn
 ToolTip,Right-click the bottom-right of the item you need the coordinates for., (xn+7), (yn+7),1
 return
 
+~Esc::
+IfWinActive, Coordinates
+	GoSub, close
+Else IfWinActive, Hotkeys
+	GoSub, close2
+Else
+	Return
+Return
+
 configB:
 Gui 1: Hide
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
