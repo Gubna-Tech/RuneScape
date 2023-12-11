@@ -220,25 +220,31 @@ CloseOtherLLARS()
 	}
 }
 
-DisableCoord(disable := true) {
+DisableHotkey(disable := true) {
 	Control, Disable,, start
-	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	Hotkey, %lhk1%, off	
 	Hotkey, %lhk2%, off
+	Hotkey, %lhk3%, off
 }
 
-EnableCoord(enable := true) {
+EnableHotkey(enable := true) {
 	Control, Enable,, start
-	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
-	Hotkey, %lhk2%, On
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	Hotkey, %lhk1%, on	
+	Hotkey, %lhk2%, on
+	Hotkey, %lhk3%, on
 }
 
 CoordB:
 Gui 1: Hide
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s11 Bold
-DisableCoord()
+DisableHotkey()
 
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep craft|sleep walk|item config|renew|"
@@ -265,7 +271,7 @@ return
 Close:
 Gui 2: Destroy
 Gui 1: Show
-EnableCoord()
+EnableHotkey()
 return
 
 DropDownChanged:
@@ -347,6 +353,7 @@ configB:
 Gui 1: Hide
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 3: Font, s11 Bold
+DisableHotkey()
 
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|item config|sleep craft|Bank Coords|Batwing book|Batwing boots|Batwing gloves|Batwing hood|Batwing legs|Batwing shield|Batwing torso|Batwing wand|Black dragonhide body|Black dragonhide boots|Black dragonhide chaps|Black dragonhide coif|Black dragonhide shield|Black dragonhide vambraces|Black wizard boots|Black wizard gloves|Black wizard hat|Black wizard robe skirt|Black wizard robe top|Black wizard shield|Blue dragonhide body|Blue dragonhide boots|Blue dragonhide chaps|Blue dragonhide coif|Blue dragonhide shield|Blue dragonhide vambraces|Carapace boots|Carapace gloves|Carapace helm|Carapace legs|Carapace shield|Carapace torso|Cryptbloom boots|Cryptbloom bottoms|Cryptbloom gloves|Cryptbloom helm|Cryptbloom top|Death Lotus chaps|Death Lotus chestplate|Death Lotus hood|Fremennik round shield|Fungal leggings|Fungal poncho|Fungal visor|Ganodermic leggings|Ganodermic poncho|Ganodermic visor|Green dragonhide body|Green dragonhide boots|Green dragonhide coif|Green dragonhide shield|Green dragonhide vambraces|Grifolic leggings|Grifolic poncho|Grifolic visor|Hard Leather Body|Hard Leather Boots|Hard Leather Chaps|Hard Leather Cowl|Hard Leather Gloves|Hard Leather Shield|Imphide Book|Imphide Boots|Imphide Gloves|Imphide Hood|Imphide Robe Bottom|Imphide Robe Top|Imphide Shield|Imphorn Wand|Leather Body|Leather Boots|Leather Chaps|Leather Cowl|Leather Gloves|Leather Shield|Leather Vambraces|Mystic boots|Mystic gloves|Mystic hat|Mystic orb|Mystic robe bottom|Mystic robe top|Mystic shield|Mystic wand|Red dragonhide body|Red dragonhide boots|Red dragonhide chaps|Red dragonhide coif|Red dragonhide shield|Red dragonhide vambraces|Green dragonhide chaps|Royal dragonhide body|Royal dragonhide boots|Royal dragonhide chaps|Royal dragonhide coif|Royal dragonhide vambraces|Snakeskin bandana|Snakeskin body|Snakeskin boots|Snakeskin chaps|Snakeskin vambraces|Spider orb|Spider silk boots|Spider silk gloves|Spider silk hood|Spider silk robe bottom|Spider silk robe top|Spider silk shield|Spider wand|Studded Body|Studded Chaps|Studded Leather Boots|Studded Leather Coif|Studded Leather Gloves|Studded Leather Shield|Superior Death Lotus chaps|Superior Death Lotus chestplate|Superior Death Lotus hood|Superior Death Lotus tabi|Superior Death Lotus teko|Wizard book|Wizard boots|Wizard gloves|Wizard hat|Wizard robe skirt|Wizard robe top|Wizard shield|Wizard wand|Yak-hide body|Yak-hide legs|sleep walk|renew|"
@@ -375,6 +382,7 @@ return
 Close2:
 Gui 3: Destroy
 Gui 1: Show
+EnableHotkey()
 return
 
 DropDownChanged2:
