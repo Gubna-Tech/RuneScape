@@ -205,25 +205,31 @@ CloseOtherLLARS()
 	}
 }
 
-DisableCoord(disable := true) {
+DisableHotkey(disable := true) {
 	Control, Disable,, start
-	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	Hotkey, %lhk1%, off	
 	Hotkey, %lhk2%, off
+	Hotkey, %lhk3%, off
 }
 
-EnableCoord(enable := true) {
+EnableHotkey(enable := true) {
 	Control, Enable,, start
-	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
-	Hotkey, %lhk2%, On
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	Hotkey, %lhk1%, on	
+	Hotkey, %lhk2%, on
+	Hotkey, %lhk3%, on
 }
 
 CoordB:
 Gui 1: Hide
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s11 Bold
-DisableCoord()
+DisableHotkey()
 
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|item config|sleep walk|sleep craft|scroll|"
@@ -250,7 +256,7 @@ return
 Close:
 Gui 2: Destroy
 Gui 1: Show
-EnableCoord()
+EnableHotkey()
 return
 
 DropDownChanged:
@@ -332,6 +338,7 @@ configB:
 Gui 1: Hide
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 3: Font, s11 Bold
+DisableHotkey()
 
 IniRead, allContents, Config.ini
 excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|item config|sleep walk|sleep craft|scroll|bank prime coords|bank main coords|furnace coords|Silver Bar|Gold Bar|Gold ring|Gold necklace|Gold bracelet|Gold amulet (unstrung)|Gold amulet|Lapis lazuli ring|Opal ring|Opal necklace|Opal bracelet|Opal amulet (unstrung)|Opal amulet|Jade ring|Jade necklace|Jade bracelet|Jade amulet (unstrung)|Jade amulet|Topaz ring|Topaz necklace|Topaz bracelet|Topaz amulet (unstrung)|Topaz amulet|Sapphire ring|Sapphire necklace|Sapphire bracelet|Sapphire amulet (unstrung)|Sapphire amulet|Emerald ring|Emerald necklace|Emerald bracelet|Emerald amulet (unstrung)|Emerald amulet|Ruby ring|Ruby necklace|Ruby bracelet|Ruby amulet (unstrung)|Ruby amulet|Diamond ring|Diamond necklace|Diamond bracelet|Diamond amulet (unstrung)|Diamond amulet|Dragonstone ring|Dragonstone necklace|Dragonstone bracelet|Dragonstone amulet (unstrung)|Dragonstone amulet|Onyx ring|Onyx necklace|Onyx bracelet|Onyx amulet (unstrung)|Onyx amulet|Hydrix ring|Hydrix necklace|Hydrix bracelet|Hydrix amulet (unstrung)|Hydrix amulet|"
@@ -360,6 +367,7 @@ return
 Close2:
 Gui 3: Destroy
 Gui 1: Show
+EnableHotkey()
 return
 
 DropDownChanged2:
