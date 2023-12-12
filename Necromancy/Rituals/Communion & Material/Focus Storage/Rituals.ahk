@@ -242,7 +242,7 @@ Gui 2: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep walk|sleep repair|sleep ritual|input scroll|offset|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep walk|sleep repair|sleep ritual|offset|"
 
 sectionList := " ***** Make a Selection ***** "
 
