@@ -475,6 +475,7 @@ if GetKeyState("RButton", "P")
 			settimer, coordtt2, off
 			Tooltip, Coordinates have been updated in the config., %xm%+15, %ym%+15, 1
 			Sleep, 25
+			EnableHotkey()
 		}
 		Tooltip
 	}
@@ -561,6 +562,7 @@ Loop, 100
 	MouseGetPos, xm, ym
 	Tooltip, Hotkey has been updated in the config file., %xm%+15, %ym%+15, 1
 	Sleep, 25
+	EnableHotkey()
 }
 Tooltip
 return
