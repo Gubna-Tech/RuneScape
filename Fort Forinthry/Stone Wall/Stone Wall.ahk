@@ -260,40 +260,41 @@ return
 CheckClicks:
 if GetKeyState("RButton", "P")
 {
-    MouseGetPos, MouseX, MouseY
-    settimer, coordtt1, off
-    settimer, coordtt2, 10
-    ClickCount++
-    if (ClickCount = 1)
-    {
-        xmin := MouseX
-        ymin := MouseY
-    }
-    else if (ClickCount = 2)
-    {
-        xmax := MouseX
-        ymax := MouseY
-        SetTimer, CheckClicks, Off
-        
-        IniWrite, %xmin%, Config.ini, %ButtonText%, xmin
-        IniWrite, %xmax%, Config.ini, %ButtonText%, xmax
-        IniWrite, %ymin%, Config.ini, %ButtonText%, ymin
-        IniWrite, %ymax%, Config.ini, %ButtonText%, ymax
-        
-        Gui, 2: Destroy
-        Gui, 1: Show
-        
-        Loop, 100
-        {
-            MouseGetPos, xm, ym
-            settimer, coordtt2, off
-            Tooltip, Coordinates have been updated in the config., %xm%+15, %ym%+15, 1
-            Sleep, 25
-        }
-        Tooltip
-    }
-    
-    Sleep, 250
+	MouseGetPos, MouseX, MouseY
+	settimer, coordtt1, off
+	settimer, coordtt2, 10
+	ClickCount++
+	if (ClickCount = 1)
+	{
+		xmin := MouseX
+		ymin := MouseY
+	}
+	else if (ClickCount = 2)
+	{
+		xmax := MouseX
+		ymax := MouseY
+		SetTimer, CheckClicks, Off
+		
+		IniWrite, %xmin%, Config.ini, %ButtonText%, xmin
+		IniWrite, %xmax%, Config.ini, %ButtonText%, xmax
+		IniWrite, %ymin%, Config.ini, %ButtonText%, ymin
+		IniWrite, %ymax%, Config.ini, %ButtonText%, ymax
+		
+		Gui, 2: Destroy
+		Gui, 1: Show
+		
+		Loop, 100
+		{
+			MouseGetPos, xm, ym
+			settimer, coordtt2, off
+			Tooltip, Coordinates have been updated in the config., %xm%+15, %ym%+15, 1
+			Sleep, 25
+			EnableHotkey()
+		}
+		Tooltip
+	}
+	
+	Sleep, 250
 }
 return
 
@@ -375,6 +376,7 @@ Loop, 100
 	MouseGetPos, xm, ym
 	Tooltip, Hotkey has been updated in the config file., %xm%+15, %ym%+15, 1
 	Sleep, 25
+	EnableHotkey()
 }
 Tooltip
 return
