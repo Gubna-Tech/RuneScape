@@ -8,7 +8,7 @@
 Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
 
 ### Note: 
-PIf you have any other inquiries or questions regarding this project, feel free to contact me. 
+If you have any other inquiries or questions regarding this project, feel free to contact me. 
 
 Discord: **Gubna** *formerly* **Gubna#0001**
 
@@ -40,22 +40,6 @@ If you are unfamiliar with .ini files or find them challenging to read and edit,
 
 ## Free Open Source Software:
 This software is distributed as Free Open Source Software (FOSS), which means it is available for use, modification, and distribution under an open-source license. As a FOSS project, this software will never require a one-time purchase fee or impose any monthly subscription costs. You are free to use and modify the software according to the terms of the applicable license.
-
-## Acknowledgments:
-Special thanks to [maestrith.com](https://www.maestrith.com/) for the creation of AHK-Studio, a powerful AutoHotkey integrated development environment (IDE). I highly recommend AHK-Studio for developing and managing AutoHotkey scripts.
-
-<p align="center">
-  <a href="https://www.maestrith.com/ahk-studio/">AHK Studio Download</a>
-</p>
-
-I would also like to extend my gratitude to ***B O I L*** for their valuable contributions in providing items for testing the scripts. Their support has been instrumental in improving the functionality and reliability of this project.
-
-<p align="center">
-  <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20BOIL.png">
-  <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20Chernabog.png">
-  <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20LJmods.png">
-  <img width="150" height="150" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/Supporter/Support%20Zika.png">
-</p>
 
 ***The [Disclaimer](Disclaimer.md) should be viewed as it clearly states that the scripts provided are for educational purposes only and holds the script creator harmless from any liability, emphasizing the users' responsibility for their actions and the potential consequences that may arise from using the scripts. It serves as a reminder to exercise caution, make informed decisions, and comply with the game's rules and policies while using automation scripts.***
 
