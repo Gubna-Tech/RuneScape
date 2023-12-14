@@ -180,9 +180,11 @@ DisableHotkey(disable := true) {
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 	Hotkey, %lhk1%, off	
 	Hotkey, %lhk2%, off
 	Hotkey, %lhk3%, off
+	Hotkey, %lhk4%, off
 }
 
 EnableHotkey(enable := true) {
@@ -190,9 +192,12 @@ EnableHotkey(enable := true) {
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 	Hotkey, %lhk1%, on	
 	Hotkey, %lhk2%, on
 	Hotkey, %lhk3%, on
+	Hotkey, %lhk4%, on
+	
 }
 
 CoordB:
