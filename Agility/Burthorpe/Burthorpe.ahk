@@ -411,7 +411,9 @@ DropDownChanged2:
 GuiControlGet, selectedSection,, SectionList
 
 if (selectedSection != " ***** Make a Selection ***** ") {
-    GoSub, ButtonClicked2
+	IniRead, existingHotkey, Config.ini, %selectedSection%, Hotkey
+	GuiControl,, ChosenHotkey, %existingHotkey%
+	GoSub, ButtonClicked2
 }
 
 return
