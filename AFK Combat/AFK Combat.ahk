@@ -515,7 +515,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|prayer|afk|heal|strength|attack|magic|ranged|overload|warmaster|antifire|antipoison|weapon poison|animate dead|vecna skull|ancient elven ritual shard|incense sticks|prayer powder|summon|saradomin brew|loot|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|prayer|afk|heal|loot|"
 
 sectionList := " ***** Make a Selection ***** "
 
