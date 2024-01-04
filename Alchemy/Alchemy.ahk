@@ -233,23 +233,44 @@ ymax := ""
 ButtonText := selectedSection
 
 SetTimer, CheckClicks, 10
-settimer, coordtt1, 10
+
+Gui 11: +AlwaysOnTop +OwnDialogs
+Gui 11: Font, s16 bold
+Gui 11: Add, Text, vTone , Right-click the top-left of the item you need the coordinates for
+Gui 11: -caption
+Gui 11: Show, NoActivate xcenter y5 w665 h45
+
 return
 
 CheckClicks:
 if GetKeyState("RButton", "P")
-{
+{	
 	MouseGetPos, MouseX, MouseY
-	settimer, coordtt1, off
-	settimer, coordtt2, 10
 	ClickCount++
 	if (ClickCount = 1)
 	{
+		Gui 11: destroy
+		Gui 12: +AlwaysOnTop +OwnDialogs
+		Gui 12: Font, s16 bold
+		Gui 12: Add, Text, vTtwo , Right-click the bottom-right of the item you need the coordinates for
+		Gui 12: -caption
+		Gui 12: Show, NoActivate xcenter y5 w720 h45	
+		
 		xmin := MouseX
 		ymin := MouseY
 	}
 	else if (ClickCount = 2)
 	{
+		Gui 12: destroy
+		
+		Gui 13: +AlwaysOnTop +OwnDialogs
+		Gui 13: Color, Green
+		Gui 13: Font, cWhite
+		Gui 13: Font, s16 bold
+		Gui 13: Add, Text, vTthree , Coordinates have been updated in the Config.ini file
+		Gui 13: -caption
+		Gui 13: Show, NoActivate xcenter y5 w565 h45
+		
 		xmax := MouseX
 		ymax := MouseY
 		SetTimer, CheckClicks, Off
@@ -259,33 +280,17 @@ if GetKeyState("RButton", "P")
 		IniWrite, %ymin%, Config.ini, %ButtonText%, ymin
 		IniWrite, %ymax%, Config.ini, %ButtonText%, ymax
 		
+		Sleep, 3000
+		
+		Gui 13: destroy
 		Gui, 2: Destroy
 		Gui, 1: Show
 		
-		Loop, 100
-			
-		{
-			MouseGetPos, xm, ym
-			settimer, coordtt2, off
-			Tooltip, Coordinates have been updated in the config., %xm%+15, %ym%+15, 1
-			Sleep, 25
-			EnableHotkey()
-		}
-		Tooltip
+		EnableHotkey()	
 	}
 	
 	Sleep, 250
 }
-return
-
-coordtt1:
-mousegetpos xn, yn
-ToolTip,Right-click the top-left of the item you need the coordinates for., (xn+7), (yn+7),1
-return
-
-coordtt2:
-mousegetpos xn, yn
-ToolTip,Right-click the bottom-right of the item you need the coordinates for., (xn+7), (yn+7),1
 return
 
 ~Esc::
