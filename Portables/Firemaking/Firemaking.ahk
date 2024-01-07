@@ -472,16 +472,19 @@ Configcheck:
 		
 		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 		Hotkey, %lhk1%, On
-	}
-	
-	ExitB:
-	guiclose:
-	exitapp
-	
-	Start:
-	ConfigError()
-	If (frcount = 0)
-	{
+}
+
+ExitB:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+guiclose:
+exitapp
+
+Start:
+ConfigError()
+If (frcount = 0)
+{
 		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 		IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 		IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume

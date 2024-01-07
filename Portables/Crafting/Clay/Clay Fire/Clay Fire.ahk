@@ -473,7 +473,11 @@ EnableButton(enable := true) {
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	Hotkey, %lhk1%, On
 }
+
 ExitB:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
 guiclose:
 exitapp
 

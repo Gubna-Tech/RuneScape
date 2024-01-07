@@ -484,12 +484,10 @@ EnableButton(enable := true) {
 }
 
 ExitB:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
 guiclose:
-IniRead, option, LLARS Config.ini, Thank You Message, option
-if option=true
-{
-	MsgBox , 48, Thank You, Thank you for using LLARS.`n`nI hope this Free and Open Source Tool helps you with RuneScape and to learn more about AutoHotKey., 10
-}
 exitapp
 
 Start:
