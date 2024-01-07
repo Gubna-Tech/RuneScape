@@ -316,9 +316,9 @@ SetTimer, CheckClicks, 10
 
 Gui 11: +AlwaysOnTop +OwnDialogs
 Gui 11: Font, s16 bold
-Gui 11: Add, Text, vTone , Right-click the top-left of the item you need the coordinates for
+Gui 11: Add, Text, vTone center,Right-click the top-left of the item you need the coordinates for
 Gui 11: -caption
-Gui 11: Show, NoActivate xcenter y5 w665 h45
+Gui 11: Show, NoActivate xcenter y5
 
 return
 
@@ -332,9 +332,9 @@ if GetKeyState("RButton", "P")
 		Gui 11: destroy
 		Gui 12: +AlwaysOnTop +OwnDialogs
 		Gui 12: Font, s16 bold
-		Gui 12: Add, Text, vTtwo , Right-click the bottom-right of the item you need the coordinates for
+		Gui 12: Add, Text, vTtwo center,Right-click the bottom-right of the item you need the coordinates for
 		Gui 12: -caption
-		Gui 12: Show, NoActivate xcenter y5 w720 h45	
+		Gui 12: Show, NoActivate xcenter y5
 		
 		xmin := MouseX
 		ymin := MouseY
@@ -347,9 +347,9 @@ if GetKeyState("RButton", "P")
 		Gui 13: Color, Green
 		Gui 13: Font, cWhite
 		Gui 13: Font, s16 bold
-		Gui 13: Add, Text, vTthree , Coordinates have been updated in the Config.ini file
+		Gui 13: Add, Text, vTthree center,Coordinates have been updated in the Config.ini file
 		Gui 13: -caption
-		Gui 13: Show, NoActivate xcenter y5 w565 h45
+		Gui 13: Show, NoActivate xcenter y5
 		
 		xmax := MouseX
 		ymax := MouseY
@@ -371,6 +371,7 @@ if GetKeyState("RButton", "P")
 	
 	Sleep, 250
 }
+return
 
 ~Esc::
 IfWinActive, Coordinates
