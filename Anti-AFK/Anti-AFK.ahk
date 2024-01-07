@@ -377,10 +377,10 @@ if (remainingTimeMS <= 0 and startcheck=1)
 return
 
 ExitB:
+guiclose:
 WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
 IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
-guiclose:
 exitapp
 
 Start:

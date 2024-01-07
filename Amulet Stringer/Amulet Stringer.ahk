@@ -442,10 +442,10 @@ EnableButton(enable := true) {
 }
 
 ExitB:
+guiclose:
 WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
 IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
-guiclose:
 exitapp
 
 Start:
