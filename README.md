@@ -5,7 +5,7 @@
 
 <p align="center">
   <a href="https://github.com/Gubna-Tech/RuneScape/archive/main.zip">
-    <img src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/Download.png" alt="Download" width="400" height="120">
+    <img src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/d72652cc7fc4ef984586b8c9c18cda2ca9d1f044/Assets/Download.png" alt="Download" width="400" height="120">
   </a>
 </p>
 
