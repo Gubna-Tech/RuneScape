@@ -3,6 +3,12 @@
   <img width="250" height="250" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/LLARS/AHK%20Logo.png">
 </p>
 
+<p align="center">
+  <a href="https://github.com/Gubna-Tech/RuneScape/archive/main.zip">
+    <img src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/Download.png" alt="Download" width="400" height="120">
+  </a>
+</p>
+
 # Important Note for Script Use
 ### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
