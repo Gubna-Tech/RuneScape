@@ -411,15 +411,20 @@ return
 HotkeyChanged:
 IniWrite, %ChosenHotkey%, Config.ini, %selectedSection%, Hotkey
 Gui, 3: Destroy
-Gui, 1: Show
-Loop, 100
-{
-	MouseGetPos, xm, ym
-	Tooltip, Hotkey has been updated in the config file., %xm%+15, %ym%+15, 1
-	Sleep, 25
-	EnableHotkey()
-}
-Tooltip
+
+Gui 13: +AlwaysOnTop +OwnDialogs
+Gui 13: Color, Green
+Gui 13: Font, cWhite
+Gui 13: Font, s16 bold
+Gui 13: Add, Text, vTthree center, Hotkey has been updated in the Config.ini file
+Gui 13: -caption
+Gui 13: Show, NoActivate xcenter y5
+
+Sleep 3000
+
+Gui 13: Destroy
+Gui 1: Show
+EnableHotkey()
 return
 
 ResumeB:
