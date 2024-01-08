@@ -441,20 +441,39 @@ Return
 
 Configcheck:
 {
-		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-		IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
-		IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
-		IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	}
-	return
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 	
-	UpdateTime:
-	PortableRemainingTime -= 1000
-	return
+	Hotkey %lhk1%, Start
+	Hotkey %lhk2%, coordb
+	Hotkey %lhk3%, Configb
+	Hotkey %lhk4%, exitb
+}
+return
+
+Config2check:
+{
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 	
-	UpdateCountdown:
-	RemainingTime := EndTime - A_TickCount
-	if (RemainingTime > 0) {
+	Hotkey %lhk1%, Start
+	Hotkey %lhk2%, pauseb
+	Hotkey %lhk3%, resumeb
+	Hotkey %lhk4%, exitb
+}
+return
+
+UpdateTime:
+PortableRemainingTime -= 1000
+return
+
+UpdateCountdown:
+RemainingTime := EndTime - A_TickCount
+if (RemainingTime > 0) {
 		GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
 	}
 	return
@@ -491,49 +510,52 @@ Start:
 ConfigError()
 If (frcount = 0)
 {
-		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-		IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
-		IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
-		IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-		IniRead, value, LLARS Config.ini, Transparent, value
-		
-		Hotkey %lhk1%, Start
-		Hotkey %lhk2%, pauseb
-		Hotkey %lhk3%, resumeb
-		Hotkey %lhk4%, exitb
-		
-		WinGetPos, X, Y,,, LLARS
-		Gui destroy
-		Gui +LastFound +OwnDialogs +AlwaysOnTop
-		Gui, Font, s11
-		Gui, font, bold
-		Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
-		Gui, Add, Button, x15 y35 w90 h25 gPauseb , Pause
-		Gui, Add, Button, x115 y35 w90 h25 gResumeb , Resume
-		Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
-		Gui, Add, Text, x135 y90 w65 h25 center vCounter
-		Gui, Add, Text, x8 y90 w125 h25, Total Run Count
-		Gui, Add, Text, x8 y65 w125 h25, Run Count
-		Gui, Add, Text, x135 y65 w150 h25 vCounter2
-		Gui, Font, cGreen
-		Gui, Add, Text, x135 y115 w70 h25 vState1
-		Gui, Add, Text, x8 y115 w125 h25 vScriptGreen
-		Gui, Font, cBlue
-		Gui, Add, Text, x135 y115 w70 h25 vState3
-		Gui, Add, Text, x8 y115 w125 h25 vScriptBlue
-		Gui, Font, cRed
-		Gui, Add, Text, x135 y115 w70 h25 vState2
-		Gui, Add, Text, x8 y115 w125 h25 vScriptRed
-		GuiControl,,State2, ** OFF **
-		Gui, Add, Text, x8 y115 w125 h25, %scriptname%
-		Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
-		WinSet, Transparent, %value%
-		Gui, Show,w220 h170, LLARS
-		WinMove, LLARS,, X, Y,
-		
-		count = 0
-		++frcount
-	}
+	SetTimer, ConfigCheck, off
+	SetTimer, Config2Check, 250
+	
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	IniRead, value, LLARS Config.ini, Transparent, value
+	
+	Hotkey %lhk1%, Start
+	Hotkey %lhk2%, pauseb
+	Hotkey %lhk3%, resumeb
+	Hotkey %lhk4%, exitb
+	
+	WinGetPos, X, Y,,, LLARS
+	Gui destroy
+	Gui +LastFound +OwnDialogs +AlwaysOnTop
+	Gui, Font, s11
+	Gui, font, bold
+	Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
+	Gui, Add, Button, x15 y35 w90 h25 gPauseb , Pause
+	Gui, Add, Button, x115 y35 w90 h25 gResumeb , Resume
+	Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
+	Gui, Add, Text, x135 y90 w65 h25 center vCounter
+	Gui, Add, Text, x8 y90 w125 h25, Total Run Count
+	Gui, Add, Text, x8 y65 w125 h25, Run Count
+	Gui, Add, Text, x135 y65 w150 h25 vCounter2
+	Gui, Font, cGreen
+	Gui, Add, Text, x135 y115 w70 h25 vState1
+	Gui, Add, Text, x8 y115 w125 h25 vScriptGreen
+	Gui, Font, cBlue
+	Gui, Add, Text, x135 y115 w70 h25 vState3
+	Gui, Add, Text, x8 y115 w125 h25 vScriptBlue
+	Gui, Font, cRed
+	Gui, Add, Text, x135 y115 w70 h25 vState2
+	Gui, Add, Text, x8 y115 w125 h25 vScriptRed
+	GuiControl,,State2, ** OFF **
+	Gui, Add, Text, x8 y115 w125 h25, %scriptname%
+	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+	WinSet, Transparent, %value%
+	Gui, Show,w220 h170, LLARS
+	WinMove, LLARS,, X, Y,
+	
+	count = 0
+	++frcount
+}
 	
 	else
 		

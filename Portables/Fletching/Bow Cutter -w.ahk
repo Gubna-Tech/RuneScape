@@ -472,6 +472,25 @@ Configcheck:
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
 	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	
+	Hotkey %lhk1%, Start
+	Hotkey %lhk2%, coordb
+	Hotkey %lhk3%, Configb
+	Hotkey %lhk4%, exitb
+}
+return
+
+Config2check:
+{
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	
+	Hotkey %lhk1%, Start
+	Hotkey %lhk2%, pauseb
+	Hotkey %lhk3%, resumeb
+	Hotkey %lhk4%, exitb
 }
 return
 
@@ -514,6 +533,9 @@ Start:
 ConfigError()
 If (frcount = 0)
 {
+	SetTimer, ConfigCheck, off
+	SetTimer, Config2Check, 250
+	
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
