@@ -294,9 +294,9 @@ EnableButton(enable := true) {
 
 ~Esc::
 IfWinActive, Coordinates
-	GoSub, close
-Else
-	Return
+{EnableHotkey()
+GoSub, close
+}
 Return
 
 ConfigB:
