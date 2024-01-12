@@ -1,5 +1,6 @@
 <p align="center">
   <img width="250" height="250" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/LLARS/LLARS%20Logo.png">
+    <a href="https://www.autohotkey.com">
   <img width="250" height="250" src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/LLARS/AHK%20Logo.png">
 </p>
 
@@ -9,7 +10,7 @@
   </a>
 </p>
 <p align="center">
-  <a href="https://discord.gg/VmFXqQ9FhJ">
+  <a href="https://discord.gg/2zRRJbdYff">
     <img src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/LLARS%20Discord.png" alt="Download" width="400" height="120">
   </a>
 </p>
@@ -22,10 +23,6 @@ Please note that the scripts in this repository are specifically designed for **
 If you have any other inquiries or questions regarding this project, feel free to contact me. 
 
 Discord: **Gubna** *formerly* **Gubna#0001**
-
-<p align="center">
-  <a href="https://discord.gg/VmFXqQ9FhJ">LLARS Support Discord Server</a>
-</p>
 
 ## Requirements:
 To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
@@ -55,9 +52,5 @@ This software is distributed as Free Open Source Software (FOSS), which means it
 ***The [Disclaimer](Disclaimer.md) should be viewed as it clearly states that the scripts provided are for educational purposes only and holds the script creator harmless from any liability, emphasizing the users' responsibility for their actions and the potential consequences that may arise from using the scripts. It serves as a reminder to exercise caution, make informed decisions, and comply with the game's rules and policies while using automation scripts.***
 
 # Notice: Scripts Designed for RuneScape3 Evolution of Combat (EoC)
-
-<p align="center">
-  <a href="https://discord.gg/VmFXqQ9FhJ">LLARS Support Discord Server</a>
-</p>
 
 *The primary purpose of the LLARS Support Discord Server is to share updates and provide information about recent developments, distinct from the usage of GitHub for the same purpose.*
