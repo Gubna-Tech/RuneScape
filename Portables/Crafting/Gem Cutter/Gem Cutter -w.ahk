@@ -359,13 +359,16 @@ if GetKeyState("RButton", "P")
 	Sleep, 250
 }
 return
+
 ~Esc::
 IfWinActive, Coordinates
-	GoSub, close
-Else IfWinActive, Hotkeys
-	GoSub, close2
-Else
-	Return
+{EnableHotkey()
+GoSub, close
+}
+IfWinActive, Hotkeys
+{EnableHotkey()	
+GoSub, close2
+}
 Return
 
 configB:
