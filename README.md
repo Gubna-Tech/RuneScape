@@ -10,7 +10,7 @@
   </a>
 </p>
 <p align="center">
-  <a href="https://discord.gg/2zRRJbdYff">
+  <a href="https://discord.gg/Wmmf65myPG">
     <img src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/LLARS%20Discord.png" alt="Download" width="400" height="120">
   </a>
 </p>
