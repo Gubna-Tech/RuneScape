@@ -301,11 +301,59 @@ IfWinActive, Coordinates
 {EnableHotkey()
 GoSub, close
 }
+IfWinActive, Timer
+{EnableHotkey()
+Gui 5: destroy
+Gui 1: show
+}
 Return
 
 ConfigB:
-Run %A_ScriptDir%\Config.ini
+DisableHotkey()
+gui 1: Hide
+
+IniRead, sa1, Config.ini, Timer, min
+IniRead, sa2, Config.ini, Timer, max
+
+Gui 5: Font, bold s12
+Gui 5: Add, Text, x5 w190 center, Click Timer Interval
+Gui 5: Font, s10
+Gui 5: Add, Text, x5 w190 center, timers are in ms`n1000ms = 1sec
+Gui 5: Add, Text,,
+Gui 5: Font, s11
+Gui 5: Add, Text, center x5 w190, Minimum click timer
+Gui 5: Add, Edit, vMinEdit center x50 w100, % sa1
+Gui 5: Add, Text,,
+Gui 5: Add, Text, center x5 w190, Maximum click timer
+Gui 5: Add, Edit, vMaxEdit center x50 w100, % sa2
+Gui 5: Add, Text,,
+Gui 5: Add, Button, Default gButtonSave x50 w100, Save Timer
+gui 5: -caption
+Gui 5: Show, center w200, Timer
 Return
+
+ButtonSave:
+GuiControlGet, NewMin, , MinEdit
+GuiControlGet, NewMax, , MaxEdit
+
+IniWrite, %NewMin%, Config.ini, Timer, min
+IniWrite, %NewMax%, Config.ini, Timer, max
+
+Gui 5: Destroy
+Gui 13: +AlwaysOnTop +OwnDialogs
+Gui 13: Color, Green
+Gui 13: Font, cWhite
+Gui 13: Font, s16 bold
+Gui 13: Add, Text, vTthree center, Timer has been updated in the Config.ini file
+Gui 13: -caption
+Gui 13: Show, NoActivate xcenter y5
+
+Sleep 3000
+
+Gui 13: Destroy
+gui 1: show
+EnableHotkey()
+return
 
 ResumeB:
 GuiControl,,State3, Running
