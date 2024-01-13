@@ -26,7 +26,7 @@ Gui, Font, s11
 Gui, font, bold
 Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
 Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
-Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
+Gui, Add, Button, x115 y35 w90 h25 gConfigb , Click timer
 Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 Gui, Font, cBlue
 Gui, Add, Text, x135 y65 w70 h25 vState3
