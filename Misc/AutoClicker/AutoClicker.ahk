@@ -164,6 +164,10 @@ EnableHotkey(enable := true) {
 }
 
 CoordB:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
 Gui 1: Hide
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s11 Bold
