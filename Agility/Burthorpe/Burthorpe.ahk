@@ -286,6 +286,10 @@ WinSet, Transparent, %value%
 return
 
 Close:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
 Gui 2: Destroy
 Gui 1: Show
 EnableHotkey()
@@ -385,6 +389,10 @@ GoSub, close2
 Return
 
 configB:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
 Gui 1: Hide
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 3: Font, s11 Bold
