@@ -118,7 +118,7 @@ ConfigError(){
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for modifier in [Item Config] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for modifier in [Item Config] in the config.`nModifier should equal: 1,2,3,4,5, or burial
 		reload
 	}
 	
