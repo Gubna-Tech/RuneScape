@@ -107,9 +107,6 @@ ConfigError(){
 		reload
 	}
 	
-	IniRead, option, Config.ini, Input, scroll
-	if (%option% = true)
-	{
 		IniRead, x1, Config.ini, Input, xmin
 		IniRead, x2, Config.ini, Input, xmax
 		IniRead, y1, Config.ini, Input, ymin
@@ -122,7 +119,6 @@ ConfigError(){
 			MsgBox, 4112, Config Error, Please enter valid coordinates for [Input] in the config.
 			reload
 		}
-	}
 	
 	IniRead, option, Config.ini, Input, scroll
 	if (%option% = true)
