@@ -12,7 +12,6 @@ IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 IniRead, value, LLARS Config.ini, Transparent, value
 
 settimer, configcheck, 250
-settimer, guicheck
 
 scriptname := regexreplace(A_scriptname,"\..*","")
 
@@ -56,6 +55,7 @@ SendMessage, 0x80, 1, hIcon
 coordcount = 0
 frcount = 0
 
+OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
 OnMessage(0x0201, "WM_LBUTTONDOWN")
 WM_LBUTTONDOWN() {
 	If (A_Gui)
@@ -63,37 +63,44 @@ WM_LBUTTONDOWN() {
 }
 return
 
-CheckPOS(){
-	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
-	xmin := GUIx
-	xmax :=GUIw + GUIx
-	ymin :=GUIy
-	ymax :=GUIh + GUIy
-	xadj :=A_ScreenWidth-GUIw
-	yadj :=A_ScreenHeight-GUIh
-	WinGetPos, X, Y,,, LLARS	
- 	
-	if (xmin<0)
-	{
-		WinMove, LLARS,,0
-	}
-	if (ymin<0)
-	{
-		WinMove, LLARS,,,0
-	}
-	if (xmax>A_ScreenWidth)
-	{
-		WinMove, LLARS,,xadj	
-	}
-	if (ymax>A_ScreenHeight)
-	{
-		WinMove, LLARS,,,yadj
+WM_WINDOWPOSCHANGED() {
+	If (A_Gui) {
+		checkpos()
 	}
 }
-
-guicheck:
-checkpos()
 return
+
+CheckPOS() {
+	allowedWindows := "|LLARS|hotkeys|coordinates|"
+	
+	WinGetTitle, activeWindowTitle, A
+	
+	if (InStr(allowedWindows, "|" activeWindowTitle "|") <= 0) {
+		return
+	}
+	
+	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
+	xmin := GUIx
+	xmax := GUIw + GUIx
+	ymin := GUIy
+	ymax := GUIh + GUIy
+	xadj := A_ScreenWidth - GUIw
+	yadj := A_ScreenHeight - GUIh
+	WinGetPos, X, Y,,, A    
+	
+	if (xmin < 0) {
+		WinMove, A,, 0
+	}
+	if (ymin < 0) {
+		WinMove, A,,, 0
+	}
+	if (xmax > A_ScreenWidth) {
+		WinMove, A,, xadj    
+	}
+	if (ymax > A_ScreenHeight) {
+		WinMove, A,,, yadj
+	}
+}
 
 CloseOtherLLARS()
 {
