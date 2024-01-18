@@ -322,7 +322,7 @@ if GetKeyState("RButton", "P")
 		IniWrite, %ymin%, Config.ini, %ButtonText%, ymin
 		IniWrite, %ymax%, Config.ini, %ButtonText%, ymax
 		
-		Sleep, 3000
+		Sleep, 1500
 		
 		Gui 13: destroy
 		Gui, 2: Destroy
@@ -414,7 +414,7 @@ Gui 13: Add, Text, vTthree center, Hotkey has been updated in the Config.ini fil
 Gui 13: -caption
 Gui 13: Show, NoActivate xcenter y5
 
-Sleep 3000
+Sleep 1500
 
 Gui 13: Destroy
 Gui 1: Show
