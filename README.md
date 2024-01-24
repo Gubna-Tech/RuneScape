@@ -11,7 +11,7 @@
 </p>
 <p align="center">
   <a href="https://discord.gg/Wmmf65myPG">
-    <img src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/LLARS%20Discord.png" alt="Download" width="400" height="120">
+    <img src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/a0b944fa0adb2ff6251545e43360c004e3b12819/Assets/LLARS%20Discord.png" alt="Download" width="400" height="120">
   </a>
 </p>
 
