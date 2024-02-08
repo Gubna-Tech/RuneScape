@@ -30,7 +30,7 @@ To run the scripts in this project, you will need to have AutoHotkey (AHK) insta
 If you haven't installed AutoHotkey yet, you can download it from the official AutoHotkey website. Visit the following link to download the AHK installer:
 
 <p align="center">
-  <a href="https://www.autohotkey.com/download/ahk-install.exe">AutoHotKey Download</a>
+  <a href="https://www.autohotkey.com/download/ahk-v2.exe">AutoHotKey Download</a>
 </p>
 
 ## Notepad++ for Configuration Files:
