@@ -586,7 +586,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Anvil Coords, xmin
 		IniRead, x2, Config.ini, Anvil Coords, xmax
 		IniRead, y1, Config.ini, Anvil Coords, ymin
@@ -600,7 +600,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%		
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, bar, Config.ini, Item Config, bar
 		IniRead, x1, Config.ini, %bar%, xmin
 		IniRead, x2, Config.ini, %bar%, xmax
@@ -621,7 +621,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, item, Config.ini, Item Config, item
 		IniRead, x1, Config.ini, %item%, xmin
 		IniRead, x2, Config.ini, %item%, xmax
@@ -646,7 +646,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, item, Config.ini, Item Config, item
 		IniRead, x1, Config.ini, %item%, xmin
 		IniRead, x2, Config.ini, %item%, xmax
@@ -667,7 +667,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, modifier, Config.ini, Item Config, modifier
 		IniRead, x1, Config.ini, %modifier%, xmin
 		IniRead, x2, Config.ini, %modifier%, xmax
@@ -701,7 +701,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Anvil Coords, xmin
 		IniRead, x2, Config.ini, Anvil Coords, xmax
 		IniRead, y1, Config.ini, Anvil Coords, ymin
@@ -766,7 +766,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin
