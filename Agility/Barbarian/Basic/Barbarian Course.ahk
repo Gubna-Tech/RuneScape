@@ -635,7 +635,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Rope swing prime, xmin
 		IniRead, x2, Config.ini, Rope swing prime, xmax
 		IniRead, y1, Config.ini, Rope swing prime, ymin
@@ -662,7 +662,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Rope swing Main, xmin
 		IniRead, x2, Config.ini, Rope swing Main, xmax
 		IniRead, y1, Config.ini, Rope swing Main, ymin
@@ -680,7 +680,7 @@ loop % runcount
 	{
 		++firstrun
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Log balance, xmin
 		IniRead, x2, Config.ini, Log balance, xmax
 		IniRead, y1, Config.ini, Log balance, ymin
@@ -694,7 +694,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Obstacle net, xmin
 		IniRead, x2, Config.ini, Obstacle net, xmax
 		IniRead, y1, Config.ini, Obstacle net, ymin
@@ -708,7 +708,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Balancing ledge, xmin
 		IniRead, x2, Config.ini, Balancing ledge, xmax
 		IniRead, y1, Config.ini, Balancing ledge, ymin
@@ -722,7 +722,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Ladder, xmin
 		IniRead, x2, Config.ini, Ladder, xmax
 		IniRead, y1, Config.ini, Ladder, ymin
@@ -736,7 +736,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Crumbling Wall 1, xmin
 		IniRead, x2, Config.ini, Crumbling Wall 1, xmax
 		IniRead, y1, Config.ini, Crumbling Wall 1, ymin
@@ -750,7 +750,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Crumbling Wall 2, xmin
 		IniRead, x2, Config.ini, Crumbling Wall 2, xmax
 		IniRead, y1, Config.ini, Crumbling Wall 2, ymin
@@ -804,7 +804,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

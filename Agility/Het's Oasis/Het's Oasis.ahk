@@ -752,7 +752,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Fallen Palm Tree prime, xmin
 		IniRead, x2, Config.ini, Fallen Palm Tree prime, xmax
 		IniRead, y1, Config.ini, Fallen Palm Tree prime, ymin
@@ -779,7 +779,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Fallen Palm Tree Main, xmin
 		IniRead, x2, Config.ini, Fallen Palm Tree Main, xmax
 		IniRead, y1, Config.ini, Fallen Palm Tree Main, ymin
@@ -797,7 +797,7 @@ loop % runcount
 	{
 		++firstrun
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Fallen Palm Tree 1, xmin
 		IniRead, x2, Config.ini, Fallen Palm Tree 1, xmax
 		IniRead, y1, Config.ini, Fallen Palm Tree 1, ymin
@@ -811,7 +811,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Rope Ladder, xmin
 		IniRead, x2, Config.ini, Rope Ladder, xmax
 		IniRead, y1, Config.ini, Rope Ladder, ymin
@@ -825,7 +825,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Gap 1, xmin
 		IniRead, x2, Config.ini, Gap 1, xmax
 		IniRead, y1, Config.ini, Gap 1, ymin
@@ -839,7 +839,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Stone Pillar, xmin
 		IniRead, x2, Config.ini, Stone Pillar, xmax
 		IniRead, y1, Config.ini, Stone Pillar, ymin
@@ -853,7 +853,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Rock Wall, xmin
 		IniRead, x2, Config.ini, Rock Wall, xmax
 		IniRead, y1, Config.ini, Rock Wall, ymin
@@ -867,7 +867,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Fallen Palm Tree 2, xmin
 		IniRead, x2, Config.ini, Fallen Palm Tree 2, xmax
 		IniRead, y1, Config.ini, Fallen Palm Tree 2, ymin
@@ -881,7 +881,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Small Gap, xmin
 		IniRead, x2, Config.ini, Small Gap, xmax
 		IniRead, y1, Config.ini, Small Gap, ymin
@@ -895,7 +895,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Medium Gap, xmin
 		IniRead, x2, Config.ini, Medium Gap, xmax
 		IniRead, y1, Config.ini, Medium Gap, ymin
@@ -909,7 +909,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Fallen Palm Tree 3, xmin
 		IniRead, x2, Config.ini, Fallen Palm Tree 3, xmax
 		IniRead, y1, Config.ini, Fallen Palm Tree 3, ymin
@@ -923,7 +923,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Collapsed Walls, xmin
 		IniRead, x2, Config.ini, Collapsed Walls, xmax
 		IniRead, y1, Config.ini, Collapsed Walls, ymin
@@ -937,7 +937,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Large Rock 1, xmin
 		IniRead, x2, Config.ini, Large Rock 1, xmax
 		IniRead, y1, Config.ini, Large Rock 1, ymin
@@ -951,7 +951,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Ledge 1, xmin
 		IniRead, x2, Config.ini, Ledge 1, xmax
 		IniRead, y1, Config.ini, Ledge 1, ymin
@@ -965,7 +965,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Gap 2, xmin
 		IniRead, x2, Config.ini, Gap 2, xmax
 		IniRead, y1, Config.ini, Gap 2, ymin
@@ -979,7 +979,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Ledge 2, xmin
 		IniRead, x2, Config.ini, Ledge 2, xmax
 		IniRead, y1, Config.ini, Ledge 2, ymin
@@ -993,7 +993,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Large Rock 2, xmin
 		IniRead, x2, Config.ini, Large Rock 2, xmax
 		IniRead, y1, Config.ini, Large Rock 2, ymin
@@ -1047,7 +1047,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

@@ -648,7 +648,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Log balance prime, xmin
 		IniRead, x2, Config.ini, Log balance prime, xmax
 		IniRead, y1, Config.ini, Log balance prime, ymin
@@ -680,7 +680,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Log balance Main, xmin
 		IniRead, x2, Config.ini, Log balance Main, xmax
 		IniRead, y1, Config.ini, Log balance Main, ymin
@@ -698,7 +698,7 @@ loop % runcount
 	{
 		++firstrun
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Obstacle net, xmin
 		IniRead, x2, Config.ini, Obstacle net, xmax
 		IniRead, y1, Config.ini, Obstacle net, ymin
@@ -712,7 +712,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Tree branch, xmin
 		IniRead, x2, Config.ini, Tree branch, xmax
 		IniRead, y1, Config.ini, Tree branch, ymin
@@ -726,7 +726,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Tree, xmin
 		IniRead, x2, Config.ini, Tree, xmax
 		IniRead, y1, Config.ini, Tree, ymin
@@ -740,7 +740,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Signpost, xmin
 		IniRead, x2, Config.ini, Signpost, xmax
 		IniRead, y1, Config.ini, Signpost, ymin
@@ -754,7 +754,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Pole, xmin
 		IniRead, x2, Config.ini, Pole, xmax
 		IniRead, y1, Config.ini, Pole, ymin
@@ -768,7 +768,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Tile, xmin
 		IniRead, x2, Config.ini, Tile, xmax
 		IniRead, y1, Config.ini, Tile, ymin
@@ -782,7 +782,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Barrier, xmin
 		IniRead, x2, Config.ini, Barrier, xmax
 		IniRead, y1, Config.ini, Barrier, ymin
@@ -836,7 +836,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

@@ -635,7 +635,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Log Balance Prime, xmin
 		IniRead, x2, Config.ini, Log Balance Prime, xmax
 		IniRead, y1, Config.ini, Log Balance Prime, ymin
@@ -667,7 +667,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Log Balance Main, xmin
 		IniRead, x2, Config.ini, Log Balance Main, xmax
 		IniRead, y1, Config.ini, Log Balance Main, ymin
@@ -685,7 +685,7 @@ loop % runcount
 	{
 		++firstrun
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Obstacle Net 1, xmin
 		IniRead, x2, Config.ini, Obstacle Net 1, xmax
 		IniRead, y1, Config.ini, Obstacle Net 1, ymin
@@ -699,7 +699,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Tree Branch 1, xmin
 		IniRead, x2, Config.ini, Tree Branch 1, xmax
 		IniRead, y1, Config.ini, Tree Branch 1, ymin
@@ -713,7 +713,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Balance Rope, xmin
 		IniRead, x2, Config.ini, Balance Rope, xmax
 		IniRead, y1, Config.ini, Balance Rope, ymin
@@ -727,7 +727,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Tree Branch 2, xmin
 		IniRead, x2, Config.ini, Tree Branch 2, xmax
 		IniRead, y1, Config.ini, Tree Branch 2, ymin
@@ -741,7 +741,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Obstacle Net 2, xmin
 		IniRead, x2, Config.ini, Obstacle Net 2, xmax
 		IniRead, y1, Config.ini, Obstacle Net 2, ymin
@@ -755,7 +755,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Obstacle Pipe, xmin
 		IniRead, x2, Config.ini, Obstacle Pipe, xmax
 		IniRead, y1, Config.ini, Obstacle Pipe, ymin
@@ -809,7 +809,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

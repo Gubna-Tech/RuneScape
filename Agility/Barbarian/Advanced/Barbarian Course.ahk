@@ -647,7 +647,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Rope swing prime, xmin
 		IniRead, x2, Config.ini, Rope swing prime, xmax
 		IniRead, y1, Config.ini, Rope swing prime, ymin
@@ -674,7 +674,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Rope swing Main, xmin
 		IniRead, x2, Config.ini, Rope swing Main, xmax
 		IniRead, y1, Config.ini, Rope swing Main, ymin
@@ -692,7 +692,7 @@ loop % runcount
 	{
 		++firstrun
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Log balance, xmin
 		IniRead, x2, Config.ini, Log balance, xmax
 		IniRead, y1, Config.ini, Log balance, ymin
@@ -706,7 +706,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Wall 1, xmin
 		IniRead, x2, Config.ini, Wall 1, xmax
 		IniRead, y1, Config.ini, Wall 1, ymin
@@ -720,7 +720,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Wall 2, xmin
 		IniRead, x2, Config.ini, Wall 2, xmax
 		IniRead, y1, Config.ini, Wall 2, ymin
@@ -734,7 +734,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Spring Device, xmin
 		IniRead, x2, Config.ini, Spring Device, xmax
 		IniRead, y1, Config.ini, Spring Device, ymin
@@ -748,7 +748,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Balance Beam, xmin
 		IniRead, x2, Config.ini, Balance Beam, xmax
 		IniRead, y1, Config.ini, Balance Beam, ymin
@@ -762,7 +762,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Gap, xmin
 		IniRead, x2, Config.ini, Gap, xmax
 		IniRead, y1, Config.ini, Gap, ymin
@@ -776,7 +776,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Roof, xmin
 		IniRead, x2, Config.ini, Roof, xmax
 		IniRead, y1, Config.ini, Roof, ymin
@@ -830,7 +830,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

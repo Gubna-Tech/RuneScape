@@ -506,7 +506,7 @@ IniRead, sa2, Config.ini, AFK, max
 Random, SleepAmount, %sa1%, %sa2%
 settimer, AFK, %sleepamount%
 
-CoordMode, Mouse, Screen
+CoordMode, Mouse, Window
 Random, x, %xmin%, %xmax%
 Random, y, %ymin%, %ymax%
 Random, RandomSpeed, 25, 100
@@ -537,7 +537,7 @@ AFK:
 	Random, SleepAmount, %sa1%, %sa2%
 	settimer, AFK, %sleepamount%
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	Random, x, %xmin%, %xmax%
 	Random, y, %ymin%, %ymax%
 	Random, RandomSpeed, 25, 100
@@ -564,7 +564,7 @@ Logout(){
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%	
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin

@@ -570,7 +570,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Trellis Prime, xmin
 		IniRead, x2, Config.ini, Trellis Prime, xmax
 		IniRead, y1, Config.ini, Trellis Prime, ymin
@@ -597,7 +597,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Trellis Main, xmin
 		IniRead, x2, Config.ini, Trellis Main, xmax
 		IniRead, y1, Config.ini, Trellis Main, ymin
@@ -615,7 +615,7 @@ loop % runcount
 	{
 		++firstrun
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Ladder, xmin
 		IniRead, x2, Config.ini, Ladder, xmax
 		IniRead, y1, Config.ini, Ladder, ymin
@@ -669,7 +669,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

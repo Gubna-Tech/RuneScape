@@ -558,7 +558,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Smelter Coords, xmin
 		IniRead, x2, Config.ini, Smelter Coords, xmax
 		IniRead, y1, Config.ini, Smelter Coords, ymin
@@ -579,7 +579,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%		
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, bar, Config.ini, Metal Type, bar
 		IniRead, x1, Config.ini, %bar%, xmin
 		IniRead, x2, Config.ini, %bar%, xmax
@@ -607,7 +607,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Smelter Coords, xmin
 		IniRead, x2, Config.ini, Smelter Coords, xmax
 		IniRead, y1, Config.ini, Smelter Coords, ymin
@@ -679,7 +679,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

@@ -661,8 +661,8 @@ loop % runcount
 		GuiControl,,Counter2, %count2% / %runcount3%
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
-	
-		CoordMode, Mouse, Screen
+		
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Log Beam Main, xmin
 		IniRead, x2, Config.ini, Log Beam Main, xmax
 		IniRead, y1, Config.ini, Log Beam Main, ymin
@@ -680,7 +680,7 @@ loop % runcount
 	{
 		++firstrun
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Wall, xmin
 		IniRead, x2, Config.ini, Wall, xmax
 		IniRead, y1, Config.ini, Wall, ymin
@@ -694,7 +694,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Balancing Ledge, xmin
 		IniRead, x2, Config.ini, Balancing Ledge, xmax
 		IniRead, y1, Config.ini, Balancing Ledge, ymin
@@ -708,7 +708,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Obstacle low wall, xmin
 		IniRead, x2, Config.ini, Obstacle low wall, xmax
 		IniRead, y1, Config.ini, Obstacle low wall, ymin
@@ -722,7 +722,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Rope swing, xmin
 		IniRead, x2, Config.ini, Rope swing, xmax
 		IniRead, y1, Config.ini, Rope swing, ymin
@@ -736,7 +736,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Monkey bars, xmin
 		IniRead, x2, Config.ini, Monkey bars, xmax
 		IniRead, y1, Config.ini, Monkey bars, ymin
@@ -750,7 +750,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Ledge, xmin
 		IniRead, x2, Config.ini, Ledge, xmax
 		IniRead, y1, Config.ini, Ledge, ymin
@@ -804,7 +804,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin
