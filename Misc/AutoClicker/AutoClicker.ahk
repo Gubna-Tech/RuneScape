@@ -500,6 +500,7 @@ startcheck=1
 
 winactivate, RuneScape
 
+CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Click, xmin
 IniRead, x2, Config.ini, Click, xmax
 IniRead, y1, Config.ini, Click, ymin
@@ -513,8 +514,8 @@ IniRead, sa2, Config.ini, Timer, max
 Random, SleepClick, %sa1%, %sa2%
 SetTimer, RandomClick, %SleepClick%
 
-	loop 100
-	{
+loop 100
+{
 		mousegetpos xm, ym
 		tooltip, Activated AutoClicker, (xm+15), (ym+15),1
 		sleep 25
@@ -528,6 +529,7 @@ RandomClick:
 	winactivate, RuneScape	
 	DisableButton()
 	
+	CoordMode, Mouse, Window
 	IniRead, x1, Config.ini, Click, xmin
 	IniRead, x2, Config.ini, Click, xmax
 	IniRead, y1, Config.ini, Click, ymin

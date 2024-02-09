@@ -569,7 +569,7 @@ loop % runcount
 	GuiControl,,State3, Running
 	DisableButton()
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, Config.ini, Bank Chest, xmin
 	IniRead, x2, Config.ini, Bank Chest, xmax
 	IniRead, y1, Config.ini, Bank Chest, ymin
@@ -619,7 +619,7 @@ loop % runcount
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, Config.ini, Range, xmin
 	IniRead, x2, Config.ini, Range, xmax
 	IniRead, y1, Config.ini, Range, ymin
@@ -651,7 +651,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%	
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
@@ -659,7 +659,7 @@ loop % runcount
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%	
-}
+	}
 
 GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished

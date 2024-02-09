@@ -573,7 +573,7 @@ loop % runcount
 	GuiControl,,ScriptBlue, %scriptname%
 	GuiControl,,State3, Running
 	DisableButton()
-
+	
 	IniRead, option, LLARS Config.ini, Random Sleep, option
 	if option = true
 	{
@@ -609,7 +609,7 @@ loop % runcount
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, Config.ini, Item, xmin
 	IniRead, x2, Config.ini, Item, xmax
 	IniRead, y1, Config.ini, Item, ymin
@@ -634,7 +634,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

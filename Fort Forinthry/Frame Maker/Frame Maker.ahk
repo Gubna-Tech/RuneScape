@@ -581,7 +581,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Prime, xmin
 		IniRead, x2, Config.ini, Bank Prime, xmax
 		IniRead, y1, Config.ini, Bank Prime, ymin
@@ -603,7 +603,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Woodworking Bench, xmin
 		IniRead, x2, Config.ini, Woodworking Bench, xmax
 		IniRead, y1, Config.ini, Woodworking Bench, ymin
@@ -625,7 +625,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Main, xmin
 		IniRead, x2, Config.ini, Bank Main, xmax
 		IniRead, y1, Config.ini, Bank Main, ymin
@@ -675,7 +675,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Woodworking Bench, xmin
 		IniRead, x2, Config.ini, Woodworking Bench, xmax
 		IniRead, y1, Config.ini, Woodworking Bench, ymin
@@ -702,7 +702,7 @@ loop % runcount
 	}	
 }
 
-CoordMode, Mouse, Screen
+CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Bank Main, xmin
 IniRead, x2, Config.ini, Bank Main, xmax
 IniRead, y1, Config.ini, Bank Main, ymin
@@ -733,7 +733,7 @@ if option=true
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%	
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
