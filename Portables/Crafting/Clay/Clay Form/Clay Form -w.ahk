@@ -662,7 +662,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Prime Coords, xmin
 		IniRead, x2, Config.ini, Bank Prime Coords, xmax
 		IniRead, y1, Config.ini, Bank Prime Coords, ymin
@@ -684,7 +684,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Crafter Coords, xmin
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
@@ -705,7 +705,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Pottery Menu Coords, xmin
 		IniRead, x2, Config.ini, Pottery Menu Coords, xmax
 		IniRead, y1, Config.ini, Pottery Menu Coords, ymin
@@ -719,7 +719,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Pottery Sub-Menu Coords, xmin
 		IniRead, x2, Config.ini, Pottery Sub-Menu Coords, xmax
 		IniRead, y1, Config.ini, Pottery Sub-Menu Coords, ymin
@@ -733,7 +733,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, item, Config.ini, Item Config, item
 		IniRead, x1, Config.ini, %item%, xmin
 		IniRead, x2, Config.ini, %item%, xmax
@@ -756,7 +756,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Main Coords, xmin
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -806,7 +806,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Crafter Coords, xmin
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
@@ -839,20 +839,12 @@ loop % runcount
 		Sleep, %SleepAmount%
 	}	
 }
-	
-CoordMode, Mouse, Screen
+
+CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Bank Main Coords, xmin
 IniRead, x2, Config.ini, Bank Main Coords, xmax
 IniRead, y1, Config.ini, Bank Main Coords, ymin
 IniRead, y2, Config.ini, Bank Main Coords, ymax
-if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-{
-	Run %A_ScriptDir%\Config.ini
-	GuiControl,,ScriptRed, %scriptname%		
-	GuiControl,,State2, ERROR
-	MsgBox, 48, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
-	return
-}
 Random, x, %x1%, %x2%
 Random, y, %y1%, %y2%
 Click, %x%, %y%
@@ -879,7 +871,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin

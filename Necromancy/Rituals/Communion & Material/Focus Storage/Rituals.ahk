@@ -615,7 +615,7 @@ If (frcount = 0)
 			GuiControl,,State3, Running
 			DisableButton()
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
 			IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
 			IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
@@ -629,7 +629,7 @@ If (frcount = 0)
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Ritual Type, xmin
 			IniRead, x2, Config.ini, Ritual Type, xmax
 			IniRead, y1, Config.ini, Ritual Type, ymin
@@ -646,7 +646,7 @@ If (frcount = 0)
 			IniRead, option, Config.ini, Input, scroll
 			if (%option% = true)
 			{
-				CoordMode, Mouse, Screen
+				CoordMode, Mouse, Window
 				IniRead, x1, Config.ini, Input Scroll, xmin
 				IniRead, x2, Config.ini, Input Scroll, xmax
 				IniRead, y1, Config.ini, Input Scroll, ymin
@@ -675,7 +675,7 @@ If (frcount = 0)
 				Sleep, %SleepAmount%								
 			}
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Input, xmin
 			IniRead, x2, Config.ini, Input, xmax
 			IniRead, y1, Config.ini, Input, ymin
@@ -696,7 +696,7 @@ If (frcount = 0)
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
 			IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
 			IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
@@ -730,7 +730,7 @@ If (frcount = 0)
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%		
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Platform, xmin
 			IniRead, x2, Config.ini, Platform, xmax
 			IniRead, y1, Config.ini, Platform, ymin
@@ -762,7 +762,7 @@ If (frcount = 0)
 			GuiControl,,ScriptBlue, %scriptname%
 			GuiControl,,State3, Running
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Pedestal - Platform, xmin
 			IniRead, x2, Config.ini, Pedestal - Platform, xmax
 			IniRead, y1, Config.ini, Pedestal - Platform, ymin
@@ -828,7 +828,7 @@ If (frcount = 0)
 				}
 			}	
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Platform, xmin
 			IniRead, x2, Config.ini, Platform, xmax
 			IniRead, y1, Config.ini, Platform, ymin
@@ -847,47 +847,47 @@ If (frcount = 0)
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%
 		}	
-	}
+}
+
+CoordMode, Mouse, Window
+IniRead, x1, Config.ini, Pedestal - Platform, xmin
+IniRead, x2, Config.ini, Pedestal - Platform, xmax
+IniRead, y1, Config.ini, Pedestal - Platform, ymin
+IniRead, y2, Config.ini, Pedestal - Platform, ymax
+Random, x, %x1%, %x2%
+Random, y, %y1%, %y2%
+Click, %x%, %y%
+
+IniRead, sa1, Config.ini, Sleep Walk, min
+IniRead, sa2, Config.ini, Sleep Walk, max
+Random, SleepAmount, %sa1%, %sa2%
+Sleep, %SleepAmount%
+
+send {esc}
+
+IniRead, sa1, Config.ini, Sleep Brief, min
+IniRead, sa2, Config.ini, Sleep Brief, max
+Random, SleepAmount, %sa1%, %sa2%
+Sleep, %SleepAmount%	
+
+IniRead, option, LLARS Config.ini, Logout, option
+if option=true
+{
+	send {esc}	
 	
-	CoordMode, Mouse, Screen
-	IniRead, x1, Config.ini, Pedestal - Platform, xmin
-	IniRead, x2, Config.ini, Pedestal - Platform, xmax
-	IniRead, y1, Config.ini, Pedestal - Platform, ymin
-	IniRead, y2, Config.ini, Pedestal - Platform, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%
-	
-	IniRead, sa1, Config.ini, Sleep Walk, min
-	IniRead, sa2, Config.ini, Sleep Walk, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%
-	
-	send {esc}
-	
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	IniRead, option, LLARS Config.ini, Logout, option
-	if option=true
-	{
-		send {esc}	
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%	
-		
-		CoordMode, Mouse, Screen
-		IniRead, x1, LLARS Config.ini, Logout, xmin
-		IniRead, x2, LLARS Config.ini, Logout, xmax
-		IniRead, y1, LLARS Config.ini, Logout, ymin
-		IniRead, y2, LLARS Config.ini, Logout, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
+	CoordMode, Mouse, Window
+	IniRead, x1, LLARS Config.ini, Logout, xmin
+	IniRead, x2, LLARS Config.ini, Logout, xmax
+	IniRead, y1, LLARS Config.ini, Logout, ymin
+	IniRead, y2, LLARS Config.ini, Logout, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%
 }
 
 GuiControl,,ScriptGreen, %scriptname%

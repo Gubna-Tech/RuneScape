@@ -621,7 +621,7 @@ If (frcount = 0)
 				
 				SetTimer, UpdateTime, 1000
 				
-				CoordMode, Mouse, Screen
+				CoordMode, Mouse, Window
 				IniRead, x1, Config.ini, Bank Main Coords, xmin
 				IniRead, x2, Config.ini, Bank Main Coords, xmax
 				IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -674,7 +674,7 @@ If (frcount = 0)
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Main Coords, xmin
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -724,7 +724,7 @@ If (frcount = 0)
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Brazier Coords, xmin
 		IniRead, x2, Config.ini, Brazier Coords, xmax
 		IniRead, y1, Config.ini, Brazier Coords, ymin
@@ -742,7 +742,7 @@ If (frcount = 0)
 		if option=true
 			if (PortableRemainingTime <= 60000)
 			{	
-				CoordMode, Mouse, Screen
+				CoordMode, Mouse, Window
 				IniRead, x1, Config.ini, Bank Main Coords, xmin
 				IniRead, x2, Config.ini, Bank Main Coords, xmax
 				IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -811,7 +811,7 @@ If (frcount = 0)
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%	
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin

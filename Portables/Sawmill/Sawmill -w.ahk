@@ -632,7 +632,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Prime Coords, xmin
 		IniRead, x2, Config.ini, Bank Prime Coords, xmax
 		IniRead, y1, Config.ini, Bank Prime Coords, ymin
@@ -654,7 +654,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Sawmill Coords, xmin
 		IniRead, x2, Config.ini, Sawmill Coords, xmax
 		IniRead, y1, Config.ini, Sawmill Coords, ymin
@@ -681,7 +681,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Main Coords, xmin
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -731,7 +731,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Sawmill Coords, xmin
 		IniRead, x2, Config.ini, Sawmill Coords, xmax
 		IniRead, y1, Config.ini, Sawmill Coords, ymin
@@ -773,7 +773,7 @@ loop % runcount
 	}
 }
 
-CoordMode, Mouse, Screen
+CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Bank Main Coords, xmin
 IniRead, x2, Config.ini, Bank Main Coords, xmax
 IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -787,31 +787,31 @@ IniRead, sa2, Config.ini, Sleep Walk, max
 Random, SleepAmount, %sa1%, %sa2%
 Sleep, %SleepAmount%
 
-	IniRead, option, LLARS Config.ini, Logout, option
-	if option=true
-	{
-		send {esc}	
-		
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		send {esc}		
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%	
-		
-		CoordMode, Mouse, Screen
-		IniRead, x1, LLARS Config.ini, Logout, xmin
-		IniRead, x2, LLARS Config.ini, Logout, xmax
-		IniRead, y1, LLARS Config.ini, Logout, ymin
-		IniRead, y2, LLARS Config.ini, Logout, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%	
+IniRead, option, LLARS Config.ini, Logout, option
+if option=true
+{
+	send {esc}	
+	
+	IniRead, sa1, Config.ini, Sleep Brief, min
+	IniRead, sa2, Config.ini, Sleep Brief, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	send {esc}		
+	
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%	
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, LLARS Config.ini, Logout, xmin
+	IniRead, x2, LLARS Config.ini, Logout, xmax
+	IniRead, y1, LLARS Config.ini, Logout, ymin
+	IniRead, y2, LLARS Config.ini, Logout, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%	
 }
 
 

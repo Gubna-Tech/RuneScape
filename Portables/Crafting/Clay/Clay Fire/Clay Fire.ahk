@@ -621,7 +621,7 @@ loop % runcount
 			
 			SetTimer, UpdateTime, 1000
 			
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Bank Main Coords, xmin
 			IniRead, x2, Config.ini, Bank Main Coords, xmax
 			IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -674,7 +674,7 @@ loop % runcount
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, Config.ini, Bank Main Coords, xmin
 	IniRead, x2, Config.ini, Bank Main Coords, xmax
 	IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -724,7 +724,7 @@ loop % runcount
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, Config.ini, Crafter Coords, xmin
 	IniRead, x2, Config.ini, Crafter Coords, xmax
 	IniRead, y1, Config.ini, Crafter Coords, ymin
@@ -756,7 +756,7 @@ loop % runcount
 	if option=true
 		if (PortableRemainingTime <= 60000)
 		{	
-			CoordMode, Mouse, Screen
+			CoordMode, Mouse, Window
 			IniRead, x1, Config.ini, Bank Main Coords, xmin
 			IniRead, x2, Config.ini, Bank Main Coords, xmax
 			IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -825,7 +825,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%	
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
@@ -833,7 +833,7 @@ loop % runcount
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
-}
+	}
 
 GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished

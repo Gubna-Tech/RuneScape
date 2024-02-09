@@ -622,7 +622,7 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Prime Coords, xmin
 		IniRead, x2, Config.ini, Bank Prime Coords, xmax
 		IniRead, y1, Config.ini, Bank Prime Coords, ymin
@@ -644,7 +644,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Crafter Coords, xmin
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
@@ -671,7 +671,7 @@ loop % runcount
 		GuiControl,,ScriptBlue, %scriptname%
 		GuiControl,,State3, Running
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Bank Main Coords, xmin
 		IniRead, x2, Config.ini, Bank Main Coords, xmax
 		IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -721,7 +721,7 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		CoordMode, Mouse, Screen
+		CoordMode, Mouse, Window
 		IniRead, x1, Config.ini, Crafter Coords, xmin
 		IniRead, x2, Config.ini, Crafter Coords, xmax
 		IniRead, y1, Config.ini, Crafter Coords, ymin
@@ -748,7 +748,7 @@ loop % runcount
 	}	
 }
 
-CoordMode, Mouse, Screen
+CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Bank Main Coords, xmin
 IniRead, x2, Config.ini, Bank Main Coords, xmax
 IniRead, y1, Config.ini, Bank Main Coords, ymin
@@ -779,7 +779,7 @@ if option=true
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%	
 	
-	CoordMode, Mouse, Screen
+	CoordMode, Mouse, Window
 	IniRead, x1, LLARS Config.ini, Logout, xmin
 	IniRead, x2, LLARS Config.ini, Logout, xmax
 	IniRead, y1, LLARS Config.ini, Logout, ymin
