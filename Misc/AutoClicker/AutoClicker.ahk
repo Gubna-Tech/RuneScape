@@ -26,7 +26,7 @@ Gui, font, bold
 Gui, Add, Button, x5 y5 w100 h25 gStart , Start
 Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
 Gui, Add, Button, x5 y35 w100 h25 gCoordb , Coordinates
-Gui, Add, Button, x115 y35 w100 h25 gConfigb , Hotkeys
+Gui, Add, Button, x115 y35 w100 h25 gConfigb , Timer
 Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 Gui, Font, cBlue
 Gui, Add, Text, x135 y65 w70 h25 vState3
@@ -619,6 +619,8 @@ Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`
 Gui 20: Font, s11 Bold c0x152039
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Add, Text, Center w220 x5,Created by Gubna
+Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
+Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
 Gui 20: Add, Button, gDiscord w150 x40 center,Discord
 Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
 Gui 20: -caption
@@ -636,4 +638,14 @@ EnableHotkey()
 Gui 20: destroy
 Run, https://discord.gg/Wmmf65myPG
 gui 1: Show		
+return
+
+InfoConfig:
+EnableHotkey()
+Run %A_ScriptDir%\Config.ini
+return
+
+InfoLLARS:
+EnableHotkey()
+Run %A_ScriptDir%\LLARS Config.ini
 return
