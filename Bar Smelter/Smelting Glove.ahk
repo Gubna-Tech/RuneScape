@@ -317,6 +317,10 @@ IfWinActive, Hotkeys
 {EnableHotkey()	
 GoSub, close2
 }
+IfWinActive, Information
+{EnableHotkey()	
+GoSub, closeinfo
+}
 Return
 
 configB:
