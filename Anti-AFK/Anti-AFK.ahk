@@ -23,9 +23,10 @@ Hotkey %lhk4%, exitb
 Gui +LastFound +OwnDialogs +AlwaysOnTop
 Gui, Font, s11
 Gui, font, bold
-Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
-Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
-Gui, Add, Button, x115 y35 w90 h25 gConfigb , Hotkeys
+Gui, Add, Button, x5 y5 w100 h25 gStart , Start
+Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
+Gui, Add, Button, x5 y35 w100 h25 gCoordb , Coordinates
+Gui, Add, Button, x115 y35 w100 h25 gConfigb , Hotkeys
 Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 Gui, Font, cBlue
 Gui, Add, Text, x135 y65 w70 h25 vState3
@@ -447,9 +448,10 @@ If (frcount = 0)
 	Gui +LastFound +OwnDialogs +AlwaysOnTop
 	Gui, Font, s11
 	Gui, font, bold
-	Gui, Add, Button, x15 y5 w190 h25 gStart , Start %scriptname%
-	Gui, Add, Button, x15 y35 w90 h25 gCoordb , Coordinates
-	Gui, Add, Button, x115 y35 w90 h25 gConfigb , Config File
+	Gui, Add, Button, x5 y5 w100 h25 gStart , Start
+	Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
+	Gui, Add, Button, x5 y35 w100 h25 gPauseb , Pause
+	Gui, Add, Button, x115 y35 w100 h25 gResumeb , Resume
 	Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 	Gui, Font, cBlue
 	Gui, Add, Text, x135 y65 w70 h25 vState3
@@ -588,4 +590,54 @@ hours := timeToRunMinutes // 60
 minutes := Mod(timeToRunMinutes, 60)
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m
+return
+
+info:
+DisableHotkey()
+IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+IniRead, logout, LLARS Config.ini, Logout, option
+IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
+IniRead, chance, LLARS Config.ini, Random Sleep, chance
+
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
+Gui 1: hide
+Gui 3: hide	
+Gui 20: +AlwaysOnTop +OwnDialogs
+Gui 20: Font, S13 bold cMaroon
+Gui 20: Add, Text, Center w220 x5,%scriptname%
+Gui 20: Font, s11 Bold underline cTeal
+Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
+Gui 20: Font, Norm
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%
+Gui 20: Add, Text, center x5 w220,
+Gui 20: Font, Bold underline cPurple
+Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
+Gui 20: Font, Norm
+Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%
+Gui 20: Font, s11 Bold c0x152039
+Gui 20: Add, Text, center x5 w220,
+Gui 20: Add, Text, Center w220 x5,Created by Gubna
+Gui 20: Add, Button, gDiscord w150 x40 center,Discord
+Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
+Gui 20: -caption
+Gui 20: Show, center w230, Information
+return
+
+CloseInfo:
+EnableHotkey()
+gui 20: destroy
+gui 1: Show		
+return
+
+discord:
+EnableHotkey()
+Gui 20: destroy
+Run, https://discord.gg/Wmmf65myPG
+gui 1: Show		
 return
