@@ -314,6 +314,10 @@ IfWinActive, Timer
 Gui 5: destroy
 Gui 1: show
 }
+IfWinActive, Information
+{EnableHotkey()	
+GoSub, closeinfo
+}
 Return
 
 ConfigB:
