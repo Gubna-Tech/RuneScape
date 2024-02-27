@@ -354,6 +354,23 @@ ConfigError(){
 		}	
 	}
 	
+	IniRead, option, Config.ini, Cannon Restock, option
+	if option=true
+	{
+		IniRead, x1, Config.ini, Cannon Restock, xmin
+		IniRead, x2, Config.ini, Cannon Restock, xmax
+		IniRead, y1, Config.ini, Cannon Restock, ymin
+		IniRead, y2, Config.ini, Cannon Restock, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates in the Config for [Cannon Restock].
+			reload
+		}
+	}
+	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
 	{
@@ -543,7 +560,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|prayer|afk|heal|loot|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|prayer|afk|heal|loot|cannon restock|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -681,6 +698,7 @@ if (remainingTimeMS <= 0 and startcheck=1)
 	SetTimer, SaraBrew, Off
 	SetTimer, Summon, Off
 	SetTimer, Loot, Off
+	SetTimer, CannonRestock, Off
 	GuiControl,, TimerCount, Done
 	GuiControl,,State3, Done
 	EnableButton()
@@ -1245,6 +1263,35 @@ if option=true
 	tooltip
 }
 
+IniRead, option,Config.ini, Cannon Restock, option
+if option=true
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Cannon Restock, min
+	IniRead, sa2, Config.ini, Cannon Restock, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, CannonRestock, %sleepamount%
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, Config.ini, Cannon Restock, xmin
+	IniRead, x2, Config.ini, Cannon Restock, xmax
+	IniRead, y1, Config.ini, Cannon Restock, ymin
+	IniRead, y2, Config.ini, Cannon Restock, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	click, %x%, %y%
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Cannon Restock Activated, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
+}
+
 return
 
 Agro:
@@ -1713,6 +1760,35 @@ Loot:
 }
 return
 
+CannonRestock:
+{
+	winactivate, RuneScape	
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Cannon Restock, min
+	IniRead, sa2, Config.ini, Cannon Restock, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, CannonRestock, %sleepamount%
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, Config.ini, Cannon Restock, xmin
+	IniRead, x2, Config.ini, Cannon Restock, xmax
+	IniRead, y1, Config.ini, Cannon Restock, ymin
+	IniRead, y2, Config.ini, Cannon Restock, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	click, %x%, %y%
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Cannon Restock Activated, (xm+15), (ym+15),1
+		sleep 25
+}
+
+tooltip
+}
+return
 Logout(){
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
@@ -1770,6 +1846,7 @@ IniRead, hkis, Config.ini, Incense Sticks, hotkey
 IniRead, hkpp, Config.ini, Prayer Powder, hotkey
 IniRead, hksummon, Config.ini, Summon, hotkey
 IniRead, hksb, Config.ini, Saradomin Brew, hotkey
+IniRead, afkoption, Config.ini, AFK, option
 
 if (hkagro = "")
 {
@@ -1861,7 +1938,7 @@ Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%
+Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%`nAnti-AFK: %afkoption%
 Gui 20: Font, s11 Bold c0x152039
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Add, Text, Center w220 x5,Created by Gubna
