@@ -303,7 +303,7 @@ Loop, Parse, allContents, `n
 }
 
 Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged, % sectionList
-Gui, 2: Add, Button, w230 gClose, Close
+Gui, 2: Add, Button, x52 w150 gClose, Close Coordinates
 
 Gui, 2: Show, w250 h45 Center, Coordinates
 Gui 2: -Caption
@@ -440,7 +440,7 @@ Loop, Parse, allContents, `n
 Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
 Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
 Gui, 3: Add, Hotkey, x100 y60 w75 vChosenHotkey gHotkeyChanged Center, ** NONE **
-Gui, 3: Add, Button, x10 y90 w230 gClose2, Close
+Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
 
 Gui, 3: Show, w250 h100 Center, Hotkeys
 Gui 3: -Caption
