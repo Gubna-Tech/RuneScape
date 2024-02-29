@@ -195,7 +195,7 @@ Loop, Parse, allContents, `n
 }
 
 Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged, % sectionList
-Gui, 2: Add, Button, w230 gClose, Close
+Gui, 2: Add, Button, x52 w150 gClose, Close Coordinates
 
 Gui, 2: Show, w250 h45 Center, Coordinates
 Gui 2: -Caption
