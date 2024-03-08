@@ -436,6 +436,18 @@ exitapp
 
 Start:
 ConfigError()
+
+InputBox, timeToRunMinutes, Set Timer, Enter the time duration in minutes`n(example: 1 for 1 minute):,,250,150
+timeToRunMS := timeToRunMinutes * 60 * 1000
+
+endTime := A_TickCount + timeToRunMS
+
+if (timeToRunMinutes = "" or timeToRunMinutes = 0)
+{
+	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
+	return
+}
+
 If (frcount = 0)
 {
 	SetTimer, ConfigCheck, off
@@ -481,19 +493,6 @@ If (frcount = 0)
 }
 
 else
-	
-sleep 250
-
-InputBox, timeToRunMinutes, Set Timer, Enter the time duration in minutes`n(example: 1 for 1 minute):,,250,150
-timeToRunMS := timeToRunMinutes * 60 * 1000
-
-endTime := A_TickCount + timeToRunMS
-
-if (timeToRunMinutes = "" or timeToRunMinutes = 0)
-{
-	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
-	return
-}
 
 SetTimer, Countdown, 1000
 
