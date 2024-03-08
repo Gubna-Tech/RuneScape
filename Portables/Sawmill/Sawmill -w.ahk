@@ -549,6 +549,14 @@ exitapp
 
 Start:
 ConfigError()
+
+InputBox, runcount, Run How Many Times?,,,250, 100
+if (runcount = "" or runcount = 0)
+{
+	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
+	return
+}
+
 If (frcount = 0)
 {
 	SetTimer, ConfigCheck, off
@@ -601,15 +609,6 @@ If (frcount = 0)
 
 else
 	
-sleep 250
-
-InputBox, runcount, Run How Many Times?,,,250, 100
-if (runcount = "" or runcount = 0)
-{
-	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
-	return
-}
-
 sleep 250
 
 GuiControl,,ScriptBlue, %scriptname% 
