@@ -1,4 +1,3 @@
-Inital:
 #SingleInstance Force
 #Persistent
 SetBatchLines, -1
