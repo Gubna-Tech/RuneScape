@@ -731,6 +731,17 @@ exitapp
 
 Start:
 ConfigError()
+
+InputBox, timeToRunMinutes, Set Timer, Enter script run time in minutes`nexample: 25 for 25 minute`nrun time needs to be more than 5 minutes,,300,165
+timeToRunMS := timeToRunMinutes * 60 * 1000
+endTime := A_TickCount + timeToRunMS
+
+if (timeToRunMinutes = "" or timeToRunMinutes <= 5)
+{
+	MsgBox, 48, Invalid Input, Please enter a run time greater than 5 minutes.
+	return
+}
+ 
 If (frcount = 0)
 {
 	SetTimer, ConfigCheck, off
@@ -776,18 +787,6 @@ If (frcount = 0)
 }
 
 else
-	
-sleep 250
-
-InputBox, timeToRunMinutes, Set Timer, Enter script run time in minutes`nexample: 25 for 25 minute`nrun time needs to be more than 5 minutes,,300,165
-timeToRunMS := timeToRunMinutes * 60 * 1000
-endTime := A_TickCount + timeToRunMS
-
-if (timeToRunMinutes = "" or timeToRunMinutes <= 5)
-{
-	MsgBox, 48, Invalid Input, Please enter a run time greater than 5 minutes.
-	return
-}
 
 SetTimer, Countdown, 1000
 
