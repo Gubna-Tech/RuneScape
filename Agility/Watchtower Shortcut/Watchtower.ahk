@@ -5,6 +5,52 @@ SetBatchLines, -1
 DetectHiddenWindows, On
 closeotherllars()
 
+if !FileExist("Config.ini")
+{
+	Gui Error: +AlwaysOnTop +OwnDialogs
+	Gui Error: Font, S13 bold underline cRed
+	Gui Error: Add, Text, Center w220 x5,ERROR
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Font, s12 norm bold
+	Gui Error: Add, Text, Center w220 x5, Config.ini not found
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Font, cBlack
+	Gui Error: Add, Text, Center w220 x5, Please ensure that you have all the original files from:
+	Gui Error: Font, underline s12
+	Gui Error: Add, Text, cBlue gGitLink center w220 x5, Gubna-Tech Github
+	Gui Error: Font, s11 norm Bold c0x152039
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Add, Text, Center w220 x5,Created by Gubna
+	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
+	Gui Error: add, button, gCloseError w150 x40 center,Close Error
+	Gui Error: -caption
+	Gui Error: Show, center w230, Config Error
+	return
+}
+
+if !FileExist("LLARS Config.ini")
+{
+	Gui Error: +AlwaysOnTop +OwnDialogs
+	Gui Error: Font, S13 bold underline cRed
+	Gui Error: Add, Text, Center w220 x5,ERROR
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Font, s12 norm bold
+	Gui Error: Add, Text, Center w220 x5, LLARS Config.ini not found
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Font, cBlack
+	Gui Error: Add, Text, Center w220 x5, Please ensure that you have all the original files from:
+	Gui Error: Font, underline s12
+	Gui Error: Add, Text, cBlue gGitLink center w220 x5, Gubna-Tech Github
+	Gui Error: Font, s11 norm Bold c0x152039
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Add, Text, Center w220 x5,Created by Gubna
+	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
+	Gui Error: add, button, gCloseError w150 x40 center,Close Error
+	Gui Error: -caption
+	Gui Error: Show, center w230, Config Error
+	return
+}
+
 IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
@@ -780,3 +826,14 @@ InfoLLARS:
 EnableHotkey()
 Run %A_ScriptDir%\LLARS Config.ini
 return
+
+GitLink:
+run, https://github.com/Gubna-Tech/RuneScape
+Exitapp
+
+DiscordError:
+Run, https://discord.gg/Wmmf65myPG
+Exitapp
+
+CloseError:	
+ExitApp
