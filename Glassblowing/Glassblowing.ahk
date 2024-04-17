@@ -88,7 +88,10 @@ Gui, Add, Text, x135 y115 w70 h25 vState2
 Gui, Add, Text, x8 y115 w125 h25 vScriptRed
 GuiControl,,State2, ** OFF **
 Gui, Add, Text, x8 y115 w125 h25, %scriptname%
-Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+if FileExist("LLARS Logo.ico")
+{
+	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+}
 WinSet, Transparent, %value%
 Gui, Show,w220 h170, LLARS
 
