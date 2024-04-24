@@ -701,41 +701,31 @@ If (frcount = 0)
 			if (%option% = true)
 			{
 				CoordMode, Mouse, Window
-				IniRead, x1, Config.ini, Input Scroll, xmin
-				IniRead, x2, Config.ini, Input Scroll, xmax
-				IniRead, y1, Config.ini, Input Scroll, ymin
-				IniRead, y2, Config.ini, Input Scroll, ymax
+				IniRead, x1, Config.ini, Input, xmin
+				IniRead, x2, Config.ini, Input, xmax
+				IniRead, y1, Config.ini, Input, ymin
+				IniRead, y2, Config.ini, Input, ymax
 				Random, x, %x1%, %x2%
 				Random, y, %y1%, %y2%
-				mousemove,%x%,%y%
+				Random, Scroll, 5, 10
+				
+				MouseMove, %x%, %y%
 				
 				IniRead, sa1, Config.ini, Sleep Brief, min
 				IniRead, sa2, Config.ini, Sleep Brief, max
 				Random, SleepAmount, %sa1%, %sa2%
 				Sleep, %SleepAmount%
 				
-				send {lbutton down}
+				Loop % Scroll
+				{
+					send	{wheeldown}
+				}
 				
 				IniRead, sa1, Config.ini, Sleep Brief, min
 				IniRead, sa2, Config.ini, Sleep Brief, max
 				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				send {lbutton up}
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%								
+				Sleep, %SleepAmount%							
 			}
-			
-			CoordMode, Mouse, Window
-			IniRead, x1, Config.ini, Input, xmin
-			IniRead, x2, Config.ini, Input, xmax
-			IniRead, y1, Config.ini, Input, ymin
-			IniRead, y2, Config.ini, Input, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
 			Click, %x%, %y%
 			
 			IniRead, sa1, Config.ini, Sleep Short, min
@@ -901,7 +891,7 @@ If (frcount = 0)
 			Random, SleepAmount, %sa1%, %sa2%
 			Sleep, %SleepAmount%
 		}	
-}
+	}
 
 CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Pedestal - Platform, xmin
