@@ -375,12 +375,19 @@ ButtonText := selectedSection
 
 SetTimer, CheckClicks, 10
 
-Gui 11: +AlwaysOnTop +OwnDialogs
-Gui 11: Font, s16 bold
-Gui 11: Add, Text, vTone center,Right-click the top-left of the item you need the coordinates for
-Gui 11: -caption
-Gui 11: Show, NoActivate xcenter y5
+Gui 11u: +AlwaysOnTop +OwnDialogs +Disabled
+Gui 11u: Color, Red
+Gui 11u: Font, cRed
+Gui 11u: Font, s16 bold
+Gui 11u: Add, Text, valertlabel center,----Right-click the item's top-left corner for its coordinates`n----
+Gui 11u: -caption
+Gui 11u: Show, NoActivate xcenter y0
 
+Gui 11: +AlwaysOnTop +OwnDialogs +Disabled
+Gui 11: Font, s16 bold
+Gui 11: Add, Text, vTone center,Right-click the item's top-left corner for its coordinates
+Gui 11: -caption
+Gui 11: Show, NoActivate xcenter y15
 return
 
 CheckClicks:
@@ -391,11 +398,21 @@ if GetKeyState("RButton", "P")
 	if (ClickCount = 1)
 	{
 		Gui 11: destroy
-		Gui 12: +AlwaysOnTop +OwnDialogs
+		Gui 11u: destroy
+		
+		Gui 12u: +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 12u: Color, Red
+		Gui 12u: Font, cRed
+		Gui 12u: Font, s16 bold
+		Gui 12u: Add, Text, valertlabel center,----Right-click the item's bottom-right corner for its coordinates`n----
+		Gui 12u: -caption
+		Gui 12u: Show, NoActivate xcenter y0	
+		
+		Gui 12: +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 12: Font, s16 bold
-		Gui 12: Add, Text, vTtwo center,Right-click the bottom-right of the item you need the coordinates for
+		Gui 12: Add, Text, vTtwo center,Right-click the item's bottom-right corner for its coordinates
 		Gui 12: -caption
-		Gui 12: Show, NoActivate xcenter y5
+		Gui 12: Show, NoActivate xcenter y15
 		
 		xmin := MouseX
 		ymin := MouseY
@@ -403,14 +420,23 @@ if GetKeyState("RButton", "P")
 	else if (ClickCount = 2)
 	{
 		Gui 12: destroy
+		Gui 12u: destroy
 		
-		Gui 13: +AlwaysOnTop +OwnDialogs
-		Gui 13: Color, Green
-		Gui 13: Font, cWhite
+		Gui 13u: +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 13u: Color, Green
+		Gui 13u: Font, cGreen
+		Gui 13u: Font, s16 bold
+		Gui 13u: Add, Text, valertlabel center,----Coordinates have been updated in the Config.ini file`n----
+		Gui 13u: -caption
+		Gui 13u: Show, NoActivate xcenter y0
+		
+		Gui 13: +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 13: Color, White
+		Gui 13: Font, cGreen
 		Gui 13: Font, s16 bold
 		Gui 13: Add, Text, vTthree center,Coordinates have been updated in the Config.ini file
 		Gui 13: -caption
-		Gui 13: Show, NoActivate xcenter y5
+		Gui 13: Show, NoActivate xcenter y15
 		
 		xmax := MouseX
 		ymax := MouseY
@@ -424,6 +450,7 @@ if GetKeyState("RButton", "P")
 		Sleep, 1500
 		
 		Gui 13: destroy
+		Gui 13u: Destroy
 		Gui, 2: Destroy
 		Gui, 1: Show
 		
