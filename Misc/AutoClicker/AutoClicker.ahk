@@ -429,16 +429,26 @@ IniWrite, %NewMin%, Config.ini, Timer, min
 IniWrite, %NewMax%, Config.ini, Timer, max
 
 Gui 5: Destroy
+
+Gui 13u: +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13u: Color, Green
+Gui 13u: Font, cGreen
+Gui 13u: Font, s16 bold
+Gui 13u: Add, Text, valertlabel center,----Timer has been updated in the Config.ini file`n----
+Gui 13u: -caption
+Gui 13u: Show, NoActivate xcenter y0
+
 Gui 13: +AlwaysOnTop +OwnDialogs
-Gui 13: Color, Green
-Gui 13: Font, cWhite
+Gui 13: Color, White
+Gui 13: Font, cGreen
 Gui 13: Font, s16 bold
 Gui 13: Add, Text, vTthree center, Timer has been updated in the Config.ini file
 Gui 13: -caption
-Gui 13: Show, NoActivate xcenter y5
+Gui 13: Show, NoActivate xcenter y15
 
 Sleep 1500
 
+Gui 13u: Destroy
 Gui 13: Destroy
 gui 1: show
 EnableHotkey()
