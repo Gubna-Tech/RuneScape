@@ -498,13 +498,21 @@ Gui 11u: Font, cRed
 Gui 11u: Font, s16 bold
 Gui 11u: Add, Text, valertlabel center,----Right-click the item's top-left corner for its coordinates`n----
 Gui 11u: -caption
-Gui 11u: Show, NoActivate xcenter y0
+Gui 11u: Show, NoActivate xcenter y0,  BottomGUI
 
 Gui 11: +AlwaysOnTop +OwnDialogs +Disabled
 Gui 11: Font, s16 bold
 Gui 11: Add, Text, vTone center,Right-click the item's top-left corner for its coordinates
 Gui 11: -caption
-Gui 11: Show, NoActivate xcenter y15
+Gui 11: Show, NoActivate xcenter y9999, TopGUI
+
+wingetpos,,,,bottomH, BottomGUI
+wingetpos,,,,topH, TopGUI
+
+topPOS := (bottomH - topH) / 2
+
+Gui, TopGUI: +LabelTopGUI
+WinMove, TopGUI,, , %topPOS%
 return
 
 CheckClicks:
@@ -523,13 +531,16 @@ if GetKeyState("RButton", "P")
 		Gui 12u: Font, s16 bold
 		Gui 12u: Add, Text, valertlabel center,----Right-click the item's bottom-right corner for its coordinates`n----
 		Gui 12u: -caption
-		Gui 12u: Show, NoActivate xcenter y0	
+		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
 		
 		Gui 12: +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 12: Font, s16 bold
 		Gui 12: Add, Text, vTtwo center,Right-click the item's bottom-right corner for its coordinates
 		Gui 12: -caption
-		Gui 12: Show, NoActivate xcenter y15
+		Gui 12: Show, NoActivate xcenter y9999, TopGUI
+		
+		Gui, TopGUI: +LabelTopGUI
+		WinMove, TopGUI,, , %topPOS%
 		
 		xmin := MouseX
 		ymin := MouseY
@@ -545,7 +556,7 @@ if GetKeyState("RButton", "P")
 		Gui 13u: Font, s16 bold
 		Gui 13u: Add, Text, valertlabel center,----Coordinates have been updated in the Config.ini file`n----
 		Gui 13u: -caption
-		Gui 13u: Show, NoActivate xcenter y0
+		Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 		
 		Gui 13: +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 13: Color, White
@@ -553,7 +564,10 @@ if GetKeyState("RButton", "P")
 		Gui 13: Font, s16 bold
 		Gui 13: Add, Text, vTthree center,Coordinates have been updated in the Config.ini file
 		Gui 13: -caption
-		Gui 13: Show, NoActivate xcenter y15
+		Gui 13: Show, NoActivate xcenter y9999, TopGUI
+		
+		Gui, TopGUI: +LabelTopGUI
+		WinMove, TopGUI,, , %topPOS%
 		
 		xmax := MouseX
 		ymax := MouseY
@@ -577,7 +591,6 @@ if GetKeyState("RButton", "P")
 	Sleep, 250
 }
 return
-
 ~Esc::
 IfWinActive, Coordinates
 {EnableHotkey()
@@ -659,7 +672,7 @@ Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the Config.ini file`n----
 Gui 13u: -caption
-Gui 13u: Show, NoActivate xcenter y0
+Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 
 Gui 13: +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13: Color, White
@@ -667,7 +680,15 @@ Gui 13: Font, cGreen
 Gui 13: Font, s16 bold
 Gui 13: Add, Text, vTthree center, Hotkey has been updated in the Config.ini file
 Gui 13: -caption
-Gui 13: Show, NoActivate xcenter y15
+Gui 13: Show, NoActivate xcenter y9999, TopGUI
+
+wingetpos,,,,bottomH, BottomGUI
+wingetpos,,,,topH, TopGUI
+
+topPOS := (bottomH - topH) / 2
+
+Gui, TopGUI: +LabelTopGUI
+WinMove, TopGUI,, , %topPOS%
 
 Sleep 1500
 
