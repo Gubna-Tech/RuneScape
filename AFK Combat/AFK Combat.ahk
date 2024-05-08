@@ -908,7 +908,10 @@ StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 IniRead, option,Config.ini, Agro, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	
 	IniRead, sa1, Config.ini, Agro, min
 	IniRead, sa2, Config.ini, Agro, max
@@ -930,7 +933,10 @@ if option=true
 IniRead, option,Config.ini, AFk, option
 if option=true
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	WinGetPos, RSx, RSy, RSw, RSh, RuneScape
@@ -962,7 +968,10 @@ if option=true
 IniRead, option,Config.ini, Prayer, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Prayer, min
@@ -985,7 +994,10 @@ if option=true
 IniRead, option,Config.ini, Strength, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Strength, min
@@ -1008,7 +1020,10 @@ if option=true
 IniRead, option,Config.ini, Attack, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Attack, min
@@ -1031,7 +1046,10 @@ if option=true
 IniRead, option,Config.ini, Magic, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Magic, min
@@ -1054,7 +1072,10 @@ if option=true
 IniRead, option,Config.ini, Ranged, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Ranged, min
@@ -1077,7 +1098,10 @@ if option=true
 IniRead, option,Config.ini, Overload, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Overload, min
@@ -1100,7 +1124,10 @@ if option=true
 IniRead, option,Config.ini, Warmaster, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Warmaster, min
@@ -1123,7 +1150,10 @@ if option=true
 IniRead, option,Config.ini, Antifire, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antifire, min
@@ -1146,7 +1176,10 @@ if option=true
 IniRead, option,Config.ini, Antipoison, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antipoison, min
@@ -1169,7 +1202,10 @@ if option=true
 IniRead, option,Config.ini, Weapon Poison, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Weapon Poison, min
@@ -1192,7 +1228,10 @@ if option=true
 IniRead, option,Config.ini, Animate Dead, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Animate Dead, min
@@ -1215,7 +1254,10 @@ if option=true
 IniRead, option,Config.ini, Vecna Skull, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Vecna Skull, min
@@ -1238,7 +1280,10 @@ if option=true
 IniRead, option,Config.ini, Ancient Elven Ritual Shard, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Ancient Elven Ritual Shard, min
@@ -1261,7 +1306,10 @@ if option=true
 IniRead, option,Config.ini, Incense Sticks, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Incense Sticks, min
@@ -1284,7 +1332,10 @@ if option=true
 IniRead, option,Config.ini, Prayer Powder, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Prayer Powder, min
@@ -1307,7 +1358,10 @@ if option=true
 IniRead, option,Config.ini, Summon, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Summon, min
@@ -1330,7 +1384,10 @@ if option=true
 IniRead, option,Config.ini, Saradomin Brew, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Saradomin Brew, min
@@ -1353,7 +1410,10 @@ if option=true
 IniRead, option,Config.ini, Loot, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Loot, min
@@ -1373,7 +1433,10 @@ if option=true
 IniRead, option,Config.ini, Cannon Restock, option
 if option=true
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Cannon Restock, min
@@ -1403,7 +1466,10 @@ return
 
 Agro:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Agro, min
@@ -1426,7 +1492,10 @@ return
 
 AFK:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	WinGetPos, RSx, RSy, RSw, RSh, RuneScape
@@ -1458,7 +1527,10 @@ return
 
 Strength:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Strength, min
@@ -1481,7 +1553,10 @@ return
 
 Attack:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Attack, min
@@ -1504,7 +1579,10 @@ return
 
 Magic:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Magic, min
@@ -1527,7 +1605,10 @@ return
 
 Ranged:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Ranged, min
@@ -1550,7 +1631,10 @@ return
 
 Overload:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Overload, min
@@ -1573,7 +1657,10 @@ return
 
 Warmaster:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Warmaster, min
@@ -1596,7 +1683,10 @@ return
 
 Antifire:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antifire, min
@@ -1619,7 +1709,10 @@ return
 
 Antipoison:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Antipoison, min
@@ -1642,7 +1735,10 @@ return
 
 Prayer:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Prayer, min
@@ -1665,29 +1761,35 @@ return
 
 WeaponPoison:
 {
-		winactivate, RuneScape	
-		DisableButton()
-		
-		IniRead, sa1, Config.ini, Weapon Poison, min
-		IniRead, sa2, Config.ini, Weapon Poison, max
-		Random, SleepAmount, %sa1%, %sa2%
-		settimer, WeaponPoison, %sleepamount%
-		
-		IniRead, hk, Config.ini, Weapon Poison, hotkey
-		send {%hk%}
-		
-		loop 100
-		{
-			mousegetpos xm, ym
-			tooltip, Activated Weapon Poison, (xm+15), (ym+15),1
-			sleep 25
-		}
-		tooltip
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Weapon Poison, min
+	IniRead, sa2, Config.ini, Weapon Poison, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, WeaponPoison, %sleepamount%
+	
+	IniRead, hk, Config.ini, Weapon Poison, hotkey
+	send {%hk%}
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Activated Weapon Poison, (xm+15), (ym+15),1
+		sleep 25
+	}
+	tooltip
 }
 
 AnimateDead:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Animate Dead, min
@@ -1709,7 +1811,10 @@ AnimateDead:
 
 Vecna:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Vecna Skull, min
@@ -1732,7 +1837,10 @@ return
 
 Shard:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Ancient Elven Ritual Shard, min
@@ -1755,7 +1863,10 @@ return
 
 IncenseSticks:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Incense Sticks, min
@@ -1778,7 +1889,10 @@ return
 
 PrayerP:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Prayer Powder, min
@@ -1801,7 +1915,10 @@ return
 
 Summon:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Summon, min
@@ -1824,7 +1941,10 @@ return
 
 SaraBrew:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Saradomin Brew, min
@@ -1847,7 +1967,10 @@ return
 
 Loot:
 {
-	winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Loot, min
@@ -1869,7 +1992,10 @@ return
 
 CannonRestock:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	IniRead, sa1, Config.ini, Cannon Restock, min
@@ -1891,11 +2017,12 @@ CannonRestock:
 		mousegetpos xm, ym
 		tooltip, Cannon Restock Activated, (xm+15), (ym+15),1
 		sleep 25
-}
-
-tooltip
+	}
+	
+	tooltip
 }
 return
+
 Logout(){
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true

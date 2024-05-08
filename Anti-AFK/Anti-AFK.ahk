@@ -604,7 +604,10 @@ GuiControl,,State3, Running
 DisableButton()
 startcheck=1
 
-winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+}
 
 WinGetPos, RSx, RSy, RSw, RSh, RuneScape
 xmin := RSx
@@ -634,7 +637,10 @@ return
 
 AFK:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	WinGetPos, RSx, RSy, RSw, RSh, RuneScape
