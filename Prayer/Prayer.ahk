@@ -791,7 +791,11 @@ loop % runcount
 	++count
 	++count2
 	
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
+
 	GuiControl,,Counter, %count%
 	GuiControl,,Counter2, %count2% / %runcount3%
 	GuiControl,,ScriptBlue, %scriptname%

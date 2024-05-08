@@ -640,7 +640,10 @@ totalSleepTime := 0
 
 loop % runcount
 { 	
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	
 	++count
 	++count2
