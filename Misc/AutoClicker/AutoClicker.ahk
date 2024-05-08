@@ -612,7 +612,10 @@ GuiControl,,State3, Running
 DisableButton()
 startcheck=1
 
-winactivate, RuneScape
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+}
 
 CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Click, xmin
@@ -640,7 +643,10 @@ return
 
 RandomClick:
 {
-	winactivate, RuneScape	
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
 	DisableButton()
 	
 	CoordMode, Mouse, Window
