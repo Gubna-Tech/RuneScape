@@ -722,7 +722,10 @@ loop % runcount
 { 	
 	If firstrun = 0
 	{
-		winactivate, RuneScape	
+		IfWinNotActive, RuneScape
+		{
+			WinActivate, RuneScape
+		}
 		
 		++count
 		++count2
@@ -757,7 +760,10 @@ loop % runcount
 		++count2
 		firstrun = 0
 		
-		winactivate, RuneScape	
+		IfWinNotActive, RuneScape
+		{
+			WinActivate, RuneScape
+		}
 		
 		GuiControl,,Counter, %count%
 		GuiControl,,Counter2, %count2% / %runcount3%
