@@ -7,7 +7,7 @@ closeotherllars()
 
 if !FileExist("Config.ini")
 {
-	Gui Error: +AlwaysOnTop +OwnDialogs
+	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
 	Gui Error: Font, S13 bold underline cRed
 	Gui Error: Add, Text, Center w220 x5,ERROR
 	Gui Error: Add, Text, center x5 w220,
@@ -23,6 +23,7 @@ if !FileExist("Config.ini")
 	Gui Error: Add, Text, Center w220 x5,Created by Gubna
 	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
 	Gui Error: add, button, gCloseError w150 x40 center,Close Error
+	WinSet, ExStyle, ^0x80
 	Gui Error: -caption
 	Gui Error: Show, center w230, Config Error
 	return
@@ -30,7 +31,7 @@ if !FileExist("Config.ini")
 
 if !FileExist("LLARS Config.ini")
 {
-	Gui Error: +AlwaysOnTop +OwnDialogs
+	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
 	Gui Error: Font, S13 bold underline cRed
 	Gui Error: Add, Text, Center w220 x5,ERROR
 	Gui Error: Add, Text, center x5 w220,
@@ -46,6 +47,7 @@ if !FileExist("LLARS Config.ini")
 	Gui Error: Add, Text, Center w220 x5,Created by Gubna
 	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
 	Gui Error: add, button, gCloseError w150 x40 center,Close Error
+	WinSet, ExStyle, ^0x80
 	Gui Error: -caption
 	Gui Error: Show, center w230, Config Error
 	return
@@ -105,10 +107,13 @@ IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
 WinMove A, ,%X%, %y%
 
-hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
+if FileExist("LLARS Logo.ico")
+{
+	hIcon := DllCall("LoadImage", uint, 0, str, "LLARS Logo.ico"
    	, uint, 1, int, 0, int, 0, uint, 0x10)
-SendMessage, 0x80, 0, hIcon
-SendMessage, 0x80, 1, hIcon
+	SendMessage, 0x80, 0, hIcon
+	SendMessage, 0x80, 1, hIcon
+}
 
 coordcount = 0
 frcount = 0
@@ -252,8 +257,9 @@ Gui, 2: Add, Button, x52 w150 gClose, Close Coordinates
 
 Gui, 2: Show, w250 h45 Center, Coordinates
 Gui 2: -Caption
-Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+WinSet, ExStyle, ^0x80
 WinSet, Transparent, %value%
+
 return
 
 Close:
@@ -285,17 +291,19 @@ ButtonText := selectedSection
 
 SetTimer, CheckClicks, 10
 
-Gui 11u: +AlwaysOnTop +OwnDialogs +Disabled
+Gui 11u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 11u: Color, Red
 Gui 11u: Font, cRed
 Gui 11u: Font, s16 bold
 Gui 11u: Add, Text, valertlabel center,----Right-click the item's top-left corner for its coordinates`n----
+WinSet, ExStyle, ^0x80
 Gui 11u: -caption
 Gui 11u: Show, NoActivate xcenter y0,  BottomGUI
 
-Gui 11: +AlwaysOnTop +OwnDialogs +Disabled
+Gui 11: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 11: Font, s16 bold
 Gui 11: Add, Text, vTone center,Right-click the item's top-left corner for its coordinates
+WinSet, ExStyle, ^0x80
 Gui 11: -caption
 Gui 11: Show, NoActivate xcenter y9999, TopGUI
 
@@ -318,17 +326,19 @@ if GetKeyState("RButton", "P")
 		Gui 11: destroy
 		Gui 11u: destroy
 		
-		Gui 12u: +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 12u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 12u: Color, Red
 		Gui 12u: Font, cRed
 		Gui 12u: Font, s16 bold
 		Gui 12u: Add, Text, valertlabel center,----Right-click the item's bottom-right corner for its coordinates`n----
+		WinSet, ExStyle, ^0x80
 		Gui 12u: -caption
 		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
 		
-		Gui 12: +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 12: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 12: Font, s16 bold
 		Gui 12: Add, Text, vTtwo center,Right-click the item's bottom-right corner for its coordinates
+		WinSet, ExStyle, ^0x80
 		Gui 12: -caption
 		Gui 12: Show, NoActivate xcenter y9999, TopGUI
 		
@@ -343,19 +353,21 @@ if GetKeyState("RButton", "P")
 		Gui 12: destroy
 		Gui 12u: destroy
 		
-		Gui 13u: +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 13u: Color, Green
 		Gui 13u: Font, cGreen
 		Gui 13u: Font, s16 bold
 		Gui 13u: Add, Text, valertlabel center,----Coordinates have been updated in the Config.ini file`n----
+		WinSet, ExStyle, ^0x80
 		Gui 13u: -caption
 		Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 		
-		Gui 13: +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 13: Color, White
 		Gui 13: Font, cGreen
 		Gui 13: Font, s16 bold
 		Gui 13: Add, Text, vTthree center,Coordinates have been updated in the Config.ini file
+		WinSet, ExStyle, ^0x80
 		Gui 13: -caption
 		Gui 13: Show, NoActivate xcenter y9999, TopGUI
 		
@@ -430,7 +442,7 @@ Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
 
 Gui, 3: Show, w250 h100 Center, Hotkeys
 Gui 3: -Caption
-Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+WinSet, ExStyle, ^0x80
 WinSet, Transparent, %value%
 return
 
@@ -460,19 +472,21 @@ HotkeyChanged:
 IniWrite, %ChosenHotkey%, Config.ini, %selectedSection%, Hotkey
 Gui, 3: Destroy
 
-Gui 13u: +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
 Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the Config.ini file`n----
+WinSet, ExStyle, ^0x80
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 
-Gui 13: +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13: Color, White
 Gui 13: Font, cGreen
 Gui 13: Font, s16 bold
 Gui 13: Add, Text, vTthree center, Hotkey has been updated in the Config.ini file
+WinSet, ExStyle, ^0x80
 Gui 13: -caption
 Gui 13: Show, NoActivate xcenter y9999, TopGUI
 
@@ -615,7 +629,10 @@ If (frcount = 0)
 	Gui, Add, Text, x8 y115 w125 h25 vScriptRed
 	GuiControl,,State2, ** OFF **
 	Gui, Add, Text, x8 y115 w125 h25, %scriptname%
-	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+	if FileExist("LLARS Logo.ico")
+	{
+		Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
+	}
 	WinSet, Transparent, %value%
 	Gui, Show,w220 h170, LLARS
 	WinMove, LLARS,, X, Y,
@@ -775,7 +792,7 @@ IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
 
 Gui 1: hide
 Gui 3: hide	
-Gui 20: +AlwaysOnTop +OwnDialogs
+Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
 Gui 20: Font, S13 bold cMaroon
 Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
@@ -794,6 +811,7 @@ Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
 Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
 Gui 20: Add, Button, gDiscord w150 x40 center,Discord
 Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
+WinSet, ExStyle, ^0x80
 Gui 20: -caption
 Gui 20: Show, center w230, Information
 return
