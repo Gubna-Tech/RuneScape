@@ -855,7 +855,7 @@ Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
 Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nBank Preset: %hk%
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
