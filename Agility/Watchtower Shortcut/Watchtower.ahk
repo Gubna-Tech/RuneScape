@@ -5,6 +5,29 @@ SetBatchLines, -1
 DetectHiddenWindows, On
 closeotherllars()
 
+if (InStr(A_ScriptDir, ".zip") > 0) {
+	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
+	Gui Error: Font, S13 bold underline cRed
+	Gui Error: Add, Text, Center w220 x5,ERROR
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Font, s12 norm bold
+	Gui Error: Add, Text, Center w220 x5, Files Are Zipped
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Font, cBlack
+	Gui Error: Add, Text, Center w220 x5, Please extract all files from the zipped (.zip) folder:
+	Gui Error: Font, underline s12
+	Gui Error: Add, Text, cGreen center w220 x5, RuneScape-main.zip
+	Gui Error: Font, s11 norm Bold c0x152039
+	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Add, Text, Center w220 x5,Created by Gubna
+	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
+	Gui Error: add, button, gCloseError w150 x40 center,Close Error
+	WinSet, ExStyle, ^0x80
+	Gui Error: -caption
+	Gui Error: Show, center w230, File Error
+	return
+}
+
 if !FileExist("Config.ini")
 {
 	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
