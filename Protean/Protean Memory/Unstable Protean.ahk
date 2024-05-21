@@ -165,16 +165,16 @@ ConfigError(){
 		reload
 	}
 	
-	IniRead, x1, Config.ini, Normal Protean Memory, xmin
-	IniRead, x2, Config.ini, Normal Protean Memory, xmax
-	IniRead, y1, Config.ini, Normal Protean Memory, ymin
-	IniRead, y2, Config.ini, Normal Protean Memory, ymax
+	IniRead, x1, Config.ini, Unstable Protean Memory, xmin
+	IniRead, x2, Config.ini, Unstable Protean Memory, xmax
+	IniRead, y1, Config.ini, Unstable Protean Memory, ymin
+	IniRead, y2, Config.ini, Unstable Protean Memory, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Normal Protean Memory] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Unstable Protean Memory] in the config.
 		reload
 	}
 	
@@ -727,10 +727,10 @@ loop % runcount
 		Sleep, %SleepAmount%
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Normal Protean Memory, xmin
-		IniRead, x2, Config.ini, Normal Protean Memory, xmax
-		IniRead, y1, Config.ini, Normal Protean Memory, ymin
-		IniRead, y2, Config.ini, Normal Protean Memory, ymax
+		IniRead, x1, Config.ini, Unstable Protean Memory, xmin
+		IniRead, x2, Config.ini, Unstable Protean Memory, xmax
+		IniRead, y1, Config.ini, Unstable Protean Memory, ymin
+		IniRead, y2, Config.ini, Unstable Protean Memory, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
