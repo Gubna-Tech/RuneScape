@@ -6,6 +6,7 @@ DetectHiddenWindows, On
 closeotherllars()
 
 if (InStr(A_ScriptDir, ".zip") > 0) {
+	Menu, Tray, NoIcon
 	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
 	Gui Error: Font, S13 bold underline cRed
 	Gui Error: Add, Text, Center w220 x5,ERROR
@@ -30,6 +31,7 @@ if (InStr(A_ScriptDir, ".zip") > 0) {
 
 if !FileExist("Config.ini")
 {
+	Menu, Tray, NoIcon
 	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
 	Gui Error: Font, S13 bold underline cRed
 	Gui Error: Add, Text, Center w220 x5,ERROR
@@ -54,6 +56,7 @@ if !FileExist("Config.ini")
 
 if !FileExist("LLARS Config.ini")
 {
+	Menu, Tray, NoIcon
 	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
 	Gui Error: Font, S13 bold underline cRed
 	Gui Error: Add, Text, Center w220 x5,ERROR
@@ -630,6 +633,28 @@ IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
 exitapp
 
 Start:
+IfWinNotExist RuneScape 
+{
+	Gui 1: Hide
+	Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
+	Gui GNF: Font, S13 bold underline cRed
+	Gui GNF: Add, Text, Center w220 x5,ERROR
+	Gui GNF: Add, Text, center x5 w220,
+	Gui GNF: Font, s12 norm bold
+	Gui GNF: Add, Text, Center w220 x5, RuneScape Not Found
+	Gui GNF: Add, Text, center x5 w220,
+	Gui GNF: Font, cBlack
+	Gui GNF: Add, Text, Center w220 x5, RuneScape was not found to be running. Please try to start the script again once logged into an in-game world.`n`n`nIf RuneScape is open and you receive this message, please use the Discord button below to reach out to Gubna for assistance.`n`n`nRuneScape will be auto-launched upon closing this error message.
+	Gui GNF: Font, s11 norm Bold c0x152039
+	Gui GNF: Add, Text, center x5 w220,
+	Gui GNF: Add, Text, Center w220 x5,Created by Gubna
+	Gui GNF: Add, Button, gDiscordError w150 x40 center,Discord
+	Gui GNF: add, button, gCloseGNF w150 x40 center,Close Error
+	WinSet, ExStyle, ^0x80
+	Gui GNF: -caption
+	Gui GNF: Show, center w230, Game Not Found
+	return
+}
 ConfigError()
 
 InputBox, runcount, Run How Many Times?,,,250, 100
@@ -945,3 +970,9 @@ Exitapp
 
 CloseError:	
 ExitApp
+
+CloseGNF:
+run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+GUI GNF: Destroy
+Gui 1: Show
+return
