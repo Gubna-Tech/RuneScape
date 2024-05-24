@@ -154,6 +154,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send afk{enter}
 	winwait LLARS
 	winclose %script%
@@ -165,6 +166,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send alc{enter}
 	winwait LLARS
 	winclose %script%
@@ -176,6 +178,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send amu{enter}
 	winwait LLARS
 	winclose %script%
@@ -187,6 +190,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send anti{enter}
 	winwait LLARS
 	winclose %script%
@@ -198,6 +202,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - With Walking
 	WinWait %script%
+	Sleep 1000
 	send arm{enter}
 	winwait LLARS
 	winclose %script%
@@ -209,6 +214,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - No Walking
 	WinWait %script%
+	Sleep 1000
 	send arm{enter}
 	winwait LLARS
 	winclose %script%
@@ -220,6 +226,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send arm{enter}
 	winwait LLARS
 	winclose %script%
@@ -231,6 +238,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send arr{enter}
 	winwait LLARS
 	winclose %script%
@@ -242,6 +250,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\incense\%script%\
 	WinWait %script%
+	Sleep 1000
 	send ash{enter}
 	winwait LLARS
 	winclose %script%
@@ -253,6 +262,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\misc\%script%\
 	WinWait %script%
+	Sleep 1000
 	send aut{enter}
 	winwait LLARS
 	winclose %script%
@@ -264,6 +274,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send aut{enter}
 	winwait LLARS
 	winclose %script%
@@ -275,6 +286,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Lunar Spells\%script%\
 	WinWait %script%
+	Sleep 1000
 	send bak{enter}
 	winwait LLARS
 	winclose %script%
@@ -286,6 +298,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send bar{enter}
 	winwait LLARS
 	winclose %script%
@@ -297,6 +310,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Bar Smelter
 	WinWait %script%
+	Sleep 1000
 	send sme{enter}
 	winwait LLARS
 	winclose %script%
@@ -308,6 +322,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\Barbarian\Advanced\
 	WinWait %script%
+	Sleep 1000
 	send bar{enter}
 	winwait LLARS
 	winclose %script%
@@ -319,6 +334,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\Barbarian\Basic\
 	WinWait %script%
+	Sleep 1000
 	send bar{enter}
 	winwait LLARS
 	winclose %script%
@@ -330,6 +346,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send bon{enter}
 	winwait LLARS
 	winclose %script%
@@ -341,6 +358,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send bow{enter}
 	winwait LLARS
 	winclose %script%
@@ -352,6 +370,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\fletching\bow cutter - no walking\
 	WinWait %script%
+	Sleep 1000
 	send bow{enter}
 	winwait LLARS
 	winclose %script%
@@ -363,6 +382,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\fletching\bow cutter - with walking\
 	WinWait %script%
+	Sleep 1000
 	send bow{enter}
 	winwait LLARS
 	winclose %script%
@@ -374,6 +394,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send bow{enter}
 	winwait LLARS
 	winclose %script%
@@ -385,6 +406,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\fletching\bow stringer - no walking\
 	WinWait %script%
+	Sleep 1000
 	send bow{enter}
 	winwait LLARS
 	winclose %script%
@@ -396,6 +418,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\fletching\bow stringer - with walking\
 	WinWait %script%
+	Sleep 1000
 	send bow{enter}
 	winwait LLARS
 	winclose %script%
@@ -407,6 +430,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\Limestone Brick
 	WinWait %script%
+	Sleep 1000
 	send bri{enter}
 	winwait LLARS
 	winclose %script%
@@ -418,6 +442,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\%script%\
 	WinWait %script%
+	Sleep 1000
 	send bur{enter}
 	winwait LLARS
 	winclose %script%
@@ -429,6 +454,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\necromancy\%script%\
 	WinWait %script%
+	Sleep 1000
 	send can{enter}
 	winwait LLARS
 	winclose %script%
@@ -440,6 +466,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\herb cleaner\
 	WinWait %script%
+	Sleep 1000
 	send cap{enter}
 	winwait LLARS
 	winclose %script%
@@ -451,6 +478,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - no walking\
 	WinWait %script%
+	Sleep 1000
 	send cla{enter}
 	winwait LLARS
 	winclose %script%
@@ -462,6 +490,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - with walking\
 	WinWait %script%
+	Sleep 1000
 	send cla{enter}
 	winwait LLARS
 	winclose %script%
@@ -473,6 +502,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - no walking\
 	WinWait %script%
+	Sleep 1000
 	send cla{enter}
 	winwait LLARS
 	winclose %script%
@@ -484,6 +514,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - with walking\
 	WinWait %script%
+	Sleep 1000
 	send cla{enter}
 	winwait LLARS
 	winclose %script%
@@ -495,6 +526,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send coo{enter}
 	winwait LLARS
 	winclose %script%
@@ -506,6 +538,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\Cooking\
 	WinWait %script%
+	Sleep 1000
 	send Coo{enter}
 	winwait LLARS
 	winclose %script%
@@ -517,6 +550,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Cooking\Cooking - no walking\
 	WinWait %script%
+	Sleep 1000
 	send coo{enter}
 	winwait LLARS
 	winclose %script%
@@ -528,6 +562,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Cooking\Cooking - with walking\
 	WinWait %script%
+	Sleep 1000
 	send coo{enter}
 	winwait LLARS
 	winclose %script%
@@ -539,6 +574,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Events\2023\Christmas\%script%\
 	WinWait %script%
+	Sleep 1000
 	send dec{enter}
 	winwait LLARS
 	winclose %script%
@@ -550,6 +586,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Crafting\Clay\%script%\
 	WinWait %script%
+	Sleep 1000
 	send fir{enter}
 	winwait LLARS
 	winclose %script%
@@ -561,6 +598,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Lunar Spells\%script%\
 	WinWait %script%
+	Sleep 1000
 	send fir{enter}
 	winwait LLARS
 	winclose %script%
@@ -572,6 +610,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Firemaking\Firemaking - no walking\
 	WinWait %script%
+	Sleep 1000
 	send fir{enter}
 	winwait LLARS
 	winclose %script%
@@ -583,6 +622,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Firemaking\Firemaking - with walking\
 	WinWait %script%
+	Sleep 1000
 	send fir{enter}
 	winwait LLARS
 	winclose %script%
@@ -594,6 +634,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\%script%\
 	WinWait %script%
+	Sleep 1000
 	send fra{enter}
 	winwait LLARS
 	winclose %script%
@@ -605,6 +646,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send gem{enter}
 	winwait LLARS
 	winclose %script%
@@ -616,6 +658,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - no walking\
 	WinWait %script%
+	Sleep 1000
 	send gem{enter}
 	winwait LLARS
 	winclose %script%
@@ -627,6 +670,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - with walking\
 	WinWait %script%
+	Sleep 1000
 	send gem{enter}
 	winwait LLARS
 	winclose %script%
@@ -638,6 +682,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send gla{enter}
 	winwait LLARS
 	winclose %script%
@@ -649,6 +694,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\Gnome\Advanced\
 	WinWait %script%
+	Sleep 1000
 	send gno{enter}
 	winwait LLARS
 	winclose %script%
@@ -660,6 +706,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\Gnome\Basic\
 	WinWait %script%
+	Sleep 1000
 	send gno{enter}
 	winwait LLARS
 	winclose %script%
@@ -671,6 +718,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\incense\%script%\
 	WinWait %script%
+	Sleep 1000
 	send her{enter}
 	winwait LLARS
 	winclose %script%
@@ -682,6 +730,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send her{enter}
 	winwait LLARS
 	winclose %script%
@@ -693,6 +742,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\%script%\
 	WinWait %script%
+	Sleep 1000
 	send het{enter}
 	winwait LLARS
 	winclose %script%
@@ -704,6 +754,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Incense\%script%\
 	WinWait %script%
+	Sleep 1000
 	send inc{enter}
 	winwait LLARS
 	winclose %script%
@@ -715,6 +766,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\%script%\
 	WinWait %script%
+	Sleep 1000
 	send ink{enter}
 	winwait LLARS
 	winclose %script%
@@ -726,6 +778,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send jew{enter}
 	winwait LLARS
 	winclose %script%
@@ -737,6 +790,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\%script%\
 	WinWait %script%
+	Sleep 1000
 	send jew{enter}
 	winwait LLARS
 	winclose %script%
@@ -748,6 +802,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send jew{enter}
 	winwait LLARS
 	winclose %script%
@@ -759,6 +814,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Lunar Spells\%script%\
 	WinWait %script%
+	Sleep 1000
 	send jew{enter}
 	winwait LLARS
 	winclose %script%
@@ -770,6 +826,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pla{enter}
 	winwait LLARS
 	winclose %script%
@@ -781,6 +838,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pla{enter}
 	winwait LLARS
 	winclose %script%
@@ -792,6 +850,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pot{enter}
 	winwait LLARS
 	winclose %script%
@@ -803,6 +862,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Herblore\Potion Mixer - no walking\
 	WinWait %script%
+	Sleep 1000
 	send pot{enter}
 	winwait LLARS
 	winclose %script%
@@ -814,6 +874,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Herblore\Potion Mixer - with walking\
 	WinWait %script%
+	Sleep 1000
 	send pot{enter}
 	winwait LLARS
 	winclose %script%
@@ -825,6 +886,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pra{enter}
 	winwait LLARS
 	winclose %script%
@@ -836,6 +898,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -847,6 +910,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -858,6 +922,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -869,6 +934,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -880,6 +946,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\Fletch
 	WinWait Fletch
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose Fletch
@@ -891,6 +958,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\Fletch & Burn
 	WinWait Fletch & Burn
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose Fletch & Burn
@@ -902,6 +970,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -913,6 +982,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send uns{enter}
 	winwait LLARS
 	winclose %script%
@@ -924,6 +994,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -935,6 +1006,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -946,6 +1018,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -957,6 +1030,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Protean\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pro{enter}
 	winwait LLARS
 	winclose %script%
@@ -968,6 +1042,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send pyr{enter}
 	winwait LLARS
 	winclose %script%
@@ -979,6 +1054,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\%script%\
 	WinWait %script%
+	Sleep 1000
 	send ref{enter}
 	winwait LLARS
 	winclose %script%
@@ -990,6 +1066,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\%script%\Communion & Material\Focus Storage
 	WinWait Focus Storage
+	Sleep 1000
 	send rit{enter}
 	winwait LLARS
 	winclose Focus Storage
@@ -1001,6 +1078,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\%script%\Communion & Material\Without Focus Storage
 	WinWait Without Focus Storage
+	Sleep 1000
 	send rit{enter}
 	winwait LLARS
 	winclose Without Focus Storage
@@ -1012,6 +1090,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\%script%\Ectoplasm\Focus Storage
 	WinWait Focus Storage
+	Sleep 1000
 	send rit{enter}
 	winwait LLARS
 	winclose Focus Storage
@@ -1023,6 +1102,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\%script%\Ectoplasm\Without Focus Storage
 	WinWait Without Focus Storage
+	Sleep 1000
 	send rit{enter}
 	winwait LLARS
 	winclose Without Focus Storage
@@ -1034,6 +1114,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\%script%\Essence & Necroplasm\Focus Storage
 	WinWait Focus Storage
+	Sleep 1000
 	send rit{enter}
 	winwait LLARS
 	winclose Focus Storage
@@ -1045,6 +1126,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\%script%\Essence & Necroplasm\Without Focus Storage
 	WinWait Without Focus Storage
+	Sleep 1000
 	send rit{enter}
 	winwait LLARS
 	winclose Without Focus Storage
@@ -1056,6 +1138,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Sawmill\Sawmill - no walking\
 	WinWait %script%
+	Sleep 1000
 	send saw{enter}
 	winwait LLARS
 	winclose %script%
@@ -1067,6 +1150,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Sawmill\Sawmill - with walking\
 	WinWait %script%
+	Sleep 1000
 	send saw{enter}
 	winwait LLARS
 	winclose %script%
@@ -1078,6 +1162,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Lunar Spells\%script%\
 	WinWait %script%
+	Sleep 1000
 	send sif{enter}
 	winwait LLARS
 	winclose %script%
@@ -1089,6 +1174,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Necromancy\Slime Collector - Notepaper\
 	WinWait Slime Collector - Notepaper
+	Sleep 1000
 	send sli{enter}
 	winwait LLARS
 	winclose Slime Collector - Notepaper
@@ -1100,6 +1186,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send smi{enter}
 	winwait LLARS
 	winclose %script%
@@ -1111,6 +1198,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Fort Forinthry\%script%\
 	WinWait %script%
+	Sleep 1000
 	send sto{enter}
 	winwait LLARS
 	winclose %script%
@@ -1122,6 +1210,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - no walking\
 	WinWait %script%
+	Sleep 1000
 	send tan{enter}
 	winwait LLARS
 	winclose %script%
@@ -1133,6 +1222,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - with walking\
 	WinWait %script%
+	Sleep 1000
 	send tan{enter}
 	winwait LLARS
 	winclose %script%
@@ -1144,6 +1234,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking\
 	WinWait Telekinetic Grind with No Banking
+	Sleep 1000
 	send tel{enter}
 	winwait LLARS
 	winclose Telekinetic Grind with No Banking
@@ -1155,6 +1246,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking\
 	WinWait Telekinetic Grind with Banking
+	Sleep 1000
 	send tel{enter}
 	winwait LLARS
 	winclose Telekinetic Grind with Banking
@@ -1166,6 +1258,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\%script%\
 	WinWait %script%
+	Sleep 1000
 	send wat{enter}
 	winwait LLARS
 	winclose %script%
@@ -1177,6 +1270,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\agility\%script%\
 	WinWait %script%
+	Sleep 1000
 	send wil{enter}
 	winwait LLARS
 	winclose %script%
@@ -1188,6 +1282,7 @@ Switch selectedScript
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\%script%\
 	WinWait %script%
+	Sleep 1000
 	send win{enter}
 	winwait LLARS
 	winclose %script%
