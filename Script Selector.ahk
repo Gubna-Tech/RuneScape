@@ -82,7 +82,7 @@ Loop, read, ScriptList.ini
 Gui, Add, Button, gSelect w115 x152 center, Select Script
 Gui Add, Button, gExit w115 x152 center, Close Selector
 WinSet, ExStyle, ^0x80
-Gui, Show, w420 h430 center, Script Selector
+Gui, Show, w420 h425 center, Script Selector
 
 OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
 OnMessage(0x0201, "WM_LBUTTONDOWN")
