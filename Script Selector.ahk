@@ -54,18 +54,24 @@ if !FileExist("ScriptList.ini")
 	return
 }
 
+
+FileRead, ScriptCount, ScriptList.ini
+ScriptTotal := StrSplit(ScriptCount, "`n").Length()
+
 SetWorkingDir, %A_ScriptDir%
 
 Hotkey, enter, Select
 Hotkey, esc, Exit
 
 Gui +LastFound +OwnDialogs +AlwaysOnTop
-Gui, Font, s12 Bold cBlue
+Gui Font, s12 Bold cBlue
 Gui -caption
-Menu, Tray, NoIcon
+Menu Tray, NoIcon
 Gui  Add, Text, Center w410 x5,Choose a script below and press`n"Select Script"
-Gui, Font, s11 Bold cBlack
-Gui, Add, ListBox, vScriptListBox gDoubleClick x12 w395 r15
+Gui Font, cGreen
+Gui  Add, Text, Center w410 x5,Total Scripts: %ScriptTotal%
+Gui Font, s11 Bold cBlack
+Gui Add, ListBox, vScriptListBox gDoubleClick x12 w395 r15
 
 Loop, read, ScriptList.ini
 {
@@ -76,7 +82,7 @@ Loop, read, ScriptList.ini
 Gui, Add, Button, gSelect w115 x152 center, Select Script
 Gui Add, Button, gExit w115 x152 center, Close Selector
 WinSet, ExStyle, ^0x80
-Gui, Show, w420 h400 center, Script Selector
+Gui, Show, w420 h430 center, Script Selector
 
 OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
 OnMessage(0x0201, "WM_LBUTTONDOWN")
