@@ -424,14 +424,14 @@ Gui 11u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 11u: Color, Red
 Gui 11u: Font, cRed
 Gui 11u: Font, s16 bold
-Gui 11u: Add, Text, valertlabel center,----Right-click the item's top-left corner for its coordinates`n----
+Gui 11u: Add, Text, valertlabel center,----Right-click the top-left corner for [ %selectedSection% ]`n----
 WinSet, ExStyle, ^0x80
 Gui 11u: -caption
 Gui 11u: Show, NoActivate xcenter y0,  BottomGUI
 
 Gui 11: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 11: Font, s16 bold
-Gui 11: Add, Text, vTone center,Right-click the item's top-left corner for its coordinates
+Gui 11: Add, Text, vTone center,Right-click the top-left corner for [ %selectedSection% ]
 WinSet, ExStyle, ^0x80
 Gui 11: -caption
 Gui 11: Show, NoActivate xcenter y9999, TopGUI
@@ -446,6 +446,10 @@ WinMove, TopGUI,, , %topPOS%
 return
 
 CheckClicks:
+if GetKeyState("Esc", "P")
+{
+	Reload
+}
 if GetKeyState("RButton", "P")
 {	
 	MouseGetPos, MouseX, MouseY
@@ -459,14 +463,14 @@ if GetKeyState("RButton", "P")
 		Gui 12u: Color, Red
 		Gui 12u: Font, cRed
 		Gui 12u: Font, s16 bold
-		Gui 12u: Add, Text, valertlabel center,----Right-click the item's bottom-right corner for its coordinates`n----
+		Gui 12u: Add, Text, valertlabel center,----Right-click the bottom-right corner for [ %selectedSection% ]`n----
 		WinSet, ExStyle, ^0x80
 		Gui 12u: -caption
 		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
 		
 		Gui 12: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 12: Font, s16 bold
-		Gui 12: Add, Text, vTtwo center,Right-click the item's bottom-right corner for its coordinates
+		Gui 12: Add, Text, vTtwo center,Right-click the bottom-right corner for [ %selectedSection% ]
 		WinSet, ExStyle, ^0x80
 		Gui 12: -caption
 		Gui 12: Show, NoActivate xcenter y9999, TopGUI
@@ -486,7 +490,7 @@ if GetKeyState("RButton", "P")
 		Gui 13u: Color, Green
 		Gui 13u: Font, cGreen
 		Gui 13u: Font, s16 bold
-		Gui 13u: Add, Text, valertlabel center,----Coordinates have been updated in the Config.ini file`n----
+		Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
 		WinSet, ExStyle, ^0x80
 		Gui 13u: -caption
 		Gui 13u: Show, NoActivate xcenter y0, BottomGUI
@@ -495,7 +499,7 @@ if GetKeyState("RButton", "P")
 		Gui 13: Color, White
 		Gui 13: Font, cGreen
 		Gui 13: Font, s16 bold
-		Gui 13: Add, Text, vTthree center,Coordinates have been updated in the Config.ini file
+		Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
 		WinSet, ExStyle, ^0x80
 		Gui 13: -caption
 		Gui 13: Show, NoActivate xcenter y9999, TopGUI
@@ -593,6 +597,10 @@ if (selectedSection != " ***** Make a Selection ***** ") {
 return
 
 ButtonClicked2:
+if GetKeyState("Esc", "P")
+{
+	Reload
+}
 GuiControl,, HotkeysText, Enter new hotkey
 GuiControl, Focus, ChosenHotkey
 return
@@ -1095,6 +1103,9 @@ Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`
 Gui 20: Font, s11 Bold c0x152039
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Add, Text, Center w220 x5,Created by Gubna
+Gui 20: Font, cBlue underline
+Gui 20: Add, Text, Center gMIT w220 x5,MIT License
+Gui 20: Font, cBlack norm bold
 Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
 Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
 Gui 20: Add, Button, gDiscord w150 x40 center,Discord
@@ -1139,7 +1150,48 @@ CloseError:
 ExitApp
 
 CloseGNF:
-run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
 GUI GNF: Destroy
+if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
+	if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
+		Menu, Tray, NoIcon
+		Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
+		Gui Client: Font, S13 bold underline cRed
+		Gui Client: Add, Text, Center w220 x5,ERROR
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Font, s12 norm bold
+		Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Font, cBlack
+		Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropraite client for you account.
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Add, Button, gJagex w150 x40 center,Jagex
+		Gui Client: Add, Button, gRuneScape w150 x40 center,RuneScape
+		WinSet, ExStyle, ^0x80
+		Gui Client: -caption
+		Gui Client: Show, center w230, Multiple Client
+		return
+	} else {
+		Gui 1: Show
+		run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+	}
+} else {
+	Gui 1: Show
+	run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+}
+return
+
+Jagex:
+GUI Client: Destroy
 Gui 1: Show
+run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+return
+
+RuneScape:
+GUI Client: Destroy
+Gui 1: Show
+run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+return
+
+MIT:
+run https://github.com/Gubna-Tech/RuneScape/blob/main/LICENSE
 return
