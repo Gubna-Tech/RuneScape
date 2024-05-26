@@ -78,7 +78,6 @@ if !FileExist("LLARS Config.ini")
 	Gui Error: Show, center w230, Config Error
 	return
 }
-
 IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
 IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
@@ -485,7 +484,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep grind|item|bank coords|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep grind|item|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -762,15 +761,6 @@ loop % runcount
 	GuiControl,,State3, Running
 	DisableButton()
 	
-	CoordMode, Mouse, Window
-	IniRead, x1, Config.ini, Bank Coords, xmin
-	IniRead, x2, Config.ini, Bank Coords, xmax
-	IniRead, y1, Config.ini, Bank Coords, ymin
-	IniRead, y2, Config.ini, Bank Coords, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%
-	
 	IniRead, option, LLARS Config.ini, Random Sleep, option
 	if option = true
 	{
@@ -797,21 +787,7 @@ loop % runcount
 			GuiControl,,ScriptBlue, %scriptname%
 			GuiControl,,State3, Running
 		}
-	}
-	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%
-	
-	IniRead, hk, Config.ini, Bank Preset, hotkey
-	send {%hk%}
-	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%
-	
+	}	
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
 	send {%hk%}
 	
@@ -900,15 +876,10 @@ IniRead, logout, LLARS Config.ini, Logout, option
 IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
 IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-IniRead, hkbp, Config.ini, Bank Preset, hotkey
 
-if (hkbp = "")
+if (hk = "")
 {
 hk = Not Set
-}
-if (hkbp = "")
-{
-	hkbp = Not Set
 }
 
 WinGetPos, GUIxc, GUIyc,,,LLARS
@@ -923,7 +894,7 @@ Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
 Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
