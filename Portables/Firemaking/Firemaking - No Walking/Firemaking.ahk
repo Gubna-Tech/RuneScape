@@ -155,29 +155,16 @@ WM_WINDOWPOSCHANGED() {
 return
 
 ConfigError(){
-	IniRead, x1, Config.ini, Bank Prime Coords, xmin
-	IniRead, x2, Config.ini, Bank Prime Coords, xmax
-	IniRead, y1, Config.ini, Bank Prime Coords, ymin
-	IniRead, y2, Config.ini, Bank Prime Coords, ymax
+	IniRead, x1, Config.ini, Bank, xmin
+	IniRead, x2, Config.ini, Bank, xmax
+	IniRead, y1, Config.ini, Bank, ymin
+	IniRead, y2, Config.ini, Bank, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Prime Coords] in the config.
-		reload
-	}
-	
-	IniRead, x1, Config.ini, Bank Main Coords, xmin
-	IniRead, x2, Config.ini, Bank Main Coords, xmax
-	IniRead, y1, Config.ini, Bank Main Coords, ymin
-	IniRead, y2, Config.ini, Bank Main Coords, ymax
-	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, CONFIG		
-		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank] in the config.
 		reload
 	}
 	
@@ -191,16 +178,16 @@ ConfigError(){
 		reload
 	}
 	
-	IniRead, x1, Config.ini, Range Coords, xmin
-	IniRead, x2, Config.ini, Range Coords, xmax
-	IniRead, y1, Config.ini, Range Coords, ymin
-	IniRead, y2, Config.ini, Range Coords, ymax
+	IniRead, x1, Config.ini, Brazier, xmin
+	IniRead, x2, Config.ini, Brazier, xmax
+	IniRead, y1, Config.ini, Brazier, ymin
+	IniRead, y2, Config.ini, Brazier, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Range Coords] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Brazier] in the config.
 		reload
 	}
 	
@@ -263,7 +250,7 @@ ConfigError(){
 		}
 	}
 }
-
+	
 CheckPOS() {
 	allowedWindows := "|LLARS|hotkeys|coordinates|"
 	
@@ -295,16 +282,16 @@ CheckPOS() {
 		WinMove, A,,, yadj
 	}
 }
-
-CloseOtherLLARS()
-{
-	WinGet, hWndList, List, LLARS
 	
-	Loop, %hWndList%
+	CloseOtherLLARS()
 	{
-		hWnd := hWndList%A_Index%
-		WinClose, % "ahk_id " hWnd
-	}
+		WinGet, hWndList, List, LLARS
+		
+		Loop, %hWndList%
+		{
+			hWnd := hWndList%A_Index%
+			WinClose, % "ahk_id " hWnd
+		}
 }
 
 DisableHotkey(disable := true) {
@@ -343,7 +330,7 @@ Gui 2: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep cook|sleep walk|renew|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|renew|sleep walk|sleep fire|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -530,7 +517,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep walk|sleep cook|bank prime coords|bank main coords|range coords|renew|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|renew|sleep walk|bank|brazier|sleep fire|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -616,6 +603,7 @@ Gui 13: Destroy
 Gui 1: Show
 EnableHotkey()
 return
+
 ResumeB:
 GuiControl,,State3, Running
 GuiControl,,ScriptBlue, %scriptname%
@@ -656,32 +644,36 @@ Config2check:
 }
 return
 
+UpdateTime:
+PortableRemainingTime -= 1000
+return
+
 UpdateCountdown:
 RemainingTime := EndTime - A_TickCount
 if (RemainingTime > 0) {
-	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
-}
-return
-
-RandomSleepAmountToMinutesSeconds(time) {
-	minutes := Floor(time / 60000)
-	seconds := Mod(Floor(time / 1000), 60)
-	return minutes . "m " . seconds . "s"
-}
-return
-
-DisableButton(disable := true) {
-	Control, Disable,, start
+		GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
+	}
+	return
 	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	Hotkey, %lhk1%, off
-}
-
-EnableButton(enable := true) {
-	Control, Enable,, start
+	RandomSleepAmountToMinutesSeconds(time) {
+		minutes := Floor(time / 60000)
+		seconds := Mod(Floor(time / 1000), 60)
+		return minutes . "m " . seconds . "s"
+	}
+	return
 	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	Hotkey, %lhk1%, On
+	DisableButton(disable := true) {
+		Control, Disable,, start
+		
+		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+		Hotkey, %lhk1%, off
+	}
+	
+	EnableButton(enable := true) {
+		Control, Enable,, start
+		
+		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+		Hotkey, %lhk1%, On
 }
 
 ExitB:
@@ -775,26 +767,24 @@ If (frcount = 0)
 	count = 0
 	++frcount
 }
-
-else
 	
-sleep 250
+	else
+		
+	sleep 250
 
-GuiControl,,ScriptBlue, %scriptname% 
-GuiControl,,State3, Running
-
-runcount3 = %runcount%
-count2 = 0
-firstrun = 0
-StartTime := A_TickCount
-StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
-sleepcount = 0
-totalSleepTime := 0
-
-loop % runcount
-{ 	
-	If firstrun = 0
-	{
+	GuiControl,,ScriptBlue, %scriptname% 
+	GuiControl,,State3, Running
+	
+	runcount3 = %runcount%
+	count2 = 0
+	prime = 0
+	StartTime := A_TickCount
+	StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+	sleepcount = 0
+	totalSleepTime := 0
+	
+	loop % runcount
+	{ 	
 		IfWinNotActive, RuneScape
 		{
 			WinActivate, RuneScape
@@ -809,11 +799,74 @@ loop % runcount
 		GuiControl,,State3, Running
 		DisableButton()
 		
+		IniRead, option,Config.ini, Renew, option
+		if option=true
+			if prime=0
+			{
+				++prime
+				IniRead, portables, Config.ini, Renew, portables
+				PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
+				
+				SetTimer, UpdateTime, 1000
+				
+				CoordMode, Mouse, Window
+				IniRead, x1, Config.ini, Bank, xmin
+				IniRead, x2, Config.ini, Bank, xmax
+				IniRead, y1, Config.ini, Bank, ymin
+				IniRead, y2, Config.ini, Bank, ymax
+				Random, x, %x1%, %x2%
+				Random, y, %y1%, %y2%
+				Click, %x%, %y%
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, hk, Config.ini, Renew, bank hotkey
+				send {%hk%}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, hk, Config.ini, Renew, toolbar hotkey
+				send {%hk%}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				send {1}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, portables, Config.ini, Renew, portables
+				sendraw {%portables%}
+				
+				IniRead, sa1, Config.ini, Sleep Brief, min
+				IniRead, sa2, Config.ini, Sleep Brief, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%    
+				
+				send {enter}
+			}
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Bank Prime Coords, xmin
-		IniRead, x2, Config.ini, Bank Prime Coords, xmax
-		IniRead, y1, Config.ini, Bank Prime Coords, ymin
-		IniRead, y2, Config.ini, Bank Prime Coords, ymax
+		IniRead, x1, Config.ini, Bank, xmin
+		IniRead, x2, Config.ini, Bank, xmax
+		IniRead, y1, Config.ini, Bank, ymin
+		IniRead, y2, Config.ini, Bank, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -821,27 +874,7 @@ loop % runcount
 		IniRead, sa1, Config.ini, Sleep Short, min
 		IniRead, sa2, Config.ini, Sleep Short, max
 		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%		
-		
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		send {%hkbank%}
-		
-	}
-	If firstrun = 1
-	{
-		++count
-		++count2
-		firstrun = 0
-		
-		IfWinNotActive, RuneScape
-		{
-			WinActivate, RuneScape
-		}
-		
-		GuiControl,,Counter, %count%
-		GuiControl,,Counter2, %count2% / %runcount3%
-		GuiControl,,ScriptBlue, %scriptname%
-		GuiControl,,State3, Running
+		Sleep, %SleepAmount%
 		
 		IniRead, hkbank, Config.ini, Bank Preset, hotkey
 		send {%hkbank%}
@@ -852,9 +885,9 @@ loop % runcount
 			IniRead, chance, LLARS Config.ini, Random Sleep, chance
 			Random, RandomNumber, 1, 100
 			
-			if % RandomNumber <= chance
+			IniRead, rs2, LLARS Config.ini, Random Sleep, max
+			if  (RandomNumber <= chance and PortableRemainingTime >= rs2)
 			{
-				
 				++sleepcount
 				GuiControl,, ScriptBlue, Random Sleep
 				GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
@@ -873,10 +906,93 @@ loop % runcount
 				GuiControl,,State3, Running
 			}
 		}
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Brazier, xmin
+		IniRead, x2, Config.ini, Brazier, xmax
+		IniRead, y1, Config.ini, Brazier, ymin
+		IniRead, y2, Config.ini, Brazier, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Fire, min
+		IniRead, sa2, Config.ini, Sleep Fire, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%	
+		
+		IniRead, option,Config.ini, Renew, option
+		if option=true
+			if (PortableRemainingTime <= 60000)
+			{	
+				CoordMode, Mouse, Window
+				IniRead, x1, Config.ini, Bank, xmin
+				IniRead, x2, Config.ini, Bank, xmax
+				IniRead, y1, Config.ini, Bank, ymin
+				IniRead, y2, Config.ini, Bank, ymax
+				Random, x, %x1%, %x2%
+				Random, y, %y1%, %y2%
+				Click, %x%, %y%
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, hk, Config.ini, Renew, bank hotkey
+				send {%hk%}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, hk, Config.ini, Renew, toolbar hotkey
+				send {%hk%}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				send {1}
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				IniRead, portables, Config.ini, Renew, portables
+				sendraw {%portables%}
+				
+				IniRead, sa1, Config.ini, Sleep Brief, min
+				IniRead, sa2, Config.ini, Sleep Brief, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+				
+				Send {enter}
+				
+				IniRead, portables, Config.ini, Renew, portables
+				PortableRemainingTime := portables * 5 * 60 * 1000
+				
+				SetTimer, UpdateTime, 1000
+				
+				IniRead, sa1, Config.ini, Sleep Short, min
+				IniRead, sa2, Config.ini, Sleep Short, max
+				Random, SleepAmount, %sa1%, %sa2%
+				Sleep, %SleepAmount%
+			}
 	}
-	If firstrun = 0
+	
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
 	{
-		++firstrun
+		send {esc}	
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
 		IniRead, sa2, Config.ini, Sleep Short, max
@@ -884,105 +1000,51 @@ loop % runcount
 		Sleep, %SleepAmount%	
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Range Coords, xmin
-		IniRead, x2, Config.ini, Range Coords, xmax
-		IniRead, y1, Config.ini, Range Coords, ymin
-		IniRead, y2, Config.ini, Range Coords, ymax
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
-		Click, %x%, %y%
-		
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		send {space}
-		
-		IniRead, sa1, Config.ini, Sleep Cook, min
-		IniRead, sa2, Config.ini, Sleep Cook, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Bank Main Coords, xmin
-		IniRead, x2, Config.ini, Bank Main Coords, xmax
-		IniRead, y1, Config.ini, Bank Main Coords, ymin
-		IniRead, y2, Config.ini, Bank Main Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
-		
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-	}	
-}
-
-IniRead, option, LLARS Config.ini, Logout, option
-if option=true
-{
-	send {esc}	
+		Click, %x%, %y%	
+	}
 	
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%
+	GuiControl,,ScriptGreen, %scriptname%
+	GuiControl,,State1, Finished
 	
-	send {esc}		
+	EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+	EndTime := A_TickCount
+	TotalTime := (EndTime - StartTime) / 1000
+	AverageTime := TotalTime / runcount3
 	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%	
+	TotalTimeHours := Floor(TotalTime / 3600)
+	TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
+	TotalTimeSeconds := Mod(TotalTime, 60)
 	
-	CoordMode, Mouse, Window
-	IniRead, x1, LLARS Config.ini, Logout, xmin
-	IniRead, x2, LLARS Config.ini, Logout, xmax
-	IniRead, y1, LLARS Config.ini, Logout, ymin
-	IniRead, y2, LLARS Config.ini, Logout, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%	
-}
-
-GuiControl,,ScriptGreen, %scriptname%
-GuiControl,,State1, Finished
-
-EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
-EndTime := A_TickCount
-TotalTime := (EndTime - StartTime) / 1000
-AverageTime := TotalTime / runcount3
-
-TotalTimeHours := Floor(TotalTime / 3600)
-TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
-TotalTimeSeconds := Mod(TotalTime, 60)
-
-AverageTimeMinutes := Floor(AverageTime / 60)
-AverageTimeSeconds := Mod(AverageTime, 60)
-
-TotalTimeHours := Round(TotalTimeHours)
-TotalTimeMinutes := Round(TotalTimeMinutes)
-TotalTimeSeconds := Round(TotalTimeSeconds)
-AverageTimeMinutes := Round(AverageTimeMinutes)
-AverageTimeSeconds := Round(AverageTimeSeconds)
-
-percentage := Round((sleepcount / runcount) * 100)
-
-totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
-TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
-TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
-TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
-
-SoundPlay, C:\Windows\Media\Ring06.wav, 1
-IniRead, chance, LLARS Config.ini, Random Sleep, chance
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
-
-EnableButton()
-return
-
-info:
+	AverageTimeMinutes := Floor(AverageTime / 60)
+	AverageTimeSeconds := Mod(AverageTime, 60)
+	
+	TotalTimeHours := Round(TotalTimeHours)
+	TotalTimeMinutes := Round(TotalTimeMinutes)
+	TotalTimeSeconds := Round(TotalTimeSeconds)
+	AverageTimeMinutes := Round(AverageTimeMinutes)
+	AverageTimeSeconds := Round(AverageTimeSeconds)
+	
+	percentage := Round((sleepcount / runcount) * 100)
+	
+	totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
+	TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
+	TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
+	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
+	
+	SoundPlay, C:\Windows\Media\Ring06.wav, 1
+	IniRead, chance, LLARS Config.ini, Random Sleep, chance
+	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
+	
+	EnableButton()
+	return
+	
+	info:
 DisableHotkey()
 IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
