@@ -155,16 +155,16 @@ WM_WINDOWPOSCHANGED() {
 return
 
 ConfigError(){
-	IniRead, x1, Config.ini, Bank Main Coords, xmin
-	IniRead, x2, Config.ini, Bank Main Coords, xmax
-	IniRead, y1, Config.ini, Bank Main Coords, ymin
-	IniRead, y2, Config.ini, Bank Main Coords, ymax
+	IniRead, x1, Config.ini, Bank, xmin
+	IniRead, x2, Config.ini, Bank, xmax
+	IniRead, y1, Config.ini, Bank, ymin
+	IniRead, y2, Config.ini, Bank, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Main Coords] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank] in the config.
 		reload
 	}
 	
@@ -178,16 +178,26 @@ ConfigError(){
 		reload
 	}
 	
-	IniRead, x1, Config.ini, Crafter Coords, xmin
-	IniRead, x2, Config.ini, Crafter Coords, xmax
-	IniRead, y1, Config.ini, Crafter Coords, ymin
-	IniRead, y2, Config.ini, Crafter Coords, ymax
+	IniRead, x1, Config.ini, Crafter, xmin
+	IniRead, x2, Config.ini, Crafter, xmax
+	IniRead, y1, Config.ini, Crafter, ymin
+	IniRead, y2, Config.ini, Crafter, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Crafter Coords] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Crafter] in the config.
+		reload
+	}
+	
+	IniRead, item, Config.ini, Item Config, item
+	if (item = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid item name in [Item Config] in the config.
 		reload
 	}
 	
@@ -201,7 +211,7 @@ ConfigError(){
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Item] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [%Item%] in the config.
 		reload
 	}
 	
@@ -399,14 +409,14 @@ Gui 11u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 11u: Color, Red
 Gui 11u: Font, cRed
 Gui 11u: Font, s16 bold
-Gui 11u: Add, Text, valertlabel center,----Right-click the item's top-left corner for its coordinates`n----
+Gui 11u: Add, Text, valertlabel center,----Right-click the top-left corner for [ %selectedSection% ]`n----
 WinSet, ExStyle, ^0x80
 Gui 11u: -caption
 Gui 11u: Show, NoActivate xcenter y0,  BottomGUI
 
 Gui 11: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 11: Font, s16 bold
-Gui 11: Add, Text, vTone center,Right-click the item's top-left corner for its coordinates
+Gui 11: Add, Text, vTone center,Right-click the top-left corner for [ %selectedSection% ]
 WinSet, ExStyle, ^0x80
 Gui 11: -caption
 Gui 11: Show, NoActivate xcenter y9999, TopGUI
@@ -421,6 +431,10 @@ WinMove, TopGUI,, , %topPOS%
 return
 
 CheckClicks:
+if GetKeyState("Esc", "P")
+{
+	Reload
+}
 if GetKeyState("RButton", "P")
 {	
 	MouseGetPos, MouseX, MouseY
@@ -434,14 +448,14 @@ if GetKeyState("RButton", "P")
 		Gui 12u: Color, Red
 		Gui 12u: Font, cRed
 		Gui 12u: Font, s16 bold
-		Gui 12u: Add, Text, valertlabel center,----Right-click the item's bottom-right corner for its coordinates`n----
+		Gui 12u: Add, Text, valertlabel center,----Right-click the bottom-right corner for [ %selectedSection% ]`n----
 		WinSet, ExStyle, ^0x80
 		Gui 12u: -caption
 		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
 		
 		Gui 12: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui 12: Font, s16 bold
-		Gui 12: Add, Text, vTtwo center,Right-click the item's bottom-right corner for its coordinates
+		Gui 12: Add, Text, vTtwo center,Right-click the bottom-right corner for [ %selectedSection% ]
 		WinSet, ExStyle, ^0x80
 		Gui 12: -caption
 		Gui 12: Show, NoActivate xcenter y9999, TopGUI
@@ -461,7 +475,7 @@ if GetKeyState("RButton", "P")
 		Gui 13u: Color, Green
 		Gui 13u: Font, cGreen
 		Gui 13u: Font, s16 bold
-		Gui 13u: Add, Text, valertlabel center,----Coordinates have been updated in the Config.ini file`n----
+		Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
 		WinSet, ExStyle, ^0x80
 		Gui 13u: -caption
 		Gui 13u: Show, NoActivate xcenter y0, BottomGUI
@@ -470,7 +484,7 @@ if GetKeyState("RButton", "P")
 		Gui 13: Color, White
 		Gui 13: Font, cGreen
 		Gui 13: Font, s16 bold
-		Gui 13: Add, Text, vTthree center,Coordinates have been updated in the Config.ini file
+		Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
 		WinSet, ExStyle, ^0x80
 		Gui 13: -caption
 		Gui 13: Show, NoActivate xcenter y9999, TopGUI
@@ -527,7 +541,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|item config|sleep craft|Bank Coords|Batwing book|Batwing boots|Batwing gloves|Batwing hood|Batwing legs|Batwing shield|Batwing torso|Batwing wand|Black dragonhide body|Black dragonhide boots|Black dragonhide chaps|Black dragonhide coif|Black dragonhide shield|Black dragonhide vambraces|Black wizard boots|Black wizard gloves|Black wizard hat|Black wizard robe skirt|Black wizard robe top|Black wizard shield|Blue dragonhide body|Blue dragonhide boots|Blue dragonhide chaps|Blue dragonhide coif|Blue dragonhide shield|Blue dragonhide vambraces|Carapace boots|Carapace gloves|Carapace helm|Carapace legs|Carapace shield|Carapace torso|Cryptbloom boots|Cryptbloom bottoms|Cryptbloom gloves|Cryptbloom helm|Cryptbloom top|Death Lotus chaps|Death Lotus chestplate|Death Lotus hood|Fremennik round shield|Fungal leggings|Fungal poncho|Fungal visor|Ganodermic leggings|Ganodermic poncho|Ganodermic visor|Green dragonhide body|Green dragonhide boots|Green dragonhide coif|Green dragonhide shield|Green dragonhide vambraces|Grifolic leggings|Grifolic poncho|Grifolic visor|Hard Leather Body|Hard Leather Boots|Hard Leather Chaps|Hard Leather Cowl|Hard Leather Gloves|Hard Leather Shield|Imphide Book|Imphide Boots|Imphide Gloves|Imphide Hood|Imphide Robe Bottom|Imphide Robe Top|Imphide Shield|Imphorn Wand|Leather Body|Leather Boots|Leather Chaps|Leather Cowl|Leather Gloves|Leather Shield|Leather Vambraces|Mystic boots|Mystic gloves|Mystic hat|Mystic orb|Mystic robe bottom|Mystic robe top|Mystic shield|Mystic wand|Red dragonhide body|Red dragonhide boots|Red dragonhide chaps|Red dragonhide coif|Red dragonhide shield|Red dragonhide vambraces|Green dragonhide chaps|Royal dragonhide body|Royal dragonhide boots|Royal dragonhide chaps|Royal dragonhide coif|Royal dragonhide vambraces|Snakeskin bandana|Snakeskin body|Snakeskin boots|Snakeskin chaps|Snakeskin vambraces|Spider orb|Spider silk boots|Spider silk gloves|Spider silk hood|Spider silk robe bottom|Spider silk robe top|Spider silk shield|Spider wand|Studded Body|Studded Chaps|Studded Leather Boots|Studded Leather Coif|Studded Leather Gloves|Studded Leather Shield|Superior Death Lotus chaps|Superior Death Lotus chestplate|Superior Death Lotus hood|Superior Death Lotus tabi|Superior Death Lotus teko|Wizard book|Wizard boots|Wizard gloves|Wizard hat|Wizard robe skirt|Wizard robe top|Wizard shield|Wizard wand|Yak-hide body|Yak-hide legs|sleep walk|renew|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|item config|sleep craft|Bank|Batwing book|Batwing boots|Batwing gloves|Batwing hood|Batwing legs|Batwing shield|Batwing torso|Batwing wand|Black dragonhide body|Black dragonhide boots|Black dragonhide chaps|Black dragonhide coif|Black dragonhide shield|Black dragonhide vambraces|Black wizard boots|Black wizard gloves|Black wizard hat|Black wizard robe skirt|Black wizard robe top|Black wizard shield|Blue dragonhide body|Blue dragonhide boots|Blue dragonhide chaps|Blue dragonhide coif|Blue dragonhide shield|Blue dragonhide vambraces|Carapace boots|Carapace gloves|Carapace helm|Carapace legs|Carapace shield|Carapace torso|Cryptbloom boots|Cryptbloom bottoms|Cryptbloom gloves|Cryptbloom helm|Cryptbloom top|Death Lotus chaps|Death Lotus chestplate|Death Lotus hood|Fremennik round shield|Fungal leggings|Fungal poncho|Fungal visor|Ganodermic leggings|Ganodermic poncho|Ganodermic visor|Green dragonhide body|Green dragonhide boots|Green dragonhide coif|Green dragonhide shield|Green dragonhide vambraces|Grifolic leggings|Grifolic poncho|Grifolic visor|Hard Leather Body|Hard Leather Boots|Hard Leather Chaps|Hard Leather Cowl|Hard Leather Gloves|Hard Leather Shield|Imphide Book|Imphide Boots|Imphide Gloves|Imphide Hood|Imphide Robe Bottom|Imphide Robe Top|Imphide Shield|Imphorn Wand|Leather Body|Leather Boots|Leather Chaps|Leather Cowl|Leather Gloves|Leather Shield|Leather Vambraces|Mystic boots|Mystic gloves|Mystic hat|Mystic orb|Mystic robe bottom|Mystic robe top|Mystic shield|Mystic wand|Red dragonhide body|Red dragonhide boots|Red dragonhide chaps|Red dragonhide coif|Red dragonhide shield|Red dragonhide vambraces|Green dragonhide chaps|Royal dragonhide body|Royal dragonhide boots|Royal dragonhide chaps|Royal dragonhide coif|Royal dragonhide vambraces|Snakeskin bandana|Snakeskin body|Snakeskin boots|Snakeskin chaps|Snakeskin vambraces|Spider orb|Spider silk boots|Spider silk gloves|Spider silk hood|Spider silk robe bottom|Spider silk robe top|Spider silk shield|Spider wand|Studded Body|Studded Chaps|Studded Leather Boots|Studded Leather Coif|Studded Leather Gloves|Studded Leather Shield|Superior Death Lotus chaps|Superior Death Lotus chestplate|Superior Death Lotus hood|Superior Death Lotus tabi|Superior Death Lotus teko|Wizard book|Wizard boots|Wizard gloves|Wizard hat|Wizard robe skirt|Wizard robe top|Wizard shield|Wizard wand|Yak-hide body|Yak-hide legs|sleep walk|renew|crafter|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -568,6 +582,10 @@ if (selectedSection != " ***** Make a Selection ***** ") {
 return
 
 ButtonClicked2:
+if GetKeyState("Esc", "P")
+{
+	Reload
+}
 GuiControl,, HotkeysText, Enter new hotkey
 GuiControl, Focus, ChosenHotkey
 return
@@ -819,10 +837,10 @@ loop % runcount
 				SetTimer, UpdateTime, 1000
 				
 				CoordMode, Mouse, Window
-				IniRead, x1, Config.ini, Bank Main Coords, xmin
-				IniRead, x2, Config.ini, Bank Main Coords, xmax
-				IniRead, y1, Config.ini, Bank Main Coords, ymin
-				IniRead, y2, Config.ini, Bank Main Coords, ymax
+				IniRead, x1, Config.ini, Bank, xmin
+				IniRead, x2, Config.ini, Bank, xmax
+				IniRead, y1, Config.ini, Bank, ymin
+				IniRead, y2, Config.ini, Bank, ymax
 				Random, x, %x1%, %x2%
 				Random, y, %y1%, %y2%
 				Click, %x%, %y%
@@ -872,10 +890,10 @@ loop % runcount
 		Sleep, %SleepAmount%
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Bank Main Coords, xmin
-		IniRead, x2, Config.ini, Bank Main Coords, xmax
-		IniRead, y1, Config.ini, Bank Main Coords, ymin
-		IniRead, y2, Config.ini, Bank Main Coords, ymax
+		IniRead, x1, Config.ini, Bank, xmin
+		IniRead, x2, Config.ini, Bank, xmax
+		IniRead, y1, Config.ini, Bank, ymin
+		IniRead, y2, Config.ini, Bank, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -894,10 +912,10 @@ loop % runcount
 		Sleep, %SleepAmount%
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Crafter Coords, xmin
-		IniRead, x2, Config.ini, Crafter Coords, xmax
-		IniRead, y1, Config.ini, Crafter Coords, ymin
-		IniRead, y2, Config.ini, Crafter Coords, ymax
+		IniRead, x1, Config.ini, Crafter, xmin
+		IniRead, x2, Config.ini, Crafter, xmax
+		IniRead, y1, Config.ini, Crafter, ymin
+		IniRead, y2, Config.ini, Crafter, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -934,10 +952,10 @@ loop % runcount
 		GuiControl,,State3, Running
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Bank Main Coords, xmin
-		IniRead, x2, Config.ini, Bank Main Coords, xmax
-		IniRead, y1, Config.ini, Bank Main Coords, ymin
-		IniRead, y2, Config.ini, Bank Main Coords, ymax
+		IniRead, x1, Config.ini, Bank, xmin
+		IniRead, x2, Config.ini, Bank, xmax
+		IniRead, y1, Config.ini, Bank, ymin
+		IniRead, y2, Config.ini, Bank, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -984,10 +1002,10 @@ loop % runcount
 		Sleep, %SleepAmount%
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Crafter Coords, xmin
-		IniRead, x2, Config.ini, Crafter Coords, xmax
-		IniRead, y1, Config.ini, Crafter Coords, ymin
-		IniRead, y2, Config.ini, Crafter Coords, ymax
+		IniRead, x1, Config.ini, Crafter, xmin
+		IniRead, x2, Config.ini, Crafter, xmax
+		IniRead, y1, Config.ini, Crafter, ymin
+		IniRead, y2, Config.ini, Crafter, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -1013,10 +1031,10 @@ loop % runcount
 			if (PortableRemainingTime <= 60000)
 			{	
 				CoordMode, Mouse, Window
-				IniRead, x1, Config.ini, Bank Main Coords, xmin
-				IniRead, x2, Config.ini, Bank Main Coords, xmax
-				IniRead, y1, Config.ini, Bank Main Coords, ymin
-				IniRead, y2, Config.ini, Bank Main Coords, ymax
+				IniRead, x1, Config.ini, Bank, xmin
+				IniRead, x2, Config.ini, Bank, xmax
+				IniRead, y1, Config.ini, Bank, ymin
+				IniRead, y2, Config.ini, Bank, ymax
 				Random, x, %x1%, %x2%
 				Random, y, %y1%, %y2%
 				Click, %x%, %y%
@@ -1169,6 +1187,9 @@ Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`
 Gui 20: Font, s11 Bold c0x152039
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Add, Text, Center w220 x5,Created by Gubna
+Gui 20: Font, cBlue underline
+Gui 20: Add, Text, Center gMIT w220 x5,MIT License
+Gui 20: Font, cBlack norm bold
 Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
 Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
 Gui 20: Add, Button, gDiscord w150 x40 center,Discord
@@ -1213,7 +1234,48 @@ CloseError:
 ExitApp
 
 CloseGNF:
-run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
 GUI GNF: Destroy
+if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
+	if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
+		Menu, Tray, NoIcon
+		Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
+		Gui Client: Font, S13 bold underline cRed
+		Gui Client: Add, Text, Center w220 x5,ERROR
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Font, s12 norm bold
+		Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Font, cBlack
+		Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropraite client for you account.
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Add, Button, gJagex w150 x40 center,Jagex
+		Gui Client: Add, Button, gRuneScape w150 x40 center,RuneScape
+		WinSet, ExStyle, ^0x80
+		Gui Client: -caption
+		Gui Client: Show, center w230, Multiple Client
+		return
+	} else {
+		Gui 1: Show
+		run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+	}
+} else {
+	Gui 1: Show
+	run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+}
+return
+
+Jagex:
+GUI Client: Destroy
 Gui 1: Show
+run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+return
+
+RuneScape:
+GUI Client: Destroy
+Gui 1: Show
+run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+return
+
+MIT:
+run https://github.com/Gubna-Tech/RuneScape/blob/main/LICENSE
 return
