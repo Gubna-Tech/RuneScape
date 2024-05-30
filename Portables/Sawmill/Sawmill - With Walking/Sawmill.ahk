@@ -204,6 +204,16 @@ ConfigError(){
 		reload
 	}
 	
+	IniRead, type, Config.ini, Plank Type, type
+	if (type = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter a valid Plank Type for [Plank Type] in the config.
+		reload
+	}
+	
 	IniRead, quantity, Config.ini, Plank Amount, quantity
 	if (quantity = "")
 	{
@@ -353,7 +363,7 @@ Gui 2: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep walk|renew|plank amount|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep walk|renew|plank amount|plank type|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -540,7 +550,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|renew|sleep walk|bank prime coords|bank main coords|sawmill coords|plank amount|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|renew|sleep walk|bank prime coords|bank main coords|sawmill coords|plank amount|plank type|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -940,6 +950,53 @@ loop % runcount
 	{
 		++firstrun
 		
+		IniRead, type, Config.ini, Plank Type, Type
+		if (type = 1 or type = 2 or type = 3 or type = 4 or type = 5 or type = 6)
+		{
+			sendinput %type%
+		}
+		
+		IniRead, type, Config.ini, Plank Type, Type
+		if (type = 7)
+		{
+			send {8}
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			send {1}
+		}
+		
+		IniRead, type, Config.ini, Plank Type, Type
+		if (type = 8)
+		{
+			send {8}
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			send {2}
+		}
+		
+		IniRead, type, Config.ini, Plank Type, Type
+		if (type = 9)
+		{
+			send {8}
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			send {3}
+		}
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
 		IniRead, quantity, Config.ini, Plank Amount, quantity
 		sendinput %quantity%
 		
@@ -1004,7 +1061,6 @@ if option=true
 	Random, y, %y1%, %y2%
 	Click, %x%, %y%	
 }
-
 
 GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished
