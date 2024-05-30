@@ -184,7 +184,7 @@ ConfigError(){
 }
 
 CheckPOS() {
-	allowedWindows := "|LLARS|hotkeys|coordinates|"
+	allowedWindows := "|LLARS|hotkeys|coordinates|file error|config error|game not found|information|multiple client|no client detected|"
 	
 	WinGetTitle, activeWindowTitle, A
 	
@@ -779,11 +779,13 @@ Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 Gui 20: Font, Norm
 Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
-Gui 20: Font, s11 Bold c0x152039
 Gui 20: Add, Text, center x5 w220,
-Gui 20: Add, Text, Center w220 x5,Created by Gubna
-Gui 20: Font, cBlue underline
+Gui 20: Font, italic s10 c0x152039
+Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
+Gui 20: Font, cBlue norm underline bold s11
 Gui 20: Add, Text, Center gMIT w220 x5,MIT License
+Gui 20: Font, s11 norm Bold c0x152039
+Gui 20: Add, Text, Center w220 x5,Created by Gubna
 Gui 20: Font, cBlack norm bold
 Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
 Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
