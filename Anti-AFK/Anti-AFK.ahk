@@ -152,7 +152,7 @@ WM_WINDOWPOSCHANGED() {
 return
 
 CheckPOS() {
-	allowedWindows := "|LLARS|hotkeys|coordinates|"
+	allowedWindows := "|LLARS|hotkeys|coordinates|file error|config error|game not found|information|multiple client|no client detected|"
 	
 	WinGetTitle, activeWindowTitle, A
 	
@@ -809,11 +809,13 @@ Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 Gui 20: Font, Norm
 Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
-Gui 20: Font, s11 Bold c0x152039
 Gui 20: Add, Text, center x5 w220,
-Gui 20: Add, Text, Center w220 x5,Created by Gubna
-Gui 20: Font, cBlue underline
+Gui 20: Font, italic s10 c0x152039
+Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
+Gui 20: Font, cBlue norm underline bold s11
 Gui 20: Add, Text, Center gMIT w220 x5,MIT License
+Gui 20: Font, s11 norm Bold c0x152039
+Gui 20: Add, Text, Center w220 x5,Created by Gubna
 Gui 20: Font, cBlack norm bold
 Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
 Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
@@ -871,7 +873,7 @@ if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
 		Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found
 		Gui Client: Add, Text, center x5 w220,
 		Gui Client: Font, cBlack
-		Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropraite client for you account.
+		Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropriate client for your account.
 		Gui Client: Add, Text, center x5 w220,
 		Gui Client: Add, Button, gJagex w150 x40 center,Jagex
 		Gui Client: Add, Button, gRuneScape w150 x40 center,RuneScape
@@ -881,12 +883,34 @@ if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
 		return
 	} else {
 		Gui 1: Show
-		run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+		Run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
 	}
-} else {
+} else if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
 	Gui 1: Show
-	run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+	Run "rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws"
+} else {
+	Menu, Tray, NoIcon
+	Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
+	Gui Client: Font, S13 bold underline cRed
+	Gui Client: Add, Text, Center w220 x5,ERROR
+	Gui Client: Add, Text, center x5 w220,
+	Gui Client: Font, s12 norm bold
+	Gui Client: Add, Text, Center w220 x5, Neither RuneScape or Jagex Launcher Was  Found
+	Gui Client: Add, Text, center x5 w220,
+	Gui Client: Font, cBlack
+	Gui Client: Add, Text, Center w220 x5, Neither game client was detected in its expected location, please manually launch RuneScape.
+	Gui Client: Add, Text, center x5 w220,
+	Gui Client: Add, Button, gCloseClient w150 x40 center,Close Error
+	WinSet, ExStyle, ^0x80
+	Gui Client: -caption
+	Gui Client: Show, center w230, No Client Detected
+	return
 }
+return
+
+CloseClient:
+Gui Client: Destroy
+Gui 1: Show
 return
 
 Jagex:
