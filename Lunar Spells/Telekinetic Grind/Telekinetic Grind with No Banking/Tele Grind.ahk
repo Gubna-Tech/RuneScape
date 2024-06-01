@@ -647,27 +647,30 @@ IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
 exitapp
 
 Start:
-IfWinNotExist RuneScape 
+IfWinNotExist RuneScape
 {
-	Gui 1: Hide
-	Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui GNF: Font, S13 bold underline cRed
-	Gui GNF: Add, Text, Center w220 x5,ERROR
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, s12 norm bold
-	Gui GNF: Add, Text, Center w220 x5, RuneScape Not Found
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, cBlack
-	Gui GNF: Add, Text, Center w220 x5, RuneScape was not found to be running. Please try to start the script again once logged into an in-game world.`n`n`nIf RuneScape is open and you receive this message, please use the Discord button below to reach out to Gubna for assistance.`n`n`nRuneScape will be auto-launched upon closing this error message.
-	Gui GNF: Font, s11 norm Bold c0x152039
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Add, Text, Center w220 x5,Created by Gubna
-	Gui GNF: Add, Button, gDiscordError w150 x40 center,Discord
-	Gui GNF: add, button, gCloseGNF w150 x40 center,Close Error
-	WinSet, ExStyle, ^0x80
-	Gui GNF: -caption
-	Gui GNF: Show, center w230, Game Not Found
-	return
+Gui 1: Hide
+Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
+Gui GNF: Font, S13 bold underline cRed
+Gui GNF: Add, Text, Center w220 x5,ERROR
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Font, s12 norm bold
+Gui GNF: Add, Text, Center w220 x5, RuneScape Not Found
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Font, cBlack
+Gui GNF: Add, Text, Center w220 x5, RuneScape was not found to be running.`n`n`nRuneScape will attempt to be auto-launched upon closing this error message.
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Font, norm italic s10 c0x152039
+GUI GNF: Add, Text, Center w220 x5, If RuneScape is already open and you're seeing this message, please use the Discord button below to contact Gubna for assistance.
+Gui GNF: Font, s11 norm Bold c0x152039
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Add, Text, Center w220 x5,Created by Gubna
+Gui GNF: Add, Button, gDiscordError w150 x40 center,Discord
+Gui GNF: add, button, gCloseGNF w150 x40 center,Close Error
+WinSet, ExStyle, ^0x80
+Gui GNF: -caption
+Gui GNF: Show, center w230, Game Not Found
+return
 }
 ConfigError()
 
@@ -954,48 +957,50 @@ ExitApp
 CloseGNF:
 GUI GNF: Destroy
 if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
-	if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
-		Menu, Tray, NoIcon
-		Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-		Gui Client: Font, S13 bold underline cRed
-		Gui Client: Add, Text, Center w220 x5,ERROR
-		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Font, s12 norm bold
-		Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found
-		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Font, cBlack
-		Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropriate client for your account.
-		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Add, Button, gJagex w150 x40 center,Jagex
-		Gui Client: Add, Button, gRuneScape w150 x40 center,RuneScape
-		WinSet, ExStyle, ^0x80
-		Gui Client: -caption
-		Gui Client: Show, center w230, Multiple Client
-		return
-	} else {
-		Gui 1: Show
-		Run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
-	}
-} else if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
-	Gui 1: Show
-	Run "rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws"
+if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
+Menu, Tray, NoIcon
+Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
+Gui Client: Font, S13 bold underline cRed
+Gui Client: Add, Text, Center w220 x5,ERROR
+Gui Client: Add, Text, center x5 w220,
+Gui Client: Font, s12 norm bold
+Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found.
+Gui Client: Add, Text, center x5 w220,
+Gui Client: Font, cBlack
+Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropriate client for your account.
+Gui Client: Add, Text, center x5 w220,
+Gui Client: Add, Button, gJagex w150 x40 center,Jagex
+Gui Client: Add, Button, gRuneScape w150 x40 center,RuneScape
+WinSet, ExStyle, ^0x80
+Gui Client: -caption
+Gui Client: Show, center w230, Multiple Client
+return
 } else {
-	Menu, Tray, NoIcon
-	Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui Client: Font, S13 bold underline cRed
-	Gui Client: Add, Text, Center w220 x5,ERROR
-	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Font, s12 norm bold
-	Gui Client: Add, Text, Center w220 x5, Neither RuneScape or Jagex Launcher Was  Found
-	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Font, cBlack
-	Gui Client: Add, Text, Center w220 x5, Neither game client was detected in its expected location, please manually launch RuneScape.
-	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Add, Button, gCloseClient w150 x40 center,Close Error
-	WinSet, ExStyle, ^0x80
-	Gui Client: -caption
-	Gui Client: Show, center w230, No Client Detected
-	return
+Gui 1: Show
+Run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+}
+} else if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
+Gui 1: Show
+Run "rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws"
+} else {
+Menu, Tray, NoIcon
+Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
+Gui Client: Font, S13 bold underline cRed
+Gui Client: Add, Text, Center w220 x5,ERROR
+Gui Client: Add, Text, center x5 w220,
+Gui Client: Font, s12 norm bold
+Gui Client: Add, Text, Center w220 x5, Neither RuneScape Nor Jagex Launcher Were Found.
+Gui Client: Add, Text, center x5 w220,
+Gui Client: Font, cBlack
+Gui Client: Add, Text, Center w220 x5, No game client was detected in its expected location, please manually launch RuneScape.
+Gui Client: Add, Text, center x5 w220,
+Gui Client: Add, Text, Center w220 x5, Please ensure that RuneScape is open before attempting to start the script again.
+Gui Client: Add, Text, center x5 w220,
+Gui Client: Add, Button, gCloseClient w150 x40 center,Close Error
+WinSet, ExStyle, ^0x80
+Gui Client: -caption
+Gui Client: Show, center w230, No Client Detected
+return
 }
 return
 
