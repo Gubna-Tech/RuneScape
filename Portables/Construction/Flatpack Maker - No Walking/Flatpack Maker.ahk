@@ -230,16 +230,16 @@ ConfigError(){
 		reload
 	}
 	
-	IniRead, option,Config.ini, Renew, option
-	if option=true
+	IniRead, scroll, Config.ini, Flatpack - Item, scroll
+	if scroll = true
 	{
-		IniRead, hk, Config.ini, Renew, bank hotkey
-		if (hk = "")
+		IniRead, direction, Config.ini, Flatpack - Item, direction
+		if (direction = "")
 		{
 			Run %A_ScriptDir%\Config.ini
 			GuiControl,,ScriptRed, CONFIG		
 			GuiControl,,State2, ERROR
-			MsgBox, 4112, Config Error, Please enter a valid hotkey for Bank Hotkey in [Renew] in the config.
+			MsgBox, 4112, Config Error, Please enter UP or DOWN for direction in [Flatpack - Item] in the config.
 			reload
 		}
 	}
@@ -976,6 +976,24 @@ loop % runcount
 		IniRead, x2, Config.ini, Flatpack - Item, xmax
 		IniRead, y1, Config.ini, Flatpack - Item, ymin
 		IniRead, y2, Config.ini, Flatpack - Item, ymax
+		IniRead, scroll, Config.ini, Flatpack - Item, scroll
+		if scroll = true
+		{
+			IniRead, direction, Config.ini, Flatpack - Item, direction
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			mousemove, %x%, %y%
+			
+			Random, scrollamount, 3,7
+			loop % scrollamount {
+				send {wheel%direction%}
+			}
+
+			IniRead, sa1, Config.ini, Sleep brief, min
+			IniRead, sa2, Config.ini, Sleep brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+		}
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
