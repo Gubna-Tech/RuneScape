@@ -5,7 +5,7 @@ SetBatchLines, -1
 DetectHiddenWindows, On
 closeotherllars()
 
-if (InStr(A_ScriptDir, ".zip") > 0) {
+if (InStr(A_ScriptDir, ".zip" or ".rar") > 0) {
 	Menu, Tray, NoIcon
 	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
 	Gui Error: Font, S13 bold underline cRed
@@ -1284,6 +1284,18 @@ Switch selectedScript
 	WinWait %script%
 	sleep 1500
 	send win{enter}
+	winwait LLARS
+	winclose %script%
+	exitapp
+	
+	Case "Flatpack Maker - Portables - Non-Walking":
+	script := "Flatpack Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\portables\Construction\Flatpack Maker - no walking\
+	WinWait %script%
+	sleep 1500
+	send fla{enter}
 	winwait LLARS
 	winclose %script%
 	exitapp
