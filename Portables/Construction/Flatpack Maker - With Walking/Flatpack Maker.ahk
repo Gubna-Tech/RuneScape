@@ -838,6 +838,8 @@ StartTime := A_TickCount
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 sleepcount = 0
 totalSleepTime := 0
+rightclick = 0
+clickcount = 0
 
 loop % runcount
 { 	
@@ -1105,7 +1107,57 @@ loop % runcount
 		IniRead, sa1, Config.ini, Sleep Construct, min
 		IniRead, sa2, Config.ini, Sleep Construct, max
 		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
+		
+		SleepStart := A_TickCount
+		Loop
+		{
+			IniRead, chance, LLARS Config.ini, Random Right-Click, chance
+			Random, RandomNumber, 1, 100
+			if (RandomNumber >=1 and RandomNumber <= chance and ClickCount = 0) {
+				++clickcount
+				++rightclick
+				
+				IniRead, min, LLARS Config.ini, Random Right-Click, min
+				IniRead, max, LLARS Config.ini, Random Right-Click, max
+				Random, RandomDelay, %min%, %max%
+				DelayStart := A_TickCount
+				while (A_TickCount - DelayStart < RandomDelay) {
+				}
+				
+				WinGetPos, RSx, RSy, RSw, RSh, RuneScape
+				MouseGetPos, MouseX, MouseY
+				
+				xmin := Round(MouseX - RSx)*0.1
+				xmax := Round(RSw - RSx - MouseX)*0.1
+				ymin := Round(MouseY - RSy)*0.1
+				ymax := Round(RSh - RSy - MouseY)*0.1
+				
+				CoordMode, Mouse, Window
+				Random, x, %xmin%, %xmax%
+				Random, y, %ymin%, %ymax%
+				Random, RandomSpeed, 25, 100
+				mousemove, %x%, %y%, %RandomSpeed%, r
+				
+				IniRead, sa1, Config.ini, Sleep brief, min
+				IniRead, sa2, Config.ini, Sleep brief, max
+				Random, SleepAmountBrief, %sa1%, %sa2%
+				Sleep, %SleepAmountBrief%
+				
+				mouseclick, r
+			}
+			
+			if (RandomNumber >= chance and ClickCount = 0) {
+				++clickcount
+			}
+			
+			if (A_TickCount - SleepStart >= SleepAmount)
+			{
+				clickcount = 0
+				break
+			}
+			
+			Sleep 250
+		}
 		
 		IniRead, option,Config.ini, Renew, option
 		if option=true
@@ -1213,6 +1265,7 @@ AverageTimeMinutes := Round(AverageTimeMinutes)
 AverageTimeSeconds := Round(AverageTimeSeconds)
 
 percentage := Round((sleepcount / runcount) * 100)
+clickpercentage := Round((rightclick / runcount) * 100)
 
 totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
 TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
@@ -1221,7 +1274,8 @@ TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet chance: %chance%`%`nActual chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
+IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
+MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s`n`nSet click chance: %clickchance%`%`nActual click chance: %clickpercentage%`%`nTotal random clicks: %rightclick%
 
 EnableButton()
 return
@@ -1235,7 +1289,8 @@ IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 IniRead, logout, LLARS Config.ini, Logout, option
 IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
-IniRead, hk, Config.ini, Bank Form Preset, hotkey
+IniRead, hk, Config.ini, Bank Preset, hotkey
+IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
 
 if (hk = "")
 {
@@ -1254,12 +1309,12 @@ Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
 Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nBank Form Preset: %hk%
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nBank Preset: %hk%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
+Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%`nRandom Click Chance: %clickchance%`%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, italic s10 c0x152039
 Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
