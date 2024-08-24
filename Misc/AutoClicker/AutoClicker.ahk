@@ -570,8 +570,6 @@ remainingTimeSeconds := Mod(Floor(remainingTimeMS / 1000), 60)
 GuiControl,, TimerCount, %remainingTimeMinutes%m %remainingTimeSeconds%s
 DisableButton()
 
-msgbox,,,countdown
-
 if (remainingTimeMS <= 0 and startcheck=1)
 {
 	SetTimer, Countdown, off
