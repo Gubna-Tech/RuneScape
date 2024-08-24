@@ -570,6 +570,8 @@ remainingTimeSeconds := Mod(Floor(remainingTimeMS / 1000), 60)
 GuiControl,, TimerCount, %remainingTimeMinutes%m %remainingTimeSeconds%s
 DisableButton()
 
+msgbox,,,countdown
+
 if (remainingTimeMS <= 0 and startcheck=1)
 {
 	SetTimer, Countdown, off
@@ -651,9 +653,7 @@ If (frcount = 0)
 }
 
 else
-
-SetTimer, Countdown, 1000
-
+	
 sleep 250
 
 GuiControl,,ScriptBlue, %scriptname% 
@@ -661,10 +661,7 @@ GuiControl,,State3, Running
 DisableButton()
 startcheck=1
 
-	IfWinNotActive, RuneScape
-	{
-		WinActivate, RuneScape
-}
+SetTimer, Countdown, 1000
 
 CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Click, xmin
