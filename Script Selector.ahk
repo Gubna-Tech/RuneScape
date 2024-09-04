@@ -892,74 +892,146 @@ Switch selectedScript
 	winclose %script%
 	exitapp
 	
-	Case "Protean Bar":
-	script := "Protean Bar"
+	Case "Protean Bar - Normal":
+	script := "Normal Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
+	Run, %A_ScriptDir%\Protean\Protean Bar
+	WinWait Protean Bar
 	sleep 1500
-	send pro{enter}
+	send nor{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Bar
 	exitapp
 	
-	Case "Protean Cog":
-	script := "Protean Cog"
+	Case "Protean Bar - Unstable":
+	script := "Unstable Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
+	Run, %A_ScriptDir%\Protean\Protean Bar
+	WinWait Protean Bar
 	sleep 1500
-	send pro{enter}
+	send uns{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Bar
 	exitapp
 	
-	Case "Protean Essence":
-	script := "Protean Essence"
+	Case "Protean Cog - Normal":
+	script := "Normal Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
+	Run, %A_ScriptDir%\Protean\Protean Cog
+	WinWait Protean Cog
 	sleep 1500
-	send pro{enter}
+	send nor{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Cog
 	exitapp
 	
-	Case "Protean Hide":
-	script := "Protean Hide"
+	Case "Protean Cog - Unstable":
+	script := "Unstable Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
+	Run, %A_ScriptDir%\Protean\Protean Cog
+	WinWait Protean Cog
 	sleep 1500
-	send pro{enter}
+	send uns{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Cog
 	exitapp
 	
-	Case "Protean Logs - Fletching":
-	script := "Protean Logs"
+	Case "Protean Essence - Normal":
+	script := "Normal Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\Fletch
+	Run, %A_ScriptDir%\Protean\Protean Essence
+	WinWait Protean Essence
+	sleep 1500
+	send nor{enter}
+	winwait LLARS
+	winclose Protean Essence
+	exitapp
+	
+	Case "Protean Essence - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Essence
+	WinWait Protean Essence
+	sleep 1500
+	send uns{enter}
+	winwait LLARS
+	winclose Protean Essence
+	exitapp
+	
+	Case "Protean Hide - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Hide
+	WinWait Protean Hide
+	sleep 1500
+	send nor{enter}
+	winwait LLARS
+	winclose Protean Hide
+	exitapp
+	
+	Case "Protean Hide - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Hide
+	WinWait Protean Hide
+	sleep 1500
+	send uns{enter}
+	winwait LLARS
+	winclose Protean Hide
+	exitapp
+	
+	Case "Protean Logs - Fletch - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch
 	WinWait Fletch
 	sleep 1500
-	send pro{enter}
+	send nor{enter}
 	winwait LLARS
 	winclose Fletch
 	exitapp
 	
-	Case "Protean Logs - Fletch & Burn":
-	script := "Protean Logs"
+	Case "Protean Logs - Fletch - Unstable":
+	script := "Unstable Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\Fletch & Burn
+	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch
+	WinWait Fletch
+	sleep 1500
+	send uns{enter}
+	winwait LLARS
+	winclose Fletch
+	exitapp
+	
+	Case "Protean Logs - Fletch/Burn - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch & Burn
 	WinWait Fletch & Burn
 	sleep 1500
-	send pro{enter}
+	send nor{enter}
+	winwait LLARS
+	winclose Fletch & Burn
+	exitapp
+	
+	Case "Protean Logs - Fletch/Burn - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch & Burn
+	WinWait Fletch & Burn
+	sleep 1500
+	send uns{enter}
 	winwait LLARS
 	winclose Fletch & Burn
 	exitapp
@@ -968,60 +1040,96 @@ Switch selectedScript
 	script := "Protean Memory"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
+	Run, %A_ScriptDir%\Protean\Protean Memory
 	WinWait %script%
 	sleep 1500
-	send pro{enter}
+	send nor{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Memory
 	exitapp
 	
 	Case "Protean Memory - Unstable":
 	script := "Protean Memory"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
+	Run, %A_ScriptDir%\Protean\Protean Memory
 	WinWait %script%
 	sleep 1500
 	send uns{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Memory
 	exitapp
 	
-	Case "Protean Plank":
-	script := "Protean Plank"
+	Case "Protean Plank - Normal":
+	script := "Normal Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
+	Run, %A_ScriptDir%\Protean\Protean Plank
+	WinWait Protean Plank
 	sleep 1500
-	send pro{enter}
+	send nor{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Plank
 	exitapp
 	
-	Case "Protean Protein":
-	script := "Protean Protein"
+	Case "Protean Plank - Unstable":
+	script := "Unstable Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
+	Run, %A_ScriptDir%\Protean\Protean Plank
+	WinWait Protean Plank
 	sleep 1500
-	send pro{enter}
+	send uns{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Plank
 	exitapp
 	
-	Case "Protean Shake":
-	script := "Protean Shake"
+	Case "Protean Protein - Normal":
+	script := "Normal Protean"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
+	Run, %A_ScriptDir%\Protean\Protean Protein
+	WinWait Protean Protein
 	sleep 1500
-	send pro{enter}
+	send nor{enter}
 	winwait LLARS
-	winclose %script%
+	winclose Protean Protein
+	exitapp
+	
+	Case "Protean Protein - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Protein
+	WinWait Protean Protein
+	sleep 1500
+	send uns{enter}
+	winwait LLARS
+	winclose Protean Protein
+	exitapp
+	
+	Case "Protean Shake - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Shake
+	WinWait Protean Shake
+	sleep 1500
+	send nor{enter}
+	winwait LLARS
+	winclose Protean Shake
+	exitapp
+	
+	Case "Protean Shake - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\Protean\Protean Shake
+	WinWait Protean Shake
+	sleep 1500
+	send uns{enter}
+	winwait LLARS
+	winclose Protean Shake
 	exitapp
 	
 	Case "Protean Trap":
@@ -1293,6 +1401,18 @@ Switch selectedScript
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%
 	Run, %A_ScriptDir%\portables\Construction\Flatpack Maker - no walking\
+	WinWait %script%
+	sleep 1500
+	send fla{enter}
+	winwait LLARS
+	winclose %script%
+	exitapp
+	
+	Case "Flatpack Maker - Portables - Walking":
+	script := "Flatpack Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%
+	Run, %A_ScriptDir%\portables\Construction\Flatpack Maker - with walking\
 	WinWait %script%
 	sleep 1500
 	send fla{enter}
