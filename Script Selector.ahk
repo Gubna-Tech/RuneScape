@@ -54,11 +54,8 @@ if !FileExist("ScriptList.ini")
 	return
 }
 
-
 FileRead, ScriptCount, ScriptList.ini
 ScriptTotal := StrSplit(ScriptCount, "`n").Length()
-
-SetWorkingDir, %A_ScriptDir%
 
 Hotkey, enter, Select
 Hotkey, esc, Exit
@@ -67,11 +64,11 @@ Gui +LastFound +OwnDialogs +AlwaysOnTop
 Gui Font, s12 Bold cBlue
 Gui -caption
 Menu Tray, NoIcon
-Gui  Add, Text, Center w410 x5,Choose a script below and press`n"Select Script"
+Gui  Add, Text, Center w410 x5,Select a script from the list below and`n click 'Select Script' or press Enter
 Gui Font, cGreen
 Gui  Add, Text, Center w410 x5,Total Scripts: %ScriptTotal%
 Gui Font, s11 Bold cBlack
-Gui Add, ListBox, vScriptListBox gDoubleClick x12 w395 r15
+Gui Add, ListBox, sort vScriptListBox gDoubleClick x12 w395 r15
 
 Loop, read, ScriptList.ini
 {
@@ -147,1278 +144,748 @@ if A_GuiEvent = DoubleClick
 Select:
 GuiControlGet, selectedScript, , ScriptListBox
 Switch selectedScript
-{
+{	
 	Case "AFK Combat":
 	script := "AFK Combat"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send afk{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Alchemy":
 	script := "Alchemy"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send alc{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Amulet Stringer":
 	script := "Amulet Stringer"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send amu{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Anti-AFK":
 	script := "Anti-AFK"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send anti{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Armour Crafter - Portables - Walking":
 	script := "Armour Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - With Walking
-	WinWait %script%
-	sleep 1500
-	send arm{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - With Walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Armour Crafter - Portables - Non-Walking":
 	script := "Armour Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - No Walking
-	WinWait %script%
-	sleep 1500
-	send arm{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - No Walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Armour Crafter":
 	script := "Armour Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send arm{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Arrow Fletcher":
 	script := "Arrow Fletcher"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send arr{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Ash 2 Incense":
 	script := "Ash 2 Incense"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\incense\%script%\
-	WinWait %script%
-	sleep 1500
-	send ash{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Incense\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "AutoClicker":
 	script := "AutoClicker"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\misc\%script%\
-	WinWait %script%
-	sleep 1500
-	send aut{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Misc\Autoclicker
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "AutoTele":
 	script := "AutoTele"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send aut{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bake Pie - Lunar Spell":
 	script := "Bake Pie"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Lunar Spells\%script%\
-	WinWait %script%
-	sleep 1500
-	send bak{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bar Smelter":
 	script := "Bar Smelter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send bar{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bar Smelter - Smelting Gloves":
-	script := "Bar Smelter"
+	script := "Smelting Glove"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Bar Smelter
-	WinWait %script%
-	sleep 1500
-	send sme{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Bar Smelter
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Barbarian Course - Advanced":
-	script := "Advanced"
+	script := "Barbarian Course"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\Barbarian\Advanced\
-	WinWait %script%
-	sleep 1500
-	send bar{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Advanced
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Barbarian Course - Basic":
-	script := "Basic"
+	script := "Barbarian Course"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\Barbarian\Basic\
-	WinWait %script%
-	sleep 1500
-	send bar{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Basic
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bones 2 Bananas":
 	script := "Bones 2 Bananas"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send bon{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bow Cutter":
 	script := "Bow Cutter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send bow{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
-	
-	Case "Bow Cutter - Portables - Non-Walking":
-	script := "Bow Cutter"
-	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\fletching\bow cutter - no walking\
-	WinWait %script%
-	sleep 1500
-	send bow{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bow Cutter - Portables - Walking":
 	script := "Bow Cutter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\fletching\bow cutter - with walking\
-	WinWait %script%
-	sleep 1500
-	send bow{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Cutter - With Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Cutter - Portables - Non-Walking":
+	script := "Bow Cutter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Cutter - No Walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bow Stringer":
 	script := "Bow Stringer"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send bow{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
-	
-	Case "Bow Stringer - Portables - Non-Walking":
-	script := "Bow Stringer"
-	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\fletching\bow stringer - no walking\
-	WinWait %script%
-	sleep 1500
-	send bow{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Bow Stringer - Portables - Walking":
 	script := "Bow Stringer"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\fletching\bow stringer - with walking\
-	WinWait %script%
-	sleep 1500
-	send bow{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Stringer - With Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Stringer - Portables - Non-Walking":
+	script := "Bow Stringer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Stringer - No Walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Brick Maker - Fort Forinthry":
 	script := "Limestone Brick"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\Limestone Brick
-	WinWait %script%
-	sleep 1500
-	send bri{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\Limestone Brick
+	Run, Brick Maker.ahk
+	Goto exit
 	
 	Case "Burthrope Agility":
 	script := "Burthorpe"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\%script%\
-	WinWait %script%
-	sleep 1500
-	send bur{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Agility\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Candle Crafter":
 	script := "Candle Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\necromancy\%script%\
-	WinWait %script%
-	sleep 1500
-	send can{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Necromancy\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Cape Cleaner - Herblore (Skillcape Perk)":
-	script := "Herb Cleaner"
+	script := "Cape Cleaner"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\herb cleaner\
-	WinWait %script%
-	sleep 1500
-	send cap{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Herb Cleaner
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Clay Fire - Portables - Non-Walking":
 	script := "Clay Fire"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - no walking\
-	WinWait %script%
-	sleep 1500
-	send cla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - no walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Clay Fire - Portables - Walking":
 	script := "Clay Fire"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - with walking\
-	WinWait %script%
-	sleep 1500
-	send cla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - with walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Clay Form - Portables - Non-Walking":
 	script := "Clay Form"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - no walking\
-	WinWait %script%
-	sleep 1500
-	send cla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - no walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Clay Form - Portables - Walking":
 	script := "Clay Form"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - with walking\
-	WinWait %script%
-	sleep 1500
-	send cla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - with walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Cooking - Burthorpe":
 	script := "Cooking"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send coo{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Cooking - Fort Forinthry":
 	script := "Cooking"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\Cooking\
-	WinWait %script%
-	sleep 1500
-	send Coo{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Cooking - Portables - Non-Walking":
 	script := "Cooking"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Cooking\Cooking - no walking\
-	WinWait %script%
-	sleep 1500
-	send coo{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\cooking\cooking - no walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Cooking - Portables - Walking":
 	script := "Cooking"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Cooking\Cooking - with walking\
-	WinWait %script%
-	sleep 1500
-	send coo{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\cooking\cooking - with walking
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Decoration Maker":
 	script := "Decoration Maker"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Events\2023\Christmas\%script%\
-	WinWait %script%
-	sleep 1500
-	send dec{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Events\2023\Christmas\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Fire + Form - Portables":
 	script := "Fire + Form"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Crafting\Clay\%script%\
-	WinWait %script%
-	sleep 1500
-	send fir{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\fire + form
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Fire Urn - Lunar Spell":
 	script := "Fire Urn"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Lunar Spells\%script%\
-	WinWait %script%
-	sleep 1500
-	send fir{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\lunar spells\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Firemaking - Portables - Non-Walking":
 	script := "Firemaking"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Firemaking\Firemaking - no walking\
-	WinWait %script%
-	sleep 1500
-	send fir{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Firemaking\Firemaking - no walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Firemaking - Portables - Walking":
 	script := "Firemaking"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Firemaking\Firemaking - with walking\
-	WinWait %script%
-	sleep 1500
-	send fir{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Firemaking\Firemaking - with walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Frame Maker - Fort Forinthry":
 	script := "Frame Maker"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\%script%\
-	WinWait %script%
-	sleep 1500
-	send fra{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Gem Cutter":
 	script := "Gem Cutter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send gem{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Gem Cutter - Portables - Non-Walking":
 	script := "Gem Cutter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - no walking\
-	WinWait %script%
-	sleep 1500
-	send gem{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - no walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Gem Cutter - Portables - Walking":
 	script := "Gem Cutter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - with walking\
-	WinWait %script%
-	sleep 1500
-	send gem{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - with walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Glassblowing":
 	script := "Glassblowing"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send gla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Gnome Course - Advanced":
-	script := "Advanced"
+	script := "Gnome Course"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\Gnome\Advanced\
-	WinWait %script%
-	sleep 1500
-	send gno{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\agility\Gnome\Advanced\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Gnome Course - Basic":
-	script := "Basic"
+	script := "Gnome Course"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\Gnome\Basic\
-	WinWait %script%
-	sleep 1500
-	send gno{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\agility\Gnome\Basic\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Herb 2 Incense":
 	script := "Herb 2 Incense"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\incense\%script%\
-	WinWait %script%
-	sleep 1500
-	send her{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Incense\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Herb Cleaner":
 	script := "Herb Cleaner"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send her{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Het's Oasis":
 	script := "Het's Oasis"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\%script%\
-	WinWait %script%
-	sleep 1500
-	send het{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\agility\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Incense Crafter":
 	script := "Incense Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Incense\%script%\
-	WinWait %script%
-	sleep 1500
-	send inc{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Incense\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Ink Crafter":
 	script := "Ink Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\%script%\
-	WinWait %script%
-	sleep 1500
-	send ink{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Necromancy\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Jewellery Crafter - Lumbridge":
 	script := "Jewellery Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send jew{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Jewellery Crafter - Fort Forinthry":
 	script := "Jewellery Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\%script%\
-	WinWait %script%
-	sleep 1500
-	send jew{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Jewellery Enchanter":
-	script := "Jewellery Enchant"
+	script := "Jewel Enchant"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send jew{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Jewellery Enchant
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Jewellery Stringer - Lunar Spell":
 	script := "String Jewellery"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Lunar Spells\%script%\
-	WinWait %script%
-	sleep 1500
-	send jew{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\lunar spells\%script%
+	Run, Jewel Stringer.ahk
+	Goto exit
 	
 	Case "Plank + Refined - Fort Forinthry":
 	script := "Plank + Refined"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\%script%\
-	WinWait %script%
-	sleep 1500
-	send pla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Plank Maker - Fort Forinthry":
 	script := "Plank Maker"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\%script%\
-	WinWait %script%
-	sleep 1500
-	send pla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Potion Mixer":
 	script := "Potion Mixer"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send pot{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Potion Mixer - Portables - Non-Walking":
 	script := "Potion Mixer"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Herblore\Potion Mixer - no walking\
-	WinWait %script%
-	sleep 1500
-	send pot{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Herblore\Potion Mixer - no walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Potion Mixer - Portables - Walking":
 	script := "Potion Mixer"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Herblore\Potion Mixer - with walking\
-	WinWait %script%
-	sleep 1500
-	send pot{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Herblore\Potion Mixer - with walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Prayer":
 	script := "Prayer"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send pra{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Bar - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Bar
-	WinWait Protean Bar
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Bar
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean bar
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Bar - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Bar
-	WinWait Protean Bar
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Bar
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean bar
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Cog - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Cog
-	WinWait Protean Cog
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Cog
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Cog
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Cog - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Cog
-	WinWait Protean Cog
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Cog
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Cog
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Essence - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Essence
-	WinWait Protean Essence
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Essence
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Essence
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Essence - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Essence
-	WinWait Protean Essence
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Essence
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Essence
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Hide - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Hide
-	WinWait Protean Hide
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Hide
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Hide
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Hide - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Hide
-	WinWait Protean Hide
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Hide
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Hide
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Logs - Fletch - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch
-	WinWait Fletch
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Fletch
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Logs - Fletch - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch
-	WinWait Fletch
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Fletch
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Logs - Fletch/Burn - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch & Burn
-	WinWait Fletch & Burn
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Fletch & Burn
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch & burn
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Logs - Fletch/Burn - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Logs\Fletch & Burn
-	WinWait Fletch & Burn
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Fletch & Burn
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch & burn
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Memory - Normal":
-	script := "Protean Memory"
+	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Memory
-	WinWait %script%
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Memory
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Memory
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Memory - Unstable":
-	script := "Protean Memory"
+	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Memory
-	WinWait %script%
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Memory
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Memory
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Plank - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Plank
-	WinWait Protean Plank
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Plank
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Plank
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Plank - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Plank
-	WinWait Protean Plank
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Plank
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Plank
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Protein - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Protein
-	WinWait Protean Protein
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Protein
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Protein
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Protein - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Protein
-	WinWait Protean Protein
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Protein
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Protein
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Shake - Normal":
 	script := "Normal Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Shake
-	WinWait Protean Shake
-	sleep 1500
-	send nor{enter}
-	winwait LLARS
-	winclose Protean Shake
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Shake
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Shake - Unstable":
 	script := "Unstable Protean"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\Protean Shake
-	WinWait Protean Shake
-	sleep 1500
-	send uns{enter}
-	winwait LLARS
-	winclose Protean Shake
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\protean Shake
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Protean Trap":
 	script := "Protean Trap"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Protean\%script%\
-	WinWait %script%
-	sleep 1500
-	send pro{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\protean\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Pyre Crafter":
 	script := "Pyre Crafter"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send pyr{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Refined Plank - Fort Forinthry":
 	script := "Refined Planks"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\%script%\
-	WinWait %script%
-	sleep 1500
-	send ref{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Rituals - Communion & Material - Focus Storage":
 	script := "Rituals"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\%script%\Communion & Material\Focus Storage
-	WinWait Focus Storage
-	sleep 1500
-	send rit{enter}
-	winwait LLARS
-	winclose Focus Storage
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Communion & Material\Focus Storage
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Rituals - Communion & Material - Without Storage":
 	script := "Rituals"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\%script%\Communion & Material\Without Focus Storage
-	WinWait Without Focus Storage
-	sleep 1500
-	send rit{enter}
-	winwait LLARS
-	winclose Without Focus Storage
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Communion & Material\Without Focus Storage
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Rituals - Ectoplasm - Focus Storage":
 	script := "Rituals"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\%script%\Ectoplasm\Focus Storage
-	WinWait Focus Storage
-	sleep 1500
-	send rit{enter}
-	winwait LLARS
-	winclose Focus Storage
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Ectoplasm\Focus Storage
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Rituals - Ectoplasm - Without Storage":
 	script := "Rituals"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\%script%\Ectoplasm\Without Focus Storage
-	WinWait Without Focus Storage
-	sleep 1500
-	send rit{enter}
-	winwait LLARS
-	winclose Without Focus Storage
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Ectoplasm\Without Focus Storage
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Rituals - Essence & Necroplasm - Focus Storage":
 	script := "Rituals"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\%script%\Essence & Necroplasm\Focus Storage
-	WinWait Focus Storage
-	sleep 1500
-	send rit{enter}
-	winwait LLARS
-	winclose Focus Storage
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Essence & Necroplasm\Focus Storage
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Rituals - Essence & Necroplasm - Without Storage":
 	script := "Rituals"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\%script%\Essence & Necroplasm\Without Focus Storage
-	WinWait Without Focus Storage
-	sleep 1500
-	send rit{enter}
-	winwait LLARS
-	winclose Without Focus Storage
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Essence & Necroplasm\Without Focus Storage
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Sawmill - Portables - Non-Walking":
 	script := "Sawmill"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Sawmill\Sawmill - no walking\
-	WinWait %script%
-	sleep 1500
-	send saw{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Sawmill\Sawmill - no walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Sawmill - Portables - Walking":
 	script := "Sawmill"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Sawmill\Sawmill - with walking\
-	WinWait %script%
-	sleep 1500
-	send saw{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Sawmill\Sawmill - with walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Sift Soil - Lunar Spell":
 	script := "Sift Soil"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Lunar Spells\%script%\
-	WinWait %script%
-	sleep 1500
-	send sif{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\%script%\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Slime Collector":
 	script := "Slime Collector"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Necromancy\Slime Collector - Notepaper\
-	WinWait Slime Collector - Notepaper
-	sleep 1500
-	send sli{enter}
-	winwait LLARS
-	winclose Slime Collector - Notepaper
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Necromancy\Slime Collector - Notepaper\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Smithing":
 	script := "Smithing"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send smi{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Stone Wall - Fort Forinthry":
 	script := "Stone Wall"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Fort Forinthry\%script%\
-	WinWait %script%
-	sleep 1500
-	send sto{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Tanning - Portables - Non-Walking":
 	script := "Tanning"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - no walking\
-	WinWait %script%
-	sleep 1500
-	send tan{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - no walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Tanning - Portables - Walking":
 	script := "Tanning"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - with walking\
-	WinWait %script%
-	sleep 1500
-	send tan{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - with walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Tele Grind - Lunar Spell - No Banking":
 	script := "Tele Grind"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking\
-	WinWait Telekinetic Grind with No Banking
-	sleep 1500
-	send tel{enter}
-	winwait LLARS
-	winclose Telekinetic Grind with No Banking
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Tele Grind - Lunar Spell - With Banking":
 	script := "Tele Grind"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking\
-	WinWait Telekinetic Grind with Banking
-	sleep 1500
-	send tel{enter}
-	winwait LLARS
-	winclose Telekinetic Grind with Banking
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Watchtower Shortcut":
 	script := "Watchtower Shortcut"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\%script%\
-	WinWait %script%
-	sleep 1500
-	send wat{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\agility\%script%\
+	Run, watchtower.ahk
+	Goto exit
 	
 	Case "Wilderness Course":
 	script := "Wilderness"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\agility\%script%\
-	WinWait %script%
-	sleep 1500
-	send wil{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\agility\%script%\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Wine Maker":
 	script := "Wine Maker"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\%script%\
-	WinWait %script%
-	sleep 1500
-	send win{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Flatpack Maker - Portables - Non-Walking":
 	script := "Flatpack Maker"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Construction\Flatpack Maker - no walking\
-	WinWait %script%
-	sleep 1500
-	send fla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Construction\Flatpack Maker - no walking\
+	Run, %script%.ahk
+	Goto exit
 	
 	Case "Flatpack Maker - Portables - Walking":
 	script := "Flatpack Maker"
 	Gui destroy
-	SetWorkingDir, %A_ScriptDir%
-	Run, %A_ScriptDir%\portables\Construction\Flatpack Maker - with walking\
-	WinWait %script%
-	sleep 1500
-	send fla{enter}
-	winwait LLARS
-	winclose %script%
-	exitapp
+	SetWorkingDir, %A_ScriptDir%\portables\Construction\Flatpack Maker - with walking\
+	Run, %script%.ahk
+	Goto exit
 }
 Return
 
