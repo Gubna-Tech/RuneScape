@@ -243,14 +243,14 @@ Switch selectedScript
 	Run, %script%.ahk
 	Goto exit
 	
-	Case "Barbarian Course - Advanced":
+	Case "Agility - Barbarian - Advanced":
 	script := "Barbarian Course"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Advanced
 	Run, %script%.ahk
 	Goto exit
 	
-	Case "Barbarian Course - Basic":
+	Case "Agility - Barbarian - Basic":
 	script := "Barbarian Course"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Basic
@@ -313,7 +313,7 @@ Switch selectedScript
 	Run, Brick Maker.ahk
 	Goto exit
 	
-	Case "Burthrope Agility":
+	Case "Agility - Burthrope":
 	script := "Burthorpe"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\Agility\%script%
@@ -460,14 +460,14 @@ Switch selectedScript
 	Run, %script%.ahk
 	Goto exit
 	
-	Case "Gnome Course - Advanced":
+	Case "Agility - Gnome - Advanced":
 	script := "Gnome Course"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\agility\Gnome\Advanced\
 	Run, %script%.ahk
 	Goto exit
 	
-	Case "Gnome Course - Basic":
+	Case "Agility - Gnome - Basic":
 	script := "Gnome Course"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\agility\Gnome\Basic\
@@ -488,7 +488,7 @@ Switch selectedScript
 	Run, %script%.ahk
 	Goto exit
 	
-	Case "Het's Oasis":
+	Case "Agility - Het's Oasis":
 	script := "Het's Oasis"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\agility\%script%
@@ -852,14 +852,14 @@ Switch selectedScript
 	Run, %script%.ahk
 	Goto exit
 	
-	Case "Watchtower Shortcut":
+	Case "Agility - Watchtower Shortcut":
 	script := "Watchtower Shortcut"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\agility\%script%\
 	Run, watchtower.ahk
 	Goto exit
 	
-	Case "Wilderness Course":
+	Case "Agility - Wilderness":
 	script := "Wilderness"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\agility\%script%\
