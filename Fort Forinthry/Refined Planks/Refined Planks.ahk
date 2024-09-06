@@ -154,16 +154,43 @@ WM_WINDOWPOSCHANGED() {
 return
 
 ConfigError(){
-	IniRead, x1, Config.ini, Bank Coords, xmin
-	IniRead, x2, Config.ini, Bank Coords, xmax
-	IniRead, y1, Config.ini, Bank Coords, ymin
-	IniRead, y2, Config.ini, Bank Coords, ymax
+	IniRead, x1, Config.ini, Bank Prime, xmin
+	IniRead, x2, Config.ini, Bank Prime, xmax
+	IniRead, y1, Config.ini, Bank Prime, ymin
+	IniRead, y2, Config.ini, Bank Prime, ymax
 	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
 	{
 		Run %A_ScriptDir%\Config.ini
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Coords] in the config.
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Prime] in the config.
+		reload
+	}
+	
+	CoordMode, Mouse, Screen
+	IniRead, x1, Config.ini, Bank Main, xmin
+	IniRead, x2, Config.ini, Bank Main, xmax
+	IniRead, y1, Config.ini, Bank Main, ymin
+	IniRead, y2, Config.ini, Bank Main, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Main] in the config.
+		reload
+	}
+	
+	IniRead, x1, Config.ini, Sawmill, xmin
+	IniRead, x2, Config.ini, Sawmill, xmax
+	IniRead, y1, Config.ini, Sawmill, ymin
+	IniRead, y2, Config.ini, Sawmill, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Sawmill] in the config.
 		reload
 	}
 	
@@ -174,30 +201,6 @@ ConfigError(){
 		GuiControl,,ScriptRed, CONFIG		
 		GuiControl,,State2, ERROR
 		MsgBox, 4112, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
-		reload
-	}
-	
-	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-	if (hk = "")
-	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, CONFIG		
-		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter a valid hotkey for [Skillbar Hotkey] in the config.
-		reload
-	}
-	
-	IniRead, item, Config.ini, Item Type, item
-	IniRead, x1, Config.ini, %item%, xmin
-	IniRead, x2, Config.ini, %item%, xmax
-	IniRead, y1, Config.ini, %item%, ymin
-	IniRead, y2, Config.ini, %item%, ymax
-	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
-	{
-		Run %A_ScriptDir%\Config.ini
-		GuiControl,,ScriptRed, CONFIG		
-		GuiControl,,State2, ERROR
-		MsgBox, 4112, Config Error, Please enter valid coordinates for selected item in [Item Type] in the config.
 		reload
 	}
 	
@@ -298,7 +301,7 @@ Gui 2: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep blow|item type|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep walk|sleep cut|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -485,7 +488,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|item type|sleep blow|bank coords|empty light orb|light orb|bomb vial|powerburst vial|lantern lens|unpowered orb|fishbowl|vial|oil lamp (empty)|candle lantern (empty)|beer glass|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep walk|sleep cut|bank prime|bank main|sawmill|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -744,11 +747,11 @@ GuiControl,,State3, Running
 
 runcount3 = %runcount%
 count2 = 0
-firstrun = 0
 StartTime := A_TickCount
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 sleepcount = 0
 totalSleepTime := 0
+firstrun = 0
 rightclick = 0
 clickcount = 0
 
@@ -771,10 +774,10 @@ loop % runcount
 		DisableButton()
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Bank Coords, xmin
-		IniRead, x2, Config.ini, Bank Coords, xmax
-		IniRead, y1, Config.ini, Bank Coords, ymin
-		IniRead, y2, Config.ini, Bank Coords, ymax
+		IniRead, x1, Config.ini, Bank Prime, xmin
+		IniRead, x2, Config.ini, Bank Prime, xmax
+		IniRead, y1, Config.ini, Bank Prime, ymin
+		IniRead, y2, Config.ini, Bank Prime, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
@@ -792,29 +795,20 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-		send {%hk%}
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
 		CoordMode, Mouse, Window
-		IniRead, item, Config.ini, Item Type, item
-		IniRead, x1, Config.ini, %item%, xmin
-		IniRead, x2, Config.ini, %item%, xmax
-		IniRead, y1, Config.ini, %item%, ymin
-		IniRead, y2, Config.ini, %item%, ymax
+		IniRead, x1, Config.ini, Sawmill, xmin
+		IniRead, x2, Config.ini, Sawmill, xmax
+		IniRead, y1, Config.ini, Sawmill, ymin
+		IniRead, y2, Config.ini, Sawmill, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
-		click, %x%, %y%
+		Click, %x%, %y%
 	}
 	If firstrun = 1
 	{
 		++count
 		++count2
-		firstrun = 0
+		firstrun=0
 		
 		IfWinNotActive, RuneScape
 		{
@@ -827,16 +821,16 @@ loop % runcount
 		GuiControl,,State3, Running
 		
 		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Bank Coords, xmin
-		IniRead, x2, Config.ini, Bank Coords, xmax
-		IniRead, y1, Config.ini, Bank Coords, ymin
-		IniRead, y2, Config.ini, Bank Coords, ymax
+		IniRead, x1, Config.ini, Bank Main, xmin
+		IniRead, x2, Config.ini, Bank Main, xmax
+		IniRead, y1, Config.ini, Bank Main, ymin
+		IniRead, y2, Config.ini, Bank Main, ymax
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
 		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
+		IniRead, sa1, Config.ini, Sleep Walk, min
+		IniRead, sa2, Config.ini, Sleep Walk, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
@@ -876,22 +870,28 @@ loop % runcount
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
-		IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-		send {%hk%}
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Sawmill, xmin
+		IniRead, x2, Config.ini, Sawmill, xmax
+		IniRead, y1, Config.ini, Sawmill, ymin
+		IniRead, y2, Config.ini, Sawmill, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%	
 	}
 	If firstrun = 0
 	{
 		++firstrun
 		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
+		IniRead, sa1, Config.ini, Sleep Walk, min
+		IniRead, sa2, Config.ini, Sleep Walk, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
 		
 		send {space}
 		
-		IniRead, sa1, Config.ini, Sleep Blow, min
-		IniRead, sa2, Config.ini, Sleep Blow, max
+		IniRead, sa1, Config.ini, Sleep Cut, min
+		IniRead, sa2, Config.ini, Sleep Cut, max
 		Random, SleepAmount, %sa1%, %sa2%
 		
 		SleepStart := A_TickCount
@@ -946,6 +946,27 @@ loop % runcount
 		}
 	}	
 }
+
+CoordMode, Mouse, Window
+IniRead, x1, Config.ini, Bank Main, xmin
+IniRead, x2, Config.ini, Bank Main, xmax
+IniRead, y1, Config.ini, Bank Main, ymin
+IniRead, y2, Config.ini, Bank Main, ymax
+Random, x, %x1%, %x2%
+Random, y, %y1%, %y2%
+Click, %x%, %y%
+
+IniRead, sa1, Config.ini, Sleep Walk, min
+IniRead, sa2, Config.ini, Sleep Walk, max
+Random, SleepAmount, %sa1%, %sa2%
+Sleep, %SleepAmount%
+
+send {esc}
+
+IniRead, sa1, Config.ini, Sleep Brief, min
+IniRead, sa2, Config.ini, Sleep Brief, max
+Random, SleepAmount, %sa1%, %sa2%
+Sleep, %SleepAmount%	
 
 IniRead, option, LLARS Config.ini, Logout, option
 if option=true
@@ -1013,17 +1034,12 @@ IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 IniRead, logout, LLARS Config.ini, Logout, option
 IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
-IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-IniRead, hkbp, Config.ini, Bank Preset, hotkey
+IniRead, hk, Config.ini, Bank Preset, hotkey
 IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
 
 if (hk = "")
 {
 hk = Not Set
-}
-if (hkbp = "")
-{
-	hkbp = Not Set
 }
 
 WinGetPos, GUIxc, GUIyc,,,LLARS
@@ -1038,7 +1054,7 @@ Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
 Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nBank Preset: %hk%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
