@@ -568,7 +568,7 @@ Loop, Parse, allContents, `n
         sectionList .= "|" currentSection
 }
 
-Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, DropDownList, w230 sort vSectionList Choose1 gDropDownChanged2, % sectionList
 Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
 Gui, 3: Add, Hotkey, x97 y60 w60 vChosenHotkey gHotkeyChanged Center, ** NONE **
 Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
