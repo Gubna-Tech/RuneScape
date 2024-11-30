@@ -851,6 +851,21 @@ loop % runcount
 		IniRead, sa2, Config.ini, Sleep Brief, max
 		Random, SleepAmount, %sa1%, %sa2%
 		Sleep, %SleepAmount%
+		
+		IniRead, scrollMin, Config.ini, Scroll, min
+		IniRead, scrollMax, Config.ini, Scroll, max
+		Random, ScrollRand, scrollMin, scrollMax
+		
+		Loop % scrollRand
+		{
+			Send, {WheelDown}
+			Random, ScrollSleep, 50, 250
+		}
+		
+		IniRead, sa1, Config.ini, Sleep Brief, min
+		IniRead, sa2, Config.ini, Sleep Brief, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
 		send {click}
 		
 		IniRead, sa1, Config.ini, Sleep Short, min
