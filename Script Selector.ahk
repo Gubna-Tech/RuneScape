@@ -156,7 +156,7 @@ GuiBorder()
 	Gui Border: Color, Green
 	WinSet, ExStyle, ^0x80
 	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w500 h160, BottomGUI
+	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
 }
 
 GuiReset()
