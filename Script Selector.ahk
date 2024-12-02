@@ -156,7 +156,7 @@ GuiBorder()
 	Gui Border: Color, Green
 	WinSet, ExStyle, ^0x80
 	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w480 h140, BottomGUI
+	Gui Border: Show, NoActivate xcenter y0 w500 h160, BottomGUI
 }
 
 GuiReset()
@@ -179,16 +179,15 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
-		
 		
 		Case "Alchemy":
 		script := "Alchemy"
@@ -198,14 +197,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Amulet Stringer":
@@ -216,14 +215,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Anti-AFK":
@@ -234,14 +233,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Armour Crafter - Portables - Walking":
@@ -252,14 +251,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Armour Crafter - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Armour Crafter - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Armour Crafter - Portables - Non-Walking":
@@ -270,14 +269,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Armour Crafter - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Armour Crafter - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Armour Crafter":
@@ -288,14 +287,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Arrow Fletcher":
@@ -306,14 +305,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Ash 2 Incense":
@@ -324,14 +323,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "AutoClicker":
@@ -342,14 +341,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "AutoTele":
@@ -360,14 +359,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bake Pie - Lunar Spell":
@@ -378,14 +377,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Bake Pie - Lunar Spell
+		Gui Info: Add, Text, center x5 w480, Bake Pie - Lunar Spell
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bar Smelter":
@@ -396,14 +395,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bar Smelter - Smelting Gloves":
@@ -414,14 +413,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Bar Smelter - Smelting Gloves
+		Gui Info: Add, Text, center x5 w480, Bar Smelter - Smelting Gloves
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Barbarian - Advanced":
@@ -432,14 +431,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Barbarian - Advanced
+		Gui Info: Add, Text, center x5 w480, Agility - Barbarian - Advanced
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Barbarian - Basic":
@@ -450,14 +449,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Barbarian - Basic
+		Gui Info: Add, Text, center x5 w480, Agility - Barbarian - Basic
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bones 2 Bananas":
@@ -468,14 +467,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bow Cutter":
@@ -486,14 +485,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bow Cutter - Portables - Walking":
@@ -504,14 +503,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Bow Cutter - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Bow Cutter - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bow Cutter - Portables - Non-Walking":
@@ -522,14 +521,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Bow Cutter - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Bow Cutter - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bow Stringer":
@@ -540,14 +539,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bow Stringer - Portables - Walking":
@@ -558,14 +557,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Bow Stringer - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Bow Stringer - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Bow Stringer - Portables - Non-Walking":
@@ -576,14 +575,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Bow Stringer - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Bow Stringer - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Brick Maker - Fort Forinthry":
@@ -594,14 +593,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Brick Maker - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Brick Maker - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Burthrope":
@@ -612,14 +611,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Burthrope
+		Gui Info: Add, Text, center x5 w480, Agility - Burthrope
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Candle Crafter":
@@ -630,14 +629,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Cape Cleaner - Herblore (Skillcape Perk)":
@@ -648,14 +647,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Cape Cleaner - Herblore (Skillcape Perk)
+		Gui Info: Add, Text, center x5 w480, Cape Cleaner - Herblore (Skillcape Perk)
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Clay Fire - Portables - Non-Walking":
@@ -666,14 +665,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Clay Fire - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Clay Fire - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Clay Fire - Portables - Walking":
@@ -684,14 +683,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Clay Fire - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Clay Fire - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Clay Form - Portables - Non-Walking":
@@ -702,14 +701,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Clay Form - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Clay Form - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Clay Form - Portables - Walking":
@@ -720,14 +719,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Clay Form - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Clay Form - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Cooking - Burthorpe":
@@ -738,14 +737,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Cooking - Burthorpe
+		Gui Info: Add, Text, center x5 w480, Cooking - Burthorpe
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Cooking - Fort Forinthry":
@@ -756,14 +755,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Cooking - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Cooking - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Cooking - Portables - Non-Walking":
@@ -774,14 +773,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Cooking - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Cooking - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Cooking - Portables - Walking":
@@ -792,14 +791,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Cooking - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Cooking - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Decoration Maker":
@@ -810,14 +809,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Fire + Form - Portables":
@@ -828,14 +827,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Fire + Form - Portables
+		Gui Info: Add, Text, center x5 w480, Fire + Form - Portables
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Fire Urn - Lunar Spell":
@@ -846,14 +845,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Fire Urn - Lunar Spell
+		Gui Info: Add, Text, center x5 w480, Fire Urn - Lunar Spell
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Firemaking - Portables - Non-Walking":
@@ -864,14 +863,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Firemaking - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Firemaking - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Firemaking - Portables - Walking":
@@ -882,14 +881,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Firemaking - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Firemaking - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Frame Maker - Fort Forinthry":
@@ -900,14 +899,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Frame Maker - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Frame Maker - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Gem Cutter":
@@ -918,14 +917,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Gem Cutter - Portables - Non-Walking":
@@ -936,14 +935,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Gem Cutter - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Gem Cutter - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Gem Cutter - Portables - Walking":
@@ -954,14 +953,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Gem Cutter - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Gem Cutter - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Glassblowing":
@@ -972,14 +971,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Gnome - Advanced":
@@ -990,14 +989,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Gnome - Advanced
+		Gui Info: Add, Text, center x5 w480, Agility - Gnome - Advanced
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Gnome - Basic":
@@ -1008,14 +1007,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Gnome - Basic
+		Gui Info: Add, Text, center x5 w480, Agility - Gnome - Basic
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Herb 2 Incense":
@@ -1026,14 +1025,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Herb Cleaner":
@@ -1044,14 +1043,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Het's Oasis":
@@ -1062,14 +1061,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Het's Oasis
+		Gui Info: Add, Text, center x5 w480, Agility - Het's Oasis
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Incense Crafter":
@@ -1080,14 +1079,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Ink Crafter":
@@ -1098,14 +1097,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Jewellery Crafter - Lumbridge":
@@ -1116,14 +1115,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Jewellery Crafter - Lumbridge
+		Gui Info: Add, Text, center x5 w480, Jewellery Crafter - Lumbridge
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Jewellery Crafter - Fort Forinthry":
@@ -1134,14 +1133,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Jewellery Crafter - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Jewellery Crafter - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Jewellery Enchanter":
@@ -1152,14 +1151,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Jewellery Stringer - Lunar Spell":
@@ -1170,14 +1169,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Jewellery Stringer - Lunar Spell
+		Gui Info: Add, Text, center x5 w480, Jewellery Stringer - Lunar Spell
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Plank + Refined - Fort Forinthry":
@@ -1188,14 +1187,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Plank + Refined - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Plank + Refined - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Plank Maker - Fort Forinthry":
@@ -1206,14 +1205,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Plank Maker - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Plank Maker - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Potion Mixer":
@@ -1224,14 +1223,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Potion Mixer - Portables - Non-Walking":
@@ -1242,14 +1241,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Potion Mixer - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Potion Mixer - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Potion Mixer - Portables - Walking":
@@ -1260,14 +1259,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Potion Mixer - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Potion Mixer - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Prayer":
@@ -1278,14 +1277,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Bar - Normal":
@@ -1296,14 +1295,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Bar - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Bar - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Bar - Unstable":
@@ -1314,14 +1313,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Bar - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Bar - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Cog - Normal":
@@ -1332,14 +1331,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Cog - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Cog - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Cog - Unstable":
@@ -1350,14 +1349,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Cog - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Cog - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Essence - Normal":
@@ -1368,14 +1367,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Essence - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Essence - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Essence - Unstable":
@@ -1386,14 +1385,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Essence - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Essence - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Hide - Normal":
@@ -1404,14 +1403,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Hide - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Hide - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Hide - Unstable":
@@ -1422,14 +1421,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Hide - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Hide - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Logs - Fletch - Normal":
@@ -1440,14 +1439,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Logs - Fletch - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Logs - Fletch - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Logs - Fletch - Unstable":
@@ -1458,14 +1457,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Logs - Fletch - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Logs - Fletch - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Logs - Fletch/Burn - Normal":
@@ -1476,14 +1475,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Logs - Fletch/Burn - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Logs - Fletch/Burn - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Logs - Fletch/Burn - Unstable":
@@ -1494,14 +1493,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Logs - Fletch/Burn - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Logs - Fletch/Burn - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Memory - Normal":
@@ -1512,14 +1511,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Memory - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Memory - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Memory - Unstable":
@@ -1530,14 +1529,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Memory - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Memory - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Plank - Normal":
@@ -1548,14 +1547,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Plank - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Plank - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Plank - Unstable":
@@ -1566,14 +1565,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Plank - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Plank - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Protein - Normal":
@@ -1584,14 +1583,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Protein - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Protein - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Protein - Unstable":
@@ -1602,14 +1601,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Protein - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Protein - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Shake - Normal":
@@ -1620,14 +1619,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Shake - Normal
+		Gui Info: Add, Text, center x5 w480, Protean Shake - Normal
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Shake - Unstable":
@@ -1638,14 +1637,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Protean Shake - Unstable
+		Gui Info: Add, Text, center x5 w480, Protean Shake - Unstable
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Protean Trap":
@@ -1656,14 +1655,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Pyre Crafter":
@@ -1674,14 +1673,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Refined Plank - Fort Forinthry":
@@ -1692,14 +1691,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Refined Plank - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Refined Plank - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Rituals - Communion & Material - Focus Storage":
@@ -1710,14 +1709,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Rituals - Communion && Material - Focus Storage
+		Gui Info: Add, Text, center x5 w480, Rituals - Communion && Material - Focus Storage
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Rituals - Communion & Material - Without Storage":
@@ -1728,14 +1727,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Rituals - Communion && Material - Without Storage
+		Gui Info: Add, Text, center x5 w480, Rituals - Communion && Material - Without Storage
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Rituals - Ectoplasm - Focus Storage":
@@ -1746,14 +1745,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Rituals - Ectoplasm - Focus Storage
+		Gui Info: Add, Text, center x5 w480, Rituals - Ectoplasm - Focus Storage
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Rituals - Ectoplasm - Without Storage":
@@ -1764,14 +1763,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Rituals - Ectoplasm - Without Storage
+		Gui Info: Add, Text, center x5 w480, Rituals - Ectoplasm - Without Storage
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Rituals - Essence & Necroplasm - Focus Storage":
@@ -1782,14 +1781,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Rituals - Essence && Necroplasm - Focus Storage
+		Gui Info: Add, Text, center x5 w480, Rituals - Essence && Necroplasm - Focus Storage
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Rituals - Essence & Necroplasm - Without Storage":
@@ -1800,14 +1799,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Rituals - Essence && Necroplasm - Without Storage
+		Gui Info: Add, Text, center x5 w480, Rituals - Essence && Necroplasm - Without Storage
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Sawmill - Portables - Non-Walking":
@@ -1818,14 +1817,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Sawmill - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Sawmill - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Sawmill - Portables - Walking":
@@ -1836,14 +1835,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Sawmill - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Sawmill - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Sift Soil - Lunar Spell":
@@ -1854,14 +1853,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Sift Soil - Lunar Spell
+		Gui Info: Add, Text, center x5 w480, Sift Soil - Lunar Spell
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		Case "Slime Collector":
 		script := "Slime Collector"
@@ -1871,14 +1870,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Slime Collector
+		Gui Info: Add, Text, center x5 w480, Slime Collector
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Smithing":
@@ -1889,14 +1888,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Stone Wall - Fort Forinthry":
@@ -1907,14 +1906,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Stone Wall - Fort Forinthry
+		Gui Info: Add, Text, center x5 w480, Stone Wall - Fort Forinthry
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Tanning - Portables - Non-Walking":
@@ -1925,14 +1924,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Tanning - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Tanning - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Tanning - Portables - Walking":
@@ -1943,14 +1942,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Tanning - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Tanning - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Tele Grind - Lunar Spell - No Banking":
@@ -1961,14 +1960,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Tele Grind - Lunar Spell - No Banking
+		Gui Info: Add, Text, center x5 w480, Tele Grind - Lunar Spell - No Banking
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Tele Grind - Lunar Spell - With Banking":
@@ -1979,14 +1978,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Tele Grind - Lunar Spell - With Banking
+		Gui Info: Add, Text, center x5 w480, Tele Grind - Lunar Spell - With Banking
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Watchtower Shortcut":
@@ -1997,14 +1996,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Watchtower Shortcut
+		Gui Info: Add, Text, center x5 w480, Agility - Watchtower Shortcut
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Agility - Wilderness":
@@ -2015,14 +2014,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Agility - Wilderness
+		Gui Info: Add, Text, center x5 w480, Agility - Wilderness
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Wine Maker":
@@ -2033,14 +2032,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, %Script%
+		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Beginner
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Flatpack Maker - Portables - Non-Walking":
@@ -2051,14 +2050,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Flatpack Maker - Portables - Non-Walking
+		Gui Info: Add, Text, center x5 w480, Flatpack Maker - Portables - Non-Walking
 		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Intermediate
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
 		Case "Flatpack Maker - Portables - Walking":
@@ -2069,14 +2068,14 @@ if A_GuiEvent = Normal
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w460, Flatpack Maker - Portables - Walking
+		Gui Info: Add, Text, center x5 w480, Flatpack Maker - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w460, Setup Difficulty: Advanced
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
 		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w460, %scriptinfo%
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
 		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w470 h130, TopGUI
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 	}
 	return
