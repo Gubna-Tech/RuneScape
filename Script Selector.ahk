@@ -30,33 +30,9 @@ if (InStr(A_ScriptDir, ".zip" or ".rar") > 0) {
 	return
 }
 
-if !FileExist("ScriptList.ini")
-{
-	Menu, Tray, NoIcon
-	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui Error: Font, S13 bold underline cRed
-	Gui Error: Add, Text, Center w220 x5,ERROR
-	Gui Error: Add, Text, center x5 w220,
-	Gui Error: Font, s12 norm bold
-	Gui Error: Add, Text, Center w220 x5, ScriptList.ini not found
-	Gui Error: Add, Text, center x5 w220,
-	Gui Error: Font, cBlack
-	Gui Error: Add, Text, Center w220 x5, Please ensure that you have all the original files from:
-	Gui Error: Font, underline s12
-	Gui Error: Add, Text, cBlue gGitLink center w220 x5, Gubna-Tech Github
-	Gui Error: Font, s11 norm Bold c0x152039
-	Gui Error: Add, Text, center x5 w220,
-	Gui Error: Add, Text, Center w220 x5,Created by Gubna
-	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
-	Gui Error: add, button, gCloseError w150 x40 center,Close Error
-	WinSet, ExStyle, ^0x80
-	Gui Error: -caption
-	Gui Error: Show, center w230, Config Error
-	return
-}
+scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Armour Crafter - Portables - Walking|Arrow Fletcher|Ash 2 Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Cape Cleaner - Herblore (Skillcape Perk)|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Decoration Maker|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Flatpack Maker - Portables - Non-Walking|Flatpack Maker - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb 2 Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Protean Bar - Normal|Protean Bar - Unstable|Protean Cog - Normal|Protean Cog - Unstable|Protean Essence - Normal|Protean Essence - Unstable|Protean Hide - Normal|Protean Hide - Unstable|Protean Logs - Fletch - Normal|Protean Logs - Fletch - Unstable|Protean Logs - Fletch/Burn - Normal|Protean Logs - Fletch/Burn - Unstable|Protean Memory - Normal|Protean Memory - Unstable|Protean Plank - Normal|Protean Plank - Unstable|Protean Protein - Normal|Protean Protein - Unstable|Protean Shake - Normal|Protean Shake - Unstable|Protean Trap|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker"
 
-FileRead, ScriptCount, ScriptList.ini
-ScriptTotal := StrSplit(ScriptCount, "`n").Length()
+ScriptTotal := StrSplit(scriptArray, "|").Length()
 
 Hotkey, enter, Select
 Hotkey, esc, Exit
@@ -65,16 +41,9 @@ Gui +LastFound +OwnDialogs +AlwaysOnTop -caption
 Gui Font, s12 Bold cBlue
 Gui  Add, Text, Center w410 x5,Select a script from the list below and`n click 'Select Script' or press Enter
 Gui Font, cGreen
-Gui  Add, Text, Center w410 x5,Total Scripts: %ScriptTotal%
+Gui  Add, Text, Center w410 x5 vTS,Total Scripts: %ScriptTotal%
 Gui Font, s11 Bold cBlack
-Gui Add, ListBox, sort vScriptListBox gScriptSelect x12 w395 r15
-GuiControl, -Redraw, ScriptListBox
-Loop, read, ScriptList.ini
-{
-    section := A_LoopReadLine
-    GuiControl,, ScriptListBox, %section%
-}
-GuiControl, +Redraw, ScriptListBox
+Gui Add, ListBox, sort vScriptListBox gScriptSelect x12 w395 r15, %scriptarray%
 Gui, Add, Button, gSelect w120 x150 center, Select Script
 Gui, Add, Button, gClear w120 x150 center, Clear Selection
 Gui, Add, Button, gExit w120 x150 center, Close Selector
@@ -150,10 +119,28 @@ GuiBalance()
 	WinMove, TopGUI,, , %topPOS%
 }
 
-GuiBorder()
+GuiBorderA()
+{
+	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+	Gui Border: Color, Red
+	WinSet, ExStyle, ^0x80
+	Gui Border: -caption
+	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
+}
+
+GuiBorderB()
 {
 	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 	Gui Border: Color, Green
+	WinSet, ExStyle, ^0x80
+	Gui Border: -caption
+	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
+}
+
+GuiBorderI()
+{
+	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+	Gui Border: Color, CC5500
 	WinSet, ExStyle, ^0x80
 	Gui Border: -caption
 	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
@@ -175,7 +162,7 @@ if A_GuiEvent = Normal
 		script := "AFK Combat"
 		scriptinfo := "Uses Agro pots/flasks to stay in combat for a predetermined length of time. Other pots/flasks can be used by changing the Config.ini"
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -193,7 +180,7 @@ if A_GuiEvent = Normal
 		script := "Alchemy"
 		scriptinfo := "Low/High Alchs a selected item(s) in your inventory for a predetermined amount of times."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -211,7 +198,7 @@ if A_GuiEvent = Normal
 		script := "Amulet Stringer"
 		scriptinfo := "Strings amulets by using in-game bank preset to make a predetermined amount of inventories of jewellery."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -229,7 +216,7 @@ if A_GuiEvent = Normal
 		script := "Anti-AFK"
 		scriptinfo := "Moves the mouse within the RuneScape client border, based on a random timer configured through Config.ini"
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -247,7 +234,7 @@ if A_GuiEvent = Normal
 		script := "Armour Crafter"
 		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. With the Portable Crafter, it will make your desired amount of a selected armour."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -265,7 +252,7 @@ if A_GuiEvent = Normal
 		script := "Armour Crafter"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will make your desired amount of a selected armour."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -283,7 +270,7 @@ if A_GuiEvent = Normal
 		script := "Armour Crafter"
 		scriptinfo := "Crafts your selected armour for a predetermined amount of runs."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -301,7 +288,7 @@ if A_GuiEvent = Normal
 		script := "Arrow Fletcher"
 		scriptinfo := "Adds the tip to a headless arrow. Can be used for darts and/or bolts."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -319,7 +306,7 @@ if A_GuiEvent = Normal
 		script := "Ash 2 Incense"
 		scriptinfo := "Adds ash to an already crafted incense stick. Use this after 'Incense Crafter' and before 'Herb 2 Incense'."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -337,7 +324,7 @@ if A_GuiEvent = Normal
 		script := "AutoClicker"
 		scriptinfo := "Clicks randomly within a predetermined coordinate range set by the user. Timer for the clicks can be changed in the Config.ini"
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -355,7 +342,7 @@ if A_GuiEvent = Normal
 		script := "AutoTele"
 		scriptinfo := "Casts the same Teleportation spell a set number of times using hotkeys."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -373,7 +360,7 @@ if A_GuiEvent = Normal
 		script := "Bake Pie"
 		scriptinfo := "Bakes all uncooked pies in your inventory."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -391,7 +378,7 @@ if A_GuiEvent = Normal
 		script := "Bar Smelter"
 		scriptinfo := "Creates metal bars, type of bar is set by the user as is the run count."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -409,7 +396,7 @@ if A_GuiEvent = Normal
 		script := "Smelting Glove"
 		scriptinfo := "Uses the Smelting Gauntlets from Family Crest Quest to make Gold Bars. Smelted Gold Bars go to metal bank and not inventory."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -427,7 +414,7 @@ if A_GuiEvent = Normal
 		script := "Barbarian Course"
 		scriptinfo := "Runs laps of the Barbarian - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -445,7 +432,7 @@ if A_GuiEvent = Normal
 		script := "Barbarian Course"
 		scriptinfo := "Runs laps of the Barbarian - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -463,7 +450,7 @@ if A_GuiEvent = Normal
 		script := "Bones 2 Bananas"
 		scriptinfo := "Turns all normal bones, big bones and monkey bones in your inventory into bananas."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -481,7 +468,7 @@ if A_GuiEvent = Normal
 		script := "Bow Cutter"
 		scriptinfo := "Cuts logs into unstrung bows. Use 'Bow Stringer' to string the bows after."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -499,7 +486,7 @@ if A_GuiEvent = Normal
 		script := "Bow Cutter"
 		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. With the Portable Crafter, it will cut logs into unstrung bows."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -517,7 +504,7 @@ if A_GuiEvent = Normal
 		script := "Bow Cutter"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will cut logs into unstrung bows."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -535,7 +522,7 @@ if A_GuiEvent = Normal
 		script := "Bow Stringer"
 		scriptinfo := "Combines bowstring with unstrung bows using the in-game bank preset hotkey."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -553,7 +540,7 @@ if A_GuiEvent = Normal
 		script := "Bow Stringer"
 		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. With the Portable Crafter, it will combine bowstring with unstrung bows."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -571,7 +558,7 @@ if A_GuiEvent = Normal
 		script := "Bow Stringer"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will combine bowstring with unstrung bows."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -589,7 +576,7 @@ if A_GuiEvent = Normal
 		script := "Limestone Brick"
 		scriptinfo := "Cuts limtestone into limestone bricks using the stonecutter."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -607,7 +594,7 @@ if A_GuiEvent = Normal
 		script := "Burthorpe"
 		scriptinfo := "Runs laps of the Burthrope agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -625,7 +612,7 @@ if A_GuiEvent = Normal
 		script := "Candle Crafter"
 		scriptinfo := "Crafts candles for the Necromancy skill."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -643,7 +630,7 @@ if A_GuiEvent = Normal
 		script := "Cape Cleaner"
 		scriptinfo := "Uses the 99/120 Herblore Skillcape to instantly clean a full inventory of dirty herbs. Requires the Skillcape to be worn."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -661,7 +648,7 @@ if A_GuiEvent = Normal
 		script := "Clay Fire"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will fire an unfired urn."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -679,7 +666,7 @@ if A_GuiEvent = Normal
 		script := "Clay Fire"
 		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. Using the Portable Crafter, it will fire an unfired urn."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -697,7 +684,7 @@ if A_GuiEvent = Normal
 		script := "Clay Form"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will form an unfired urn of your choice."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -715,7 +702,7 @@ if A_GuiEvent = Normal
 		script := "Clay Form"
 		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. Using the Portable Crafter, it will form an unfired urn of your choice."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -733,7 +720,7 @@ if A_GuiEvent = Normal
 		script := "Cooking"
 		scriptinfo := "Walks between the Range and main bank in Burthrope to cook an inventory of food. Portables and Fort cooking are recommended over this script."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -751,7 +738,7 @@ if A_GuiEvent = Normal
 		script := "Cooking"
 		scriptinfo := "Cooks food at the Fort using the bank chest next to the Range."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -769,7 +756,7 @@ if A_GuiEvent = Normal
 		script := "Cooking"
 		scriptinfo := "Uses a Portable Range within (1) tile of a bank. Using the Portable Range, it will cook an inventory of food."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -787,7 +774,7 @@ if A_GuiEvent = Normal
 		script := "Cooking"
 		scriptinfo := "Uses a Portable Range that is more than (1) tile from a bank and requires walking. Using the Portable Range, it will cook an inventory of food."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -805,7 +792,7 @@ if A_GuiEvent = Normal
 		script := "Decoration Maker"
 		scriptinfo := "Made for the 2023 Christmas Event, creates decorations for crafting xp and holiday rewards."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -823,7 +810,7 @@ if A_GuiEvent = Normal
 		script := "Fire + Form"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will form an urn and then fire it before repeating the process."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -841,7 +828,7 @@ if A_GuiEvent = Normal
 		script := "Fire Urn"
 		scriptinfo := "Uses the Lunar Spell 'Fire Urn' to fire an inventory of unfired urns."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -859,7 +846,7 @@ if A_GuiEvent = Normal
 		script := "Firemaking"
 		scriptinfo := "Uses a Portable Brazier within (1) tile of a bank. Using the Portable Brazier, it will burn an inventory of logs."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -877,7 +864,7 @@ if A_GuiEvent = Normal
 		script := "Firemaking"
 		scriptinfo := "Uses a Portable Brazier that is more than (1) tile from a bank and requires walking. Using the Portable Brazier, it will burn an inventory of logs."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -895,7 +882,7 @@ if A_GuiEvent = Normal
 		script := "Frame Maker"
 		scriptinfo := "Walks between the bank chest and woodworking bench to make frames."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -913,7 +900,7 @@ if A_GuiEvent = Normal
 		script := "Gem Cutter"
 		scriptinfo := "Cuts an inventory of uncut gems, opens the bank, withdraws more, and repeats."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -931,7 +918,7 @@ if A_GuiEvent = Normal
 		script := "Gem Cutter"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will cut an inventory of uncut gems."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -949,7 +936,7 @@ if A_GuiEvent = Normal
 		script := "Gem Cutter"
 		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. Using the Portable Crafter, it will cut an inventory of uncut gems."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -967,7 +954,7 @@ if A_GuiEvent = Normal
 		script := "Glassblowing"
 		scriptinfo := "Turns molten glass into your selected glass item. Crafts full inventories, banks, and repeats."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -985,7 +972,7 @@ if A_GuiEvent = Normal
 		script := "Gnome Course"
 		scriptinfo := "Runs laps of the Gnome - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1003,7 +990,7 @@ if A_GuiEvent = Normal
 		script := "Gnome Course"
 		scriptinfo := "Runs laps of the Gnome - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1021,7 +1008,7 @@ if A_GuiEvent = Normal
 		script := "Herb 2 Incense"
 		scriptinfo := "Adds a herb to an ashy incense stick. Use 'Ash 2 Incense' first or ashy incense sticks from the Grand Exchange."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1039,7 +1026,7 @@ if A_GuiEvent = Normal
 		script := "Herb Cleaner"
 		scriptinfo := "Cleans full inventories of dirty herbs."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1057,7 +1044,7 @@ if A_GuiEvent = Normal
 		script := "Het's Oasis"
 		scriptinfo := "Runs laps of the Het's Oasis agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1075,7 +1062,7 @@ if A_GuiEvent = Normal
 		script := "Incense Crafter"
 		scriptinfo := "Cuts logs into incense sticks. Use this before 'Ash 2 Incense'."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1093,7 +1080,7 @@ if A_GuiEvent = Normal
 		script := "Ink Crafter"
 		scriptinfo := "Crafts ink for the Necromancy skill."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1111,7 +1098,7 @@ if A_GuiEvent = Normal
 		script := "Jewellery Crafter"
 		scriptinfo := "Runs between the Combat Academy bank chest and Lumbridge Furnace to craft your selected Jewellery. Config.ini needs manual setup to work."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1129,7 +1116,7 @@ if A_GuiEvent = Normal
 		script := "Jewellery Crafter"
 		scriptinfo := "Runs between the bank chest and furnace at the Fort to craft your selected Jewellery. Config.ini needs manual setup to work."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1147,7 +1134,7 @@ if A_GuiEvent = Normal
 		script := "Jewel Enchant"
 		scriptinfo := "Casts the selected 'Enchanted Cast' spell to enchant jewellery in your inventory."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1165,7 +1152,7 @@ if A_GuiEvent = Normal
 		script := "String Jewellery"
 		scriptinfo := "String an inventory of jewellery using the Lunar Spell."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1183,7 +1170,7 @@ if A_GuiEvent = Normal
 		script := "Plank + Refined"
 		scriptinfo := "Cuts and refines the plank at the Fort."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1201,7 +1188,7 @@ if A_GuiEvent = Normal
 		script := "Plank Maker"
 		scriptinfo := "Cuts logs into planks using the sawmill at the Fort."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1219,7 +1206,7 @@ if A_GuiEvent = Normal
 		script := "Potion Mixer"
 		scriptinfo := "Combines an inventory of ingredients to make potions."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1237,7 +1224,7 @@ if A_GuiEvent = Normal
 		script := "Potion Mixer"
 		scriptinfo := "Uses a Portable Well within (1) tile of a bank. Using the Portable Well, it will combine an inventory of ingredients to make potions."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1255,7 +1242,7 @@ if A_GuiEvent = Normal
 		script := "Potion Mixer"
 		scriptinfo := "Uses a Portable Well that is more than (1) tile from a bank and requires walking. Using the Portable Well, it will combine an inventory of ingredients to make potions."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1273,7 +1260,7 @@ if A_GuiEvent = Normal
 		script := "Prayer"
 		scriptinfo := "Buries an inventory of bones or scatters an inventory of ashes. This is a bank-standing script and does not work with altars."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1291,7 +1278,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Crafts Normal Protean Bars, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1309,7 +1296,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Crafts Unstable Protean Bars, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1327,7 +1314,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Processes Normal Protean Cogs, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1345,7 +1332,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Processes Unstable Protean Cogs, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1363,7 +1350,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Crafts Normal Protean Essence, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1381,7 +1368,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Crafts Unstable Protean Essence, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1399,7 +1386,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Crafts Normal Protean Hides, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1417,7 +1404,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Crafts Unstable Protean Hides, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1435,7 +1422,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Fletches Normal Protean Logs, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1453,7 +1440,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Fletches Unstable Protean Logs, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1471,7 +1458,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Fletches && burns Normal Protean Logs, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1489,7 +1476,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Fletches && burns Unstable Protean Logs, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1507,7 +1494,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Converts Normal Protean Memories, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1525,7 +1512,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Converts Unstable Protean Memories, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1543,7 +1530,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Processes Normal Protean Planks, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1561,7 +1548,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Processes Unstable Protean Planks, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1579,7 +1566,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Cooks Normal Protean Protein, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1597,7 +1584,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Cooks Unstable Protean Protein, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1615,7 +1602,7 @@ if A_GuiEvent = Normal
 		script := "Normal Protean"
 		scriptinfo := "Processes Normal Protean Shakes, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1633,7 +1620,7 @@ if A_GuiEvent = Normal
 		script := "Unstable Protean"
 		scriptinfo := "Processes Unstable Protean Shakes, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1651,7 +1638,7 @@ if A_GuiEvent = Normal
 		script := "Protean Trap"
 		scriptinfo := "Sets Protean Traps and refreshes them based on a random timer, best used with Double XP events."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1669,7 +1656,7 @@ if A_GuiEvent = Normal
 		script := "Pyre Crafter"
 		scriptinfo := "Adds Sacred Oil to logs to craft Pyre Logs."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1687,7 +1674,7 @@ if A_GuiEvent = Normal
 		script := "Refined Planks"
 		scriptinfo := "Refines planks at the sawmill so they can be used to make frames."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1705,7 +1692,7 @@ if A_GuiEvent = Normal
 		script := "Rituals"
 		scriptinfo := "Performs the Communion && Material ritual using the focus storage for material. Place materials for rituals into focus storage for this to work."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1723,7 +1710,7 @@ if A_GuiEvent = Normal
 		script := "Rituals"
 		scriptinfo := "Performs the Communion && Material ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1741,7 +1728,7 @@ if A_GuiEvent = Normal
 		script := "Rituals"
 		scriptinfo := "Performs the Ectoplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1759,7 +1746,7 @@ if A_GuiEvent = Normal
 		script := "Rituals"
 		scriptinfo := "Performs the Ectoplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1777,7 +1764,7 @@ if A_GuiEvent = Normal
 		script := "Rituals"
 		scriptinfo := "Performs the Essence && Necroplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1795,7 +1782,7 @@ if A_GuiEvent = Normal
 		script := "Rituals"
 		scriptinfo := "Performs the Essence && Necroplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1813,7 +1800,7 @@ if A_GuiEvent = Normal
 		script := "Sawmill"
 		scriptinfo := "Uses a Portable Sawmill within (1) tile of a bank. With the Portable Sawmill, it will cut logs into planks."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1831,7 +1818,7 @@ if A_GuiEvent = Normal
 		script := "Sawmill"
 		scriptinfo := "it will tan various hides."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1849,7 +1836,7 @@ if A_GuiEvent = Normal
 		script := "Sift Soil"
 		scriptinfo := "Uses the Lunar Spell Sift Soil to screen various soils."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1862,11 +1849,12 @@ if A_GuiEvent = Normal
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
+		
 		Case "Slime Collector":
 		script := "Slime Collector"
 		scriptinfo := "Collects Buckets of Slime and uses them on magic/enchanted notepaper to note them before collecting more slime."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1884,7 +1872,7 @@ if A_GuiEvent = Normal
 		script := "Smithing"
 		scriptinfo := "An underpowered smithing script best used for making arrowheads and dart tips. Can be used to smith any item, but does not currently support reheating the forge."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1902,7 +1890,7 @@ if A_GuiEvent = Normal
 		script := "Stone Wall"
 		scriptinfo := "Turns limestone bricks into wall segments at the stonecutter in the Fort."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1920,7 +1908,7 @@ if A_GuiEvent = Normal
 		script := "Tanning"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will tan various hides."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1938,7 +1926,7 @@ if A_GuiEvent = Normal
 		script := "Tanning"
 		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. With the Portable Crafter, it will cut logs into planks."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1956,7 +1944,7 @@ if A_GuiEvent = Normal
 		script := "Tele Grind"
 		scriptinfo := "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1974,7 +1962,7 @@ if A_GuiEvent = Normal
 		script := "Tele Grind"
 		scriptinfo := "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory. Does not support banking, assumes items stack in inventory."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -1992,7 +1980,7 @@ if A_GuiEvent = Normal
 		script := "Watchtower Shortcut"
 		scriptinfo := "Runs laps of the Watchtower Shortcut. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -2010,7 +1998,7 @@ if A_GuiEvent = Normal
 		script := "Wilderness"
 		scriptinfo := "Runs laps of the Wilderness agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -2028,7 +2016,7 @@ if A_GuiEvent = Normal
 		script := "Wine Maker"
 		scriptinfo := "Combines jugs of water with grapes with make jugs of wine."
 		GuiReset()
-		GuiBorder()
+		GuiBorderB()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -2046,7 +2034,7 @@ if A_GuiEvent = Normal
 		script := "Flatpack Maker"
 		scriptinfo := "Uses a Portable Workbench within (1) tile of a bank. With the Portable Workbench, it will create various flatpacks."
 		GuiReset()
-		GuiBorder()
+		GuiBorderI()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
@@ -2064,7 +2052,7 @@ if A_GuiEvent = Normal
 		script := "Flatpack Maker"
 		scriptinfo := "Uses a Portable Workbench that is more than (1) tile from a bank and requires walking. With the Portable Workbench, it will create various flatpacks."
 		GuiReset()
-		GuiBorder()
+		GuiBorderA()
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
