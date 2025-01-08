@@ -969,9 +969,7 @@ If (frcount = 0)
 }
 
 else
-
-SetTimer, Countdown, 1000
-
+	
 sleep 250
 
 GuiControl,,ScriptBlue, %scriptname% 
@@ -979,6 +977,8 @@ GuiControl,,State3, Running
 DisableButton()
 startcheck=1
 StartTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+
+SetTimer, Countdown, 1000
 
 IniRead, option,Config.ini, Agro, option
 if option=true

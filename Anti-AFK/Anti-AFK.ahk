@@ -674,12 +674,12 @@ if (timeToRunMinutes = "" or timeToRunMinutes = 0)
 	return
 }
 
-SetTimer, Countdown, 1000
-
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
 DisableButton()
 startcheck=1
+
+SetTimer, Countdown, 1000
 
 IfWinNotActive, RuneScape
 {
