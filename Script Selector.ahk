@@ -30,7 +30,7 @@ if (InStr(A_ScriptDir, ".zip" or ".rar") > 0) {
 	return
 }
 
-scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Armour Crafter - Portables - Walking|Arrow Fletcher|Ash 2 Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Cape Cleaner - Herblore (Skillcape Perk)|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Decoration Maker|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Flatpack Maker - Portables - Non-Walking|Flatpack Maker - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb 2 Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Protean Bar - Normal|Protean Bar - Unstable|Protean Cog - Normal|Protean Cog - Unstable|Protean Essence - Normal|Protean Essence - Unstable|Protean Hide - Normal|Protean Hide - Unstable|Protean Logs - Fletch - Normal|Protean Logs - Fletch - Unstable|Protean Logs - Fletch/Burn - Normal|Protean Logs - Fletch/Burn - Unstable|Protean Memory - Normal|Protean Memory - Unstable|Protean Plank - Normal|Protean Plank - Unstable|Protean Protein - Normal|Protean Protein - Unstable|Protean Shake - Normal|Protean Shake - Unstable|Protean Trap|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker"
+scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Armour Crafter - Portables - Walking|Arrow Fletcher|Ash 2 Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Cape Cleaner - Herblore (Skillcape Perk)|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Decoration Maker|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Flatpack Maker - Portables - Non-Walking|Flatpack Maker - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb 2 Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Protean Bar - Normal|Protean Bar - Unstable|Protean Cog - Normal|Protean Cog - Unstable|Protean Essence - Normal|Protean Essence - Unstable|Protean Hide - Normal|Protean Hide - Unstable|Protean Logs - Fletch - Normal|Protean Logs - Fletch - Unstable|Protean Logs - Fletch/Burn - Normal|Protean Logs - Fletch/Burn - Unstable|Protean Memory - Normal|Protean Memory - Unstable|Protean Plank - Normal|Protean Plank - Unstable|Protean Protein - Normal|Protean Protein - Unstable|Protean Shake - Normal|Protean Shake - Unstable|Protean Trap|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|"
 
 ScriptTotal := StrSplit(scriptArray, "|").Length()
 
@@ -2065,6 +2065,24 @@ if A_GuiEvent = Normal
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
+		
+		Case "Contract Binding":
+		script := "Contract Binding"
+		scriptinfo := "Creates Binding Contracts at the obelisk in Taverly."
+		GuiReset()
+		GuiBorderA()
+		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+		Gui Info: Color, White
+		Gui Info: Font, s14 bold underline cBlue
+		Gui Info: Add, Text, center x5 w480, %Script%
+		Gui Info: Font, s13 normal bold cRed
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
+		Gui Info: Font, S12 cBlack
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
+		WinSet, ExStyle, ^0x80
+		Gui Info: -caption
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
+		GuiBalance()
 	}
 	return
 }
@@ -2074,748 +2092,755 @@ if A_GuiEvent = DoubleClick
 GuiControlGet, selectedScript, , ScriptListBox
 Switch selectedScript
 {	
-			Case "AFK Combat":
-			script := "AFK Combat"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Alchemy":
-			script := "Alchemy"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Amulet Stringer":
-			script := "Amulet Stringer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Anti-AFK":
-			script := "Anti-AFK"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Armour Crafter - Portables - Walking":
-			script := "Armour Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - With Walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Armour Crafter - Portables - Non-Walking":
-			script := "Armour Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - No Walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Armour Crafter":
-			script := "Armour Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Arrow Fletcher":
-			script := "Arrow Fletcher"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Ash 2 Incense":
-			script := "Ash 2 Incense"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Incense\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "AutoClicker":
-			script := "AutoClicker"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Misc\Autoclicker
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "AutoTele":
-			script := "AutoTele"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bake Pie - Lunar Spell":
-			script := "Bake Pie"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Lunar Spells\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bar Smelter":
-			script := "Bar Smelter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bar Smelter - Smelting Gloves":
-			script := "Smelting Glove"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Bar Smelter
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Agility - Barbarian - Advanced":
-			script := "Barbarian Course"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Advanced
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Agility - Barbarian - Basic":
-			script := "Barbarian Course"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Basic
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bones 2 Bananas":
-			script := "Bones 2 Bananas"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bow Cutter":
-			script := "Bow Cutter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bow Cutter - Portables - Walking":
-			script := "Bow Cutter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Cutter - With Walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bow Cutter - Portables - Non-Walking":
-			script := "Bow Cutter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Cutter - No Walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bow Stringer":
-			script := "Bow Stringer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bow Stringer - Portables - Walking":
-			script := "Bow Stringer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Stringer - With Walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Bow Stringer - Portables - Non-Walking":
-			script := "Bow Stringer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Stringer - No Walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Brick Maker - Fort Forinthry":
-			script := "Limestone Brick"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\Limestone Brick
-			Run, Brick Maker.ahk
-			Goto exit
-			
-			Case "Agility - Burthrope":
-			script := "Burthorpe"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Agility\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Candle Crafter":
-			script := "Candle Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Necromancy\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Cape Cleaner - Herblore (Skillcape Perk)":
-			script := "Cape Cleaner"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Herb Cleaner
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Clay Fire - Portables - Non-Walking":
-			script := "Clay Fire"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - no walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Clay Fire - Portables - Walking":
-			script := "Clay Fire"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - with walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Clay Form - Portables - Non-Walking":
-			script := "Clay Form"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - no walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Clay Form - Portables - Walking":
-			script := "Clay Form"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - with walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Cooking - Burthorpe":
-			script := "Cooking"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Cooking - Fort Forinthry":
-			script := "Cooking"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Cooking - Portables - Non-Walking":
-			script := "Cooking"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\cooking\cooking - no walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Cooking - Portables - Walking":
-			script := "Cooking"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\cooking\cooking - with walking
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Decoration Maker":
-			script := "Decoration Maker"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Events\2023\Christmas\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Fire + Form - Portables":
-			script := "Fire + Form"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\fire + form
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Fire Urn - Lunar Spell":
-			script := "Fire Urn"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\lunar spells\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Firemaking - Portables - Non-Walking":
-			script := "Firemaking"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Firemaking\Firemaking - no walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Firemaking - Portables - Walking":
-			script := "Firemaking"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Firemaking\Firemaking - with walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Frame Maker - Fort Forinthry":
-			script := "Frame Maker"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Gem Cutter":
-			script := "Gem Cutter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Gem Cutter - Portables - Non-Walking":
-			script := "Gem Cutter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - no walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Gem Cutter - Portables - Walking":
-			script := "Gem Cutter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - with walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Glassblowing":
-			script := "Glassblowing"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Agility - Gnome - Advanced":
-			script := "Gnome Course"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\agility\Gnome\Advanced\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Agility - Gnome - Basic":
-			script := "Gnome Course"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\agility\Gnome\Basic\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Herb 2 Incense":
-			script := "Herb 2 Incense"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Incense\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Herb Cleaner":
-			script := "Herb Cleaner"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Agility - Het's Oasis":
-			script := "Het's Oasis"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\agility\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Incense Crafter":
-			script := "Incense Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Incense\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Ink Crafter":
-			script := "Ink Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Necromancy\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Jewellery Crafter - Lumbridge":
-			script := "Jewellery Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Jewellery Crafter - Fort Forinthry":
-			script := "Jewellery Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Jewellery Enchanter":
-			script := "Jewel Enchant"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Jewellery Enchant
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Jewellery Stringer - Lunar Spell":
-			script := "String Jewellery"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\lunar spells\%script%
-			Run, Jewel Stringer.ahk
-			Goto exit
-			
-			Case "Plank + Refined - Fort Forinthry":
-			script := "Plank + Refined"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Plank Maker - Fort Forinthry":
-			script := "Plank Maker"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Potion Mixer":
-			script := "Potion Mixer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Potion Mixer - Portables - Non-Walking":
-			script := "Potion Mixer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Herblore\Potion Mixer - no walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Potion Mixer - Portables - Walking":
-			script := "Potion Mixer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Herblore\Potion Mixer - with walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Prayer":
-			script := "Prayer"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Bar - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean bar
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Bar - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean bar
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Cog - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Cog
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Cog - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Cog
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Essence - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Essence
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Essence - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Essence
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Hide - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Hide
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Hide - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Hide
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Logs - Fletch - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Logs - Fletch - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Logs - Fletch/Burn - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch & burn
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Logs - Fletch/Burn - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch & burn
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Memory - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Memory
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Memory - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Memory
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Plank - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Plank
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Plank - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Plank
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Protein - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Protein
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Protein - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Protein
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Shake - Normal":
-			script := "Normal Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Shake
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Shake - Unstable":
-			script := "Unstable Protean"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\protean Shake
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Protean Trap":
-			script := "Protean Trap"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\protean\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Pyre Crafter":
-			script := "Pyre Crafter"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Refined Plank - Fort Forinthry":
-			script := "Refined Planks"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Rituals - Communion & Material - Focus Storage":
-			script := "Rituals"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Communion & Material\Focus Storage
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Rituals - Communion & Material - Without Storage":
-			script := "Rituals"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Communion & Material\Without Focus Storage
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Rituals - Ectoplasm - Focus Storage":
-			script := "Rituals"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Ectoplasm\Focus Storage
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Rituals - Ectoplasm - Without Storage":
-			script := "Rituals"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Ectoplasm\Without Focus Storage
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Rituals - Essence & Necroplasm - Focus Storage":
-			script := "Rituals"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Essence & Necroplasm\Focus Storage
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Rituals - Essence & Necroplasm - Without Storage":
-			script := "Rituals"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Essence & Necroplasm\Without Focus Storage
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Sawmill - Portables - Non-Walking":
-			script := "Sawmill"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Sawmill\Sawmill - no walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Sawmill - Portables - Walking":
-			script := "Sawmill"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Sawmill\Sawmill - with walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Sift Soil - Lunar Spell":
-			script := "Sift Soil"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Lunar Spells\%script%\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Slime Collector":
-			script := "Slime Collector"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Necromancy\Slime Collector - Notepaper\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Smithing":
-			script := "Smithing"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Stone Wall - Fort Forinthry":
-			script := "Stone Wall"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Tanning - Portables - Non-Walking":
-			script := "Tanning"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - no walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Tanning - Portables - Walking":
-			script := "Tanning"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - with walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Tele Grind - Lunar Spell - No Banking":
-			script := "Tele Grind"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Tele Grind - Lunar Spell - With Banking":
-			script := "Tele Grind"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Agility - Watchtower Shortcut":
-			script := "Watchtower Shortcut"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\agility\%script%\
-			Run, watchtower.ahk
-			Goto exit
-			
-			Case "Agility - Wilderness":
-			script := "Wilderness"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\agility\%script%\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Wine Maker":
-			script := "Wine Maker"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\%script%
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Flatpack Maker - Portables - Non-Walking":
-			script := "Flatpack Maker"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Construction\Flatpack Maker - no walking\
-			Run, %script%.ahk
-			Goto exit
-			
-			Case "Flatpack Maker - Portables - Walking":
-			script := "Flatpack Maker"
-			Gui destroy
-			SetWorkingDir, %A_ScriptDir%\portables\Construction\Flatpack Maker - with walking\
-			Run, %script%.ahk
-			Goto exit
-		}
+	Case "AFK Combat":
+	script := "AFK Combat"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Alchemy":
+	script := "Alchemy"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Amulet Stringer":
+	script := "Amulet Stringer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Anti-AFK":
+	script := "Anti-AFK"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Armour Crafter - Portables - Walking":
+	script := "Armour Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - With Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Armour Crafter - Portables - Non-Walking":
+	script := "Armour Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\Armour Crafter\Armour Crafter - No Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Armour Crafter":
+	script := "Armour Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Arrow Fletcher":
+	script := "Arrow Fletcher"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Ash 2 Incense":
+	script := "Ash 2 Incense"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Incense\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "AutoClicker":
+	script := "AutoClicker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Misc\Autoclicker
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "AutoTele":
+	script := "AutoTele"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bake Pie - Lunar Spell":
+	script := "Bake Pie"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bar Smelter":
+	script := "Bar Smelter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bar Smelter - Smelting Gloves":
+	script := "Smelting Glove"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Bar Smelter
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Agility - Barbarian - Advanced":
+	script := "Barbarian Course"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Advanced
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Agility - Barbarian - Basic":
+	script := "Barbarian Course"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\agility\Barbarian\Basic
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bones 2 Bananas":
+	script := "Bones 2 Bananas"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Cutter":
+	script := "Bow Cutter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Cutter - Portables - Walking":
+	script := "Bow Cutter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Cutter - With Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Cutter - Portables - Non-Walking":
+	script := "Bow Cutter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Cutter - No Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Stringer":
+	script := "Bow Stringer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Stringer - Portables - Walking":
+	script := "Bow Stringer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Stringer - With Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Bow Stringer - Portables - Non-Walking":
+	script := "Bow Stringer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\fletching\Bow Stringer - No Walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Brick Maker - Fort Forinthry":
+	script := "Limestone Brick"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\Limestone Brick
+	Run, Brick Maker.ahk
+	Goto exit
+	
+	Case "Agility - Burthrope":
+	script := "Burthorpe"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Agility\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Candle Crafter":
+	script := "Candle Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Necromancy\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Cape Cleaner - Herblore (Skillcape Perk)":
+	script := "Cape Cleaner"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Herb Cleaner
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Clay Fire - Portables - Non-Walking":
+	script := "Clay Fire"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - no walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Clay Fire - Portables - Walking":
+	script := "Clay Fire"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay fire\clay fire - with walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Clay Form - Portables - Non-Walking":
+	script := "Clay Form"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - no walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Clay Form - Portables - Walking":
+	script := "Clay Form"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\clay Form\clay Form - with walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Cooking - Burthorpe":
+	script := "Cooking"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Cooking - Fort Forinthry":
+	script := "Cooking"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Cooking - Portables - Non-Walking":
+	script := "Cooking"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\cooking\cooking - no walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Cooking - Portables - Walking":
+	script := "Cooking"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\cooking\cooking - with walking
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Decoration Maker":
+	script := "Decoration Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Events\2023\Christmas\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Fire + Form - Portables":
+	script := "Fire + Form"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\crafting\clay\fire + form
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Fire Urn - Lunar Spell":
+	script := "Fire Urn"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\lunar spells\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Firemaking - Portables - Non-Walking":
+	script := "Firemaking"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Firemaking\Firemaking - no walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Firemaking - Portables - Walking":
+	script := "Firemaking"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Firemaking\Firemaking - with walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Frame Maker - Fort Forinthry":
+	script := "Frame Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Gem Cutter":
+	script := "Gem Cutter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Gem Cutter - Portables - Non-Walking":
+	script := "Gem Cutter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - no walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Gem Cutter - Portables - Walking":
+	script := "Gem Cutter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Gem Cutter\Gem Cutter - with walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Glassblowing":
+	script := "Glassblowing"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Agility - Gnome - Advanced":
+	script := "Gnome Course"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\agility\Gnome\Advanced\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Agility - Gnome - Basic":
+	script := "Gnome Course"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\agility\Gnome\Basic\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Herb 2 Incense":
+	script := "Herb 2 Incense"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Incense\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Herb Cleaner":
+	script := "Herb Cleaner"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Agility - Het's Oasis":
+	script := "Het's Oasis"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\agility\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Incense Crafter":
+	script := "Incense Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Incense\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Ink Crafter":
+	script := "Ink Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Necromancy\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Jewellery Crafter - Lumbridge":
+	script := "Jewellery Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Jewellery Crafter - Fort Forinthry":
+	script := "Jewellery Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Jewellery Enchanter":
+	script := "Jewel Enchant"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Jewellery Enchant
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Jewellery Stringer - Lunar Spell":
+	script := "String Jewellery"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\lunar spells\%script%
+	Run, Jewel Stringer.ahk
+	Goto exit
+	
+	Case "Plank + Refined - Fort Forinthry":
+	script := "Plank + Refined"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Plank Maker - Fort Forinthry":
+	script := "Plank Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Potion Mixer":
+	script := "Potion Mixer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Potion Mixer - Portables - Non-Walking":
+	script := "Potion Mixer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Herblore\Potion Mixer - no walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Potion Mixer - Portables - Walking":
+	script := "Potion Mixer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Herblore\Potion Mixer - with walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Prayer":
+	script := "Prayer"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Bar - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean bar
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Bar - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean bar
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Cog - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Cog
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Cog - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Cog
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Essence - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Essence
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Essence - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Essence
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Hide - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Hide
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Hide - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Hide
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Logs - Fletch - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Logs - Fletch - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Logs - Fletch/Burn - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch & burn
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Logs - Fletch/Burn - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean logs\fletch & burn
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Memory - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Memory
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Memory - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Memory
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Plank - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Plank
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Plank - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Plank
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Protein - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Protein
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Protein - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Protein
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Shake - Normal":
+	script := "Normal Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Shake
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Shake - Unstable":
+	script := "Unstable Protean"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\protean Shake
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Protean Trap":
+	script := "Protean Trap"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\protean\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Pyre Crafter":
+	script := "Pyre Crafter"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Refined Plank - Fort Forinthry":
+	script := "Refined Planks"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Rituals - Communion & Material - Focus Storage":
+	script := "Rituals"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Communion & Material\Focus Storage
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Rituals - Communion & Material - Without Storage":
+	script := "Rituals"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Communion & Material\Without Focus Storage
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Rituals - Ectoplasm - Focus Storage":
+	script := "Rituals"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Ectoplasm\Focus Storage
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Rituals - Ectoplasm - Without Storage":
+	script := "Rituals"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Ectoplasm\Without Focus Storage
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Rituals - Essence & Necroplasm - Focus Storage":
+	script := "Rituals"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Essence & Necroplasm\Focus Storage
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Rituals - Essence & Necroplasm - Without Storage":
+	script := "Rituals"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\\Necromancy\%script%\Essence & Necroplasm\Without Focus Storage
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Sawmill - Portables - Non-Walking":
+	script := "Sawmill"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Sawmill\Sawmill - no walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Sawmill - Portables - Walking":
+	script := "Sawmill"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Sawmill\Sawmill - with walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Sift Soil - Lunar Spell":
+	script := "Sift Soil"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\%script%\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Slime Collector":
+	script := "Slime Collector"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Necromancy\Slime Collector - Notepaper\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Smithing":
+	script := "Smithing"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Stone Wall - Fort Forinthry":
+	script := "Stone Wall"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fort Forinthry\%script%\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Tanning - Portables - Non-Walking":
+	script := "Tanning"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - no walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Tanning - Portables - Walking":
+	script := "Tanning"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Crafting\Tanning\Tanning - with walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Tele Grind - Lunar Spell - No Banking":
+	script := "Tele Grind"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Tele Grind - Lunar Spell - With Banking":
+	script := "Tele Grind"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Agility - Watchtower Shortcut":
+	script := "Watchtower Shortcut"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\agility\%script%\
+	Run, watchtower.ahk
+	Goto exit
+	
+	Case "Agility - Wilderness":
+	script := "Wilderness"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\agility\%script%\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Wine Maker":
+	script := "Wine Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Flatpack Maker - Portables - Non-Walking":
+	script := "Flatpack Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Construction\Flatpack Maker - no walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Flatpack Maker - Portables - Walking":
+	script := "Flatpack Maker"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\portables\Construction\Flatpack Maker - with walking\
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Contract Binding":
+	script := "Contract Binding"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+}
 	Return
 	
 	Clear:
