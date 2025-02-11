@@ -791,299 +791,249 @@ clickcount = 0
 
 loop % runcount
 { 	
-		If firstrun = 0
+	If firstrun = 0
+	{
+		IfWinNotActive, RuneScape
 		{
-			IfWinNotActive, RuneScape
-			{
-				WinActivate, RuneScape
-			}
-			
-			++count
-			++count2
-			++firstrun
-			
-			GuiControl,,Counter, %count%
-			GuiControl,,Counter2, %count2% / %runcount3%
-			GuiControl,,ScriptBlue, %scriptname%
-			GuiControl,,State3, Running
-			DisableButton()
-			
-			CoordMode, Mouse, Window
-			IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
-			IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
-			IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
-			IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			Click, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			CoordMode, Mouse, Window
-			IniRead, x1, Config.ini, Ritual Type, xmin
-			IniRead, x2, Config.ini, Ritual Type, xmax
-			IniRead, y1, Config.ini, Ritual Type, ymin
-			IniRead, y2, Config.ini, Ritual Type, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			Click, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, option, Config.ini, Input, scroll
-			if (%option% = true)
-			{
-				CoordMode, Mouse, Window
-				IniRead, x1, Config.ini, Input, xmin
-				IniRead, x2, Config.ini, Input, xmax
-				IniRead, y1, Config.ini, Input, ymin
-				IniRead, y2, Config.ini, Input, ymax
-				Random, x, %x1%, %x2%
-				Random, y, %y1%, %y2%
-				Random, Scroll, 5, 10
-				
-				MouseMove, %x%, %y%
-				
-				IniRead, sa1, Config.ini, Sleep Brief, min
-				IniRead, sa2, Config.ini, Sleep Brief, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				Loop % Scroll
-				{
-					send	{wheeldown}
-				}
-				
-				IniRead, sa1, Config.ini, Sleep Brief, min
-				IniRead, sa2, Config.ini, Sleep Brief, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%							
-			}
-			Click, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%	
-			
-			send {space}
-			
-			IniRead, sa1, Config.ini, Sleep Normal, min
-			IniRead, sa2, Config.ini, Sleep Normal, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			CoordMode, Mouse, Window
-			IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
-			IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
-			IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
-			IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			MouseClick, r, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, minx, Config.ini, Offset, minx
-			IniRead, maxx, Config.ini, Offset, maxx
-			IniRead, miny, Config.ini, Offset, miny
-			IniRead, maxy, Config.ini, Offset, maxy
-			
-			MouseGetPos, RightClickX, RightClickY
-			
-			Random, XOffset, %minx%, %maxx%
-			Random, YOffset, %miny%, %maxy%
-			
-			TargetX := RightClickX + XOffset
-			TargetY := RightClickY + YOffset
-			
-			MouseClick, left, %TargetX%, %TargetY%
-			
-			IniRead, sa1, Config.ini, Sleep Repair, min
-			IniRead, sa2, Config.ini, Sleep Repair, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%		
-			
-			CoordMode, Mouse, Window
-			IniRead, x1, Config.ini, Platform, xmin
-			IniRead, x2, Config.ini, Platform, xmax
-			IniRead, y1, Config.ini, Platform, ymin
-			IniRead, y2, Config.ini, Platform, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			Click, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Walk, min
-			IniRead, sa2, Config.ini, Sleep Walk, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, sa1, Config.ini, Sleep Ritual, min
-			IniRead, sa2, Config.ini, Sleep Ritual, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
+			WinActivate, RuneScape
 		}
-		If firstrun = 1
+		
+		++count
+		++count2
+		++firstrun
+		
+		GuiControl,,Counter, %count%
+		GuiControl,,Counter2, %count2% / %runcount3%
+		GuiControl,,ScriptBlue, %scriptname%
+		GuiControl,,State3, Running
+		DisableButton()
+		
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
+		IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
+		IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
+		IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Ritual Type, xmin
+		IniRead, x2, Config.ini, Ritual Type, xmax
+		IniRead, y1, Config.ini, Ritual Type, ymin
+		IniRead, y2, Config.ini, Ritual Type, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, option, Config.ini, Input, scroll
+		if (%option% = true)
 		{
-			++count
-			++count2
-			firstrun=0
+			CoordMode, Mouse, Window
+			IniRead, x1, Config.ini, Input, xmin
+			IniRead, x2, Config.ini, Input, xmax
+			IniRead, y1, Config.ini, Input, ymin
+			IniRead, y2, Config.ini, Input, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Random, Scroll, 5, 10
 			
-			IfWinNotActive, RuneScape
+			MouseMove, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			Loop % Scroll
 			{
-				WinActivate, RuneScape
+				send	{wheeldown}
 			}
 			
-			GuiControl,,Counter, %count%
-			GuiControl,,Counter2, %count2% / %runcount3%
-			GuiControl,,ScriptBlue, %scriptname%
-			GuiControl,,State3, Running
-			
-			CoordMode, Mouse, Window
-			IniRead, x1, Config.ini, Pedestal - Platform, xmin
-			IniRead, x2, Config.ini, Pedestal - Platform, xmax
-			IniRead, y1, Config.ini, Pedestal - Platform, ymin
-			IniRead, y2, Config.ini, Pedestal - Platform, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			MouseClick, r, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
 			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, minx, Config.ini, Offset, minx
-			IniRead, maxx, Config.ini, Offset, maxx
-			IniRead, miny, Config.ini, Offset, miny
-			IniRead, maxy, Config.ini, Offset, maxy
-			
-			MouseGetPos, RightClickX, RightClickY
-			
-			Random, XOffset, %minx%, %maxx%
-			Random, YOffset, %miny%, %maxy%
-			
-			TargetX := RightClickX + XOffset
-			TargetY := RightClickY + YOffset
-			
-			MouseClick, left, %TargetX%, %TargetY%
-			
-			IniRead, sa1, Config.ini, Sleep Walk, min
-			IniRead, sa2, Config.ini, Sleep Walk, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
+			Sleep, %SleepAmount%							
 		}
-		If firstrun = 0
+		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%	
+		
+		send {space}
+		
+		IniRead, sa1, Config.ini, Sleep Normal, min
+		IniRead, sa2, Config.ini, Sleep Normal, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
+		IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
+		IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
+		IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		MouseClick, r, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, minx, Config.ini, Offset, minx
+		IniRead, maxx, Config.ini, Offset, maxx
+		IniRead, miny, Config.ini, Offset, miny
+		IniRead, maxy, Config.ini, Offset, maxy
+		
+		MouseGetPos, RightClickX, RightClickY
+		
+		Random, XOffset, %minx%, %maxx%
+		Random, YOffset, %miny%, %maxy%
+		
+		TargetX := RightClickX + XOffset
+		TargetY := RightClickY + YOffset
+		
+		MouseClick, left, %TargetX%, %TargetY%
+		
+		IniRead, sa1, Config.ini, Sleep Repair, min
+		IniRead, sa2, Config.ini, Sleep Repair, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%		
+		
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Platform, xmin
+		IniRead, x2, Config.ini, Platform, xmax
+		IniRead, y1, Config.ini, Platform, ymin
+		IniRead, y2, Config.ini, Platform, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Walk, min
+		IniRead, sa2, Config.ini, Sleep Walk, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, sa1, Config.ini, Sleep Ritual, min
+		IniRead, sa2, Config.ini, Sleep Ritual, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+	}
+	If firstrun = 1
+	{
+		++count
+		++count2
+		firstrun=0
+		
+		IfWinNotActive, RuneScape
 		{
-			++firstrun
+			WinActivate, RuneScape
+		}
+		
+		GuiControl,,Counter, %count%
+		GuiControl,,Counter2, %count2% / %runcount3%
+		GuiControl,,ScriptBlue, %scriptname%
+		GuiControl,,State3, Running
+		
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Pedestal - Platform, xmin
+		IniRead, x2, Config.ini, Pedestal - Platform, xmax
+		IniRead, y1, Config.ini, Pedestal - Platform, ymin
+		IniRead, y2, Config.ini, Pedestal - Platform, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		MouseClick, r, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, minx, Config.ini, Offset, minx
+		IniRead, maxx, Config.ini, Offset, maxx
+		IniRead, miny, Config.ini, Offset, miny
+		IniRead, maxy, Config.ini, Offset, maxy
+		
+		MouseGetPos, RightClickX, RightClickY
+		
+		Random, XOffset, %minx%, %maxx%
+		Random, YOffset, %miny%, %maxy%
+		
+		TargetX := RightClickX + XOffset
+		TargetY := RightClickY + YOffset
+		
+		MouseClick, left, %TargetX%, %TargetY%
+		
+		IniRead, sa1, Config.ini, Sleep Walk, min
+		IniRead, sa2, Config.ini, Sleep Walk, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+	}
+	If firstrun = 0
+	{
+		++firstrun
+		
+		IniRead, option, LLARS Config.ini, Random Sleep, option
+		if option = true
+		{
+			IniRead, chance, LLARS Config.ini, Random Sleep, chance
+			Random, RandomNumber, 1, 100
 			
-			IniRead, option, LLARS Config.ini, Random Sleep, option
-			if option = true
+			if % RandomNumber <= chance
 			{
-				IniRead, chance, LLARS Config.ini, Random Sleep, chance
-				Random, RandomNumber, 1, 100
 				
-				if % RandomNumber <= chance
-				{
-					
-					++sleepcount
-					GuiControl,, ScriptBlue, Random Sleep
-					GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
-					
-					IniRead, rs1, LLARS Config.ini, Random Sleep, min
-					IniRead, rs2, LLARS Config.ini, Random Sleep, max
-					Random, RandomSleepAmount, %rs1%, %rs2%
-					
-					SetTimer, UpdateCountdown, 1000
-					EndTime := A_TickCount + RandomSleepAmount
-					totalSleepTime += RandomSleepAmount
-					Sleep, RandomSleepAmount
-					SetTimer, UpdateCountdown, Off
-					
-					GuiControl,,ScriptBlue, %scriptname%
-					GuiControl,,State3, Running
-				}
-			}	
-			
-			CoordMode, Mouse, Window
-			IniRead, x1, Config.ini, Platform, xmin
-			IniRead, x2, Config.ini, Platform, xmax
-			IniRead, y1, Config.ini, Platform, ymin
-			IniRead, y2, Config.ini, Platform, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			Click, %x%, %y%
-			
-			IniRead, sa1, Config.ini, Sleep Walk, min
-			IniRead, sa2, Config.ini, Sleep Walk, max
-			Random, SleepAmount, %sa1%, %sa2%
-			Sleep, %SleepAmount%
-			
-			IniRead, sa1, Config.ini, Sleep Ritual, min
-			IniRead, sa2, Config.ini, Sleep Ritual, max
-			Random, SleepAmount, %sa1%, %sa2%
-			
-			SleepStart := A_TickCount
-			Loop
-			{
-				IniRead, chance, LLARS Config.ini, Random Right-Click, chance
-				Random, RandomNumber, 1, 100
-				if (RandomNumber >=1 and RandomNumber <= chance and ClickCount = 0) {
-					++clickcount
-					++rightclick
-					
-					IniRead, min, LLARS Config.ini, Random Right-Click, min
-					IniRead, max, LLARS Config.ini, Random Right-Click, max
-					Random, RandomDelay, %min%, %max%
-					DelayStart := A_TickCount
-					while (A_TickCount - DelayStart < RandomDelay) {
-					}
-					
-					WinGetPos, RSx, RSy, RSw, RSh, RuneScape
-					MouseGetPos, MouseX, MouseY
-					
-					xmin := Round(MouseX - RSx)*0.1
-					xmax := Round(RSw - RSx - MouseX)*0.1
-					ymin := Round(MouseY - RSy)*0.1
-					ymax := Round(RSh - RSy - MouseY)*0.1
-					
-					CoordMode, Mouse, Window
-					Random, x, %xmin%, %xmax%
-					Random, y, %ymin%, %ymax%
-					Random, RandomSpeed, 25, 100
-					mousemove, %x%, %y%, %RandomSpeed%, r
-					
-					IniRead, sa1, Config.ini, Sleep brief, min
-					IniRead, sa2, Config.ini, Sleep brief, max
-					Random, SleepAmountBrief, %sa1%, %sa2%
-					Sleep, %SleepAmountBrief%
-					
-					mouseclick, r
-				}
+				++sleepcount
+				GuiControl,, ScriptBlue, Random Sleep
+				GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
 				
-				if (RandomNumber >= chance and ClickCount = 0) {
-					++clickcount
-				}
+				IniRead, rs1, LLARS Config.ini, Random Sleep, min
+				IniRead, rs2, LLARS Config.ini, Random Sleep, max
+				Random, RandomSleepAmount, %rs1%, %rs2%
 				
-				if (A_TickCount - SleepStart >= SleepAmount)
-				{
-					clickcount = 0
-					break
-				}
+				SetTimer, UpdateCountdown, 1000
+				EndTime := A_TickCount + RandomSleepAmount
+				totalSleepTime += RandomSleepAmount
+				Sleep, RandomSleepAmount
+				SetTimer, UpdateCountdown, Off
 				
-				Sleep 250
+				GuiControl,,ScriptBlue, %scriptname%
+				GuiControl,,State3, Running
 			}
 		}	
-	}
+		
+		CoordMode, Mouse, Window
+		IniRead, x1, Config.ini, Platform, xmin
+		IniRead, x2, Config.ini, Platform, xmax
+		IniRead, y1, Config.ini, Platform, ymin
+		IniRead, y2, Config.ini, Platform, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%
+		
+		IniRead, sa1, Config.ini, Sleep Walk, min
+		IniRead, sa2, Config.ini, Sleep Walk, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+		
+		IniRead, sa1, Config.ini, Sleep Ritual, min
+		IniRead, sa2, Config.ini, Sleep Ritual, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%
+	}	
+}
 
 CoordMode, Mouse, Window
 IniRead, x1, Config.ini, Pedestal - Platform, xmin
@@ -1158,7 +1108,7 @@ TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
 IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s`n`nSet click chance: %clickchance%`%`nActual click chance: %clickpercentage%`%`nTotal random clicks: %rightclick%
+MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 
 EnableButton()
 return
@@ -1191,7 +1141,7 @@ Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%`nRandom Click Chance: %clickchance%`%
+Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, italic s10 c0x152039
 Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
