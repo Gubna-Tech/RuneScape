@@ -1162,7 +1162,7 @@ loop % runcount
 	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
 	
 	SoundPlay, C:\Windows\Media\Ring06.wav, 1
-	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: disabled`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s`n`nSet click chance: disabled`nActual click chance: %clickpercentage%`%`nTotal random clicks: %rightclick%
+	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: disabled`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 	
 	EnableButton()
 	return
@@ -1201,7 +1201,7 @@ loop % runcount
 	Gui 20: Font, Bold underline cPurple
 	Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 	Gui 20: Font, Norm
-	Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: disabled`nSleep Chance: disabled`nRandom Click Chance: disabled
+	Gui 20: Add, Text, Center w220 x5,Logout: %logout%
 	Gui 20: Add, Text, center x5 w220,
 	Gui 20: Font, italic s10 c0x152039
 	Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below

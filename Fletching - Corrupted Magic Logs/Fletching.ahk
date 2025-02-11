@@ -155,6 +155,29 @@ WM_WINDOWPOSCHANGED() {
 return
 
 ConfigError(){
+	IniRead, x1, Config.ini, Bank Coords, xmin
+	IniRead, x2, Config.ini, Bank Coords, xmax
+	IniRead, y1, Config.ini, Bank Coords, ymin
+	IniRead, y2, Config.ini, Bank Coords, ymax
+	if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter valid coordinates for [Bank Coords] in the config.
+		reload
+	}
+	
+	IniRead, hkbank, Config.ini, Bank Preset, hotkey
+	if (hkbank = "")
+	{
+		Run %A_ScriptDir%\Config.ini
+		GuiControl,,ScriptRed, CONFIG		
+		GuiControl,,State2, ERROR
+		MsgBox, 4112, Config Error, Please enter a valid hotkey for [Bank Preset] in the config.
+		reload
+	}
+	
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
 	if (hk = "")
 	{
@@ -262,7 +285,7 @@ Gui 2: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep teleport|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|skillbar hotkey|bank preset|sleep fletch|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -449,7 +472,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|sleep teleport|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|bank coords|sleep fletch|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -614,28 +637,28 @@ exitapp
 Start:
 IfWinNotExist RuneScape
 {
-	Gui 1: Hide
-	Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui GNF: Font, S13 bold underline cRed
-	Gui GNF: Add, Text, Center w220 x5,ERROR
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, s12 norm bold
-	Gui GNF: Add, Text, Center w220 x5, RuneScape Not Found
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, cBlack
-	Gui GNF: Add, Text, Center w220 x5, RuneScape was not found to be running.`n`n`nRuneScape will attempt to be auto-launched upon closing this error message.
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, norm italic s10 c0x152039
-	GUI GNF: Add, Text, Center w220 x5, If RuneScape is already open and you're seeing this message, please use the Discord button below to contact Gubna for assistance.
-	Gui GNF: Font, s11 norm Bold c0x152039
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Add, Text, Center w220 x5,Created by Gubna
-	Gui GNF: Add, Button, gDiscordError w150 x40 center,Discord
-	Gui GNF: add, button, gCloseGNF w150 x40 center,Close Error
-	WinSet, ExStyle, ^0x80
-	Gui GNF: -caption
-	Gui GNF: Show, center w230, Game Not Found
-	return
+Gui 1: Hide
+Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
+Gui GNF: Font, S13 bold underline cRed
+Gui GNF: Add, Text, Center w220 x5,ERROR
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Font, s12 norm bold
+Gui GNF: Add, Text, Center w220 x5, RuneScape Not Found
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Font, cBlack
+Gui GNF: Add, Text, Center w220 x5, RuneScape was not found to be running.`n`n`nRuneScape will attempt to be auto-launched upon closing this error message.
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Font, norm italic s10 c0x152039
+GUI GNF: Add, Text, Center w220 x5, If RuneScape is already open and you're seeing this message, please use the Discord button below to contact Gubna for assistance.
+Gui GNF: Font, s11 norm Bold c0x152039
+Gui GNF: Add, Text, center x5 w220,
+Gui GNF: Add, Text, Center w220 x5,Created by Gubna
+Gui GNF: Add, Button, gDiscordError w150 x40 center,Discord
+Gui GNF: add, button, gCloseGNF w150 x40 center,Close Error
+WinSet, ExStyle, ^0x80
+Gui GNF: -caption
+Gui GNF: Show, center w230, Game Not Found
+return
 }
 ConfigError()
 
@@ -716,20 +739,37 @@ rightclick = 0
 clickcount = 0
 
 loop % runcount
-{ 
-	++count
-	++count2
-	
+{ 	
 	IfWinNotActive, RuneScape
 	{
 		WinActivate, RuneScape
 	}
+	
+	++count
+	++count2
 	
 	GuiControl,,Counter, %count%
 	GuiControl,,Counter2, %count2% / %runcount3%
 	GuiControl,,ScriptBlue, %scriptname%
 	GuiControl,,State3, Running
 	DisableButton()
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, Config.ini, Bank Coords, xmin
+	IniRead, x2, Config.ini, Bank Coords, xmax
+	IniRead, y1, Config.ini, Bank Coords, ymin
+	IniRead, y2, Config.ini, Bank Coords, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%
+	
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	IniRead, hkbank, Config.ini, Bank Preset, hotkey
+	send {%hkbank%}
 	
 	IniRead, option, LLARS Config.ini, Random Sleep, option
 	if option = true
@@ -759,12 +799,24 @@ loop % runcount
 		}
 	}
 	
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
 	send {%hk%}
 	
-	IniRead, saf1, Config.ini, Sleep Teleport, min
-	IniRead, saf2, Config.ini, Sleep Teleport, max
-	Random, SleepAmount, %saf1%, %saf2%
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	send {2}
+	
+	IniRead, sa1, Config.ini, Sleep Fletch, min
+	IniRead, sa2, Config.ini, Sleep Fletch, max
+	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 }
 
@@ -790,6 +842,7 @@ if option=true
 
 GuiControl,,ScriptGreen, %scriptname%
 GuiControl,,State1, Finished
+
 
 EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
 EndTime := A_TickCount
@@ -835,11 +888,16 @@ IniRead, logout, LLARS Config.ini, Logout, option
 IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
 IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
+IniRead, hkbp, Config.ini, Bank Preset, hotkey
 IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
 
 if (hk = "")
 {
-	hk = Not Set
+hk = Not Set
+}
+if (hkbp = "")
+{
+	hkbp = Not Set
 }
 
 WinGetPos, GUIxc, GUIyc,,,LLARS
@@ -854,7 +912,7 @@ Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
 Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]

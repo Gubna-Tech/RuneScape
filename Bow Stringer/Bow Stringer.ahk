@@ -817,275 +817,225 @@ loop % runcount
 	IniRead, sa1, Config.ini, Sleep Fletch, min
 	IniRead, sa2, Config.ini, Sleep Fletch, max
 	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+}
 	
-	SleepStart := A_TickCount
-	Loop
+	IniRead, option, LLARS Config.ini, Logout, option
+	if option=true
 	{
-		IniRead, chance, LLARS Config.ini, Random Right-Click, chance
-		Random, RandomNumber, 1, 100
-		if (RandomNumber >=1 and RandomNumber <= chance and ClickCount = 0) {
-			++clickcount
-			++rightclick
-			
-			IniRead, min, LLARS Config.ini, Random Right-Click, min
-			IniRead, max, LLARS Config.ini, Random Right-Click, max
-			Random, RandomDelay, %min%, %max%
-			DelayStart := A_TickCount
-			while (A_TickCount - DelayStart < RandomDelay) {
-			}
-			
-			WinGetPos, RSx, RSy, RSw, RSh, RuneScape
-			MouseGetPos, MouseX, MouseY
-			
-			xmin := Round(MouseX - RSx)*0.1
-			xmax := Round(RSw - RSx - MouseX)*0.1
-			ymin := Round(MouseY - RSy)*0.1
-			ymax := Round(RSh - RSy - MouseY)*0.1
-			
-			CoordMode, Mouse, Window
-			Random, x, %xmin%, %xmax%
-			Random, y, %ymin%, %ymax%
-			Random, RandomSpeed, 25, 100
-			mousemove, %x%, %y%, %RandomSpeed%, r
-			
-			IniRead, sa1, Config.ini, Sleep brief, min
-			IniRead, sa2, Config.ini, Sleep brief, max
-			Random, SleepAmountBrief, %sa1%, %sa2%
-			Sleep, %SleepAmountBrief%
-			
-			mouseclick, r
-		}
+		send {esc}	
 		
-		if (RandomNumber >= chance and ClickCount = 0) {
-			++clickcount
-		}
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		Sleep, %SleepAmount%	
 		
-		if (A_TickCount - SleepStart >= SleepAmount)
-		{
-			clickcount = 0
-			break
-		}
-		
-		Sleep 250
+		CoordMode, Mouse, Window
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		Click, %x%, %y%	
 	}
-}
-
-IniRead, option, LLARS Config.ini, Logout, option
-if option=true
-{
-	send {esc}	
 	
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Sleep, %SleepAmount%	
+	GuiControl,,ScriptGreen, %scriptname%
+	GuiControl,,State1, Finished
 	
-	CoordMode, Mouse, Window
-	IniRead, x1, LLARS Config.ini, Logout, xmin
-	IniRead, x2, LLARS Config.ini, Logout, xmax
-	IniRead, y1, LLARS Config.ini, Logout, ymin
-	IniRead, y2, LLARS Config.ini, Logout, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	Click, %x%, %y%	
-}
-
-GuiControl,,ScriptGreen, %scriptname%
-GuiControl,,State1, Finished
-
-
-EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
-EndTime := A_TickCount
-TotalTime := (EndTime - StartTime) / 1000
-AverageTime := TotalTime / runcount3
-
-TotalTimeHours := Floor(TotalTime / 3600)
-TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
-TotalTimeSeconds := Mod(TotalTime, 60)
-
-AverageTimeMinutes := Floor(AverageTime / 60)
-AverageTimeSeconds := Mod(AverageTime, 60)
-
-TotalTimeHours := Round(TotalTimeHours)
-TotalTimeMinutes := Round(TotalTimeMinutes)
-TotalTimeSeconds := Round(TotalTimeSeconds)
-AverageTimeMinutes := Round(AverageTimeMinutes)
-AverageTimeSeconds := Round(AverageTimeSeconds)
-
-percentage := Round((sleepcount / runcount) * 100)
-clickpercentage := Round((rightclick / runcount) * 100)
-
-totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
-TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
-TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
-TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
-
-SoundPlay, C:\Windows\Media\Ring06.wav, 1
-IniRead, chance, LLARS Config.ini, Random Sleep, chance
-IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s`n`nSet click chance: %clickchance%`%`nActual click chance: %clickpercentage%`%`nTotal random clicks: %rightclick%
-
-EnableButton()
-return
-
-info:
-DisableHotkey()
-IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
-IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
-IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-IniRead, logout, LLARS Config.ini, Logout, option
-IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
-IniRead, chance, LLARS Config.ini, Random Sleep, chance
-IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-IniRead, hkbp, Config.ini, Bank Preset, hotkey
-IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
-
-if (hk = "")
-{
-hk = Not Set
-}
-if (hkbp = "")
-{
-	hkbp = Not Set
-}
-
-WinGetPos, GUIxc, GUIyc,,,LLARS
-IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
-IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
-
-Gui 1: hide
-Gui 3: hide	
-Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
-Gui 20: Font, S13 bold cMaroon
-Gui 20: Add, Text, Center w220 x5,%scriptname%
-Gui 20: Font, s11 Bold underline cTeal
-Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
-Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
-Gui 20: Add, Text, center x5 w220,
-Gui 20: Font, Bold underline cPurple
-Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
-Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%`nRandom Click Chance: %clickchance%`%
-Gui 20: Add, Text, center x5 w220,
-Gui 20: Font, italic s10 c0x152039
-Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
-Gui 20: Font, cBlue norm underline bold s11
-Gui 20: Add, Text, Center gMIT w220 x5,MIT License
-Gui 20: Font, s11 norm Bold c0x152039
-Gui 20: Add, Text, Center w220 x5,Created by Gubna
-Gui 20: Font, cBlack norm bold
-Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
-Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
-Gui 20: Add, Button, gDiscord w150 x40 center,Discord
-Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
-WinSet, ExStyle, ^0x80
-Gui 20: -caption
-Gui 20: Show, center w230, Information
-return
-
-CloseInfo:
-EnableHotkey()
-gui 20: destroy
-gui 1: Show		
-return
-
-discord:
-EnableHotkey()
-Gui 20: destroy
-Run, https://discord.gg/Wmmf65myPG
-gui 1: Show		
-return
-
-InfoConfig:
-EnableHotkey()
-Run %A_ScriptDir%\Config.ini
-return
-
-InfoLLARS:
-EnableHotkey()
-Run %A_ScriptDir%\LLARS Config.ini
-return
-
-GitLink:
-run, https://github.com/Gubna-Tech/RuneScape
-Exitapp
-
-DiscordError:
-Run, https://discord.gg/Wmmf65myPG
-Exitapp
-
-CloseError:	
-ExitApp
-
-CloseGNF:
-GUI GNF: Destroy
-if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
-if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
-Menu, Tray, NoIcon
-Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-Gui Client: Font, S13 bold underline cRed
-Gui Client: Add, Text, Center w220 x5,ERROR
-Gui Client: Add, Text, center x5 w220,
-Gui Client: Font, s12 norm bold
-Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found.
-Gui Client: Add, Text, center x5 w220,
-Gui Client: Font, cBlack
-Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropriate client for your account.
-Gui Client: Add, Text, center x5 w220,
-Gui Client: Add, Button, gJagex w150 x40 center,Jagex
-Gui Client: Add, Button, gRuneScape w150 x40 center,RuneScape
-WinSet, ExStyle, ^0x80
-Gui Client: -caption
-Gui Client: Show, center w230, Multiple Client
-return
-} else {
-Gui 1: Show
-Run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
-}
-} else if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
-Gui 1: Show
-Run "rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws"
-} else {
-Menu, Tray, NoIcon
-Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-Gui Client: Font, S13 bold underline cRed
-Gui Client: Add, Text, Center w220 x5,ERROR
-Gui Client: Add, Text, center x5 w220,
-Gui Client: Font, s12 norm bold
-Gui Client: Add, Text, Center w220 x5, Neither RuneScape Nor Jagex Launcher Were Found.
-Gui Client: Add, Text, center x5 w220,
-Gui Client: Font, cBlack
-Gui Client: Add, Text, Center w220 x5, No game client was detected in its expected location, please manually launch RuneScape.
-Gui Client: Add, Text, center x5 w220,
-Gui Client: Add, Text, Center w220 x5, Please ensure that RuneScape is open before attempting to start the script again.
-Gui Client: Add, Text, center x5 w220,
-Gui Client: Add, Button, gCloseClient w150 x40 center,Close Error
-WinSet, ExStyle, ^0x80
-Gui Client: -caption
-Gui Client: Show, center w230, No Client Detected
-return
-}
-return
-
-CloseClient:
-Gui Client: Destroy
-Gui 1: Show
-return
-
-Jagex:
-GUI Client: Destroy
-Gui 1: Show
-run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
-return
-
-RuneScape:
-GUI Client: Destroy
-Gui 1: Show
-run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
-return
-
-MIT:
-run https://github.com/Gubna-Tech/RuneScape/blob/main/LICENSE
-return
+	
+	EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+	EndTime := A_TickCount
+	TotalTime := (EndTime - StartTime) / 1000
+	AverageTime := TotalTime / runcount3
+	
+	TotalTimeHours := Floor(TotalTime / 3600)
+	TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
+	TotalTimeSeconds := Mod(TotalTime, 60)
+	
+	AverageTimeMinutes := Floor(AverageTime / 60)
+	AverageTimeSeconds := Mod(AverageTime, 60)
+	
+	TotalTimeHours := Round(TotalTimeHours)
+	TotalTimeMinutes := Round(TotalTimeMinutes)
+	TotalTimeSeconds := Round(TotalTimeSeconds)
+	AverageTimeMinutes := Round(AverageTimeMinutes)
+	AverageTimeSeconds := Round(AverageTimeSeconds)
+	
+	percentage := Round((sleepcount / runcount) * 100)
+	clickpercentage := Round((rightclick / runcount) * 100)
+	
+	totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
+	TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
+	TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
+	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
+	
+	SoundPlay, C:\Windows\Media\Ring06.wav, 1
+	IniRead, chance, LLARS Config.ini, Random Sleep, chance
+	IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
+	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
+	
+	EnableButton()
+	return
+	
+	info:
+	DisableHotkey()
+	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	IniRead, logout, LLARS Config.ini, Logout, option
+	IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
+	IniRead, chance, LLARS Config.ini, Random Sleep, chance
+	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
+	IniRead, hkbp, Config.ini, Bank Preset, hotkey
+	IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
+	
+	if (hk = "")
+	{
+		hk = Not Set
+	}
+	if (hkbp = "")
+	{
+		hkbp = Not Set
+	}
+	
+	WinGetPos, GUIxc, GUIyc,,,LLARS
+	IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+	IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+	
+	Gui 1: hide
+	Gui 3: hide	
+	Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
+	Gui 20: Font, S13 bold cMaroon
+	Gui 20: Add, Text, Center w220 x5,%scriptname%
+	Gui 20: Font, s11 Bold underline cTeal
+	Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
+	Gui 20: Font, Norm
+	Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
+	Gui 20: Add, Text, center x5 w220,
+	Gui 20: Font, Bold underline cPurple
+	Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
+	Gui 20: Font, Norm
+	Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
+	Gui 20: Add, Text, center x5 w220,
+	Gui 20: Font, italic s10 c0x152039
+	Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
+	Gui 20: Font, cBlue norm underline bold s11
+	Gui 20: Add, Text, Center gMIT w220 x5,MIT License
+	Gui 20: Font, s11 norm Bold c0x152039
+	Gui 20: Add, Text, Center w220 x5,Created by Gubna
+	Gui 20: Font, cBlack norm bold
+	Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
+	Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
+	Gui 20: Add, Button, gDiscord w150 x40 center,Discord
+	Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
+	WinSet, ExStyle, ^0x80
+	Gui 20: -caption
+	Gui 20: Show, center w230, Information
+	return
+	
+	CloseInfo:
+	EnableHotkey()
+	gui 20: destroy
+	gui 1: Show		
+	return
+	
+	discord:
+	EnableHotkey()
+	Gui 20: destroy
+	Run, https://discord.gg/Wmmf65myPG
+	gui 1: Show		
+	return
+	
+	InfoConfig:
+	EnableHotkey()
+	Run %A_ScriptDir%\Config.ini
+	return
+	
+	InfoLLARS:
+	EnableHotkey()
+	Run %A_ScriptDir%\LLARS Config.ini
+	return
+	
+	GitLink:
+	run, https://github.com/Gubna-Tech/RuneScape
+	Exitapp
+	
+	DiscordError:
+	Run, https://discord.gg/Wmmf65myPG
+	Exitapp
+	
+	CloseError:	
+	ExitApp
+	
+	CloseGNF:
+	GUI GNF: Destroy
+	if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
+		if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
+			Menu, Tray, NoIcon
+			Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
+			Gui Client: Font, S13 bold underline cRed
+			Gui Client: Add, Text, Center w220 x5,ERROR
+			Gui Client: Add, Text, center x5 w220,
+			Gui Client: Font, s12 norm bold
+			Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found.
+			Gui Client: Add, Text, center x5 w220,
+			Gui Client: Font, cBlack
+			Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropriate client for your account.
+			Gui Client: Add, Text, center x5 w220,
+			Gui Client: Add, Button, gJagex w150 x40 center,Jagex
+			Gui Client: Add, Button, gRuneScape w150 x40 center,RuneScape
+			WinSet, ExStyle, ^0x80
+			Gui Client: -caption
+			Gui Client: Show, center w230, Multiple Client
+			return
+		} else {
+			Gui 1: Show
+			Run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+		}
+	} else if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
+		Gui 1: Show
+		Run "rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws"
+	} else {
+		Menu, Tray, NoIcon
+		Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
+		Gui Client: Font, S13 bold underline cRed
+		Gui Client: Add, Text, Center w220 x5,ERROR
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Font, s12 norm bold
+		Gui Client: Add, Text, Center w220 x5, Neither RuneScape Nor Jagex Launcher Were Found.
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Font, cBlack
+		Gui Client: Add, Text, Center w220 x5, No game client was detected in its expected location, please manually launch RuneScape.
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Add, Text, Center w220 x5, Please ensure that RuneScape is open before attempting to start the script again.
+		Gui Client: Add, Text, center x5 w220,
+		Gui Client: Add, Button, gCloseClient w150 x40 center,Close Error
+		WinSet, ExStyle, ^0x80
+		Gui Client: -caption
+		Gui Client: Show, center w230, No Client Detected
+		return
+	}
+	return
+	
+	CloseClient:
+	Gui Client: Destroy
+	Gui 1: Show
+	return
+	
+	Jagex:
+	GUI Client: Destroy
+	Gui 1: Show
+	run "C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe"
+	return
+	
+	RuneScape:
+	GUI Client: Destroy
+	Gui 1: Show
+	run rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+	return
+	
+	MIT:
+	run https://github.com/Gubna-Tech/RuneScape/blob/main/LICENSE
+	return
