@@ -790,259 +790,209 @@ clickcount = 0
 
 loop % runcount
 { 	
-		IfWinNotActive, RuneScape
-		{
-			WinActivate, RuneScape
-		}
-		
-		++count
-		++count2
-		
-		GuiControl,,Counter, %count%
-		GuiControl,,Counter2, %count2% / %runcount3%
-		GuiControl,,ScriptBlue, %scriptname%
-		GuiControl,,State3, Running
-		DisableButton()
-		
-		IniRead, option,Config.ini, Renew, option
-		if option=true
-			if prime=0
-			{
-				++prime
-				IniRead, portables, Config.ini, Renew, portables
-				PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
-				
-				SetTimer, UpdateTime, 1000
-				
-				CoordMode, Mouse, Window
-				IniRead, x1, Config.ini, Bank, xmin
-				IniRead, x2, Config.ini, Bank, xmax
-				IniRead, y1, Config.ini, Bank, ymin
-				IniRead, y2, Config.ini, Bank, ymax
-				Random, x, %x1%, %x2%
-				Random, y, %y1%, %y2%
-				Click, %x%, %y%
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				IniRead, hk, Config.ini, Renew, bank hotkey
-				send {%hk%}
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				IniRead, hk, Config.ini, Renew, toolbar hotkey
-				send {%hk%}
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				send {1}
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				IniRead, portables, Config.ini, Renew, portables
-				sendraw {%portables%}
-				
-				IniRead, sa1, Config.ini, Sleep Brief, min
-				IniRead, sa2, Config.ini, Sleep Brief, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%    
-				
-				send {enter}
-			}
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Bank, xmin
-		IniRead, x2, Config.ini, Bank, xmax
-		IniRead, y1, Config.ini, Bank, ymin
-		IniRead, y2, Config.ini, Bank, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		send {%hkbank%}
-		
-		IniRead, option, LLARS Config.ini, Random Sleep, option
-		if option = true
-		{
-			IniRead, chance, LLARS Config.ini, Random Sleep, chance
-			Random, RandomNumber, 1, 100
-			
-			IniRead, rs2, LLARS Config.ini, Random Sleep, max
-			if  (RandomNumber <= chance and PortableRemainingTime >= rs2)
-			{
-				++sleepcount
-				GuiControl,, ScriptBlue, Random Sleep
-				GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
-				
-				IniRead, rs1, LLARS Config.ini, Random Sleep, min
-				IniRead, rs2, LLARS Config.ini, Random Sleep, max
-				Random, RandomSleepAmount, %rs1%, %rs2%
-				
-				SetTimer, UpdateCountdown, 1000
-				EndTime := A_TickCount + RandomSleepAmount
-				totalSleepTime += RandomSleepAmount
-				Sleep, RandomSleepAmount
-				SetTimer, UpdateCountdown, Off
-				
-				GuiControl,,ScriptBlue, %scriptname%
-				GuiControl,,State3, Running
-			}
-		}
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Sleep, %SleepAmount%
-		
-		CoordMode, Mouse, Window
-		IniRead, x1, Config.ini, Brazier, xmin
-		IniRead, x2, Config.ini, Brazier, xmax
-		IniRead, y1, Config.ini, Brazier, ymin
-		IniRead, y2, Config.ini, Brazier, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Click, %x%, %y%
-		
-		IniRead, sa1, Config.ini, Sleep Fire, min
-		IniRead, sa2, Config.ini, Sleep Fire, max
-		Random, SleepAmount, %sa1%, %sa2%
-		
-		SleepStart := A_TickCount
-		Loop
-		{
-			IniRead, chance, LLARS Config.ini, Random Right-Click, chance
-			Random, RandomNumber, 1, 100
-			if (RandomNumber >=1 and RandomNumber <= chance and ClickCount = 0) {
-				++clickcount
-				++rightclick
-				
-				IniRead, min, LLARS Config.ini, Random Right-Click, min
-				IniRead, max, LLARS Config.ini, Random Right-Click, max
-				Random, RandomDelay, %min%, %max%
-				DelayStart := A_TickCount
-				while (A_TickCount - DelayStart < RandomDelay) {
-				}
-				
-				WinGetPos, RSx, RSy, RSw, RSh, RuneScape
-				MouseGetPos, MouseX, MouseY
-				
-				xmin := Round(MouseX - RSx)*0.1
-				xmax := Round(RSw - RSx - MouseX)*0.1
-				ymin := Round(MouseY - RSy)*0.1
-				ymax := Round(RSh - RSy - MouseY)*0.1
-				
-				CoordMode, Mouse, Window
-				Random, x, %xmin%, %xmax%
-				Random, y, %ymin%, %ymax%
-				Random, RandomSpeed, 25, 100
-				mousemove, %x%, %y%, %RandomSpeed%, r
-				
-				IniRead, sa1, Config.ini, Sleep brief, min
-				IniRead, sa2, Config.ini, Sleep brief, max
-				Random, SleepAmountBrief, %sa1%, %sa2%
-				Sleep, %SleepAmountBrief%
-				
-				mouseclick, r
-			}
-			
-			if (RandomNumber >= chance and ClickCount = 0) {
-				++clickcount
-			}
-			
-			if (A_TickCount - SleepStart >= SleepAmount)
-			{
-				clickcount = 0
-				break
-			}
-			
-			Sleep 250
-		}	
-		
-		IniRead, option,Config.ini, Renew, option
-		if option=true
-			if (PortableRemainingTime <= 60000)
-			{	
-				CoordMode, Mouse, Window
-				IniRead, x1, Config.ini, Bank, xmin
-				IniRead, x2, Config.ini, Bank, xmax
-				IniRead, y1, Config.ini, Bank, ymin
-				IniRead, y2, Config.ini, Bank, ymax
-				Random, x, %x1%, %x2%
-				Random, y, %y1%, %y2%
-				Click, %x%, %y%
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				IniRead, hk, Config.ini, Renew, bank hotkey
-				send {%hk%}
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				IniRead, hk, Config.ini, Renew, toolbar hotkey
-				send {%hk%}
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				send {1}
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				IniRead, portables, Config.ini, Renew, portables
-				sendraw {%portables%}
-				
-				IniRead, sa1, Config.ini, Sleep Brief, min
-				IniRead, sa2, Config.ini, Sleep Brief, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-				
-				Send {enter}
-				
-				IniRead, portables, Config.ini, Renew, portables
-				PortableRemainingTime := portables * 5 * 60 * 1000
-				
-				SetTimer, UpdateTime, 1000
-				
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				Sleep, %SleepAmount%
-			}
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
 	}
+	
+	++count
+	++count2
+	
+	GuiControl,,Counter, %count%
+	GuiControl,,Counter2, %count2% / %runcount3%
+	GuiControl,,ScriptBlue, %scriptname%
+	GuiControl,,State3, Running
+	DisableButton()
+	
+	IniRead, option,Config.ini, Renew, option
+	if option=true
+		if prime=0
+		{
+			++prime
+			IniRead, portables, Config.ini, Renew, portables
+			PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
+			
+			SetTimer, UpdateTime, 1000
+			
+			CoordMode, Mouse, Window
+			IniRead, x1, Config.ini, Bank, xmin
+			IniRead, x2, Config.ini, Bank, xmax
+			IniRead, y1, Config.ini, Bank, ymin
+			IniRead, y2, Config.ini, Bank, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, bank hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, toolbar hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			send {1}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, portables, Config.ini, Renew, portables
+			sendraw {%portables%}
+			
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%    
+			
+			send {enter}
+		}
+	
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, Config.ini, Bank, xmin
+	IniRead, x2, Config.ini, Bank, xmax
+	IniRead, y1, Config.ini, Bank, ymin
+	IniRead, y2, Config.ini, Bank, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%
+	
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	IniRead, hkbank, Config.ini, Bank Preset, hotkey
+	send {%hkbank%}
+	
+	IniRead, option, LLARS Config.ini, Random Sleep, option
+	if option = true
+	{
+		IniRead, chance, LLARS Config.ini, Random Sleep, chance
+		Random, RandomNumber, 1, 100
+		
+		IniRead, rs2, LLARS Config.ini, Random Sleep, max
+		if  (RandomNumber <= chance and PortableRemainingTime >= rs2)
+		{
+			++sleepcount
+			GuiControl,, ScriptBlue, Random Sleep
+			GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
+			
+			IniRead, rs1, LLARS Config.ini, Random Sleep, min
+			IniRead, rs2, LLARS Config.ini, Random Sleep, max
+			Random, RandomSleepAmount, %rs1%, %rs2%
+			
+			SetTimer, UpdateCountdown, 1000
+			EndTime := A_TickCount + RandomSleepAmount
+			totalSleepTime += RandomSleepAmount
+			Sleep, RandomSleepAmount
+			SetTimer, UpdateCountdown, Off
+			
+			GuiControl,,ScriptBlue, %scriptname%
+			GuiControl,,State3, Running
+		}
+	}
+	
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, Config.ini, Brazier, xmin
+	IniRead, x2, Config.ini, Brazier, xmax
+	IniRead, y1, Config.ini, Brazier, ymin
+	IniRead, y2, Config.ini, Brazier, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%
+	
+	IniRead, sa1, Config.ini, Sleep Fire, min
+	IniRead, sa2, Config.ini, Sleep Fire, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	IniRead, option,Config.ini, Renew, option
+	if option=true
+		if (PortableRemainingTime <= 60000)
+		{	
+			CoordMode, Mouse, Window
+			IniRead, x1, Config.ini, Bank, xmin
+			IniRead, x2, Config.ini, Bank, xmax
+			IniRead, y1, Config.ini, Bank, ymin
+			IniRead, y2, Config.ini, Bank, ymax
+			Random, x, %x1%, %x2%
+			Random, y, %y1%, %y2%
+			Click, %x%, %y%
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, bank hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, hk, Config.ini, Renew, toolbar hotkey
+			send {%hk%}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			send {1}
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			IniRead, portables, Config.ini, Renew, portables
+			sendraw {%portables%}
+			
+			IniRead, sa1, Config.ini, Sleep Brief, min
+			IniRead, sa2, Config.ini, Sleep Brief, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+			
+			Send {enter}
+			
+			IniRead, portables, Config.ini, Renew, portables
+			PortableRemainingTime := portables * 5 * 60 * 1000
+			
+			SetTimer, UpdateTime, 1000
+			
+			IniRead, sa1, Config.ini, Sleep Short, min
+			IniRead, sa2, Config.ini, Sleep Short, max
+			Random, SleepAmount, %sa1%, %sa2%
+			Sleep, %SleepAmount%
+		}
+}
 	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
@@ -1096,7 +1046,7 @@ TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
 IniRead, clickchance, LLARS Config.ini, Random Right-Click, chance
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s`n`nSet click chance: %clickchance%`%`nActual click chance: %clickpercentage%`%`nTotal random clicks: %rightclick%
+MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 
 EnableButton()
 return
@@ -1135,7 +1085,7 @@ Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%`nRandom Click Chance: %clickchance%`%
+Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, italic s10 c0x152039
 Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
