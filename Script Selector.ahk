@@ -30,7 +30,7 @@ if (InStr(A_ScriptDir, ".zip" or ".rar") > 0) {
 	return
 }
 
-scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Armour Crafter - Portables - Walking|Arrow Fletcher|Ash 2 Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Cape Cleaner - Herblore (Skillcape Perk)|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Decoration Maker|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Flatpack Maker - Portables - Non-Walking|Flatpack Maker - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb 2 Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Protean Bar - Normal|Protean Bar - Unstable|Protean Cog - Normal|Protean Cog - Unstable|Protean Essence - Normal|Protean Essence - Unstable|Protean Hide - Normal|Protean Hide - Unstable|Protean Logs - Fletch - Normal|Protean Logs - Fletch - Unstable|Protean Logs - Fletch/Burn - Normal|Protean Logs - Fletch/Burn - Unstable|Protean Memory - Normal|Protean Memory - Unstable|Protean Plank - Normal|Protean Plank - Unstable|Protean Protein - Normal|Protean Protein - Unstable|Protean Shake - Normal|Protean Shake - Unstable|Protean Trap|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|"
+scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Armour Crafter - Portables - Walking|Arrow Fletcher|Ash 2 Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Cape Cleaner - Herblore (Skillcape Perk)|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Decoration Maker|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Flatpack Maker - Portables - Non-Walking|Flatpack Maker - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb 2 Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Protean Bar - Normal|Protean Bar - Unstable|Protean Cog - Normal|Protean Cog - Unstable|Protean Essence - Normal|Protean Essence - Unstable|Protean Hide - Normal|Protean Hide - Unstable|Protean Logs - Fletch - Normal|Protean Logs - Fletch - Unstable|Protean Logs - Fletch/Burn - Normal|Protean Logs - Fletch/Burn - Unstable|Protean Memory - Normal|Protean Memory - Unstable|Protean Plank - Normal|Protean Plank - Unstable|Protean Protein - Normal|Protean Protein - Unstable|Protean Shake - Normal|Protean Shake - Unstable|Protean Trap|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|"
 
 ScriptTotal := StrSplit(scriptArray, "|").Length()
 
@@ -871,6 +871,24 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Firemaking - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
+		Gui Info: Font, S12 cBlack
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
+		WinSet, ExStyle, ^0x80
+		Gui Info: -caption
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
+		GuiBalance()
+		
+		Case "Fletching - Corrupted Magic Logs":
+		script := "Fletching"
+		scriptinfo := "Fletches corrupted magic logs. This method 'destroys' the log and leaves the inventory empty."
+		GuiReset()
+		GuiBorderB()
+		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+		Gui Info: Color, White
+		Gui Info: Font, s14 bold underline cBlue
+		Gui Info: Add, Text, center x5 w480, %Script%
+		Gui Info: Font, s13 normal bold cGreen
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Beginner
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		WinSet, ExStyle, ^0x80
@@ -2838,6 +2856,13 @@ Switch selectedScript
 	script := "Contract Binding"
 	Gui destroy
 	SetWorkingDir, %A_ScriptDir%\%script%
+	Run, %script%.ahk
+	Goto exit
+	
+	Case "Fletching - Corrupted Magic Logs":
+	script := "Fletching"
+	Gui destroy
+	SetWorkingDir, %A_ScriptDir%\Fletching - Corrupted Magic Logs
 	Run, %script%.ahk
 	Goto exit
 }
