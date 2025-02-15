@@ -734,8 +734,8 @@ loop % runcount
 	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
 	send {%hk%}
 	
-	IniRead, sa1, Config.ini, Sleep Normal, min
-	IniRead, sa2, Config.ini, Sleep Normal, max
+	IniRead, sa1, Config.ini, Sleep Short, min
+	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
 	
