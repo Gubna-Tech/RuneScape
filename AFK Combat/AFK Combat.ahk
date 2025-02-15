@@ -451,6 +451,40 @@ ConfigError(){
 		}
 	}
 	
+	IniRead, option, Config.ini, Binding Contract, option
+	if option=true
+	{
+		IniRead, x1, Config.ini, Notepaper - Binding Contract, xmin
+		IniRead, x2, Config.ini, Notepaper - Binding Contract, xmax
+		IniRead, y1, Config.ini, Notepaper - Binding Contract, ymin
+		IniRead, y2, Config.ini, Notepaper - Binding Contract, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates in the Config for [Notepaper - Binding Contract].
+			reload
+		}
+	}
+	
+	IniRead, option, Config.ini, Binding Contract, option
+	if option=true
+	{
+		IniRead, x1, Config.ini, Contract - Binding Contract, xmin
+		IniRead, x2, Config.ini, Contract - Binding Contract, xmax
+		IniRead, y1, Config.ini, Contract - Binding Contract, ymin
+		IniRead, y2, Config.ini, Contract - Binding Contract, ymax
+		if (x1 = "" or x2 = "" or y1 = "" or y2 = "")
+		{
+			Run %A_ScriptDir%\Config.ini
+			GuiControl,,ScriptRed, CONFIG		
+			GuiControl,,State2, ERROR
+			MsgBox, 4112, Config Error, Please enter valid coordinates in the Config for [Contract - Binding Contract].
+			reload
+		}
+	}
+	
 	IniRead, option, LLARS Config.ini, Logout, option
 	if option=true
 	{
@@ -505,7 +539,7 @@ Gui 2: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "Sleep Brief|Sleep Normal|Sleep Short|agro|prayer|afk|heal|strength|attack|magic|ranged|overload|warmaster|antifire|antipoison|weapon poison|animate dead|vecna skull|ancient elven ritual shard|incense sticks|prayer powder|summon|saradomin brew|loot|"
+excludedSections := "Sleep Brief|Sleep Normal|Sleep Short|agro|prayer|afk|heal|strength|attack|magic|ranged|overload|warmaster|antifire|antipoison|weapon poison|animate dead|vecna skull|ancient elven ritual shard|incense sticks|prayer powder|summon|saradomin brew|loot|binding contract|sleep brief|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -692,7 +726,7 @@ Gui 3: Font, s11 Bold
 DisableHotkey()
 
 IniRead, allContents, Config.ini
-excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|prayer|afk|heal|loot|cannon restock|"
+excludedSections := "|Sleep Brief|Sleep Normal|Sleep Short|prayer|afk|heal|loot|cannon restock|binding contract|Notepaper - Binding Contract|Contract - Binding Contract|sleep brief|"
 
 sectionList := " ***** Make a Selection ***** "
 
@@ -854,6 +888,7 @@ if (remainingTimeMS <= 0 and startcheck=1)
 	SetTimer, Summon, Off
 	SetTimer, Loot, Off
 	SetTimer, CannonRestock, Off
+	SetTimer, BindingContract, off
 	GuiControl,, TimerCount, Done
 	GuiControl,,State3, Done
 	EnableButton()
@@ -1537,6 +1572,20 @@ if option=true
 	tooltip
 }
 
+IniRead, option,Config.ini, Binding Contract, option
+if option=true
+{
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Binding Contract, min
+	IniRead, sa2, Config.ini, Binding Contract, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, BindingContract, %sleepamount%
+}
 return
 
 Agro:
@@ -2094,6 +2143,52 @@ CannonRestock:
 		sleep 25
 	}
 	
+	tooltip
+}
+return
+
+BindingContract:
+{
+	IfWinNotActive, RuneScape
+	{
+		WinActivate, RuneScape
+	}
+	DisableButton()
+	
+	IniRead, sa1, Config.ini, Binding Contract, min
+	IniRead, sa2, Config.ini, Binding Contract, max
+	Random, SleepAmount, %sa1%, %sa2%
+	settimer, BindingContract, %sleepamount%
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, Config.ini, Notepaper - Binding Contract, xmin
+	IniRead, x2, Config.ini, Notepaper - Binding Contract, xmax
+	IniRead, y1, Config.ini, Notepaper - Binding Contract, ymin
+	IniRead, y2, Config.ini, Notepaper - Binding Contract, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%
+	
+	IniRead, sa1, Config.ini, Sleep Brief, min
+	IniRead, sa2, Config.ini, Sleep Brief, max
+	Random, SleepAmount, %sa1%, %sa2%
+	Sleep, %SleepAmount%
+	
+	CoordMode, Mouse, Window
+	IniRead, x1, Config.ini, Contract - Binding Contract, xmin
+	IniRead, x2, Config.ini, Contract - Binding Contract, xmax
+	IniRead, y1, Config.ini, Contract - Binding Contract, ymin
+	IniRead, y2, Config.ini, Contract - Binding Contract, ymax
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+	Click, %x%, %y%
+	
+	loop 100
+	{
+		mousegetpos xm, ym
+		tooltip, Noted Binding Contract, (xm+15), (ym+15),1
+		sleep 25
+	}
 	tooltip
 }
 return
