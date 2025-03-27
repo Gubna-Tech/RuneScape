@@ -760,13 +760,41 @@ loop % runcount
 	
 	TargetX := RightClickX + XOffset
 	TargetY := RightClickY + YOffset
-
+	
 	MouseClick, left, %TargetX%, %TargetY%
 	
 	IniRead, sa1, Config.ini, Sleep Short, min
 	IniRead, sa2, Config.ini, Sleep Short, max
 	Random, SleepAmount, %sa1%, %sa2%
 	Sleep, %SleepAmount%
+	
+	IniRead, option, LLARS Config.ini, Random Sleep, option
+	if option = true
+	{
+		IniRead, chance, LLARS Config.ini, Random Sleep, chance
+		Random, RandomNumber, 1, 100
+		
+		if % RandomNumber <= chance
+		{
+			
+			++sleepcount
+			GuiControl,, ScriptBlue, Random Sleep
+			GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
+			
+			IniRead, rs1, LLARS Config.ini, Random Sleep, min
+			IniRead, rs2, LLARS Config.ini, Random Sleep, max
+			Random, RandomSleepAmount, %rs1%, %rs2%
+			
+			SetTimer, UpdateCountdown, 1000
+			EndTime := A_TickCount + RandomSleepAmount
+			totalSleepTime += RandomSleepAmount
+			Sleep, RandomSleepAmount
+			SetTimer, UpdateCountdown, Off
+			
+			GuiControl,,ScriptBlue, %scriptname%
+			GuiControl,,State3, Running
+		}
+	}
 	
 	send {space}
 	
@@ -794,132 +822,125 @@ loop % runcount
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Click, %x%, %y%
-	}
-	
-	GuiControl,,ScriptGreen, %scriptname%
-	GuiControl,,State1, Finished
-	
-	EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
-	EndTime := A_TickCount
-	TotalTime := (EndTime - StartTime) / 1000
-	AverageTime := TotalTime / runcount3
-	
-	TotalTimeHours := Floor(TotalTime / 3600)
-	TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
-	TotalTimeSeconds := Mod(TotalTime, 60)
-	
-	AverageTimeMinutes := Floor(AverageTime / 60)
-	AverageTimeSeconds := Mod(AverageTime, 60)
-	
-	TotalTimeHours := Round(TotalTimeHours)
-	TotalTimeMinutes := Round(TotalTimeMinutes)
-	TotalTimeSeconds := Round(TotalTimeSeconds)
-	AverageTimeMinutes := Round(AverageTimeMinutes)
-	AverageTimeSeconds := Round(AverageTimeSeconds)
-	
-	percentage := Round((sleepcount / runcount) * 100)
-	clickpercentage := Round((rightclick / runcount) * 100)
-	
-	totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
-	TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
-	TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
-	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
-	
-	SoundPlay, C:\Windows\Media\Ring06.wav, 1
-	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: disabled`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
-	
-	EnableButton()
-	return
-	
-	info:
-	DisableHotkey()
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	IniRead, logout, LLARS Config.ini, Logout, option
-	
-	if (hk = "")
-	{
-		hk = Not Set
-	}
-	if (hkbp = "")
-	{
-		hkbp = Not Set
-	}
-	
-	WinGetPos, GUIxc, GUIyc,,,LLARS
-	IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
-	IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
-	
-	Gui 1: hide
-	Gui 3: hide	
-	Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
-	Gui 20: Font, S13 bold cMaroon
-	Gui 20: Add, Text, Center w220 x5,%scriptname%
-	Gui 20: Font, s11 Bold underline cTeal
-	Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
-	Gui 20: Font, Norm
-	Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%
-	Gui 20: Add, Text, center x5 w220,
-	Gui 20: Font, Bold underline cPurple
-	Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
-	Gui 20: Font, Norm
-	Gui 20: Add, Text, Center w220 x5,Logout: %logout%
-	Gui 20: Add, Text, center x5 w220,
-	Gui 20: Font, italic s10 c0x152039
-	Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
-	Gui 20: Font, cBlue norm underline bold s11
-	Gui 20: Add, Text, Center gMIT w220 x5,MIT License
-	Gui 20: Font, s11 norm Bold c0x152039
-	Gui 20: Add, Text, Center w220 x5,Created by Gubna
-	Gui 20: Font, cBlack norm bold
-	Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
-	Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
-	Gui 20: Add, Button, gDiscord w150 x40 center,Discord
-	Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
-	WinSet, ExStyle, ^0x80
-	Gui 20: -caption
-	Gui 20: Show, center w230, Information
-	return
-	
-	CloseInfo:
-	EnableHotkey()
-	gui 20: destroy
-	gui 1: Show		
-	return
-	
-	discord:
-	EnableHotkey()
-	Gui 20: destroy
-	Run, https://discord.gg/Wmmf65myPG
-	gui 1: Show		
-	return
-	
-	InfoConfig:
-	EnableHotkey()
-	Run %A_ScriptDir%\Config.ini
-	return
-	
-	InfoLLARS:
-	EnableHotkey()
-	Run %A_ScriptDir%\LLARS Config.ini
-	return
-	
-	GitLink:
-	run, https://github.com/Gubna-Tech/RuneScape
-	Exitapp
-	
-	DiscordError:
-	Run, https://discord.gg/Wmmf65myPG
-	Exitapp
-	
-	CloseError:	
-	ExitApp
-	
-	CloseGNF:
-	GUI GNF: Destroy
-	if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
+}
+
+GuiControl,,ScriptGreen, %scriptname%
+GuiControl,,State1, Finished
+
+EndTimeStamp = %A_Hour%:%A_Min%:%A_Sec%
+EndTime := A_TickCount
+TotalTime := (EndTime - StartTime) / 1000
+AverageTime := TotalTime / runcount3
+
+TotalTimeHours := Floor(TotalTime / 3600)
+TotalTimeMinutes := Mod(Floor(TotalTime / 60), 60)
+TotalTimeSeconds := Mod(TotalTime, 60)
+
+AverageTimeMinutes := Floor(AverageTime / 60)
+AverageTimeSeconds := Mod(AverageTime, 60)
+
+TotalTimeHours := Round(TotalTimeHours)
+TotalTimeMinutes := Round(TotalTimeMinutes)
+TotalTimeSeconds := Round(TotalTimeSeconds)
+AverageTimeMinutes := Round(AverageTimeMinutes)
+AverageTimeSeconds := Round(AverageTimeSeconds)
+
+percentage := Round((sleepcount / runcount) * 100)
+clickpercentage := Round((rightclick / runcount) * 100)
+
+totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
+TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
+TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
+TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
+
+SoundPlay, C:\Windows\Media\Ring06.wav, 1
+MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSeconds%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSeconds%s`n`nStart time: %starttimestamp%`nEnd time: %endtimestamp%`n`nSet sleep chance: disabled`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
+
+EnableButton()
+return
+
+info:
+DisableHotkey()
+IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, config/resume
+IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+IniRead, logout, LLARS Config.ini, Logout, option
+IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
+IniRead, chance, LLARS Config.ini, Random Sleep, chance
+
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
+Gui 1: hide
+Gui 3: hide	
+Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
+Gui 20: Font, S13 bold cMaroon
+Gui 20: Add, Text, Center w220 x5,%scriptname%
+Gui 20: Font, s11 Bold underline cTeal
+Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
+Gui 20: Font, Norm
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%
+Gui 20: Add, Text, center x5 w220,
+Gui 20: Font, Bold underline cPurple
+Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
+Gui 20: Font, Norm
+Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
+Gui 20: Add, Text, center x5 w220,
+Gui 20: Font, italic s10 c0x152039
+Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
+Gui 20: Font, cBlue norm underline bold s11
+Gui 20: Add, Text, Center gMIT w220 x5,MIT License
+Gui 20: Font, s11 norm Bold c0x152039
+Gui 20: Add, Text, Center w220 x5,Created by Gubna
+Gui 20: Font, cBlack norm bold
+Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
+Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
+Gui 20: Add, Button, gDiscord w150 x40 center,Discord
+Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
+WinSet, ExStyle, ^0x80
+Gui 20: -caption
+Gui 20: Show, center w230, Information
+return
+
+CloseInfo:
+EnableHotkey()
+gui 20: destroy
+gui 1: Show		
+return
+
+discord:
+EnableHotkey()
+Gui 20: destroy
+Run, https://discord.gg/Wmmf65myPG
+gui 1: Show		
+return
+
+InfoConfig:
+EnableHotkey()
+Run %A_ScriptDir%\Config.ini
+return
+
+InfoLLARS:
+EnableHotkey()
+Run %A_ScriptDir%\LLARS Config.ini
+return
+
+GitLink:
+run, https://github.com/Gubna-Tech/RuneScape
+Exitapp
+
+DiscordError:
+Run, https://discord.gg/Wmmf65myPG
+Exitapp
+
+CloseError:	
+ExitApp
+
+CloseGNF:
+GUI GNF: Destroy
+if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe") {
 		if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe") {
 			Menu, Tray, NoIcon
 			Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
