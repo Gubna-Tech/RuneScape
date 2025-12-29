@@ -881,7 +881,7 @@ loop % runcount
 	DisableButton()
 	
 	IniRead, option, Config.ini, Powder of burials, option
-	if (option = true)
+	if (%option% = true)
 		if prime=0
 		{
 			++prime
@@ -920,7 +920,7 @@ loop % runcount
 		}
 	
 	IniRead, option, Config.ini, beast of burden, option
-	if (option = true)
+	if (%option% = true)
 		if bobprime=0
 		{
 			++bobprime
