@@ -376,10 +376,7 @@ CheckConfigFile(file)
 			; If any rectangle coordinate exists, this is treated
 			; as a rectangle and all four values are required.
 			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
-			
-			; ------------------------------------------------------
-			; Single pixel coordinate: x / y
-			; ------------------------------------------------------
+
 			if (hasPointCoordinates)
 			{
 				if (x = "ERROR" || Trim(x) = "")
@@ -395,9 +392,6 @@ CheckConfigFile(file)
 				}
 			}
 			
-			; ------------------------------------------------------
-			; Rectangle coordinate: xmin / xmax / ymin / ymax
-			; ------------------------------------------------------
 			else if (hasRectangleCoordinates)
 			{
 				if (xmin = "ERROR" || Trim(xmin) = "")
