@@ -19,16 +19,6 @@
 ### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
 
-<br>
-<h1 align="center">For the Best Experience</h3>
-<h3 align="center"> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * </h3>
-<h3 align="center"> It is recommended to use Script Selector.ahk to launch scripts</h3>
-<h3 align="center"> The Script Selector features a brief description of each script</h3>
-<h3 align="center"> and a difficulty rating for setting up each script.</h3>
-<h3 align="center"> * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * </h3>
-<h3 align="center">  </h3>
-<br>
-
 ## Requirements:
 To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
 
