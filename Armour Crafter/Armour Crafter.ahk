@@ -1443,6 +1443,11 @@ StartTimeStamp := A_Hour ":" A_Min ":" A_Sec
 
 Log("RUN START", "Starting " runcount3 " runs")
 
+; =========================================================================
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
+; =========================================================================
 
 ; ========================================================================
 ; |     MAIN RUN LOOP     -     MAIN RUN LOOP     -     MAIN RUN LOOP    |
@@ -1713,8 +1718,7 @@ Logout(){
 		Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
 		
 		Sleep, %SleepAmount%	
-		
-		CoordMode, Mouse, Screen
+
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin

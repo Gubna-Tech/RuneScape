@@ -1730,8 +1730,7 @@ Logout(){
 		Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
 		
 		Sleep, %SleepAmount%	
-		
-		CoordMode, Mouse, Screen
+
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin

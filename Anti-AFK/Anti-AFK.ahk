@@ -1812,9 +1812,6 @@ Logout(){
 		
 		Sleep, %SleepAmount%	
 		
-		; Logout coordinates are stored in screen coordinates rather than
-		; the normal client-relative coordinate mode.
-		CoordMode, Mouse, Screen
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin

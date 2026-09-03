@@ -1457,9 +1457,6 @@ Loop, %runcount%
 	
 	DisableButton()
 	
-		; Uses the configured Bank Coords rectangle.
-	CoordMode, Mouse, Window
-	
 	IniRead, x1, Config.ini, Bank Coords, xmin
 	IniRead, x2, Config.ini, Bank Coords, xmax
 	IniRead, y1, Config.ini, Bank Coords, ymin
@@ -1627,7 +1624,6 @@ Logout(){
 		
 		Sleep, %SleepAmount%	
 		
-		CoordMode, Mouse, Screen
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
