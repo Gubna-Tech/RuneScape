@@ -1691,9 +1691,6 @@ IfWinNotActive, RuneScape
 ; The original click and timer sequence is preserved.
 Log("AUTOCLICKER", "Random click routine started")
 
-; Uses client coordinates for the initial click.
-CoordMode, Mouse, Client
-
 ; Loads the configured rectangular Click location.
 IniRead, x1, Config.ini, Click, xmin
 IniRead, x2, Config.ini, Click, xmax
@@ -1840,7 +1837,6 @@ Logout(){
 		
 		; Logout coordinates are stored in screen coordinates rather than
 		; the normal client-relative coordinate mode.
-		CoordMode, Mouse, Screen
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
