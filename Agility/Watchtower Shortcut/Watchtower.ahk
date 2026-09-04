@@ -1,6 +1,7 @@
 ; ================================================================
 ; |     AHK CONFIG     -     AHK CONFIG     -     AHK CONFIG     |
 ; ================================================================
+#Requires AutoHotkey v1.1.37.02
 #SingleInstance Force
 #Persistent
 SetBatchLines, -1

@@ -12,7 +12,6 @@ SetBatchLines, -1
 
 ; Starts the logging session before any other script initialization so
 ; startup events and errors can be recorded from the beginning.
-LastLogTick := 0
 StartLogSession()
 Log("STARTUP", "Script started")
 
@@ -49,7 +48,7 @@ if (IsArchivePath)
 	Gui Error: Font, underline s12
 	Gui Error: Add, Text, cGreen center w220 x5, RuneScape-main.zip
 	Gui Error: Font, s11 norm Bold c0x152039
-	Gui Error: Add, Text, center x5 w220,
+	Gui Error: Add, Text, center x220 x5,
 	Gui Error: Add, Text, Center w220 x5,Created by Gubna
 	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
 	Gui Error: add, button, gCloseError w150 x40 center,Close Error
@@ -143,16 +142,15 @@ CoordMode, Mouse, Client
 coordcount = 0
 frcount = 0
 LastClickTime := 0
-clickspot := 1
 
 settimer, configcheck, 250
 
 scriptname := regexreplace(A_scriptname,"\..*","")
 
-Hotkey %lhk1%, Start
-Hotkey %lhk2%, Info
-Hotkey %lhk3%, Combo
-Hotkey %lhk4%, exitb
+Hotkey, %lhk1%, Start
+Hotkey, %lhk2%, Info
+Hotkey, %lhk3%, Combo
+Hotkey, %lhk4%, exitb
 
 ; ==================================================================
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
@@ -172,13 +170,13 @@ Gui, Font, s11
 Gui, font, bold
 Gui, Add, Button, x5 y5 w100 h25 gStart , Start
 Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
-Gui, Add, Button, x5 y35 w210 h25 gCombo, Color/Coordinate/Hotkey
+Gui, Add, Button, x5 y35 w210 h25 gCombo, Coordinate/Hotkey/Timer
 Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 Gui, Font, cBlue
 Gui, Add, Text, x135 y65 w70 h25 vState3
 Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
-Gui, Add, Text, x135 y90 w100 h25 vCounter
-Gui, Add, Text, x8 y90 w125 h25, Total Run Count
+Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
+Gui, Add, Text, x135 y90 w70 h25 vTimerCount
 GuiControl,,TimerLabel, Remaining:
 GuiControl,,TimerCount, ** OFF **
 Gui, Font, cRed
@@ -216,30 +214,8 @@ if FileExist("LLARS Logo.ico")
 Log(Event, Details := "")
 {
 	global LogCount
-	global LastLogTick
 	
 	FormatTime, LogTime,, yyyy-MM-dd HH:mm:ss
-	
-	; Calculate time since the previous logged event.
-	if (LastLogTick)
-	{
-		ElapsedMs := A_TickCount - LastLogTick
-		ElapsedSeconds := Floor(ElapsedMs / 1000)
-		ElapsedMinutes := Floor(ElapsedSeconds / 60)
-		ElapsedRemainingSeconds := Mod(ElapsedSeconds, 60)
-		
-		if (ElapsedMinutes > 0)
-			ElapsedText := ElapsedMinutes "m " ElapsedRemainingSeconds "s"
-		else
-			ElapsedText := ElapsedSeconds "s"
-	}
-	else
-	{
-		ElapsedMs := 0
-		ElapsedText := "N/A"
-	}
-	
-	LastLogTick := A_TickCount
 	
 	LogCount++
 	
@@ -248,9 +224,7 @@ Log(Event, Details := "")
 	LogEntry := "[Log" LogCount "]`r`n"
 	LogEntry .= "Time=" LogTime "`r`n"
 	LogEntry .= "Event=" Event "`r`n"
-	LogEntry .= "Details=" Details "`r`n"
-	LogEntry .= "Elapsed Since Previous Event=" ElapsedText "`r`n"
-	LogEntry .= "Elapsed Milliseconds=" ElapsedMs "`r`n`r`n"
+	LogEntry .= "Details=" Details "`r`n`r`n"
 	
 	FileAppend, %LogEntry%, %A_ScriptDir%\log.ini
 }
@@ -298,6 +272,7 @@ EndLogSession(Reason := "Normal Exit")
 ; windows movable and to monitor window position changes.
 OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
 OnMessage(0x0201, "WM_LBUTTONDOWN")
+
 WM_LBUTTONDOWN() {
 	If (A_Gui)
 		PostMessage, 0xA1, 2
@@ -311,8 +286,8 @@ WM_WINDOWPOSCHANGED() {
 }
 return
 
-; Validates both configuration files and stops on the first blank
-; required configuration value that is found.
+; Validates both configuration files and stops on the first configuration
+; problem that is found.
 ConfigError()
 {
 	if (CheckConfigFile("Config.ini"))
@@ -333,7 +308,7 @@ ConfigErrorMessage(file, section, key)
 	
 	MsgBox, 4112, Config Error, Please enter a value for:`n`n[%section%]`n%key%
 	
-	Log("CONFIG ERROR", file " | [" section "] " key " is blank")
+	Log("CONFIG ERROR", file " | [" section "] " key " is blank or missing")
 	
 	Reload
 }
@@ -403,6 +378,9 @@ CheckConfigFile(file)
 			; as a rectangle and all four values are required.
 			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
 			
+			; ------------------------------------------------------
+			; Single pixel coordinate: x / y
+			; ------------------------------------------------------
 			if (hasPointCoordinates)
 			{
 				if (x = "ERROR" || Trim(x) = "")
@@ -418,6 +396,9 @@ CheckConfigFile(file)
 				}
 			}
 			
+			; ------------------------------------------------------
+			; Rectangle coordinate: xmin / xmax / ymin / ymax
+			; ------------------------------------------------------
 			else if (hasRectangleCoordinates)
 			{
 				if (xmin = "ERROR" || Trim(xmin) = "")
@@ -472,7 +453,7 @@ CheckConfigFile(file)
 			
 			continue
 		}
-		
+
 		if (configType = "hotkey")
 		{
 			; Hotkey sections require the Hotkey key.
@@ -522,38 +503,10 @@ CheckConfigFile(file)
 	return false
 }
 
-GetConfigType(file, section)
-{
-	section := Trim(section)
-	
-	StringReplace, section, section, [, , All
-	StringReplace, section, section, ], , All
-	section := Trim(section)
-	
-	IniRead, sectionType, %file%, %section%, type, ERROR
-	
-	if (sectionType = "ERROR")
-		return ""
-	
-	sectionType := Trim(sectionType)
-	StringLower, sectionType, sectionType
-	
-	if (sectionType = "color")
-		return "color"
-	
-	if (sectionType = "coordinate")
-		return "coordinate"
-	
-	if (sectionType = "hotkey")
-		return "hotkey"
-	
-	return ""
-}
-
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
 CheckPOS() {
-	allowedWindows := "|LLARS|hotkeys|coordinates|file error|config error|game not found|information|multiple client|no client detected|combo|"
+	allowedWindows := "|LLARS|hotkeys|coordinates|file error|config error|game not found|information|multiple client|no client detected|combo|timer|"
 	
 	WinGetTitle, activeWindowTitle, A
 	
@@ -624,7 +577,6 @@ EnableHotkey(enable := true) {
 	Hotkey, %lhk2%, on
 	Hotkey, %lhk3%, on
 	Hotkey, %lhk4%, on
-	
 }
 
 ; Disables only the Start control while the timed script is running.
@@ -673,6 +625,90 @@ GoSub, close2
 }
 Return
 
+; Checks whether a configuration section contains every key supplied
+; in the requiredKeys list. This allows the configuration files to
+; determine which sections belong to each editor automatically.
+HasConfigKeys(file, section, requiredKeys)
+{
+	IniRead, keys, %file%, %section%
+	
+	Loop, Parse, requiredKeys, |
+	{
+		requiredKey := A_LoopField
+		found := false
+		
+		Loop, Parse, keys, `n, `r
+		{
+			line := Trim(A_LoopField)
+			
+			if (line = "")
+				continue
+			
+			StringSplit, part, line, =, 2
+			key := Trim(part1)
+			
+			if (key = requiredKey)
+			{
+				found := true
+				break
+			}
+		}
+		
+		if !found
+			return false
+	}
+	
+	return true
+}
+
+; Checks whether a section contains a single specific key.
+HasConfigKey(file, section, requiredKey)
+{
+	return HasConfigKeys(file, section, requiredKey)
+}
+
+; Reads and validates the type assigned to a configuration section.
+;
+; Supported types:
+;
+;   type=color
+;   type=coordinate
+;   type=hotkey
+;
+; A section without a type key, or with an unsupported type,
+; is ignored by the Color, Coordinate, and Hotkey editor GUIs.
+GetConfigType(file, section)
+{
+	section := Trim(section)
+	
+	; Remove brackets if brackets are present in the section name.
+	StringReplace, section, section, [, , All
+	StringReplace, section, section, ], , All
+	section := Trim(section)
+	
+	; Read the type value. ERROR is used so a missing type key
+	; can be distinguished from an actual value.
+	IniRead, sectionType, %file%, %section%, type, ERROR
+	
+	if (sectionType = "ERROR")
+		return ""
+	
+	sectionType := Trim(sectionType)
+	StringLower, sectionType, sectionType
+	
+	; Only recognized configuration types are returned.
+	if (sectionType = "color")
+		return "color"
+	
+	if (sectionType = "coordinate")
+		return "coordinate"
+	
+	if (sectionType = "hotkey")
+		return "hotkey"
+	
+	return ""
+}
+
 ; ===================================================================================================================
 ; |     COLOR/COORDINATE/HOTKEY GUI     -     COLOR/COORDINATE/HOTKEY GUI     -     COLOR/COORDINATE/HOTKEY GUI     |
 ; ===================================================================================================================
@@ -689,7 +725,8 @@ Gui Combo: Font, s12 norm bold
 Gui Combo: Add, Button, x5 y5 w125 h25 gColor , Colors
 Gui Combo: Add, Button, x5 y35 w125 h25 gCoordinates , Coordinates
 Gui Combo: Add, Button, x5 y65 w125 h25 gHotkey , Hotkeys
-Gui Combo: add, button, x5 y95 w125 h25 gCloseCombo , Close
+Gui Combo: Add, Button, x5 y95 w125 h25 gTimer , Timer
+Gui Combo: add, button, x5 y125 w125 h25 gCloseCombo , Close
 WinSet, ExStyle, ^0x80
 Gui Combo: -caption
 Gui Combo: Show, center w135, Combo
@@ -726,7 +763,7 @@ sectionList := " ***** Make a Selection ***** "
 
 ; Add sections from Config.ini that are explicitly categorized
 ; as coordinates.
-Loop, Parse, allContents, `n
+Loop, Parse, allContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -743,7 +780,7 @@ Loop, Parse, allContents, `n
 
 ; Add sections from LLARS Config.ini that are explicitly categorized
 ; as coordinates.
-Loop, Parse, llarsContents, `n
+Loop, Parse, llarsContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -862,6 +899,8 @@ else
 
     topPOS := (bottomH - topH) / 2
 
+    topPOS := (bottomH - topH) / 2
+
     Gui, TopGUI: +LabelTopGUI
     WinMove, TopGUI,, , %topPOS%
 }
@@ -928,7 +967,7 @@ if GetKeyState("RButton", "P")
 		IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
 		IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
 		IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
-		Log("COORDINATES CHANGED", " %buttontext% | X=" x1 "-" x2 " | Y=" y1 "-" y2)
+		Log("COORDINATES CHANGED", " %buttontext% | X=" xmin "-" xmax " | Y=" ymin "-" ymax)
 		
 		if (ButtonText = "Logout")
 		{
@@ -1066,7 +1105,7 @@ IniRead, allContents, Config.ini
 sectionList := " ***** Make a Selection ***** "
 
 ; Only add sections that are explicitly categorized as colors.
-Loop, Parse, allContents, `n
+Loop, Parse, allContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -1091,7 +1130,7 @@ WinSet, Transparent, %value%
 
 return
 
-; Closes the color editor and returns to the main LLARS window.
+; Closes the color editor and returns to the main LLARS GUI.
 Close1:
 Gui 2: Destroy
 Gui 1: Show
@@ -1132,7 +1171,7 @@ Log("COLOR CHANGED IN CONFIG", ButtonText " = " color)
 
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
-Gui 13u: Font, cgreenhite
+Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----%buttontext% has been updated in the Config.ini file`n----
 WinSet, ExStyle, ^0x80
@@ -1141,7 +1180,6 @@ Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13: Color, White
-Gui 13: Font, cGreen
 Gui 13: Font, s16 bold
 Gui 13: Add, Text, vTthree center, %buttontext% has been updated in the Config.ini file
 Gui 13: -caption
@@ -1196,7 +1234,7 @@ hotkeyConfigFiles := {}
 
 ; Add sections from Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
-Loop, Parse, allContents, `n
+Loop, Parse, allContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -1216,7 +1254,7 @@ Loop, Parse, allContents, `n
 
 ; Add sections from LLARS Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
-Loop, Parse, llarsContents, `n
+Loop, Parse, llarsContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -1245,15 +1283,16 @@ WinSet, ExStyle, ^0x80
 WinSet, Transparent, %value%
 return
 
-; Closes the hotkey editor and returns to the main LLARS window.
+; Closes the hotkey editor and returns to the main LLARS GUI.
 Close2:
 Gui 3: Destroy
 Gui 1: Show
 EnableHotkey()
 return
 
-; Loads the existing hotkey for the selected section and prepares
-; the hotkey control for a replacement value.
+; Loads the existing hotkey for the selected section.
+; The source INI file is taken directly from the mapping created
+; when the dropdown list was built.
 DropDownChanged2:
 GuiControlGet, selectedSection,, SectionList
 
@@ -1281,22 +1320,21 @@ GuiControl,, HotkeysText, Enter new hotkey
 GuiControl, Focus, ChosenHotkey
 return
 
-; Saves the newly selected hotkey and displays the same confirmation
-; overlay used by the other configuration editors.
+; Saves the newly selected hotkey to the same configuration file
+; from which the selected section was loaded.
 HotkeyChanged:
 Gui, 3: Submit, NoHide
 
-; Write the new hotkey back to the same configuration file
-; from which the selected section was loaded.
 configFile := hotkeyConfigFiles[selectedSection]
 
 IniWrite, %ChosenHotkey%, %configFile%, %selectedSection%, Hotkey
 Log("HOTKEY CHANGED", "Hotkey = " ChosenHotkey)
+
 Gui, 3: Destroy
 
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
-Gui 13u: Font, cgreenhite
+Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %configFile% file`n----
 WinSet, ExStyle, ^0x80
@@ -1314,7 +1352,6 @@ wingetpos,,,,bottomH, BottomGUI
 wingetpos,,,,topH, TopGUI
 
 topPOS := (bottomH - topH) / 2
-
 Gui, TopGUI: +LabelTopGUI
 WinMove, TopGUI,, , %topPOS%
 
@@ -1325,6 +1362,131 @@ Gui 13: Destroy
 Gui 1: Show
 EnableHotkey()
 return
+
+; ======================================================================
+; |     TIMER BUTTON     -     TIMER BUTTON     -     TIMER BUTTON     |
+; ======================================================================
+
+; Open the Timer configuration editor.
+; Reads the current minimum and maximum click intervals from Config.ini.
+Timer:
+Log("TIMER CONFIG", "Opening Timer configuration editor")
+
+Gui 1: Hide
+Gui Combo: Destroy
+DisableHotkey()
+
+; Read current Timer settings from Config.ini
+IniRead, sa1, Config.ini, Timer, min
+IniRead, sa2, Config.ini, Timer, max
+
+Log("TIMER CONFIG", "Current values loaded - Min=" sa1 "ms, Max=" sa2 "ms")
+
+; Timer configuration GUI
+Gui 5: +LastFound +AlwaysOnTop +OwnDialogs
+Gui 5: Font, bold s12
+Gui 5: Add, Text, x5 w190 center, Click Timer Interval
+Gui 5: Font, s10
+Gui 5: Add, Text, x5 w190 center, timers are in ms`n1000ms = 1sec
+Gui 5: Add, Text,,
+Gui 5: Font, s11
+Gui 5: Add, Text, center x5 w190, Minimum click timer
+Gui 5: Add, Edit, vMinEdit center x50 w100, % sa1
+Gui 5: Add, Text,,
+Gui 5: Add, Text, center x5 w190, Maximum click timer
+Gui 5: Add, Edit, vMaxEdit center x50 w100, % sa2
+Gui 5: Add, Text,,
+Gui 5: Add, Button, Default gButtonSave x50 w100, Save Timer
+
+WinSet, ExStyle, ^0x80
+Gui 5: -caption
+Gui 5: Show, center w200, Timer
+Return
+
+; ======================================================================
+; |     TIMER SAVE       -     TIMER SAVE       -     TIMER SAVE       |
+; ======================================================================
+
+; Save the updated Timer values to Config.ini.
+ButtonSave:
+GuiControlGet, NewMin,, MinEdit
+GuiControlGet, NewMax,, MaxEdit
+
+; Remove accidental spaces
+NewMin := Trim(NewMin)
+NewMax := Trim(NewMax)
+
+Log("TIMER CONFIG", "Save requested - Min=" NewMin "ms, Max=" NewMax "ms")
+
+; Validate timer values before writing them to Config.ini.
+if (NewMin = "" || NewMax = "")
+{
+	Log("CONFIG ERROR", "Timer save failed - minimum or maximum timer is blank")
+	MsgBox, 48, Timer Error, Minimum and maximum timer values cannot be blank.
+	Return
+}
+
+if !RegExMatch(NewMin, "^\d+$") || !RegExMatch(NewMax, "^\d+$")
+{
+	Log("CONFIG ERROR", "Timer save failed - minimum or maximum timer is not numeric")
+	MsgBox, 48, Timer Error, Minimum and maximum timer values must contain numbers only.
+	Return
+}
+
+if (NewMin > NewMax)
+{
+	Log("CONFIG ERROR", "Timer save failed - minimum timer is greater than maximum timer")
+	MsgBox, 48, Timer Error, Minimum timer cannot be greater than maximum timer.
+	Return
+}
+
+; Write validated Timer settings to Config.ini.
+IniWrite, %NewMin%, Config.ini, Timer, min
+IniWrite, %NewMax%, Config.ini, Timer, max
+
+Log("TIMER CONFIG", "Timer values written to Config.ini - Min=" NewMin "ms, Max=" NewMax "ms")
+
+Gui 5: Destroy
+
+; Display confirmation message.
+Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13u: Color, Green
+Gui 13u: Font, cGreen
+Gui 13u: Font, s16 bold
+Gui 13u: Add, Text, valertlabel center, ----Timer has been updated in the Config.ini file`n----
+WinSet, ExStyle, ^0x80
+Gui 13u: -caption
+Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+
+Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13: Color, White
+Gui 13: Font, cGreen
+Gui 13: Font, s16 bold
+Gui 13: Add, Text, vTthree center, Timer has been updated in the Config.ini file
+WinSet, ExStyle, ^0x80
+Gui 13: -caption
+Gui 13: Show, NoActivate xcenter y9999, TopGUI
+
+; Position the confirmation GUIs.
+WinGetPos,,,,bottomH, BottomGUI
+WinGetPos,,,,topH, TopGUI
+
+topPOS := (bottomH - topH) / 2
+
+Gui, TopGUI: +LabelTopGUI
+WinMove, TopGUI,, , %topPOS%
+
+Sleep, 1500
+
+
+; Clean up and return to the main LLARS GUI.
+Gui 13u: Destroy
+Gui 13: Destroy
+Gui 1: Show
+EnableHotkey()
+
+Log("TIMER CONFIG", "Timer configuration update completed")
+Return
 
 ; =============================================================================================================
 ; |     PAUSE/RESUME BUTTON LOGIC     -     PAUSE/RESUME BUTTON LOGIC     -     PAUSE/RESUME BUTTON LOGIC     |
@@ -1354,57 +1516,56 @@ Return
 ; script is idle, allowing hotkey changes in LLARS Config.ini to take
 ; effect without restarting the script.
 Configcheck:
-{
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	
-	Hotkey %lhk1%, Start
-	Hotkey %lhk2%, Info
-	Hotkey %lhk3%, Combo
-	Hotkey %lhk4%, exitb
-}
+IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
+IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
+IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+
+Hotkey %lhk1%, Start
+Hotkey %lhk2%, Info
+Hotkey %lhk3%, Combo
+Hotkey %lhk4%, exitb
 return
 
 ; Periodically reloads the LLARS hotkeys used while the timed script
 ; is running, where the information/menu hotkeys become Pause/Resume.
 Config2check:
-{
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	
-	Hotkey, %lhk1%, Start
-	Hotkey, %lhk2%, pauseb
-	Hotkey, %lhk3%, resumeb
-	Hotkey, %lhk4%, exitb
-}
+IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
+IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
+IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+
+Hotkey, %lhk1%, Start
+Hotkey, %lhk2%, pauseb
+Hotkey, %lhk3%, resumeb
+Hotkey, %lhk4%, exitb
 return
 
-; =========================================================================
-; |     RANDOM SLEEP COUNTDOWN     -     RANDOM SLEEP COUNTDOWN          |
-; =========================================================================
+; ===================================================================
+; |     TIMER LOGIC     -     TIMER LOGIC     -     TIMER LOGIC     |
+; ===================================================================
 
-UpdateCountdown:
+; Updates the remaining run time every second and handles the normal
+; completion sequence once the configured timer reaches zero.
+Countdown:
+remainingTimeMS := endTime - A_TickCount
+remainingTimeMinutes := Floor(remainingTimeMS / 60000)
+remainingTimeSeconds := Mod(Floor(remainingTimeMS / 1000), 60)
 
-RemainingTime := EndTime - A_TickCount
+GuiControl,, TimerCount, %remainingTimeMinutes%m %remainingTimeSeconds%s
+DisableButton()
 
-if (RemainingTime > 0)
+if (remainingTimeMS <= 0 and startcheck=1)
 {
-	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
+	SetTimer, Countdown, off
+	SetTimer, RandomClick, Off
+	GuiControl,, TimerCount, Done
+	GuiControl,,State3, Done
+	EnableButton()
+	Logout()
+	Goto EndMsg
 }
-
 return
-
-RandomSleepAmountToMinutesSeconds(time)
-{
-	minutes := Floor(time / 60000)
-	seconds := Mod(Floor(time / 1000), 60)
-
-	return minutes . "m " . seconds . "s"
-}
 
 ; =====================================================================================
 ; |     EXIT BUTTON LOGIC     -     EXIT BUTTON LOGIC     -     EXIT BUTTON LOGIC     |
@@ -1429,61 +1590,29 @@ ExitApp
 ; |     START BUTTON LOGIC     -     START BUTTON LOGIC     -     START BUTTON LOGIC     |
 ; ========================================================================================
 
-; Validates the configuration, asks for the desired run duration,
-; switches the GUI into running mode, updates running hotkeys,
-; activates RuneScape, and starts the automation loop.
+; Starts a timed automation run. The selected duration is converted to
+; milliseconds, the running-state GUI is created, the hotkey assignments
+; switch to Pause/Resume behavior, and the pixel detection timer begins.
 Start:
-
-; Make sure the required RuneScape client exists before starting.
-IfWinNotExist, RuneScape
-{
-	Gui 1: Hide
-	Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui GNF: Font, S13 bold underline cRed
-	Gui GNF: Add, Text, Center w220 x5, ERROR
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, s12 norm bold
-	Gui GNF: Add, Text, Center w220 x5, RuneScape Not Found
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, cBlack
-	Gui GNF: Add, Text, Center w220 x5, RuneScape was not found to be running.`n`n`nRuneScape will attempt to be auto-launched upon closing this error message.
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, norm italic s10 c0x152039
-	Gui GNF: Add, Text, Center w220 x5, If RuneScape is already open and you're seeing this message, please use the Discord button below to contact Gubna for assistance.
-	Gui GNF: Font, s11 norm Bold c0x152039
-	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Add, Text, Center w220 x5, Created by Gubna
-	Gui GNF: Add, Button, gDiscordError w150 x40 center, Discord
-	Gui GNF: Add, Button, gCloseGNF w150 x40 center, Close Error
-	WinSet, ExStyle, ^0x80
-	Gui GNF: -caption
-	Gui GNF: Show, center w230, Game Not Found
-
-	return
-}
-
-; Validate the entire configuration dynamically.
-if (ConfigError())
-	return
+ConfigError()
 
 Log("START", "Start button/hotkey activated")
 
-; inputbox for user to enter runcount
-; runcount represents the amount of loops script will execute
-InputBox, runcount, Run How Many Times?,,,250,100
+InputBox, timeToRunMinutes, Set Timer, Enter the time duration in minutes`n(example: 1 for 1 minute):,,250,150
 
-if (runcount = "" || runcount <= 0)
+if (timeToRunMinutes = "" or timeToRunMinutes = 0)
 {
 	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
 	return
 }
 
-; ======================================================================================
-; |     RUN INITIALIZATION     -     RUN INITIALIZATION     -     RUN INITIALIZATION   |
-; ======================================================================================
+timeToRunMS := timeToRunMinutes * 60 * 1000
+endTime := A_TickCount + timeToRunMS
 
-; The framework hotkeys remain named consistently in the INI.
-; Only their assigned functions change while the script is running.
+Log("TIMER", "Timer set to " timeToRunMinutes " minutes")
+
+; On the first run, stop the idle hotkey watcher and switch the LLARS
+; hotkeys to their running-state Pause/Resume assignments.
 If (frcount = 0)
 {
 	SetTimer, ConfigCheck, off
@@ -1500,6 +1629,7 @@ If (frcount = 0)
 	Hotkey %lhk3%, resumeb
 	Hotkey %lhk4%, exitb
 	
+	; Rebuild the main GUI into its running-state layout.
 	WinGetPos, X, Y,,, LLARS
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop
@@ -1509,202 +1639,184 @@ If (frcount = 0)
 	Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
 	Gui, Add, Button, x5 y35 w100 h25 gPauseb , Pause
 	Gui, Add, Button, x115 y35 w100 h25 gResumeb , Resume
-	Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
-	Gui, Add, Text, x135 y90 w65 h25 center vCounter
-	Gui, Add, Text, x8 y90 w125 h25, Total Run Count
-	Gui, Add, Text, x8 y65 w125 h25, Run Count
-	Gui, Add, Text, x135 y65 w150 h25 vCounter2
-	Gui, Font, cGreen
-	Gui, Add, Text, x135 y115 w70 h25 vState1
-	Gui, Add, Text, x8 y115 w125 h25 vScriptGreen
+	Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
 	Gui, Font, cBlue
-	Gui, Add, Text, x135 y115 w70 h25 vState3
-	Gui, Add, Text, x8 y115 w125 h25 vScriptBlue
+	Gui, Add, Text, x135 y65 w70 h25 vState3
+	Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
+	Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
+	Gui, Add, Text, x135 y90 w70 h25 vTimerCount
+	GuiControl,,TimerLabel, Remaining:
+	GuiControl,,TimerCount, ** OFF **
 	Gui, Font, cRed
-	Gui, Add, Text, x135 y115 w70 h25 vState2
-	Gui, Add, Text, x8 y115 w125 h25 vScriptRed
+	Gui, Add, Text, x135 y65 w70 h25 vState2
+	Gui, Add, Text, x8 y65 w125 h25 vScriptRed
 	GuiControl,,State2, ** OFF **
-	Gui, Add, Text, x8 y115 w125 h25, %scriptname%
+	Gui, Add, Text, x8 y65 w125 h25, %scriptname%
 	if FileExist("LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 	}
 	WinSet, Transparent, %value%
-	Gui, Show,w220 h170, LLARS
+	Gui, Show,w220 h150, LLARS
 	WinMove, LLARS,, X, Y,
-	
-	count = 0
-	++frcount
 }
 
 else
 	
+sleep 250
+
+; ======================================================================
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
+; ======================================================================
+
+; Set the running-state display and begin the countdown/pixel timers.
 GuiControl,,ScriptBlue, %scriptname% 
 GuiControl,,State3, Running
 DisableButton()
 startcheck=1
 
-; Resets per-run state.
-count2 := 0
-sleepcount := 0
-totalSleepTime := 0
-rightclick := 0
-clickcount := 0
+SetTimer, Countdown, 1000
 
-runcount3 := runcount
+IfWinNotActive, RuneScape
+{
+			WinActivate, RuneScape
+}
 
-StartTime := A_TickCount
-StartTimeStamp := A_Hour ":" A_Min ":" A_Sec
+; ========================================================================================
+; |     RANDOM CLICK LOGIC     -     RANDOM CLICK LOGIC     -     RANDOM CLICK LOGIC     |
+; ========================================================================================
 
-; ======================================================================
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; ======================================================================
+; Start the initial random click routine.
+; The original click and timer sequence is preserved.
+Log("AUTOCLICKER", "Random click routine started")
 
-; ========================================================================
-; |     MAIN RUN LOOP     -     MAIN RUN LOOP     -     MAIN RUN LOOP    |
-; ========================================================================
+; Loads the configured rectangular Click location.
+IniRead, x1, Config.ini, Click, xmin
+IniRead, x2, Config.ini, Click, xmax
+IniRead, y1, Config.ini, Click, ymin
+IniRead, y2, Config.ini, Click, ymax
 
-; Executes the configured number of runs.
-; Each run performs an optional Random Sleep, sends the configured
-; Skillbar hotkey, and waits for the configured Teleport sleep duration.
-Loop, %runcount%
-{ 
-	++count
-	++count2
-	
-	; Makes sure RuneScape is the active window before continuing.
+; Selects a random coordinate inside the configured Click rectangle.
+Random, x, %x1%, %x2%
+Random, y, %y1%, %y2%
+
+; Performs the initial random click.
+Click, %x%, %y%
+
+; Records the time the initial click occurred for logging.
+LastClickTime := A_TickCount
+
+; Logs the initial click after the original click operation.
+Log("CLICK", "Click Location X=" x " Y=" y " | N/A - first click")
+
+; Loads the configured minimum and maximum timer values.
+IniRead, sa1, Config.ini, Timer, min
+IniRead, sa2, Config.ini, Timer, max
+
+; Selects the randomized delay before the next click.
+Random, SleepClick, %sa1%, %sa2%
+
+; Starts the randomized click timer.
+SetTimer, RandomClick, %SleepClick%
+
+; Logs the randomized wait after the timer has been started.
+Log("WAIT", "Random sleep before click: " SleepClick " ms")
+
+; Displays a temporary tooltip indicating that the AutoClicker has been activated.
+Loop 100
+{
+	MouseGetPos, xm, ym
+	ToolTip, Activated AutoClicker, (xm+15), (ym+15), 1
+	Sleep 25
+}
+ToolTip
+
+Return
+
+; ========================================================================================
+; |     RANDOM CLICK TIMER     -     RANDOM CLICK TIMER     -     RANDOM CLICK TIMER     |
+; ========================================================================================
+
+; Performs each subsequent random click.
+; The original click and timer sequence is preserved.
+; Config.ini is re-read each time the timer fires.
+RandomClick:
+{
+	; Makes sure RuneScape is the active window before clicking.
 	IfWinNotActive, RuneScape
 	{
 		WinActivate, RuneScape
-		
-		Log("WINDOW ACTIVATE", "RuneScape was not active - window activated")
 	}
-	
-	; Updates the LLARS GUI with the current run information.
-	GuiControl,,Counter, %count%
-	GuiControl,,Counter2, %count2% / %runcount3%
-	GuiControl,,ScriptBlue, %scriptname%
-	GuiControl,,State3, Running
+
 	DisableButton()
-	
-	; Checks whether Random Sleep is enabled in LLARS Config.ini.
-	IniRead, option, LLARS Config.ini, Random Sleep, option
-	if option = true
+
+	; Loads the configured rectangular Click location.
+	IniRead, x1, Config.ini, Click, xmin
+	IniRead, x2, Config.ini, Click, xmax
+	IniRead, y1, Config.ini, Click, ymin
+	IniRead, y2, Config.ini, Click, ymax
+
+	; Selects a random coordinate inside the configured Click rectangle.
+	Random, x, %x1%, %x2%
+	Random, y, %y1%, %y2%
+
+	; Performs the random click.
+	Click, %x%, %y%
+
+	; Calculates and records the time since the previous click.
+	if (LastClickTime = 0)
 	{
-		; Reads the configured Random Sleep chance.
-		IniRead, chance, LLARS Config.ini, Random Sleep, chance
-		Random, RandomNumber, 1, 100
-		
-		; Performs Random Sleep when the random roll is within the configured chance.
-		if % RandomNumber <= chance
-		{
-			
-			++sleepcount
-			GuiControl,, ScriptBlue, Random Sleep
-			GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
-			
-			; Reads the configured minimum and maximum Random Sleep duration.
-			IniRead, rs1, LLARS Config.ini, Random Sleep, min
-			IniRead, rs2, LLARS Config.ini, Random Sleep, max
-			Random, RandomSleepAmount, %rs1%, %rs2%
-			
-			SetTimer, UpdateCountdown, 1000
-			EndTime := A_TickCount + RandomSleepAmount
-			totalSleepTime += RandomSleepAmount
-			
-			Log("RANDOM SLEEP", "Sleep=" RandomSleepAmount " ms | Chance=" chance "% | Roll=" RandomNumber)
-			
-			Sleep, RandomSleepAmount
-			SetTimer, UpdateCountdown, Off
-			
-			GuiControl,,ScriptBlue, %scriptname%
-			GuiControl,,State3, Running
-			
-			Log("RANDOM SLEEP COMPLETE", "Random sleep completed: " RandomSleepAmount " ms")
-		}
+		TimeSinceClick := "N/A - first click"
 	}
-	
-	; Reads and sends the configured Skillbar hotkey.
-	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-	send {%hk%}
-	
-	Log("SKILLBAR", "Hotkey sent: " hk)
-	
-	; Reads the configured minimum and maximum Teleport sleep duration.
-	IniRead, saf1, Config.ini, Sleep Teleport, min
-	IniRead, saf2, Config.ini, Sleep Teleport, max
-	Random, SleepAmount, %saf1%, %saf2%
-	Sleep, %SleepAmount%
-	
-	Log("TELEPORT SLEEP", "Sleep completed: " SleepAmount " ms")
+	else
+	{
+		TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
+	}
+
+	LastClickTime := A_TickCount
+
+	; Logs the click after the original click operation.
+	Log("CLICK", "Click Location X=" x " Y=" y " | " TimeSinceClick)
+
+	; Loads the configured minimum and maximum timer values.
+	IniRead, sa1, Config.ini, Timer, min
+	IniRead, sa2, Config.ini, Timer, max
+
+	; Selects the next randomized click delay.
+	Random, SleepClick, %sa1%, %sa2%
+
+	; Sets the next timer exactly as the original routine did.
+	SetTimer, RandomClick, %SleepClick%
+
+	; Logs the randomized wait after the timer has been started.
+	Log("WAIT", "Random sleep before click: " SleepClick " ms")
+
+	; Displays the AutoClicker tooltip.
+	Loop 100
+	{
+		MouseGetPos, xm, ym
+		ToolTip, Activated AutoClicker, (xm+15), (ym+15), 1
+		Sleep 25
+	}
+	ToolTip
 }
+Return
 
 ; ==================================================================
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
-
-; calls the logout function
-Logout()
-
-; =======================================================================
-; |     RUN COMPLETE     -     RUN COMPLETE     -     RUN COMPLETE      |
-; =======================================================================
-
-GuiControl,, ScriptGreen, %scriptname%
-GuiControl,, State1, Finished
-
-EndTimeStamp := A_Hour ":" A_Min ":" A_Sec
-
-EndTime := A_TickCount
-
-; Convert total elapsed time to whole seconds.
-TotalTimeSeconds := Floor((EndTime - StartTime) / 1000)
-
-; Calculate average loop time using whole seconds.
-AverageTimeSecondsTotal := Floor(TotalTimeSeconds / runcount3)
-
-; Break total time into hours, minutes, and seconds.
-TotalTimeHours := Floor(TotalTimeSeconds / 3600)
-TotalTimeMinutes := Floor(Mod(TotalTimeSeconds, 3600) / 60)
-TotalTimeSecondsDisplay := Mod(TotalTimeSeconds, 60)
-
-; Break average loop time into minutes and seconds.
-AverageTimeMinutes := Floor(AverageTimeSecondsTotal / 60)
-AverageTimeSecondsDisplay := Mod(AverageTimeSecondsTotal, 60)
-
-; Calculate actual random sleep percentage.
-percentage := Round((sleepcount / runcount3) * 100)
-
-; Convert total random sleep time to whole seconds.
-totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
-
-TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
-TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
-TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
-
-Log("COMPLETE", "Completed " runcount3 " runs | Total time=" TotalTimeSeconds " seconds | Random sleeps=" sleepcount)
-
-SoundPlay, C:\Windows\Media\Ring06.wav, 1
-
-IniRead, chance, LLARS Config.ini, Random Sleep, chance
-
-MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
-
-EnableButton()
-
-return
 
 ; ===============================================================================
 ; |     LOGOUT FUNCTION     -     LOGOUT FUNCTION     -     LOGOUT FUNCTION     |
 ; ===============================================================================
 
-; Performs an optional logout after the timed run completes. The logout
-; process uses Escape, a randomized delay, and a random point inside
-; the configured logout rectangle from LLARS Config.ini.
+; Handles the optional logout sequence after the timed run completes.
+; When enabled, the script presses Escape, waits for a random delay,
+; selects a random point within the configured logout region, and clicks it.
 Logout(){
 	IniRead, option, LLARS Config.ini, Logout, option
 	
@@ -1723,12 +1835,15 @@ Logout(){
 		Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
 		
 		Sleep, %SleepAmount%	
-
+		
+		; Logout coordinates are stored in screen coordinates rather than
+		; the normal client-relative coordinate mode.
 		IniRead, x1, LLARS Config.ini, Logout, xmin
 		IniRead, x2, LLARS Config.ini, Logout, xmax
 		IniRead, y1, LLARS Config.ini, Logout, ymin
-		IniRead, y2, LLARS Config.ini, Logout, ymax
+		IniRead, y2, LLARS Config.ini, ymax
 		
+		; Choose a random point within the configured logout rectangle.
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		
@@ -1740,29 +1855,37 @@ Logout(){
 	}
 }
 
-; ===================================================================
-; |     INFORMATION     -     INFORMATION     -     INFORMATION     |
-; ===================================================================
+; =================================================================================================
+; |     SCRIPT FINISH MESSAGE     -     SCRIPT FINISH MESSAGE     -     SCRIPT FINISH MESSAGE     |
+; =================================================================================================
 
-Info:
+; Calculate the completed run duration in hours and minutes and display
+; the final completion notification.
+EndMsg:
+hours := timeToRunMinutes // 60
+minutes := Mod(timeToRunMinutes, 60)
+
+Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
+
+SoundPlay, C:\Windows\Media\Ring06.wav, 1
+MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m
+return
+
+; ==========================================================================================================
+; |     INFORMATION BUTTON LOGIC     -     INFORMATION BUTTON LOGIC     -     INFORMATION BUTTON LOGIC     |
+; ==========================================================================================================
+
+; Display the current LLARS hotkeys and additional configuration values.
+; This GUI is informational only and does not modify the configuration.
+info:
 DisableHotkey()
 IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-
+IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, coord/pause
+IniRead, lhk3, LLARS Config.ini, config/resume
+IniRead, lhk4, LLARS Config.ini, exit
 IniRead, logout, LLARS Config.ini, Logout, option
 IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
-
-IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-IniRead, hkbp, Config.ini, Bank Preset, hotkey
-
-if (hk = "")
-	hk := "Not Set"
-
-if (hkbp = "")
-	hkbp := "Not Set"
 
 WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
@@ -1776,7 +1899,7 @@ Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
 Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
+Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%
 Gui 20: Add, Text, center x5 w220,
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
@@ -1799,14 +1922,14 @@ Gui 20: -caption
 Gui 20: Show, center w230, Information
 return
 
-; Closes the information window and restores the main LLARS GUI.
+; Close the Information GUI and restore the main LLARS window.
 CloseInfo:
 EnableHotkey()
 gui 20: destroy
 gui 1: Show		
 return
 
-; Opens the Discord link from the information GUI and returns to LLARS.
+; Open the Discord community link after closing the Information GUI.
 discord:
 EnableHotkey()
 Gui 20: destroy
@@ -1814,117 +1937,33 @@ Run, https://discord.gg/Wmmf65myPG
 gui 1: Show		
 return
 
-; Opens the main script configuration file.
+; Open the main script configuration file.
 InfoConfig:
 EnableHotkey()
 Run %A_ScriptDir%\Config.ini
 return
 
-; Opens the LLARS configuration file.
+; Open the LLARS configuration file.
 InfoLLARS:
 EnableHotkey()
 Run %A_ScriptDir%\LLARS Config.ini
 return
 
-; Opens the project's GitHub repository from the configuration error window.
+; Open the project GitHub page from the configuration error GUI.
 GitLink:
 run, https://github.com/Gubna-Tech/RuneScape
 Exitapp
 
-; Opens Discord from the configuration error window and exits the script.
+; Open Discord from a startup/configuration error and then terminate.
 DiscordError:
 Run, https://discord.gg/Wmmf65myPG
 Exitapp
 
-; Closes the script from the configuration error window.
+; Close the script from the configuration error GUI.
 CloseError:	
 ExitApp
 
-; Opens the project's MIT license page.
+; Open the project's MIT license page.
 MIT:
-run https://github.com/Gubna-Tech/RuneScape/blob/main/LICENSE
-return
-
-; ============================================================================
-; |     GAME NOT FOUND     -     GAME NOT FOUND     -     GAME NOT FOUND     |
-; ============================================================================
-
-CloseGNF:
-Gui GNF: Destroy
-
-; Checks for the Jagex Launcher and RuneScape client.
-if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe")
-{
-	if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe")
-	{
-		Menu, Tray, NoIcon
-		Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-		Gui Client: Font, S13 bold underline cRed
-		Gui Client: Add, Text, Center w220 x5, ERROR
-		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Font, s12 norm bold
-		Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found.
-		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Font, cBlack
-		Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropriate client for your account.
-		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Add, Button, gJagex w150 x40 center, Jagex
-		Gui Client: Add, Button, gRuneScape w150 x40 center, RuneScape
-		WinSet, ExStyle, ^0x80
-		Gui Client: -caption
-		Gui Client: Show, center w230, Multiple Client
-		return
-	}
-	else
-	{
-		Gui 1: Show
-		Run, C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe
-		return
-	}
-}
-else if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe")
-{
-	Gui 1: Show
-	Run, rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
-	return
-}
-else
-{
-	Menu, Tray, NoIcon
-	Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui Client: Font, S13 bold underline cRed
-	Gui Client: Add, Text, Center w220 x5, ERROR
-	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Font, s12 norm bold
-	Gui Client: Add, Text, Center w220 x5, Neither RuneScape Nor Jagex Launcher Were Found.
-	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Font, cBlack
-	Gui Client: Add, Text, Center w220 x5, No game client was detected in its expected location, please manually launch RuneScape.
-	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Add, Text, Center w220 x5, Please ensure that RuneScape is open before attempting to start the script again.
-	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Add, Button, gCloseClient w150 x40 center, Close Error
-	WinSet, ExStyle, ^0x80
-	Gui Client: -caption
-	Gui Client: Show, center w230, No Client Detected
-
-	return
-}
-return
-
-CloseClient:
-Gui Client: Destroy
-Gui 1: Show
-return
-
-Jagex:
-Gui Client: Destroy
-Gui 1: Show
-Run, C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe
-return
-
-RuneScape:
-Gui Client: Destroy
-Gui 1: Show
-Run, rs-launch://www.runescape.com/k=5/l=$(Language:0)/jav_config.ws
+run https://github.com/Gubna-Tech/RuneScape
 return
