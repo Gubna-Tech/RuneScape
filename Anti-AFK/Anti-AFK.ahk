@@ -2034,21 +2034,20 @@ AFK:
 	ymax := RSh + RSy
 	
 	Log("ANTI-AFK WINDOW", "RuneScape window refreshed | X=" RSx " Y=" RSy " W=" RSw " H=" RSh)
-
+	
 	IniRead, sa1, Config.ini, AFK, min
 	IniRead, sa2, Config.ini, AFK, max	
 	Random, SleepAmount, %sa1%, %sa2%	
 	SetTimer, AFK, %SleepAmount%
 	
 	Log("ANTI-AFK TIMER", "Next AFK activation randomized between " sa1 " and " sa2 " ms | Next activation in " SleepAmount " ms")
-
+	
 	Random, x, %xmin%, %xmax%
 	Random, y, %ymin%, %ymax%
-	Random, RandomSpeed, 25, 100	
-	MouseMove, %x%, %y%, %RandomSpeed%
+	NaturalClick(x, y)
 	
 	Log("ANTI-AFK MOVE", "Mouse moved | X=" x " Y=" y " Speed=" RandomSpeed)
-
+	
 	loop 100
 	{
 		mousegetpos xm, ym
