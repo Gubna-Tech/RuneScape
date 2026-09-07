@@ -13,6 +13,7 @@ SetBatchLines, -1
 ; Starts the logging session before any other script initialization so
 ; startup events and errors can be recorded from the beginning.
 LastLogTick := 0
+SetLLARSHOTKEYS("On")
 StartLogSession()
 Log("STARTUP", "Script started")
 
@@ -113,23 +114,7 @@ if !FileExist("LLARS Config.ini")
 }
 Log("LLARS CONFIG LOADED", "LLARS Config.ini loaded successfully")
 
-; ===================================================================
-; |     HOTKEY READ     -     HOTKEY READ     -     HOTKEY READ     |
-; ===================================================================
-
-; Loads the LLARS control hotkeys and GUI transparency setting from
-; the external configuration instead of hard-coding them in the script.
-IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 IniRead, value, LLARS Config.ini, Transparent, value
-
-; ======================================================================
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; ======================================================================
 
 ; ======================================================================
 ; |     SCRIPT SETUP     -     SCRIPT SETUP     -     SCRIPT SETUP     |
@@ -148,17 +133,6 @@ clickspot := 1
 settimer, configcheck, 250
 
 scriptname := regexreplace(A_scriptname,"\..*","")
-
-Hotkey %lhk1%, Start
-Hotkey %lhk2%, Info
-Hotkey %lhk3%, Combo
-Hotkey %lhk4%, exitb
-
-; ==================================================================
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; ==================================================================
 
 ; =====================================================================================
 ; |     MAIN GUI CREATION     -     MAIN GUI CREATION     -     MAIN GUI CREATION     |
@@ -428,13 +402,10 @@ GetConfigType(file, section)
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
 CheckPOS() {
-	allowedWindows := "|LLARS|hotkeys|coordinates|file error|config error|game not found|information|multiple client|no client detected|combo|"
+	WinGet, processName, ProcessName, A
 	
-	WinGetTitle, activeWindowTitle, A
-	
-	if (InStr(allowedWindows, "|" activeWindowTitle "|") <= 0) {
+	if (processName != "AutoHotkey.exe")
 		return
-	}
 	
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
 	xmin := GUIx
@@ -443,24 +414,23 @@ CheckPOS() {
 	ymax := GUIh + GUIy
 	xadj := A_ScreenWidth - GUIw
 	yadj := A_ScreenHeight - GUIh
-	WinGetPos, X, Y,,, A    
 	
-	if (xmin < 0) {
-		WinMove, A,, 0
-	}
-	if (ymin < 0) {
-		WinMove, A,,, 0
-	}
-	if (xmax > A_ScreenWidth) {
-		WinMove, A,, xadj    
-	}
-	if (ymax > A_ScreenHeight) {
-		WinMove, A,,, yadj
-	}
+	WinGetPos, X, Y,,, A
+	
+	if (xmin < 0)
+		X := 0
+	if (ymin < 0)
+		Y := 0
+	if (xmax > A_ScreenWidth)
+		X := xadj
+	if (ymax > A_ScreenHeight)
+		Y := yadj	
+	if (X != GUIx || Y != GUIy)
+		WinMove, A,, X, Y
 }
 
-; Finds existing LLARS windows and closes them to prevent multiple
-; active LLARS instances from running simultaneously.
+; Finds existing LLARS AutoHotkey windows and closes them
+; to prevent multiple active LLARS instances from running simultaneously.
 CloseOtherLLARS()
 {
 	WinGet, hWndList, List, LLARS
@@ -468,85 +438,419 @@ CloseOtherLLARS()
 	Loop, %hWndList%
 	{
 		hWnd := hWndList%A_Index%
-		Log("DUPLICATE CLOSE", "Closing existing LLARS window")
-		WinClose, % "ahk_id " hWnd
+		
+		WinGet, processName, ProcessName, ahk_id %hWnd%
+		
+		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
+		{
+			Log("DUPLICATE CLOSE", "Closing existing LLARS AutoHotkey window")
+			WinClose, % "ahk_id " hWnd
+		}
 	}
 }
 
-; Temporarily disables all LLARS control hotkeys while a configuration
-; or information GUI is active.
-DisableHotkey(disable := true) {
-	Control, Disable,, start
+SetLLARSHOTKEYS(state := "On", startOnly := false)
+{
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	
+	if (lhk1 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk1%, Start, On
+		else
+			Hotkey, %lhk1%, Start, Off
+	}
+	
+	if (startOnly)
+		return
+	
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
 	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	Hotkey, %lhk1%, off	
-	Hotkey, %lhk2%, off
-	Hotkey, %lhk3%, off
-	Hotkey, %lhk4%, off
+	
+	if (lhk2 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk2%, Info, On
+		else
+			Hotkey, %lhk2%, Info, Off
+	}
+	
+	if (lhk3 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk3%, Combo, On
+		else
+			Hotkey, %lhk3%, Combo, Off
+	}
+	
+	if (lhk4 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk4%, exitb, On
+		else
+			Hotkey, %lhk4%, exitb, Off
+	}
 }
 
-; Re-enables the configured LLARS control hotkeys after leaving
-; a secondary GUI.
-EnableHotkey(enable := true) {
+; Temporarily disables all LLARS control hotkeys.
+DisableHotkey()
+{
+	Control, Disable,, start
+	SetLLARSHOTKEYS("Off")
+}
+
+; Re-enables all LLARS control hotkeys.
+EnableHotkey()
+{
 	Control, Enable,, start
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	Hotkey, %lhk1%, on	
-	Hotkey, %lhk2%, on
-	Hotkey, %lhk3%, on
-	Hotkey, %lhk4%, on
-	
+	SetLLARSHOTKEYS("On")
 }
 
 ; Disables only the Start control while the timed script is running.
-DisableButton(disable := true) {
+DisableButton()
+{
 	Control, Disable,, start
-	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	Hotkey, %lhk1%, off
+	SetLLARSHOTKEYS("Off", true)
 }
 
 ; Re-enables the Start control after the timed run is finished.
-EnableButton(enable := true) {
+EnableButton()
+{
 	Control, Enable,, start
-	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	Hotkey, %lhk1%, On
+	SetLLARSHOTKEYS("On", true)
 }
 
 ; Provides Escape-key shortcuts for closing the various secondary
 ; LLARS GUIs and returning to the main window.
 ~Esc::
 IfWinActive, Coordinates
-{EnableHotkey()
-GoSub, close
+{
+	EnableHotkey()
+	GoSub, close
 }
-IfWinActive, Timer
-{EnableHotkey()
-Gui 5: destroy
-Gui 1: show
+Else IfWinActive, Timer
+{
+	EnableHotkey()
+	Gui 5: Destroy
+	Gui 1: Show
 }
-IfWinActive, Information
-{EnableHotkey()	
-GoSub, closeinfo
+Else IfWinActive, Information
+{
+	EnableHotkey()
+	GoSub, closeinfo
 }
-IfWinActive, Combo
-{EnableHotkey()	
-GoSub, closecombo
+Else IfWinActive, Combo
+{
+	EnableHotkey()
+	GoSub, closecombo
 }
-IfWinActive, Colors
-{EnableHotkey()	
-GoSub, close1
+Else IfWinActive, Colors
+{
+	EnableHotkey()
+	GoSub, close1
 }
-IfWinActive, Hotkeys
-{EnableHotkey()	
-GoSub, close2
+Else IfWinActive, Hotkeys
+{
+	EnableHotkey()
+	GoSub, close2
 }
 Return
+
+NaturalClick(x, y)
+{
+	MouseGetPos, startX, startY
+	
+	dx := x - startX
+	dy := y - startY
+	distance := Sqrt((dx * dx) + (dy * dy))
+	
+	if (distance <= 2)
+	{
+		Random, pause, 50, 120
+		Sleep, %pause%
+		Click
+		return
+	}
+	
+	Random, speed, 2500, 3500
+	
+	duration := (distance / speed) * 1000
+	
+	if (duration < 180)
+		duration := 180
+	
+	if (duration > 900)
+		duration := 900
+	
+	steps := Round(distance / 6)
+	
+	if (steps < 15)
+		steps := 15
+	
+	if (steps > 100)
+		steps := 100
+	
+	rawSteps := Round(distance / 3)
+	
+	if (rawSteps < 60)
+		rawSteps := 60
+	
+	if (rawSteps > 300)
+		rawSteps := 300
+	
+	perpX := -dy / distance
+	perpY := dx / distance
+
+	curveLimit := distance * 0.14
+	
+	if (curveLimit < 5)
+		curveLimit := 5
+	
+	if (curveLimit > 85)
+		curveLimit := 85
+	
+	Random, curveBase, -100, 100
+	curveBase := curveBase * curveLimit / 100
+	
+	Random, curveVariation1, -25, 25
+	Random, curveVariation2, -25, 25
+	
+	curveAmount1 := curveBase + (curveLimit * curveVariation1 / 100)
+	curveAmount2 := curveBase + (curveLimit * curveVariation2 / 100)
+	
+	if (curveAmount1 > curveLimit)
+		curveAmount1 := curveLimit
+	
+	if (curveAmount1 < -curveLimit)
+		curveAmount1 := -curveLimit
+	
+	if (curveAmount2 > curveLimit)
+		curveAmount2 := curveLimit
+	
+	if (curveAmount2 < -curveLimit)
+		curveAmount2 := -curveLimit
+	
+	Random, cp1Percent, 25, 38
+	Random, cp2Percent, 62, 75
+	
+	cp1X := startX + (dx * cp1Percent / 100)
+	cp1Y := startY + (dy * cp1Percent / 100)
+	
+	cp2X := startX + (dx * cp2Percent / 100)
+	cp2Y := startY + (dy * cp2Percent / 100)
+	
+	cp1X += perpX * curveAmount1
+	cp1Y += perpY * curveAmount1
+	
+	cp2X += perpX * curveAmount2
+	cp2Y += perpY * curveAmount2
+	
+	Random, seedX, 1, 100000
+	Random, seedY, 1, 100000
+	
+	noiseAmount := distance * 0.012
+	
+	if (noiseAmount < 0.75)
+		noiseAmount := 0.75
+	
+	if (noiseAmount > 6)
+		noiseAmount := 6
+
+	points := []
+	lengths := []
+	
+	totalLength := 0
+	
+	previousX := startX
+	previousY := startY
+	
+	points.Push({x:startX, y:startY})
+	lengths.Push(0)
+	
+	previousNoise := 0
+	
+	Loop, %rawSteps%
+	{
+		t := A_Index / rawSteps
+		
+		ease := t
+		
+		inv := 1 - ease
+		
+		currentX := (inv * inv * inv * startX)
+		currentX += (3 * inv * inv * ease * cp1X)
+		currentX += (3 * inv * ease * ease * cp2X)
+		currentX += (ease * ease * ease * x)
+		
+		currentY := (inv * inv * inv * startY)
+		currentY += (3 * inv * inv * ease * cp1Y)
+		currentY += (3 * inv * ease * ease * cp2Y)
+		currentY += (ease * ease * ease * y)
+		
+		nx := NaturalNoise(seedX, t)
+		ny := NaturalNoise(seedY, t + 13.731)
+		
+		noiseFade := Sin(t * 3.14159265)
+		
+		if (t > 0.80)
+		{
+			fade := (1 - t) / 0.20
+			
+			if (fade < 0)
+				fade := 0
+			
+			noiseFade *= fade
+		}
+		
+		rawNoise := ((nx + ny) * 0.5) * noiseAmount * noiseFade
+		
+		smoothedNoise := (previousNoise * 0.70) + (rawNoise * 0.30)
+		
+		previousNoise := smoothedNoise
+		
+		currentX += perpX * smoothedNoise
+		currentY += perpY * smoothedNoise
+		
+		segmentDX := currentX - previousX
+		segmentDY := currentY - previousY
+		
+		segmentLength := Sqrt((segmentDX * segmentDX) + (segmentDY * segmentDY))
+		
+		totalLength += segmentLength
+		
+		points.Push({x:currentX, y:currentY})
+		lengths.Push(totalLength)
+		
+		previousX := currentX
+		previousY := currentY
+	}
+	
+	startTime := A_TickCount
+	
+	searchIndex := 2
+	
+	previousX := startX
+	previousY := startY
+	
+	Loop, %steps%
+	{
+		t := A_Index / steps
+		
+		timingT := t * t * (3 - (2 * t))
+		
+		targetLength := totalLength * timingT
+		
+		while (searchIndex < lengths.Length() && lengths[searchIndex] < targetLength)
+			searchIndex++
+		
+		if (searchIndex > lengths.Length())
+			searchIndex := lengths.Length()
+		
+		prevIndex := searchIndex - 1
+		
+		if (prevIndex < 1)
+			prevIndex := 1
+		
+		prevLength := lengths[prevIndex]
+		nextLength := lengths[searchIndex]
+		
+		lengthRange := nextLength - prevLength
+		
+		if (lengthRange <= 0)
+		{
+			blend := 0
+		}
+		else
+		{
+			blend := (targetLength - prevLength) / lengthRange
+		}
+		
+		point1 := points[prevIndex]
+		point2 := points[searchIndex]
+		
+		currentX := point1.x + ((point2.x - point1.x) * blend)
+		currentY := point1.y + ((point2.y - point1.y) * blend)
+		
+		currentX := Round(currentX)
+		currentY := Round(currentY)
+		
+		if (currentX != previousX || currentY != previousY)
+		{
+			MouseMove, %currentX%, %currentY%, 0
+			
+			previousX := currentX
+			previousY := currentY
+		}
+	
+		targetElapsed := Round(duration * t)
+		actualElapsed := A_TickCount - startTime
+		
+		delay := targetElapsed - actualElapsed
+		
+		if (delay < 1)
+			delay := 1
+		
+		if (delay > 20)
+			delay := 20
+		
+		Sleep, %delay%
+	}
+
+	MouseMove, %x%, %y%, 0
+
+	Random, pause, 50, 120
+	Sleep, %pause%
+	
+	Click
+}
+
+NaturalNoise(seed, t)
+{
+	n1 := NaturalNoiseLayer(seed, t, 1.0)
+	n2 := NaturalNoiseLayer(seed + 91.73, t, 2.2) * 0.45
+	n3 := NaturalNoiseLayer(seed + 217.41, t, 4.5) * 0.20
+	
+	value := n1 + n2 + n3
+	
+	if (value > 1)
+		value := 1
+	
+	if (value < -1)
+		value := -1
+	
+	return value
+}
+
+NaturalNoiseLayer(seed, t, frequency)
+{
+	position := (seed * 0.01) + (t * frequency * 5)
+	
+	segment := Floor(position)
+	f := position - segment
+	
+	smooth := f * f * (3 - (2 * f))
+	
+	v1 := NaturalHash(segment)
+	v2 := NaturalHash(segment + 1)
+	
+	return v1 + ((v2 - v1) * smooth)
+}
+
+NaturalHash(value)
+{
+	value := Mod(value, 2147483647)
+	
+	if (value < 0)
+		value += 2147483647
+	
+	value := Mod((value * 48271), 2147483647)
+	
+	if (value < 0)
+		value += 2147483647
+	
+	return (value / 1073741823.5) - 1
+}
 
 ; ===================================================================================================================
 ; |     COLOR/COORDINATE/HOTKEY GUI     -     COLOR/COORDINATE/HOTKEY GUI     -     COLOR/COORDINATE/HOTKEY GUI     |
@@ -1346,10 +1650,19 @@ Log("START", "Start button/hotkey activated")
 ; inputbox for user to enter runcount
 ; runcount represents the amount of loops script will execute
 InputBox, runcount, Run How Many Times?,,,250,100
-
-if (runcount = "" || runcount <= 0)
+if (ErrorLevel)
 {
-	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
+	Reload
+	return
+}
+if (runcount = "" || !RegExMatch(runcount, "^\d+$") || runcount <= 0)
+{
+	MsgBox, 48, Invalid Input, Please enter a valid whole number greater than 0.
+	return
+}
+if (runcount > 1000)
+{
+	MsgBox, 48, Invalid Input, Please enter a number between 1 and 1000.
 	return
 }
 
@@ -1524,7 +1837,7 @@ Loop, % runcount
 	Random, x, %x1%, %x2%
 	Random, y, %y1%, %y2%
 	
-	Click, %x%, %y%
+	NaturalClick(x, y)
 	
 	Log("ITEM", "X=" x " Y=" y)
 	
