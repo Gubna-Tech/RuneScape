@@ -109,69 +109,52 @@ WM_WINDOWPOSCHANGED() {
 }
 return
 
-CheckPOS()
-{
-	; Windows allowed to use the position correction routine.
-	allowedWindows := "|Script Selector|"
+; Keeps supported LLARS windows inside the visible screen area when
+; their position changes or they are moved partially off-screen.
+CheckPOS() {
+	WinGet, processName, ProcessName, A
 	
-	; Get the currently active window title.
-	WinGetTitle, activeWindowTitle, A
-	
-	; Ignore windows that are not part of this selector.
-	if (InStr(allowedWindows, "|" activeWindowTitle "|") <= 0)
-	{
+	if (processName != "AutoHotkey.exe")
 		return
-	}
 	
-	; Get the current GUI position and size.
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
-	
 	xmin := GUIx
 	xmax := GUIw + GUIx
 	ymin := GUIy
 	ymax := GUIh + GUIy
-	
 	xadj := A_ScreenWidth - GUIw
 	yadj := A_ScreenHeight - GUIh
 	
 	WinGetPos, X, Y,,, A
 	
-	
-	; Keep the left edge on-screen.
 	if (xmin < 0)
-	{
-		WinMove, A,, 0
-	}
-	
-	; Keep the top edge on-screen.
+		X := 0
 	if (ymin < 0)
-	{
-		WinMove, A,,, 0
-	}
-	
-	; Keep the right edge on-screen.
+		Y := 0
 	if (xmax > A_ScreenWidth)
-	{
-		WinMove, A,, xadj
-	}
-	
-	; Keep the bottom edge on-screen.
+		X := xadj
 	if (ymax > A_ScreenHeight)
-	{
-		WinMove, A,,, yadj
-	}
+		Y := yadj	
+	if (X != GUIx || Y != GUIy)
+		WinMove, A,, X, Y
 }
 
+; Finds existing LLARS AutoHotkey windows and closes them
+; to prevent multiple active LLARS instances from running simultaneously.
 CloseOtherLLARS()
 {
-	; Find all windows with LLARS in the title.
 	WinGet, hWndList, List, LLARS
 	
 	Loop, %hWndList%
 	{
 		hWnd := hWndList%A_Index%
 		
-		WinClose, % "ahk_id " hWnd
+		WinGet, processName, ProcessName, ahk_id %hWnd%
+		
+		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
+		{
+			WinClose, % "ahk_id " hWnd
+		}
 	}
 }
 
