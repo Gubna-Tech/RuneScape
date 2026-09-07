@@ -14,6 +14,7 @@ SetBatchLines, -1
 ; startup events and errors can be recorded from the beginning.
 LastLogTick := 0
 StartLogSession()
+SetLLARSHOTKEYS("On")
 Log("STARTUP", "Script started")
 
 ; ===============================================================================
@@ -113,23 +114,7 @@ if !FileExist("LLARS Config.ini")
 }
 Log("LLARS CONFIG LOADED", "LLARS Config.ini loaded successfully")
 
-; ===================================================================
-; |     HOTKEY READ     -     HOTKEY READ     -     HOTKEY READ     |
-; ===================================================================
-
-; Loads the LLARS control hotkeys and GUI transparency setting from
-; the external configuration instead of hard-coding them in the script.
-IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 IniRead, value, LLARS Config.ini, Transparent, value
-
-; ======================================================================
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; ======================================================================
 
 ; ======================================================================
 ; |     SCRIPT SETUP     -     SCRIPT SETUP     -     SCRIPT SETUP     |
@@ -148,17 +133,6 @@ clickspot := 1
 settimer, configcheck, 250
 
 scriptname := regexreplace(A_scriptname,"\..*","")
-
-Hotkey %lhk1%, Start
-Hotkey %lhk2%, Info
-Hotkey %lhk3%, Combo
-Hotkey %lhk4%, exitb
-
-; ==================================================================
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; ==================================================================
 
 ; =====================================================================================
 ; |     MAIN GUI CREATION     -     MAIN GUI CREATION     -     MAIN GUI CREATION     |
@@ -434,13 +408,10 @@ GetConfigType(file, section)
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
 CheckPOS() {
-	allowedWindows := "|LLARS|hotkeys|coordinates|file error|config error|game not found|information|multiple client|no client detected|combo|"
+	WinGet, processName, ProcessName, A
 	
-	WinGetTitle, activeWindowTitle, A
-	
-	if (InStr(allowedWindows, "|" activeWindowTitle "|") <= 0) {
+	if (processName != "AutoHotkey.exe")
 		return
-	}
 	
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
 	xmin := GUIx
@@ -449,24 +420,23 @@ CheckPOS() {
 	ymax := GUIh + GUIy
 	xadj := A_ScreenWidth - GUIw
 	yadj := A_ScreenHeight - GUIh
-	WinGetPos, X, Y,,, A    
 	
-	if (xmin < 0) {
-		WinMove, A,, 0
-	}
-	if (ymin < 0) {
-		WinMove, A,,, 0
-	}
-	if (xmax > A_ScreenWidth) {
-		WinMove, A,, xadj    
-	}
-	if (ymax > A_ScreenHeight) {
-		WinMove, A,,, yadj
-	}
+	WinGetPos, X, Y,,, A
+	
+	if (xmin < 0)
+		X := 0
+	if (ymin < 0)
+		Y := 0
+	if (xmax > A_ScreenWidth)
+		X := xadj
+	if (ymax > A_ScreenHeight)
+		Y := yadj	
+	if (X != GUIx || Y != GUIy)
+		WinMove, A,, X, Y
 }
 
-; Finds existing LLARS windows and closes them to prevent multiple
-; active LLARS instances from running simultaneously.
+; Finds existing LLARS AutoHotkey windows and closes them
+; to prevent multiple active LLARS instances from running simultaneously.
 CloseOtherLLARS()
 {
 	WinGet, hWndList, List, LLARS
@@ -474,83 +444,122 @@ CloseOtherLLARS()
 	Loop, %hWndList%
 	{
 		hWnd := hWndList%A_Index%
-		Log("DUPLICATE CLOSE", "Closing existing LLARS window")
-		WinClose, % "ahk_id " hWnd
+		
+		WinGet, processName, ProcessName, ahk_id %hWnd%
+		
+		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
+		{
+			Log("DUPLICATE CLOSE", "Closing existing LLARS AutoHotkey window")
+			WinClose, % "ahk_id " hWnd
+		}
 	}
 }
 
-; Temporarily disables all LLARS control hotkeys while a configuration
-; or information GUI is active.
-DisableHotkey(disable := true) {
-	Control, Disable,, start
+SetLLARSHOTKEYS(state := "On", startOnly := false)
+{
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	
+	if (lhk1 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk1%, Start, On
+		else
+			Hotkey, %lhk1%, Start, Off
+	}
+	
+	if (startOnly)
+		return
+	
 	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
 	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	Hotkey, %lhk1%, off	
-	Hotkey, %lhk2%, off
-	Hotkey, %lhk3%, off
-	Hotkey, %lhk4%, off
+	
+	if (lhk2 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk2%, Info, On
+		else
+			Hotkey, %lhk2%, Info, Off
+	}
+	
+	if (lhk3 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk3%, Combo, On
+		else
+			Hotkey, %lhk3%, Combo, Off
+	}
+	
+	if (lhk4 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk4%, exitb, On
+		else
+			Hotkey, %lhk4%, exitb, Off
+	}
 }
 
-; Re-enables the configured LLARS control hotkeys after leaving
-; a secondary GUI.
-EnableHotkey(enable := true) {
+; Temporarily disables all LLARS control hotkeys.
+DisableHotkey()
+{
+	Control, Disable,, start
+	SetLLARSHOTKEYS("Off")
+}
+
+; Re-enables all LLARS control hotkeys.
+EnableHotkey()
+{
 	Control, Enable,, start
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	Hotkey, %lhk1%, on	
-	Hotkey, %lhk2%, on
-	Hotkey, %lhk3%, on
-	Hotkey, %lhk4%, on
-	
+	SetLLARSHOTKEYS("On")
 }
 
 ; Disables only the Start control while the timed script is running.
-DisableButton(disable := true) {
+DisableButton()
+{
 	Control, Disable,, start
-	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	Hotkey, %lhk1%, off
+	SetLLARSHOTKEYS("Off", true)
 }
 
 ; Re-enables the Start control after the timed run is finished.
-EnableButton(enable := true) {
+EnableButton()
+{
 	Control, Enable,, start
-	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	Hotkey, %lhk1%, On
+	SetLLARSHOTKEYS("On", true)
 }
 
 ; Provides Escape-key shortcuts for closing the various secondary
 ; LLARS GUIs and returning to the main window.
 ~Esc::
 IfWinActive, Coordinates
-{EnableHotkey()
-GoSub, close
+{
+	EnableHotkey()
+	GoSub, close
 }
-IfWinActive, Timer
-{EnableHotkey()
-Gui 5: destroy
-Gui 1: show
+Else IfWinActive, Timer
+{
+	EnableHotkey()
+	Gui 5: Destroy
+	Gui 1: Show
 }
-IfWinActive, Information
-{EnableHotkey()	
-GoSub, closeinfo
+Else IfWinActive, Information
+{
+	EnableHotkey()
+	GoSub, closeinfo
 }
-IfWinActive, Combo
-{EnableHotkey()	
-GoSub, closecombo
+Else IfWinActive, Combo
+{
+	EnableHotkey()
+	GoSub, closecombo
 }
-IfWinActive, Colors
-{EnableHotkey()	
-GoSub, close1
+Else IfWinActive, Colors
+{
+	EnableHotkey()
+	GoSub, close1
 }
-IfWinActive, Hotkeys
-{EnableHotkey()	
-GoSub, close2
+Else IfWinActive, Hotkeys
+{
+	EnableHotkey()
+	GoSub, close2
 }
 Return
 
@@ -1647,10 +1656,19 @@ Log("START", "Start button/hotkey activated")
 ; inputbox for user to enter runcount
 ; runcount represents the amount of loops script will execute
 InputBox, runcount, Run How Many Times?,,,250,100
-
-if (runcount = "" || runcount <= 0)
+if (ErrorLevel)
 {
-	MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
+	Reload
+	return
+}
+if (runcount = "" || !RegExMatch(runcount, "^\d+$") || runcount <= 0)
+{
+	MsgBox, 48, Invalid Input, Please enter a valid whole number greater than 0.
+	return
+}
+if (runcount > 1000)
+{
+	MsgBox, 48, Invalid Input, Please enter a number between 1 and 1000.
 	return
 }
 
