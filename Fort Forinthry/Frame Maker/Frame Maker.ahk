@@ -172,7 +172,7 @@ Gui, Show,w220 h150, LLARS
 ; Restores the main LLARS GUI to its previously saved screen position.
 IniRead, x, LLARS Config.ini, GUI POS, guix
 IniRead, y, LLARS Config.ini, GUI POS, guiy
-WinMove A, ,%X%, %y%
+WinMove, LLARS,, %X%, %y%
 
 ; Loads the custom LLARS icon into the main GUI when available.
 if FileExist("LLARS Logo.ico")
@@ -276,10 +276,8 @@ WM_LBUTTONDOWN() {
 }
 return
 
-WM_WINDOWPOSCHANGED() {
-	If (A_Gui) {
-		checkpos()
-	}
+WM_WINDOWPOSCHANGED(hwnd, uMsg, wParam, lParam) {
+	CheckPOS(hwnd)
 }
 return
 
@@ -436,13 +434,15 @@ CheckPOS()
 
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
-CheckPOS() {
-	WinGet, processName, ProcessName, A
+CheckPOS(hwnd)
+{
+	WinGetClass, winClass, ahk_id %hwnd%
 	
-	if (processName != "AutoHotkey.exe")
+	if (winClass != "AutoHotkeyGUI")
 		return
 	
-	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
+	WinGetPos, GUIx, GUIy, GUIw, GUIh, ahk_id %hwnd%
+	
 	xmin := GUIx
 	xmax := GUIw + GUIx
 	ymin := GUIy
@@ -450,7 +450,8 @@ CheckPOS() {
 	xadj := A_ScreenWidth - GUIw
 	yadj := A_ScreenHeight - GUIh
 	
-	WinGetPos, X, Y,,, A
+	X := GUIx
+	Y := GUIy
 	
 	if (xmin < 0)
 		X := 0
@@ -459,9 +460,10 @@ CheckPOS() {
 	if (xmax > A_ScreenWidth)
 		X := xadj
 	if (ymax > A_ScreenHeight)
-		Y := yadj	
+		Y := yadj
+	
 	if (X != GUIx || Y != GUIy)
-		WinMove, A,, X, Y
+		WinMove, ahk_id %hwnd%,, X, Y
 }
 
 ; Set this to false when the script is in its normal/idle state.
