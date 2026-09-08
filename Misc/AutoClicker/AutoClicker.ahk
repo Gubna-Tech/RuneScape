@@ -128,7 +128,7 @@ coordcount = 0
 frcount = 0
 LastClickTime := 0
 
-settimer, configcheck, 250
+SetTimer, CheckLLARSConfig, 250
 
 scriptname := regexreplace(A_scriptname,"\..*","")
 
@@ -492,10 +492,11 @@ CheckConfigFile(file)
 
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
-CheckPOS() {
-	WinGet, processName, ProcessName, A
+CheckPOS()
+{
+	WinGetClass, winClass, A
 	
-	if (processName != "AutoHotkey.exe")
+	if (winClass != "AutoHotkeyGUI")
 		return
 	
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
@@ -542,8 +543,22 @@ CloseOtherLLARS()
 
 SetLLARSHOTKEYS(state := "On", startOnly := false)
 {
+	global LLARS_lhk1
+	global LLARS_lhk2
+	global LLARS_lhk3
+	global LLARS_lhk4
+	global LLARS_RUNNING
+	
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	
+	; Disable the previously configured Start hotkey if it changed.
+	if (LLARS_lhk1 != "" && LLARS_lhk1 != lhk1)
+		Hotkey, %LLARS_lhk1%, Start, Off
+	
+	; Save the current Start hotkey.
+	LLARS_lhk1 := lhk1
+	
+	; Enable/disable the current Start hotkey.
 	if (lhk1 != "")
 	{
 		if (state = "On")
@@ -552,6 +567,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 			Hotkey, %lhk1%, Start, Off
 	}
 	
+	; Only update the Start hotkey when requested.
 	if (startOnly)
 		return
 	
@@ -559,21 +575,76 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
 	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 	
+	; Disable the previously configured Information/Pause hotkey if it changed.
+	if (LLARS_lhk2 != "" && LLARS_lhk2 != lhk2)
+	{
+		Hotkey, %LLARS_lhk2%, Info, Off
+		Hotkey, %LLARS_lhk2%, pauseb, Off
+	}
+	
+	; Save the current Information/Pause hotkey.
+	LLARS_lhk2 := lhk2
+	
 	if (lhk2 != "")
 	{
 		if (state = "On")
-			Hotkey, %lhk2%, Info, On
+		{
+			if (LLARS_RUNNING)
+			{
+				Hotkey, %lhk2%, Info, Off
+				Hotkey, %lhk2%, pauseb, On
+			}
+			else
+			{
+				Hotkey, %lhk2%, pauseb, Off
+				Hotkey, %lhk2%, Info, On
+			}
+		}
 		else
+		{
 			Hotkey, %lhk2%, Info, Off
+			Hotkey, %lhk2%, pauseb, Off
+		}
 	}
+	
+	; Disable the previously configured Combo/Resume hotkey if it changed.
+	if (LLARS_lhk3 != "" && LLARS_lhk3 != lhk3)
+	{
+		Hotkey, %LLARS_lhk3%, Combo, Off
+		Hotkey, %LLARS_lhk3%, resumeb, Off
+	}
+	
+	; Save the current Combo/Resume hotkey.
+	LLARS_lhk3 := lhk3
 	
 	if (lhk3 != "")
 	{
 		if (state = "On")
-			Hotkey, %lhk3%, Combo, On
+		{
+			if (LLARS_RUNNING)
+			{
+				Hotkey, %lhk3%, Combo, Off
+				Hotkey, %lhk3%, resumeb, On
+			}
+			else
+			{
+				Hotkey, %lhk3%, resumeb, Off
+				Hotkey, %lhk3%, Combo, On
+			}
+		}
 		else
+		{
 			Hotkey, %lhk3%, Combo, Off
+			Hotkey, %lhk3%, resumeb, Off
+		}
 	}
+	
+	; Disable the previously configured Exit hotkey if it changed.
+	if (LLARS_lhk4 != "" && LLARS_lhk4 != lhk4)
+		Hotkey, %LLARS_lhk4%, exitb, Off
+	
+	; Save the current Exit hotkey.
+	LLARS_lhk4 := lhk4
 	
 	if (lhk4 != "")
 	{
@@ -611,6 +682,10 @@ EnableButton()
 	Control, Enable,, start
 	SetLLARSHOTKEYS("On", true)
 }
+
+CheckLLARSConfig:
+SetLLARSHOTKEYS()
+return
 
 ; Provides Escape-key shortcuts for closing the various secondary
 ; LLARS GUIs and returning to the main window.
@@ -1826,39 +1901,6 @@ GuiControl,,ScriptRed, %scriptname%
 Pause, on
 Return
 
-; ======================================================================
-; |     HOTKEY CHECK     -     HOTKEY CHECK     -     HOTKEY CHECK     |
-; ======================================================================
-
-; Periodically reloads the configured LLARS menu hotkeys while the
-; script is idle, allowing hotkey changes in LLARS Config.ini to take
-; effect without restarting the script.
-Configcheck:
-IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-
-Hotkey %lhk1%, Start
-Hotkey %lhk2%, Info
-Hotkey %lhk3%, Combo
-Hotkey %lhk4%, exitb
-return
-
-; Periodically reloads the LLARS hotkeys used while the timed script
-; is running, where the information/menu hotkeys become Pause/Resume.
-Config2check:
-IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-
-Hotkey, %lhk1%, Start
-Hotkey, %lhk2%, pauseb
-Hotkey, %lhk3%, resumeb
-Hotkey, %lhk4%, exitb
-return
-
 ; ===================================================================
 ; |     TIMER LOGIC     -     TIMER LOGIC     -     TIMER LOGIC     |
 ; ===================================================================
@@ -1935,23 +1977,10 @@ endTime := A_TickCount + timeToRunMS
 
 Log("TIMER", "Timer set to " timeToRunMinutes " minutes")
 
-; On the first run, stop the idle hotkey watcher and switch the LLARS
-; hotkeys to their running-state Pause/Resume assignments.
 If (frcount = 0)
 {
-	SetTimer, ConfigCheck, off
-	SetTimer, Config2Check, 250
-	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-	IniRead, value, LLARS Config.ini, Transparent, value
-	
-	Hotkey %lhk1%, Start
-	Hotkey %lhk2%, pauseb
-	Hotkey %lhk3%, resumeb
-	Hotkey %lhk4%, exitb
+	LLARS_RUNNING := true
+	SetLLARSHOTKEYS()
 	
 	; Rebuild the main GUI into its running-state layout.
 	WinGetPos, X, Y,,, LLARS
@@ -2186,6 +2215,9 @@ Logout(){
 ; Calculate the completed run duration in hours and minutes and display
 ; the final completion notification.
 EndMsg:
+LLARS_RUNNING := false
+SetLLARSHOTKEYS()
+
 hours := timeToRunMinutes // 60
 minutes := Mod(timeToRunMinutes, 60)
 
