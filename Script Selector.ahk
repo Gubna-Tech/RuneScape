@@ -111,10 +111,11 @@ return
 
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
-CheckPOS() {
-	WinGet, processName, ProcessName, A
+CheckPOS()
+{
+	WinGetClass, winClass, A
 	
-	if (processName != "AutoHotkey.exe")
+	if (winClass != "AutoHotkeyGUI")
 		return
 	
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
