@@ -293,7 +293,7 @@ ConfigError()
 }
 
 ; Displays the configuration error, opens the affected file, logs
-; the missing value, and reloads the script after the user fixes it.
+; the missing value(s), and reloads the script after the user fixes it.
 ConfigErrorMessage(file, section, key)
 {
 	Run, %A_ScriptDir%\%file%
@@ -327,6 +327,79 @@ CheckConfigFile(file)
 		
 		if (option = "false")
 			continue
+		
+		; Determine whether this section is a coordinate section.
+		configType := GetConfigType(file, section)
+		
+		if (configType = "coordinate")
+		{
+			; Read all possible coordinate values.
+			IniRead, x, %file%, %section%, x, ERROR
+			IniRead, y, %file%, %section%, y, ERROR
+			
+			IniRead, xmin, %file%, %section%, xmin, ERROR
+			IniRead, xmax, %file%, %section%, xmax, ERROR
+			IniRead, ymin, %file%, %section%, ymin, ERROR
+			IniRead, ymax, %file%, %section%, ymax, ERROR
+			
+			; Determine which coordinate format is being used.
+			;
+			; If x or y exists, this is treated as a point coordinate.
+			hasPointCoordinates := (x != "ERROR" || y != "ERROR")
+			
+			; If any rectangle coordinate exists, this is treated
+			; as a rectangle coordinate.
+			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
+			
+			if (hasPointCoordinates)
+			{
+				missingCoordinates := ""
+				
+				if (x = "ERROR" || Trim(x) = "")
+					missingCoordinates .= "x`n"
+				
+				if (y = "ERROR" || Trim(y) = "")
+					missingCoordinates .= "y`n"
+				
+				if (missingCoordinates != "")
+				{
+					missingCoordinates := RTrim(missingCoordinates, "`n")
+					ConfigErrorMessage(file, section, missingCoordinates)
+					return true
+				}
+			}
+			else if (hasRectangleCoordinates)
+			{
+				missingCoordinates := ""
+				
+				if (xmin = "ERROR" || Trim(xmin) = "")
+					missingCoordinates .= "xmin`n"
+				
+				if (xmax = "ERROR" || Trim(xmax) = "")
+					missingCoordinates .= "xmax`n"
+				
+				if (ymin = "ERROR" || Trim(ymin) = "")
+					missingCoordinates .= "ymin`n"
+				
+				if (ymax = "ERROR" || Trim(ymax) = "")
+					missingCoordinates .= "ymax`n"
+				
+				if (missingCoordinates != "")
+				{
+					missingCoordinates := RTrim(missingCoordinates, "`n")
+					ConfigErrorMessage(file, section, missingCoordinates)
+					return true
+				}
+			}
+			else
+			{
+				; No coordinate keys exist at all.
+				ConfigErrorMessage(file, section, "coordinates")
+				return true
+			}
+			
+			continue
+		}
 		
 		Loop, Parse, keys, `n, `r
 		{
