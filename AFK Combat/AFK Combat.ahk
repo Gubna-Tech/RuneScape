@@ -279,8 +279,8 @@ WM_WINDOWPOSCHANGED(hwnd, uMsg, wParam, lParam) {
 }
 return
 
-; Validates both configuration files and stops on the first configuration
-; problem that is found.
+; Validates both configuration files and stops on the first blank
+; required configuration value that is found.
 ConfigError()
 {
 	if (CheckConfigFile("Config.ini"))
@@ -291,7 +291,7 @@ ConfigError()
 }
 
 ; Displays the configuration error, opens the affected file, logs
-; the missing value, and reloads the script after the user fixes it.
+; the missing value(s), and reloads the script after the user fixes it.
 ConfigErrorMessage(file, section, key)
 {
 	Run, %A_ScriptDir%\%file%
@@ -301,30 +301,13 @@ ConfigErrorMessage(file, section, key)
 	
 	MsgBox, 4112, Config Error, Please enter a value for:`n`n[%section%]`n%key%
 	
-	Log("CONFIG ERROR", file " | [" section "] " key " is blank or missing")
+	Log("CONFIG ERROR", file " | [" section "] " key " is blank")
 	
 	Reload
 }
 
-; Dynamically scans every section/key in a configuration file.
-;
-; The type value determines how a section is validated:
-;
-;   type=color
-;       Requires the section-name key to exist and contain a value.
-;
-;   type=coordinate
-;       Detects whether the section uses x/y or xmin/xmax/ymin/ymax.
-;       Missing or deleted coordinate keys are detected.
-;
-;   type=hotkey
-;       Requires the Hotkey key to exist and contain a value.
-;
-; Sections with option=false are skipped.
-;
-; Sections without a recognized type are checked generically so
-; normal configuration sections such as Sleep Timer continue to
-; have all of their values validated.
+; Dynamically scans every section/key in a configuration file and
+; checks for blank values. Sections with option=false are skipped.
 CheckConfigFile(file)
 {
 	IniRead, sections, %file%
@@ -336,21 +319,19 @@ CheckConfigFile(file)
 		if (section = "")
 			continue
 		
-		IniRead, option, %file%, %section%, option, ERROR
+		IniRead, keys, %file%, %section%
 		
-		option := Trim(option)
-		StringLower, option, option
+		IniRead, option, %file%, %section%, option, true
 		
-		if (option != "true")
+		if (option = "false")
 			continue
 		
+		; Determine whether this section is a coordinate section.
 		configType := GetConfigType(file, section)
 		
 		if (configType = "coordinate")
 		{
-			; Read both possible coordinate formats.
-			;
-			; ERROR means the key does not exist.
+			; Read all possible coordinate values.
 			IniRead, x, %file%, %section%, x, ERROR
 			IniRead, y, %file%, %section%, y, ERROR
 			
@@ -359,63 +340,58 @@ CheckConfigFile(file)
 			IniRead, ymin, %file%, %section%, ymin, ERROR
 			IniRead, ymax, %file%, %section%, ymax, ERROR
 			
-			; Determine which coordinate format exists.
+			; Determine which coordinate format is being used.
 			;
-			; If either x or y exists, this is treated as a
-			; single-point coordinate and both x and y are required.
+			; If x or y exists, this is treated as a point coordinate.
 			hasPointCoordinates := (x != "ERROR" || y != "ERROR")
 			
 			; If any rectangle coordinate exists, this is treated
-			; as a rectangle and all four values are required.
+			; as a rectangle coordinate.
 			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
 			
 			if (hasPointCoordinates)
 			{
+				missingCoordinates := ""
+				
 				if (x = "ERROR" || Trim(x) = "")
-				{
-					ConfigErrorMessage(file, section, "x")
-					return true
-				}
+					missingCoordinates .= "x`n"
 				
 				if (y = "ERROR" || Trim(y) = "")
+					missingCoordinates .= "y`n"
+				
+				if (missingCoordinates != "")
 				{
-					ConfigErrorMessage(file, section, "y")
+					missingCoordinates := RTrim(missingCoordinates, "`n")
+					ConfigErrorMessage(file, section, missingCoordinates)
 					return true
 				}
 			}
-
 			else if (hasRectangleCoordinates)
 			{
+				missingCoordinates := ""
+				
 				if (xmin = "ERROR" || Trim(xmin) = "")
-				{
-					ConfigErrorMessage(file, section, "xmin")
-					return true
-				}
+					missingCoordinates .= "xmin`n"
 				
 				if (xmax = "ERROR" || Trim(xmax) = "")
-				{
-					ConfigErrorMessage(file, section, "xmax")
-					return true
-				}
+					missingCoordinates .= "xmax`n"
 				
 				if (ymin = "ERROR" || Trim(ymin) = "")
-				{
-					ConfigErrorMessage(file, section, "ymin")
-					return true
-				}
+					missingCoordinates .= "ymin`n"
 				
 				if (ymax = "ERROR" || Trim(ymax) = "")
+					missingCoordinates .= "ymax`n"
+				
+				if (missingCoordinates != "")
 				{
-					ConfigErrorMessage(file, section, "ymax")
+					missingCoordinates := RTrim(missingCoordinates, "`n")
+					ConfigErrorMessage(file, section, missingCoordinates)
 					return true
 				}
 			}
-			
-			; No coordinate keys exist at all.
-			; This catches the case where every coordinate entry
-			; was deleted but type=coordinate was left behind.
 			else
 			{
+				; No coordinate keys exist at all.
 				ConfigErrorMessage(file, section, "coordinates")
 				return true
 			}
@@ -423,48 +399,9 @@ CheckConfigFile(file)
 			continue
 		}
 		
-		if (configType = "color")
-		{
-			; Color sections use the section name as their key.
-			;
-			; ERROR means the key itself was deleted.
-			IniRead, colorValue, %file%, %section%, %section%, ERROR
-			
-			if (colorValue = "ERROR" || Trim(colorValue) = "")
-			{
-				ConfigErrorMessage(file, section, section)
-				return true
-			}
-			
-			continue
-		}
-
-		if (configType = "hotkey")
-		{
-			; Hotkey sections require the Hotkey key.
-			;
-			; ERROR means the key itself was deleted.
-			IniRead, hotkeyValue, %file%, %section%, Hotkey, ERROR
-			
-			if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
-			{
-				ConfigErrorMessage(file, section, "Hotkey")
-				return true
-			}
-			
-			continue
-		}
-		
-		; Sections without a recognized type are checked normally.
-		; This handles sections such as Sleep Timer and Sleep Short.
-		;
-		; option and type are metadata and are not themselves required
-		; configuration values.
-		IniRead, keys, %file%, %section%
-		
 		Loop, Parse, keys, `n, `r
 		{
-			line := Trim(A_LoopField)
+			line := A_LoopField
 			
 			if (line = "")
 				continue
@@ -484,8 +421,49 @@ CheckConfigFile(file)
 			}
 		}
 	}
-	
 	return false
+}
+
+; Reads and validates the type assigned to a configuration section.
+;
+; Supported types:
+;
+;   type=color
+;   type=coordinate
+;   type=hotkey
+;
+; A section without a type key, or with an unsupported type,
+; is ignored by the Color, Coordinate, and Hotkey editor GUIs.
+GetConfigType(file, section)
+{
+	section := Trim(section)
+
+	; Remove brackets if brackets are present in the section name.
+	StringReplace, section, section, [, , All
+	StringReplace, section, section, ], , All
+	section := Trim(section)
+
+	; Read the type value. ERROR is used so a missing type key
+	; can be distinguished from an actual value.
+	IniRead, sectionType, %file%, %section%, type, ERROR
+
+	if (sectionType = "ERROR")
+		return ""
+
+	sectionType := Trim(sectionType)
+	StringLower, sectionType, sectionType
+
+	; Only recognized configuration types are returned.
+	if (sectionType = "color")
+		return "color"
+
+	if (sectionType = "coordinate")
+		return "coordinate"
+
+	if (sectionType = "hotkey")
+		return "hotkey"
+
+	return ""
 }
 
 ; Keeps supported LLARS windows inside the visible screen area when
@@ -1035,90 +1013,6 @@ NaturalHash(value)
 		value += 2147483647
 	
 	return (value / 1073741823.5) - 1
-}
-
-; Checks whether a configuration section contains every key supplied
-; in the requiredKeys list. This allows the configuration files to
-; determine which sections belong to each editor automatically.
-HasConfigKeys(file, section, requiredKeys)
-{
-	IniRead, keys, %file%, %section%
-	
-	Loop, Parse, requiredKeys, |
-	{
-		requiredKey := A_LoopField
-		found := false
-		
-		Loop, Parse, keys, `n, `r
-		{
-			line := Trim(A_LoopField)
-			
-			if (line = "")
-				continue
-			
-			StringSplit, part, line, =, 2
-			key := Trim(part1)
-			
-			if (key = requiredKey)
-			{
-				found := true
-				break
-			}
-		}
-		
-		if !found
-			return false
-	}
-	
-	return true
-}
-
-; Checks whether a section contains a single specific key.
-HasConfigKey(file, section, requiredKey)
-{
-	return HasConfigKeys(file, section, requiredKey)
-}
-
-; Reads and validates the type assigned to a configuration section.
-;
-; Supported types:
-;
-;   type=color
-;   type=coordinate
-;   type=hotkey
-;
-; A section without a type key, or with an unsupported type,
-; is ignored by the Color, Coordinate, and Hotkey editor GUIs.
-GetConfigType(file, section)
-{
-	section := Trim(section)
-	
-	; Remove brackets if brackets are present in the section name.
-	StringReplace, section, section, [, , All
-	StringReplace, section, section, ], , All
-	section := Trim(section)
-	
-	; Read the type value. ERROR is used so a missing type key
-	; can be distinguished from an actual value.
-	IniRead, sectionType, %file%, %section%, type, ERROR
-	
-	if (sectionType = "ERROR")
-		return ""
-	
-	sectionType := Trim(sectionType)
-	StringLower, sectionType, sectionType
-	
-	; Only recognized configuration types are returned.
-	if (sectionType = "color")
-		return "color"
-	
-	if (sectionType = "coordinate")
-		return "coordinate"
-	
-	if (sectionType = "hotkey")
-		return "hotkey"
-	
-	return ""
 }
 
 ; ===================================================================================================================
