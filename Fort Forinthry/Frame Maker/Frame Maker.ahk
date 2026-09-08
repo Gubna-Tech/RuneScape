@@ -403,37 +403,6 @@ GetConfigType(file, section)
 
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
-CheckPOS()
-{
-	WinGetClass, winClass, A
-	
-	if (winClass != "AutoHotkeyGUI")
-		return
-	
-	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
-	xmin := GUIx
-	xmax := GUIw + GUIx
-	ymin := GUIy
-	ymax := GUIh + GUIy
-	xadj := A_ScreenWidth - GUIw
-	yadj := A_ScreenHeight - GUIh
-	
-	WinGetPos, X, Y,,, A
-	
-	if (xmin < 0)
-		X := 0
-	if (ymin < 0)
-		Y := 0
-	if (xmax > A_ScreenWidth)
-		X := xadj
-	if (ymax > A_ScreenHeight)
-		Y := yadj	
-	if (X != GUIx || Y != GUIy)
-		WinMove, A,, X, Y
-}
-
-; Keeps supported LLARS windows inside the visible screen area when
-; their position changes or they are moved partially off-screen.
 CheckPOS(hwnd)
 {
 	WinGetClass, winClass, ahk_id %hwnd%
@@ -464,6 +433,26 @@ CheckPOS(hwnd)
 	
 	if (X != GUIx || Y != GUIy)
 		WinMove, ahk_id %hwnd%,, X, Y
+}
+
+; Finds existing LLARS AutoHotkey windows and closes them
+; to prevent multiple active LLARS instances from running simultaneously.
+CloseOtherLLARS()
+{
+	WinGet, hWndList, List, LLARS
+	
+	Loop, %hWndList%
+	{
+		hWnd := hWndList%A_Index%
+		
+		WinGet, processName, ProcessName, ahk_id %hWnd%
+		
+		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
+		{
+			Log("DUPLICATE CLOSE", "Closing existing LLARS AutoHotkey window")
+			WinClose, % "ahk_id " hWnd
+		}
+	}
 }
 
 ; Set this to false when the script is in its normal/idle state.

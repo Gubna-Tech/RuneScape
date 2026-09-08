@@ -1974,6 +1974,48 @@ SetLLARSHOTKEYS()
 
 return
 
+; ===============================================================================
+; |     LOGOUT FUNCTION     -     LOGOUT FUNCTION     -     LOGOUT FUNCTION     |
+; ===============================================================================
+
+; Performs an optional logout after the timed run completes. The logout
+; process uses Escape, a randomized delay, and a random point inside
+; the configured logout rectangle from LLARS Config.ini.
+Logout(){
+	IniRead, option, LLARS Config.ini, Logout, option
+	
+	Log("LOGOUT CHECK", "Logout option = " option)
+	
+	if option=true
+	{
+		Log("LOGOUT", "Logout initiated")
+		
+		send {esc}	
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		
+		Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
+		
+		Sleep, %SleepAmount%	
+		
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		
+		Log("LOGOUT CLICK", "Logout coordinates X=" x " Y=" y)
+		
+		Click, %x%, %y%
+		
+		Log("LOGOUT", "Logout click completed")
+	}
+}
+
 ; ===================================================================
 ; |     INFORMATION     -     INFORMATION     -     INFORMATION     |
 ; ===================================================================
