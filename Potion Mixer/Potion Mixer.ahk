@@ -4,6 +4,8 @@
 #Requires AutoHotkey v1.1.37.02
 #SingleInstance Force
 #Persistent
+#InstallKeybdHook
+#InstallMouseHook
 SetBatchLines, -1
 
 ; =========================================================================
@@ -446,6 +448,10 @@ CloseOtherLLARS()
 	}
 }
 
+; Set this to false when the script is in its normal/idle state.
+; Set it to true when the timed script is running.
+LLARS_RUNNING := false
+
 SetLLARSHOTKEYS(state := "On", startOnly := false)
 {
 	global LLARS_lhk1
@@ -454,7 +460,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	global LLARS_lhk4
 	global LLARS_RUNNING
 	
-	IniRead, lhk1, LLARS Config.ini, Start Hotkey, start
+	IniRead, lhk1, LLARS Config.ini, Start Hotkey, hotkey
 	
 	; Disable the previously configured Start hotkey if it changed.
 	if (LLARS_lhk1 != "" && LLARS_lhk1 != lhk1)
@@ -476,9 +482,9 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	if (startOnly)
 		return
 	
-	IniRead, lhk2, LLARS Config.ini, Information Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, color/coordinate/hotkey Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, exit Hotkey, exit
+	IniRead, lhk2, LLARS Config.ini, Information Hotkey, hotkey
+	IniRead, lhk3, LLARS Config.ini, color/coordinate/hotkey Hotkey, hotkey
+	IniRead, lhk4, LLARS Config.ini, exit Hotkey, hotkey
 	
 	; Disable the previously configured Information/Pause hotkey if it changed.
 	if (LLARS_lhk2 != "" && LLARS_lhk2 != lhk2)
@@ -972,313 +978,269 @@ DisableHotkey()
 IniRead, allContents, Config.ini
 IniRead, llarsContents, LLARS Config.ini
 
-sectionList := " ***** Make a Selection ***** "
+sectionList := " ***** Make a Selection ***** | "
+configCoordinatesFound := false
+
+; Add a section header for Config.ini coordinates.
+sectionList .= "| ---- Script Coordinates ---- "
 
 ; Add sections from Config.ini that are explicitly categorized
 ; as coordinates.
-Loop, Parse, allContents, `n
+Loop, Parse, allContents, `n, `r
 {
-		currentSection := Trim(A_LoopField)
-		
-		if (currentSection = "")
-			continue
-		
-		StringReplace, currentSection, currentSection, [, , All
-		StringReplace, currentSection, currentSection, ], , All
-		currentSection := Trim(currentSection)
-		
-		if (GetConfigType("Config.ini", currentSection) = "coordinate")
-			sectionList .= "|" currentSection
-	}
+	currentSection := Trim(A_LoopField)
 	
+	if (currentSection = "")
+		continue
+	
+	StringReplace, currentSection, currentSection, [, , All
+	StringReplace, currentSection, currentSection, ], , All
+	currentSection := Trim(currentSection)
+	
+	if (GetConfigType("Config.ini", currentSection) = "coordinate")
+	{
+		sectionList .= "|" currentSection
+		configCoordinatesFound := true
+	}
+}
+
+; Add a blank space between Config.ini and LLARS Config.ini coordinates.
+if (configCoordinatesFound)
+	sectionList .= "| "
+
+; Add a section header for LLARS Config.ini coordinates.
+sectionList .= "| ---- LLARS Coordinates ---- "
+
 ; Add sections from LLARS Config.ini that are explicitly categorized
 ; as coordinates.
-	Loop, Parse, llarsContents, `n
-	{
-		currentSection := Trim(A_LoopField)
-		
-		if (currentSection = "")
-			continue
-		
-		StringReplace, currentSection, currentSection, [, , All
-		StringReplace, currentSection, currentSection, ], , All
-		currentSection := Trim(currentSection)
-		
-		if (GetConfigType("LLARS Config.ini", currentSection) = "coordinate")
-			sectionList .= "|" currentSection
-	}
+Loop, Parse, llarsContents, `n, `r
+{
+	currentSection := Trim(A_LoopField)
 	
-	Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged, % sectionList
-	Gui, 2: Add, Button, x52 w150 gClose, Close Coordinates
+	if (currentSection = "")
+		continue
 	
-	Gui, 2: Show, w250 h45 Center, Coordinates
-	Gui 2: -Caption
-	WinSet, ExStyle, ^0x80
-	WinSet, Transparent, %value%
+	StringReplace, currentSection, currentSection, [, , All
+	StringReplace, currentSection, currentSection, ], , All
+	currentSection := Trim(currentSection)
 	
-	return
-	
-; Closes the coordinate editor and returns to the main LLARS GUI.
-	Close:
-	Gui 2: Destroy
-	Gui 1: Show
-	EnableHotkey()
-	return
-	
+	if (GetConfigType("LLARS Config.ini", currentSection) = "coordinate")
+		sectionList .= "|" currentSection
+}
+
+Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged, % sectionList
+Gui, 2: Add, Button, x52 w150 gClose, Close Coordinates
+
+Gui, 2: Show, w250 h45 Center, Coordinates
+Gui 2: -Caption
+WinSet, ExStyle, ^0x80
+WinSet, Transparent, %value%
+
+return
+
+; Closes the coordinate editor and returns to the main LLARS window.
+Close:
+Gui 2: Destroy
+Gui 1: Show
+EnableHotkey()
+return
+
 ; Starts coordinate selection after a valid configuration section
 ; has been chosen from the dropdown.
-	DropDownChanged:
-	GuiControlGet, selectedSection,, SectionList
-	
-	if (selectedSection != " ***** Make a Selection ***** ")
-		GoSub, ButtonClicked
-	
-	return
-	
+DropDownChanged:
+GuiControlGet, selectedSection,, SectionList
+
+if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " " && selectedSection != " ---- Script Coordinates ---- " && selectedSection != " ---- LLARS Coordinates ---- ")
+	GoSub, ButtonClicked
+
+return
+
 ; Handles the two coordinate-selection modes:
 ; "pixel coordinate" captures one point, while all other sections
 ; capture a top-left and bottom-right corner to form a rectangle.
-	ButtonClicked:
-	if (selectedSection = "pixel coordinate")
-	{
-		Gui, 2: Hide
-		
-		WinActivate, RuneScape
-		
-		x := ""
-		y := ""
-		
-		ButtonText := selectedSection
-		
-		SetTimer, CheckClicksPixel, 10
-		
-		Gui 11u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui 11u: Color, Red
-		Gui 11u: Font, cRed
-		Gui 11u: Font, s16 bold
-		Gui 11u: Add, Text, valertlabel center,----Right-click the pixel for [ %selectedSection% ]`n----
-		WinSet, ExStyle, ^0x80
-		Gui 11u: -caption
-		Gui 11u: Show, NoActivate xcenter y0, BottomGUI
-		
-		Gui 11: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui 11: Font, s16 bold
-		Gui 11: Add, Text, vTone center,Right-click the pixel for [ %selectedSection% ]
-		WinSet, ExStyle, ^0x80
-		Gui 11: -caption
-		Gui 11: Show, NoActivate xcenter y9999, TopGUI
-		
-		wingetpos,,,,bottomH, BottomGUI
-		wingetpos,,,,topH, TopGUI
-		
-		topPOS := (bottomH - topH) / 2
-		
-		Gui, TopGUI: +LabelTopGUI
-		WinMove, TopGUI,, , %topPOS%
-	}
-	else
-	{
-		Gui, 2: Hide
-		
-		WinActivate, RuneScape
-		
-		ClickCount := 0
-		xmin := ""
-		ymin := ""
-		xmax := ""
-		ymax := ""
-		
-		ButtonText := selectedSection
-		
-		SetTimer, CheckClicks, 10
-		
-		Gui 11u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui 11u: Color, Red
-		Gui 11u: Font, cRed
-		Gui 11u: Font, s16 bold
-		Gui 11u: Add, Text, valertlabel center,----Right-click the top-left corner for [ %selectedSection% ]`n----
-		WinSet, ExStyle, ^0x80
-		Gui 11u: -caption
-		Gui 11u: Show, NoActivate xcenter y0, BottomGUI
-		
-		Gui 11: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui 11: Font, s16 bold
-		Gui 11: Add, Text, vTone center,Right-click the top-left corner for [ %selectedSection% ]
-		Gui 11: -caption
-		Gui 11: Show, NoActivate xcenter y9999, TopGUI
-		
-		wingetpos,,,,bottomH, BottomGUI
-		wingetpos,,,,topH, TopGUI
-		
-		topPOS := (bottomH - topH) / 2
-		
-		Gui, TopGUI: +LabelTopGUI
-		WinMove, TopGUI,, , %topPOS%
-	}
-	
-	return
-	
+ButtonClicked:
+if (selectedSection = "pixel coordinate")
+{
+    Gui, 2: Hide
+
+    WinActivate, RuneScape
+
+    x := ""
+    y := ""
+
+    ButtonText := selectedSection
+
+    SetTimer, CheckClicksPixel, 10
+
+    Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+    Gui 11u: Color, Red
+    Gui 11u: Font, cRed
+    Gui 11u: Font, s16 bold
+    Gui 11u: Add, Text, valertlabel center,----Right-click the pixel for [ %selectedSection% ]`n----
+    WinSet, ExStyle, ^0x80
+    Gui 11u: -caption
+    Gui 11u: Show, NoActivate xcenter y0, BottomGUI
+
+    Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+    Gui 11: Font, s16 bold
+    Gui 11: Add, Text, vTone center,Right-click the pixel for [ %selectedSection% ]
+    WinSet, ExStyle, ^0x80
+    Gui 11: -caption
+    Gui 11: Show, NoActivate xcenter y9999, TopGUI
+
+    wingetpos,,,,bottomH, BottomGUI
+    wingetpos,,,,topH, TopGUI
+
+    topPOS := (bottomH - topH) / 2
+
+    Gui, TopGUI: +LabelTopGUI
+    WinMove, TopGUI,, , %topPOS%
+}
+else
+{
+    Gui, 2: Hide
+
+    WinActivate, RuneScape
+
+    ClickCount := 0
+    xmin := ""
+    ymin := ""
+    xmax := ""
+    ymax := ""
+
+    ButtonText := selectedSection
+
+    SetTimer, CheckClicks, 10
+
+    Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+    Gui 11u: Color, Red
+    Gui 11u: Font, cRed
+    Gui 11u: Font, s16 bold
+    Gui 11u: Add, Text, valertlabel center,----Right-click the top-left corner for [ %selectedSection% ]`n----
+    WinSet, ExStyle, ^0x80
+    Gui 11u: -caption
+    Gui 11u: Show, NoActivate xcenter y0, BottomGUI
+
+    Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+    Gui 11: Font, s16 bold
+    Gui 11: Add, Text, vTone center,Right-click the top-left corner for [ %selectedSection% ]
+    Gui 11: -caption
+    Gui 11: Show, NoActivate xcenter y9999, TopGUI
+
+    wingetpos,,,,bottomH, BottomGUI
+    wingetpos,,,,topH, TopGUI
+
+    topPOS := (bottomH - topH) / 2
+
+    topPOS := (bottomH - topH) / 2
+
+    Gui, TopGUI: +LabelTopGUI
+    WinMove, TopGUI,, , %topPOS%
+}
+
+return
+
 ; Captures the first and second right-click positions for rectangle
 ; coordinates, then writes the resulting bounds to the appropriate
 ; configuration file. Logout is stored in LLARS Config.ini.
-	CheckClicks:
-	if GetKeyState("Esc", "P")
-	{
-		Log("RELOAD", "Reload triggered by Escape")
-		Reload
-	}
+CheckClicks:
+if GetKeyState("Esc", "P")
+{
+	Log("RELOAD", "Reload triggered by Escape")
+	Reload
+}
+
+if GetKeyState("RButton", "P")
+{
+	MouseGetPos, MouseX, MouseY
+	ClickCount++
 	
-	if GetKeyState("RButton", "P")
+	if (ClickCount = 1)
 	{
-		MouseGetPos, MouseX, MouseY
-		ClickCount++
-		
-		if (ClickCount = 1)
-		{
-			Gui 11: Destroy
-			Gui 11u: Destroy
-			
-			Gui 12u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-			Gui 12u: Color, Red
-			Gui 12u: Font, cRed
-			Gui 12u: Font, s16 bold
-			Gui 12u: Add, Text, valertlabel center,----Right-click the bottom-right corner for [ %selectedSection% ]`n----
-			WinSet, ExStyle, ^0x80
-			Gui 12u: -caption
-			Gui 12u: Show, NoActivate xcenter y0, BottomGUI
-			
-			Gui 12: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-			Gui 12: Font, s16 bold
-			Gui 12: Add, Text, vTtwo center,Right-click the bottom-right corner for [ %selectedSection% ]
-			Gui 12: -caption
-			Gui 12: Show, NoActivate xcenter y9999, TopGUI
-			
-			Gui, TopGUI: +LabelTopGUI
-			WinMove, TopGUI,, , %topPOS%
-			
-			xmin := MouseX
-			ymin := MouseY
-		}
-		else if (ClickCount = 2)
-		{
-			Gui 12: Destroy
-			Gui 12u: Destroy
-			
-			xmax := MouseX
-			ymax := MouseY
-			
-			SetTimer, CheckClicks, Off
-			
-			if (ButtonText = "Logout")
-				configFile := "LLARS Config.ini"
-			else
-				configFile := "Config.ini"
-			
-			IniWrite, %xmin%, %configFile%, %ButtonText%, xmin
-			IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
-			IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
-			IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
-			Log("COORDINATES CHANGED", " %buttontext% | X=" x1 "-" x2 " | Y=" y1 "-" y2)
-			
-			if (ButtonText = "Logout")
-			{
-				Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-				Gui 13u: Color, Green
-				Gui 13u: Font, cGreen
-				Gui 13u: Font, s16 bold
-				Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file`n----
-				WinSet, ExStyle, ^0x80
-				Gui 13u: -caption
-				Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-				
-				Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-				Gui 13: Color, White
-				Gui 13: Font, s16 bold
-				Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file
-				WinSet, ExStyle, ^0x80
-				Gui 13: -caption
-				Gui 13: Show, NoActivate xcenter y9999, TopGUI
-			}
-			else
-			{
-				Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-				Gui 13u: Color, Green
-				Gui 13u: Font, cGreen
-				Gui 13u: Font, s16 bold
-				Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
-				WinSet, ExStyle, ^0x80
-				Gui 13u: -caption
-				Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-				
-				Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-				Gui 13: Color, White
-				Gui 13: Font, s16 bold
-				Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
-				Gui 13: -caption
-				Gui 13: Show, NoActivate xcenter y9999, TopGUI
-			}
-			
-			Gui, TopGUI: +LabelTopGUI
-			WinMove, TopGUI,, , %topPOS%
-			
-			Sleep, 1500
-			
-			Gui 13: Destroy
-			Gui 13u: Destroy
-			Gui, 2: Destroy
-			Gui, 1: Show
-			
-			EnableHotkey()
-		}
-		Sleep, 250
-	}
-	
-	return
-	
-; Handles single-point coordinate capture for the special
-; "pixel coordinate" configuration section.
-	CheckClicksPixel:
-	if GetKeyState("Esc", "P")
-	{
-		Log("RELOAD", "Reload triggered by Escape")
-		Reload
-	}
-	
-	if GetKeyState("RButton", "P")
-	{
-		MouseGetPos, MouseX, MouseY
-		
 		Gui 11: Destroy
 		Gui 11u: Destroy
 		
-		Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui 13u: Color, Green
-		Gui 13u: Font, cGreen
-		Gui 13u: Font, s16 bold
-		Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
+		Gui 12u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+		Gui 12u: Color, Red
+		Gui 12u: Font, cRed
+		Gui 12u: Font, s16 bold
+		Gui 12u: Add, Text, valertlabel center,----Right-click the bottom-right corner for [ %selectedSection% ]`n----
 		WinSet, ExStyle, ^0x80
-		Gui 13u: -caption
-		Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+		Gui 12u: -caption
+		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
 		
-		Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui 13: Color, White
-		Gui 13: Font, s16 bold
-		Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
-		WinSet, ExStyle, ^0x80
-		Gui 13: -caption
-		Gui 13: Show, NoActivate xcenter y9999, TopGUI
+		Gui 12: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+		Gui 12: Font, s16 bold
+		Gui 12: Add, Text, vTtwo center,Right-click the bottom-right corner for [ %selectedSection% ]
+		Gui 12: -caption
+		Gui 12: Show, NoActivate xcenter y9999, TopGUI
 		
 		Gui, TopGUI: +LabelTopGUI
 		WinMove, TopGUI,, , %topPOS%
 		
-		x := MouseX
-		y := MouseY
+		xmin := MouseX
+		ymin := MouseY
+	}
+	else if (ClickCount = 2)
+	{
+		Gui 12: Destroy
+		Gui 12u: Destroy
 		
-		SetTimer, CheckClicksPixel, Off
+		xmax := MouseX
+		ymax := MouseY
 		
-		IniWrite, %x%, Config.ini, %ButtonText%, x
-		IniWrite, %y%, Config.ini, %ButtonText%, y
-		Log("COORDINATES CHANGED", "Pixel Coordinate | X=" x " | Y=" y)
+		SetTimer, CheckClicks, Off
+		
+		if (ButtonText = "Logout")
+			configFile := "LLARS Config.ini"
+		else
+			configFile := "Config.ini"
+		
+		IniWrite, %xmin%, %configFile%, %ButtonText%, xmin
+		IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
+		IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
+		IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
+		Log("COORDINATES CHANGED", " %buttontext% | X=" xmin "-" xmax " | Y=" ymin "-" ymax)
+		
+		if (ButtonText = "Logout")
+		{
+			Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+			Gui 13u: Color, Green
+			Gui 13u: Font, cGreen
+			Gui 13u: Font, s16 bold
+			Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file`n----
+			WinSet, ExStyle, ^0x80
+			Gui 13u: -caption
+			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+			
+			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+			Gui 13: Color, White
+			Gui 13: Font, s16 bold
+			Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file
+			Gui 13: -caption
+			Gui 13: Show, NoActivate xcenter y9999, TopGUI
+		}
+		else
+		{
+			Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+			Gui 13u: Color, Green
+			Gui 13u: Font, cGreen
+			Gui 13u: Font, s16 bold
+			Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
+			WinSet, ExStyle, ^0x80
+			Gui 13u: -caption
+			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+			
+			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
+			Gui 13: Color, White
+			Gui 13u: Font, s16 bold
+			Gui 13u: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
+			Gui 13: -caption
+			Gui 13: Show, NoActivate xcenter y9999, TopGUI
+		}
+		
+		Gui, TopGUI: +LabelTopGUI
+		WinMove, TopGUI,, , %topPOS%
 		
 		Sleep, 1500
 		
@@ -1288,124 +1250,56 @@ Loop, Parse, allContents, `n
 		Gui, 1: Show
 		
 		EnableHotkey()
-		
-		Sleep, 250
 	}
-	return
+	Sleep, 250
+}
+
+return
+
+; Handles single-point coordinate capture for the special
+; "pixel coordinate" configuration section.
+CheckClicksPixel:
+if GetKeyState("Esc", "P")
+{
+	Log("RELOAD", "Reload triggered by Escape")
+	Reload
+}
+
+if GetKeyState("RButton", "P")
+{
+	MouseGetPos, MouseX, MouseY
 	
-; ================================================================
-; |     COLORS GUI     -     COLORS GUI     -     COLORS GUI     |
-; ================================================================
+	Gui 11: Destroy
+	Gui 11u: Destroy
 	
-; Builds the color editor dynamically by using the type assigned to
-; each configuration section. Sections marked type=color are
-; automatically included without requiring their names in the script.
-	Color:
-	WinGetPos, GUIxc, GUIyc,,,LLARS
-	IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
-	IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
-	
-	Gui 1: Hide
-	Gui Combo: Destroy
-	Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui 2: Font, s11 Bold
-	DisableHotkey()
-	
-	IniRead, allContents, Config.ini
-	
-	sectionList := " ***** Make a Selection ***** "
-	
-; Only add sections that are explicitly categorized as colors.
-	Loop, Parse, allContents, `n
-	{
-		currentSection := Trim(A_LoopField)
-		
-		if (currentSection = "")
-			continue
-		
-		StringReplace, currentSection, currentSection, [, , All
-		StringReplace, currentSection, currentSection, ], , All
-		currentSection := Trim(currentSection)
-		
-		if (GetConfigType("Config.ini", currentSection) = "color")
-			sectionList .= "|" currentSection
-	}
-	
-	Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged1, % sectionList
-	Gui, 2: Add, Button, x52 w150 gClose1, Close Colors
-	
-	Gui, 2: Show, w250 h45 Center, Colors
-	Gui 2: -Caption
-	WinSet, ExStyle, ^0x80
-	WinSet, Transparent, %value%
-	
-	return
-	
-; Closes the color editor and returns to the main LLARS window.
-	Close1:
-	Gui 2: Destroy
-	Gui 1: Show
-	EnableHotkey()
-	return
-	
-; Starts color selection after a valid section is selected.
-	DropDownChanged1:
-	GuiControlGet, selectedSection,, SectionList
-	
-	if (selectedSection != " ***** Make a Selection ***** ")
-		GoSub, ColorSelected
-	
-	return
-	
-; Reads the configured pixel location, captures its current color,
-; and writes that color into the selected Config.ini section.
-	ColorSelected:
-	Gui, 2: Hide
-	
-	WinActivate, RuneScape
-	
-	x := ""
-	y := ""
-	
-	ButtonText := selectedSection
-	
-	Sleep, 500
-	
-	IniRead, x, Config.ini, Pixel Coordinate, x
-	IniRead, y, Config.ini, Pixel Coordinate, y
-	
-	PixelGetColor, color, %x%, %y%, RGB
-	
-	IniWrite, %color%, Config.ini, %ButtonText%, %ButtonText%
-	
-	Log("COLOR CHANGED IN CONFIG", ButtonText " = " color)
-	
-	Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+	Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 	Gui 13u: Color, Green
-	Gui 13u: Font, cgreenhite
+	Gui 13u: Font, cGreen
 	Gui 13u: Font, s16 bold
-	Gui 13u: Add, Text, valertlabel center,----%buttontext% has been updated in the Config.ini file`n----
+	Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
 	WinSet, ExStyle, ^0x80
 	Gui 13u: -caption
 	Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 	
-	Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui 13: Color, White
-	Gui 13: Font, cGreen
+	Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 	Gui 13: Font, s16 bold
-	Gui 13: Add, Text, vTthree center, %buttontext% has been updated in the Config.ini file
+	Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
 	Gui 13: -caption
 	Gui 13: Show, NoActivate xcenter y9999, TopGUI
-	
-	wingetpos,,,,bottomH, BottomGUI
-	wingetpos,,,,topH, TopGUI
-	
-	topPOS := (bottomH - topH) / 2
 	
 	Gui, TopGUI: +LabelTopGUI
 	WinMove, TopGUI,, , %topPOS%
 	
-	Sleep 1500
+	x := MouseX
+	y := MouseY
+	
+	SetTimer, CheckClicksPixel, Off
+	
+	IniWrite, %x%, Config.ini, %ButtonText%, x
+	IniWrite, %y%, Config.ini, %ButtonText%, y
+	Log("COORDINATES CHANGED", "Pixel Coordinate | X=" x " | Y=" y)
+	
+	Sleep, 1500
 	
 	Gui 13: Destroy
 	Gui 13u: Destroy
@@ -1414,8 +1308,132 @@ Loop, Parse, allContents, `n
 	
 	EnableHotkey()
 	
-	return
+	Sleep, 250
+}
+return
+
+; ================================================================
+; |     COLORS GUI     -     COLORS GUI     -     COLORS GUI     |
+; ================================================================
+
+; Builds the color editor dynamically by using the type assigned to
+; each configuration section. Sections marked type=color are
+; automatically included without requiring their names in the script.
+Color:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
+Gui 1: Hide
+Gui Combo: Destroy
+Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 2: Font, s11 Bold
+DisableHotkey()
+
+IniRead, allContents, Config.ini
+
+sectionList := " ***** Make a Selection ***** "
+
+; Only add sections that are explicitly categorized as colors.
+Loop, Parse, allContents, `n, `r
+{
+	currentSection := Trim(A_LoopField)
 	
+	if (currentSection = "")
+		continue
+	
+	StringReplace, currentSection, currentSection, [, , All
+	StringReplace, currentSection, currentSection, ], , All
+	currentSection := Trim(currentSection)
+	
+	if (GetConfigType("Config.ini", currentSection) = "color")
+		sectionList .= "|" currentSection
+}
+
+Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged1, % sectionList
+Gui, 2: Add, Button, x52 w150 gClose1, Close Colors
+
+Gui, 2: Show, w250 h45 Center, Colors
+Gui 2: -Caption
+WinSet, ExStyle, ^0x80
+WinSet, Transparent, %value%
+
+return
+
+; Closes the color editor and returns to the main LLARS GUI.
+Close1:
+Gui 2: Destroy
+Gui 1: Show
+EnableHotkey()
+return
+
+; Starts color selection after a valid section is selected.
+DropDownChanged1:
+GuiControlGet, selectedSection,, SectionList
+
+if (selectedSection != " ***** Make a Selection ***** ")
+	GoSub, ColorSelected
+
+return
+
+; Reads the configured pixel location, captures its current color,
+; and writes that color into the selected Config.ini section.
+ColorSelected:
+Gui, 2: Hide
+
+WinActivate, RuneScape
+
+x := ""
+y := ""
+
+ButtonText := selectedSection
+
+Sleep, 500
+
+IniRead, x, Config.ini, Pixel Coordinate, x
+IniRead, y, Config.ini, Pixel Coordinate, y
+
+PixelGetColor, color, %x%, %y%, RGB
+
+IniWrite, %color%, Config.ini, %ButtonText%, %ButtonText%
+
+Log("COLOR CHANGED IN CONFIG", ButtonText " = " color)
+
+Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13u: Color, Green
+Gui 13u: Font, cGreen
+Gui 13u: Font, s16 bold
+Gui 13u: Add, Text, valertlabel center,----%buttontext% has been updated in the Config.ini file`n----
+WinSet, ExStyle, ^0x80
+Gui 13u: -caption
+Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+
+Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13: Color, White
+Gui 13: Font, s16 bold
+Gui 13: Add, Text, vTthree center, %buttontext% has been updated in the Config.ini file
+Gui 13: -caption
+Gui 13: Show, NoActivate xcenter y9999, TopGUI
+
+wingetpos,,,,bottomH, BottomGUI
+wingetpos,,,,topH, TopGUI
+
+topPOS := (bottomH - topH) / 2
+
+Gui, TopGUI: +LabelTopGUI
+WinMove, TopGUI,, , %topPOS%
+
+Sleep 1500
+
+Gui 13: Destroy
+Gui 13u: Destroy
+Gui, 2: Destroy
+Gui, 1: Show
+
+EnableHotkey()
+
+return
+
 ; ================================================================
 ; |     HOTKEY GUI     -     HOTKEY GUI     -     HOTKEY GUI     |
 ; ================================================================
@@ -1441,9 +1459,12 @@ DisableHotkey()
 IniRead, allContents, Config.ini
 IniRead, llarsContents, LLARS Config.ini
 
-sectionList := " ***** Make a Selection ***** "
+sectionList := " ***** Make a Selection ***** | "
 hotkeyConfigFiles := {}
 configHotkeysFound := false
+
+; Add a section header for Config.ini hotkeys.
+sectionList .= "| ---- Script Hotkeys ---- "
 
 ; Add sections from Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
@@ -1466,10 +1487,12 @@ Loop, Parse, allContents, `n
 	}
 }
 
-; Add a blank space between Config.ini and LLARS Config.ini hotkeys
-; only when Config.ini actually contains hotkeys.
-if (configHotkeysFound)
-	sectionList .= "| "
+; Add a blank space between the Script Hotkeys and
+; LLARS Hotkeys sections.
+sectionList .= "| "
+
+; Add a section header for LLARS Config.ini hotkeys.
+sectionList .= "| ---- LLARS Hotkeys ---- "
 
 ; Add sections from LLARS Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
@@ -1514,7 +1537,7 @@ return
 DropDownChanged2:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " ")
+if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " " && selectedSection != " ---- Script Hotkeys ---- " && selectedSection != " ---- LLARS Hotkeys ---- ")
 {
 	; Use the configuration file recorded when the dropdown was built.
 	configFile := hotkeyConfigFiles[selectedSection]
