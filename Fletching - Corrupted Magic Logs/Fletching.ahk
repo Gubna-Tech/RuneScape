@@ -433,6 +433,7 @@ CheckPOS(hwnd)
 CloseOtherLLARS()
 {
 	WinGet, hWndList, List, LLARS
+	WinGet, hWndList2, List, Script Selector
 	
 	Loop, %hWndList%
 	{
@@ -443,6 +444,19 @@ CloseOtherLLARS()
 		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
 		{
 			Log("DUPLICATE CLOSE", "Closing existing LLARS AutoHotkey window")
+			WinClose, % "ahk_id " hWnd
+		}
+	}
+	
+	Loop, %hWndList2%
+	{
+		hWnd := hWndList2%A_Index%
+		
+		WinGet, processName, ProcessName, ahk_id %hWnd%
+		
+		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
+		{
+			Log("DUPLICATE CLOSE", "Closing existing Script Selector AutoHotkey window")
 			WinClose, % "ahk_id " hWnd
 		}
 	}
