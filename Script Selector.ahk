@@ -4,7 +4,8 @@
 #Requires AutoHotkey v1.1.37.02
 #SingleInstance Force
 #Persistent
-#NoTrayIcon
+#InstallKeybdHook
+#InstallMouseHook
 SetBatchLines, -1
 
 ; ===============================================================================
