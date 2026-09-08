@@ -454,7 +454,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	global LLARS_lhk4
 	global LLARS_RUNNING
 	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	IniRead, lhk1, LLARS Config.ini, Start Hotkey, start
 	
 	; Disable the previously configured Start hotkey if it changed.
 	if (LLARS_lhk1 != "" && LLARS_lhk1 != lhk1)
@@ -476,9 +476,9 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	if (startOnly)
 		return
 	
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	IniRead, lhk2, LLARS Config.ini, Information Hotkey, information
+	IniRead, lhk3, LLARS Config.ini, color/coordinate/hotkey Hotkey, color/coordinate/hotkey
+	IniRead, lhk4, LLARS Config.ini, exit Hotkey, exit
 	
 	; Disable the previously configured Information/Pause hotkey if it changed.
 	if (LLARS_lhk2 != "" && LLARS_lhk2 != lhk2)
@@ -1443,6 +1443,7 @@ IniRead, llarsContents, LLARS Config.ini
 
 sectionList := " ***** Make a Selection ***** "
 hotkeyConfigFiles := {}
+configHotkeysFound := false
 
 ; Add sections from Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
@@ -1461,8 +1462,14 @@ Loop, Parse, allContents, `n
 	{
 		sectionList .= "|" currentSection
 		hotkeyConfigFiles[currentSection] := "Config.ini"
+		configHotkeysFound := true
 	}
 }
+
+; Add a blank space between Config.ini and LLARS Config.ini hotkeys
+; only when Config.ini actually contains hotkeys.
+if (configHotkeysFound)
+	sectionList .= "| "
 
 ; Add sections from LLARS Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
@@ -1484,7 +1491,7 @@ Loop, Parse, llarsContents, `n
 	}
 }
 
-Gui, 3: Add, DropDownList, w230 sort vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
 Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
 Gui, 3: Add, Hotkey, x97 y60 w60 vChosenHotkey gHotkeyChanged Center, ** NONE **
 Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
@@ -1507,7 +1514,7 @@ return
 DropDownChanged2:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != " ***** Make a Selection ***** ")
+if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " ")
 {
 	; Use the configuration file recorded when the dropdown was built.
 	configFile := hotkeyConfigFiles[selectedSection]
@@ -1994,38 +2001,69 @@ Logout(){
 
 Info:
 DisableHotkey()
-IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 
 IniRead, logout, LLARS Config.ini, Logout, option
 IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
 IniRead, chance, LLARS Config.ini, Random Sleep, chance
 
-IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-IniRead, hkbp, Config.ini, Bank Preset, hotkey
+; Build the list of script hotkeys automatically.
+scriptHotkeys := ""
 
-if (hk = "")
-	hk := "Not Set"
+if (LLARS_lhk1 != "")
+	scriptHotkeys .= "Start: " . LLARS_lhk1 . "`n"
 
-if (hkbp = "")
-	hkbp := "Not Set"
+if (LLARS_lhk2 != "")
+	scriptHotkeys .= "Information: " . LLARS_lhk2 . "`n"
+
+if (LLARS_lhk3 != "")
+	scriptHotkeys .= "Color/Coordinate/Hotkey: " . LLARS_lhk3 . "`n"
+
+if (LLARS_lhk4 != "")
+	scriptHotkeys .= "Exit: " . LLARS_lhk4 . "`n"
+
+; Add a blank line between LLARS hotkeys and script hotkeys.
+if (scriptHotkeys != "")
+	scriptHotkeys .= "`n"
+
+; Read script-specific hotkeys from Config.ini.
+IniRead, sections, Config.ini
+
+Loop, Parse, sections, `n, `r
+{
+	section := A_LoopField
+	
+	if (section = "")
+		continue
+	
+	IniRead, type, Config.ini, %section%, type
+	
+	if (type = "hotkey")
+	{
+		IniRead, hotkey, Config.ini, %section%, hotkey
+		
+		if (hotkey = "")
+			hotkey := "Not Set"
+		
+		scriptHotkeys .= section . ": " . hotkey . "`n"
+	}
+}
+
+if (scriptHotkeys = "")
+	scriptHotkeys := "No script hotkeys configured"
 
 WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
 IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
 
 Gui 1: hide
-Gui 3: hide	
+Gui 3: hide
 Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
 Gui 20: Font, S13 bold cMaroon
 Gui 20: Add, Text, Center w220 x5,%scriptname%
 Gui 20: Font, s11 Bold underline cTeal
 Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
 Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
-Gui 20: Add, Text, center x5 w220,
+Gui 20: Add, Text, Center w220 x5,%scriptHotkeys%
 Gui 20: Font, Bold underline cPurple
 Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
 Gui 20: Font, Norm
@@ -2041,7 +2079,7 @@ Gui 20: Font, cBlack norm bold
 Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
 Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
 Gui 20: Add, Button, gDiscord w150 x40 center,Discord
-Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
+Gui 20: Add, Button, gCloseInfo w150 x40 center,Close Information
 WinSet, ExStyle, ^0x80
 Gui 20: -caption
 Gui 20: Show, center w230, Information
