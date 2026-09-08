@@ -1190,8 +1190,10 @@ return
 DropDownChanged:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " " && selectedSection != " ---- Script Coordinates ---- " && selectedSection != " ---- LLARS Coordinates ---- ")
-	GoSub, ButtonClicked
+if (selectedSection = "" || selectedSection = " " || selectedSection = " ***** Make a Selection ***** " || selectedSection = " ---- Script Coordinates ---- " || selectedSection = " ---- LLARS Coordinates ---- ")
+	return
+
+GoSub, ButtonClicked
 
 return
 
@@ -1654,9 +1656,14 @@ Loop, Parse, llarsContents, `n
 	}
 }
 
+; Keeps the currently selected valid section locked separately
+; from the dropdown selection.
+selectedHotkeySection := ""
+selectedHotkeyConfigFile := ""
+
 Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
 Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
-Gui, 3: Add, Hotkey, x97 y60 w60 vChosenHotkey gHotkeyChanged Center, ** NONE **
+Gui, 3: Add, Hotkey, x97 y60 w60 vChosenHotkey gHotkeyChanged Center Disabled, ** NONE **
 Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
 
 Gui, 3: Show, w250 h100 Center, Hotkeys
@@ -1665,7 +1672,7 @@ WinSet, ExStyle, ^0x80
 WinSet, Transparent, %value%
 return
 
-; Closes the hotkey editor and returns to the main LLARS window.
+; Closes the hotkey editor and returns to the main LLARS GUI.
 Close2:
 Gui 3: Destroy
 Gui 1: Show
@@ -1677,15 +1684,41 @@ return
 DropDownChanged2:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " " && selectedSection != " ---- Script Hotkeys ---- " && selectedSection != " ---- LLARS Hotkeys ---- ")
+; Always invalidate the previously selected hotkey first.
+selectedHotkeySection := ""
+selectedHotkeyConfigFile := ""
+
+; Disable and clear the hotkey control until a valid section is selected.
+GuiControl, Disable, ChosenHotkey
+GuiControl,, ChosenHotkey, ** NONE **
+
+if (selectedSection = "" || selectedSection = " " || selectedSection = " ***** Make a Selection ***** " || selectedSection = " ---- Script Hotkeys ---- " || selectedSection = " ---- LLARS Hotkeys ---- ")
 {
-	; Use the configuration file recorded when the dropdown was built.
-	configFile := hotkeyConfigFiles[selectedSection]
-	
-	IniRead, existingHotkey, %configFile%, %selectedSection%, Hotkey
-	GuiControl,, ChosenHotkey, %existingHotkey%
-	GoSub, ButtonClicked2
+	; Move focus away from the dropdown so keyboard letters cannot
+	; jump to another section while no hotkey section is selected.
+	GuiControl, Focus, HotkeysText
+	return
 }
+
+; Use the configuration file recorded when the dropdown was built.
+configFile := hotkeyConfigFiles[selectedSection]
+
+; If the selected entry is not a real configuration section, do nothing.
+if (configFile = "")
+{
+	GuiControl, Focus, HotkeysText
+	return
+}
+
+; Lock the valid section and configuration file independently
+; from the dropdown selection.
+selectedHotkeySection := selectedSection
+selectedHotkeyConfigFile := configFile
+
+IniRead, existingHotkey, %configFile%, %selectedSection%, Hotkey
+GuiControl,, ChosenHotkey, %existingHotkey%
+GuiControl, Enable, ChosenHotkey
+GoSub, ButtonClicked2
 
 return
 
@@ -1704,13 +1737,16 @@ return
 ; Saves the newly selected hotkey and displays the same confirmation
 ; overlay used by the other configuration editors.
 HotkeyChanged:
+
+; Do nothing unless a valid hotkey section was explicitly selected.
+if (selectedHotkeySection = "" || selectedHotkeyConfigFile = "")
+	return
+
 Gui, 3: Submit, NoHide
 
-; Write the new hotkey back to the same configuration file
-; from which the selected section was loaded.
-configFile := hotkeyConfigFiles[selectedSection]
-
-IniWrite, %ChosenHotkey%, %configFile%, %selectedSection%, Hotkey
+; Use the locked section and configuration file instead of whatever
+; the dropdown may currently be highlighting.
+IniWrite, %ChosenHotkey%, %selectedHotkeyConfigFile%, %selectedHotkeySection%, Hotkey
 Log("HOTKEY CHANGED", "Hotkey = " ChosenHotkey)
 Gui, 3: Destroy
 
@@ -1718,7 +1754,7 @@ Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
 Gui 13u: Font, cgreenhite
 Gui 13u: Font, s16 bold
-Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %configFile% file`n----
+Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %selectedHotkeyConfigFile% file`n----
 WinSet, ExStyle, ^0x80
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
@@ -1726,7 +1762,7 @@ Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13: Color, White
 Gui 13: Font, s16 bold
-Gui 13: Add, Text, vTthree center, Hotkey has been updated in the %configFile% file
+Gui 13: Add, Text, vTthree center, Hotkey has been updated in the %selectedHotkeyConfigFile% file
 Gui 13: -caption
 Gui 13: Show, NoActivate xcenter y9999, TopGUI
 
