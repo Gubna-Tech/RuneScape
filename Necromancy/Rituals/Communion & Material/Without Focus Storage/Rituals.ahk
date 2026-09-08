@@ -1546,6 +1546,8 @@ Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 3: Font, s11 Bold
 DisableHotkey()
 
+Suspend, On
+
 IniRead, allContents, Config.ini
 IniRead, llarsContents, LLARS Config.ini
 
@@ -1624,6 +1626,7 @@ return
 Close2:
 Gui 3: Destroy
 Gui 1: Show
+Suspend, Off
 EnableHotkey()
 return
 
@@ -1727,6 +1730,7 @@ Sleep 1500
 Gui 13u: Destroy
 Gui 13: Destroy
 Gui 1: Show
+Suspend, Off
 EnableHotkey()
 return
 
