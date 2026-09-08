@@ -185,35 +185,27 @@ if FileExist("LLARS Logo.ico")
 ; |     LOGGING SYSTEM     -     LOGGING SYSTEM     -     LOGGING SYSTEM     |
 ; ============================================================================
 
+; Checks LLARS Config.ini to determine if logging is enabled.
+LoggingCheck()
+{
+	IniRead, LoggingOption, %A_ScriptDir%\LLARS Config.ini, Logging, option, disabled
+	
+	if (LoggingOption = "enabled")
+		return true
+	
+	return false
+}
+
 ; Centralized logging functions used throughout the script to record
 ; events, timestamps, session state, and important actions.
 Log(Event, Details := "")
 {
 	global LogCount
-	global LastLogTick
+	
+	if !LoggingCheck()
+		return
 	
 	FormatTime, LogTime,, yyyy-MM-dd HH:mm:ss
-	
-	; Calculate time since the previous logged event.
-	if (LastLogTick)
-	{
-		ElapsedMs := A_TickCount - LastLogTick
-		ElapsedSeconds := Floor(ElapsedMs / 1000)
-		ElapsedMinutes := Floor(ElapsedSeconds / 60)
-		ElapsedRemainingSeconds := Mod(ElapsedSeconds, 60)
-		
-		if (ElapsedMinutes > 0)
-			ElapsedText := ElapsedMinutes "m " ElapsedRemainingSeconds "s"
-		else
-			ElapsedText := ElapsedSeconds "s"
-	}
-	else
-	{
-		ElapsedMs := 0
-		ElapsedText := "N/A"
-	}
-	
-	LastLogTick := A_TickCount
 	
 	LogCount++
 	
@@ -222,9 +214,7 @@ Log(Event, Details := "")
 	LogEntry := "[Log" LogCount "]`r`n"
 	LogEntry .= "Time=" LogTime "`r`n"
 	LogEntry .= "Event=" Event "`r`n"
-	LogEntry .= "Details=" Details "`r`n"
-	LogEntry .= "Elapsed Since Previous Event=" ElapsedText "`r`n"
-	LogEntry .= "Elapsed Milliseconds=" ElapsedMs "`r`n`r`n"
+	LogEntry .= "Details=" Details "`r`n`r`n"
 	
 	FileAppend, %LogEntry%, %A_ScriptDir%\log.ini
 }
@@ -234,6 +224,9 @@ Log(Event, Details := "")
 StartLogSession()
 {
 	global LogCount
+	
+	if !LoggingCheck()
+		return
 	
 	IniRead, LogCount, %A_ScriptDir%\log.ini, Log, Count, 0
 	
@@ -256,6 +249,9 @@ NEW SESSION - %StartTime%
 ; reason and ending timestamp.
 EndLogSession(Reason := "Normal Exit")
 {
+	if !LoggingCheck()
+		return
+	
 	FormatTime, EndTime,, yyyy-MM-dd HH:mm:ss
 	
 	IniWrite, STOPPED, %A_ScriptDir%\log.ini, Session, Status
