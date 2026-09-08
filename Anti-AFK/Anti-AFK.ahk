@@ -183,11 +183,25 @@ if FileExist("LLARS Logo.ico")
 ; |     LOGGING SYSTEM     -     LOGGING SYSTEM     -     LOGGING SYSTEM     |
 ; ============================================================================
 
+; Checks LLARS Config.ini to determine if logging is enabled.
+LoggingCheck()
+{
+	IniRead, LoggingOption, %A_ScriptDir%\LLARS Config.ini, Logging, option, disabled
+	
+	if (LoggingOption = "enabled")
+		return true
+	
+	return false
+}
+
 ; Centralized logging functions used throughout the script to record
 ; events, timestamps, session state, and important actions.
 Log(Event, Details := "")
 {
 	global LogCount
+	
+	if !LoggingCheck()
+		return
 	
 	FormatTime, LogTime,, yyyy-MM-dd HH:mm:ss
 	
@@ -208,6 +222,9 @@ Log(Event, Details := "")
 StartLogSession()
 {
 	global LogCount
+	
+	if !LoggingCheck()
+		return
 	
 	IniRead, LogCount, %A_ScriptDir%\log.ini, Log, Count, 0
 	
@@ -230,6 +247,9 @@ NEW SESSION - %StartTime%
 ; reason and ending timestamp.
 EndLogSession(Reason := "Normal Exit")
 {
+	if !LoggingCheck()
+		return
+	
 	FormatTime, EndTime,, yyyy-MM-dd HH:mm:ss
 	
 	IniWrite, STOPPED, %A_ScriptDir%\log.ini, Session, Status
