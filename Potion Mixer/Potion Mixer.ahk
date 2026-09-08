@@ -130,7 +130,7 @@ frcount = 0
 LastClickTime := 0
 clickspot := 1
 
-settimer, configcheck, 250
+SetTimer, CheckLLARSConfig, 250
 
 scriptname := regexreplace(A_scriptname,"\..*","")
 
@@ -397,10 +397,11 @@ GetConfigType(file, section)
 
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
-CheckPOS() {
-	WinGet, processName, ProcessName, A
+CheckPOS()
+{
+	WinGetClass, winClass, A
 	
-	if (processName != "AutoHotkey.exe")
+	if (winClass != "AutoHotkeyGUI")
 		return
 	
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, A
@@ -447,8 +448,22 @@ CloseOtherLLARS()
 
 SetLLARSHOTKEYS(state := "On", startOnly := false)
 {
+	global LLARS_lhk1
+	global LLARS_lhk2
+	global LLARS_lhk3
+	global LLARS_lhk4
+	global LLARS_RUNNING
+	
 	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
 	
+	; Disable the previously configured Start hotkey if it changed.
+	if (LLARS_lhk1 != "" && LLARS_lhk1 != lhk1)
+		Hotkey, %LLARS_lhk1%, Start, Off
+	
+	; Save the current Start hotkey.
+	LLARS_lhk1 := lhk1
+	
+	; Enable/disable the current Start hotkey.
 	if (lhk1 != "")
 	{
 		if (state = "On")
@@ -457,6 +472,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 			Hotkey, %lhk1%, Start, Off
 	}
 	
+	; Only update the Start hotkey when requested.
 	if (startOnly)
 		return
 	
@@ -464,21 +480,76 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
 	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
 	
+	; Disable the previously configured Information/Pause hotkey if it changed.
+	if (LLARS_lhk2 != "" && LLARS_lhk2 != lhk2)
+	{
+		Hotkey, %LLARS_lhk2%, Info, Off
+		Hotkey, %LLARS_lhk2%, pauseb, Off
+	}
+	
+	; Save the current Information/Pause hotkey.
+	LLARS_lhk2 := lhk2
+	
 	if (lhk2 != "")
 	{
 		if (state = "On")
-			Hotkey, %lhk2%, Info, On
+		{
+			if (LLARS_RUNNING)
+			{
+				Hotkey, %lhk2%, Info, Off
+				Hotkey, %lhk2%, pauseb, On
+			}
+			else
+			{
+				Hotkey, %lhk2%, pauseb, Off
+				Hotkey, %lhk2%, Info, On
+			}
+		}
 		else
+		{
 			Hotkey, %lhk2%, Info, Off
+			Hotkey, %lhk2%, pauseb, Off
+		}
 	}
+	
+	; Disable the previously configured Combo/Resume hotkey if it changed.
+	if (LLARS_lhk3 != "" && LLARS_lhk3 != lhk3)
+	{
+		Hotkey, %LLARS_lhk3%, Combo, Off
+		Hotkey, %LLARS_lhk3%, resumeb, Off
+	}
+	
+	; Save the current Combo/Resume hotkey.
+	LLARS_lhk3 := lhk3
 	
 	if (lhk3 != "")
 	{
 		if (state = "On")
-			Hotkey, %lhk3%, Combo, On
+		{
+			if (LLARS_RUNNING)
+			{
+				Hotkey, %lhk3%, Combo, Off
+				Hotkey, %lhk3%, resumeb, On
+			}
+			else
+			{
+				Hotkey, %lhk3%, resumeb, Off
+				Hotkey, %lhk3%, Combo, On
+			}
+		}
 		else
+		{
 			Hotkey, %lhk3%, Combo, Off
+			Hotkey, %lhk3%, resumeb, Off
+		}
 	}
+	
+	; Disable the previously configured Exit hotkey if it changed.
+	if (LLARS_lhk4 != "" && LLARS_lhk4 != lhk4)
+		Hotkey, %LLARS_lhk4%, exitb, Off
+	
+	; Save the current Exit hotkey.
+	LLARS_lhk4 := lhk4
 	
 	if (lhk4 != "")
 	{
@@ -516,6 +587,10 @@ EnableButton()
 	Control, Enable,, start
 	SetLLARSHOTKEYS("On", true)
 }
+
+CheckLLARSConfig:
+SetLLARSHOTKEYS()
+return
 
 ; Provides Escape-key shortcuts for closing the various secondary
 ; LLARS GUIs and returning to the main window.
@@ -1521,43 +1596,6 @@ Loop, Parse, allContents, `n
 	Pause, on
 	Return
 	
-; ======================================================================
-; |     HOTKEY CHECK     -     HOTKEY CHECK     -     HOTKEY CHECK     |
-; ======================================================================
-	
-; Periodically reloads the configured LLARS menu hotkeys while the
-; script is idle, allowing hotkey changes in LLARS Config.ini to take
-; effect without restarting the script.
-	Configcheck:
-	{
-		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-		IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-		IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-		IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-		
-		Hotkey %lhk1%, Start
-		Hotkey %lhk2%, Info
-		Hotkey %lhk3%, Combo
-		Hotkey %lhk4%, exitb
-	}
-	return
-	
-; Periodically reloads the LLARS hotkeys used while the timed script
-; is running, where the information/menu hotkeys become Pause/Resume.
-	Config2check:
-	{
-		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-		IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-		IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-		IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-		
-		Hotkey, %lhk1%, Start
-		Hotkey, %lhk2%, pauseb
-		Hotkey, %lhk3%, resumeb
-		Hotkey, %lhk4%, exitb
-	}
-	return
-	
 ; =========================================================================
 ; |     RANDOM SLEEP COUNTDOWN     -     RANDOM SLEEP COUNTDOWN          |
 ; =========================================================================
@@ -1666,60 +1704,47 @@ if (runcount > 1000)
 ; |     RUN INITIALIZATION     -     RUN INITIALIZATION     -     RUN INITIALIZATION   |
 ; ======================================================================================
 
-; The framework hotkeys remain named consistently in the INI.
-; Only their assigned functions change while the script is running.
 If (frcount = 0)
 {
-		SetTimer, ConfigCheck, off
-		SetTimer, Config2Check, 250
-		
-		IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-		IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-		IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-		IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
-		IniRead, value, LLARS Config.ini, Transparent, value
-		
-		Hotkey %lhk1%, Start
-		Hotkey %lhk2%, pauseb
-		Hotkey %lhk3%, resumeb
-		Hotkey %lhk4%, exitb
-		
-		WinGetPos, X, Y,,, LLARS
-		Gui destroy
-		Gui +LastFound +OwnDialogs +AlwaysOnTop
-		Gui, Font, s11
-		Gui, font, bold
-		Gui, Add, Button, x5 y5 w100 h25 gStart , Start
-		Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
-		Gui, Add, Button, x5 y35 w100 h25 gPauseb , Pause
-		Gui, Add, Button, x115 y35 w100 h25 gResumeb , Resume
-		Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
-		Gui, Add, Text, x135 y90 w65 h25 center vCounter
-		Gui, Add, Text, x8 y90 w125 h25, Total Run Count
-		Gui, Add, Text, x8 y65 w125 h25, Run Count
-		Gui, Add, Text, x135 y65 w150 h25 vCounter2
-		Gui, Font, cGreen
-		Gui, Add, Text, x135 y115 w70 h25 vState1
-		Gui, Add, Text, x8 y115 w125 h25 vScriptGreen
-		Gui, Font, cBlue
-		Gui, Add, Text, x135 y115 w70 h25 vState3
-		Gui, Add, Text, x8 y115 w125 h25 vScriptBlue
-		Gui, Font, cRed
-		Gui, Add, Text, x135 y115 w70 h25 vState2
-		Gui, Add, Text, x8 y115 w125 h25 vScriptRed
-		GuiControl,,State2, ** OFF **
-		Gui, Add, Text, x8 y115 w125 h25, %scriptname%
-		if FileExist("LLARS Logo.ico")
-		{
-			Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
-		}
-		WinSet, Transparent, %value%
-		Gui, Show,w220 h170, LLARS
-		WinMove, LLARS,, X, Y,
-		
-		count = 0
-		++frcount
+	LLARS_RUNNING := true
+	SetLLARSHOTKEYS()
+	
+	WinGetPos, X, Y,,, LLARS
+	Gui destroy
+	Gui +LastFound +OwnDialogs +AlwaysOnTop
+	Gui, Font, s11
+	Gui, font, bold
+	Gui, Add, Button, x5 y5 w100 h25 gStart , Start
+	Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
+	Gui, Add, Button, x5 y35 w100 h25 gPauseb , Pause
+	Gui, Add, Button, x115 y35 w100 h25 gResumeb , Resume
+	Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
+	Gui, Add, Text, x135 y90 w65 h25 center vCounter
+	Gui, Add, Text, x8 y90 w125 h25, Total Run Count
+	Gui, Add, Text, x8 y65 w125 h25, Run Count
+	Gui, Add, Text, x135 y65 w150 h25 vCounter2
+	Gui, Font, cGreen
+	Gui, Add, Text, x135 y115 w70 h25 vState1
+	Gui, Add, Text, x8 y115 w125 h25 vScriptGreen
+	Gui, Font, cBlue
+	Gui, Add, Text, x135 y115 w70 h25 vState3
+	Gui, Add, Text, x8 y115 w125 h25 vScriptBlue
+	Gui, Font, cRed
+	Gui, Add, Text, x135 y115 w70 h25 vState2
+	Gui, Add, Text, x8 y115 w125 h25 vScriptRed
+	GuiControl,,State2, ** OFF **
+	Gui, Add, Text, x8 y115 w125 h25, %scriptname%
+	if FileExist("LLARS Logo.ico")
+	{
+		Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 	}
+	WinSet, Transparent, %value%
+	Gui, Show,w220 h170, LLARS
+	WinMove, LLARS,, X, Y,
+	
+	count = 0
+	++frcount
+}
 	
 	else
 		
@@ -1849,73 +1874,75 @@ If (frcount = 0)
 		Sleep, %SleepAmount%
 		
 		Log("POTION MIX", "Mixing wait completed: " SleepAmount " ms")
-	}
-	
+}
+
 ; ==================================================================
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
-	
+
 ; calls the logout function
-	Logout()
-	
+Logout()
+
 ; =======================================================================
 ; |     RUN COMPLETE     -     RUN COMPLETE     -     RUN COMPLETE      |
 ; =======================================================================
-	
-	GuiControl,, ScriptGreen, %scriptname%
-	GuiControl,, State1, Finished
-	
-	EndTimeStamp := A_Hour ":" A_Min ":" A_Sec
-	
-	EndTime := A_TickCount
-	
+
+GuiControl,, ScriptGreen, %scriptname%
+GuiControl,, State1, Finished
+
+EndTimeStamp := A_Hour ":" A_Min ":" A_Sec
+
+EndTime := A_TickCount
+
 ; Convert total elapsed time to whole seconds.
-	TotalTimeSeconds := Floor((EndTime - StartTime) / 1000)
-	
+TotalTimeSeconds := Floor((EndTime - StartTime) / 1000)
+
 ; Calculate average loop time using whole seconds.
-	AverageTimeSecondsTotal := Floor(TotalTimeSeconds / runcount3)
-	
+AverageTimeSecondsTotal := Floor(TotalTimeSeconds / runcount3)
+
 ; Break total time into hours, minutes, and seconds.
-	TotalTimeHours := Floor(TotalTimeSeconds / 3600)
-	TotalTimeMinutes := Floor(Mod(TotalTimeSeconds, 3600) / 60)
-	TotalTimeSecondsDisplay := Mod(TotalTimeSeconds, 60)
-	
+TotalTimeHours := Floor(TotalTimeSeconds / 3600)
+TotalTimeMinutes := Floor(Mod(TotalTimeSeconds, 3600) / 60)
+TotalTimeSecondsDisplay := Mod(TotalTimeSeconds, 60)
+
 ; Break average loop time into minutes and seconds.
-	AverageTimeMinutes := Floor(AverageTimeSecondsTotal / 60)
-	AverageTimeSecondsDisplay := Mod(AverageTimeSecondsTotal, 60)
-	
+AverageTimeMinutes := Floor(AverageTimeSecondsTotal / 60)
+AverageTimeSecondsDisplay := Mod(AverageTimeSecondsTotal, 60)
+
 ; Calculate actual random sleep percentage.
-	percentage := Round((sleepcount / runcount3) * 100)
-	
+percentage := Round((sleepcount / runcount3) * 100)
+
 ; Convert total random sleep time to whole seconds.
-	totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
-	
-	TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
-	TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
-	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
-	
-	Log("COMPLETE", "Completed " runcount3 " runs | Total time=" TotalTimeSeconds " seconds | Random sleeps=" sleepcount)
-	
-	SoundPlay, C:\Windows\Media\Ring06.wav, 1
-	
-	IniRead, chance, LLARS Config.ini, Random Sleep, chance
-	
-	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
-	
-	EnableButton()
-	
-	return
-	
+totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
+
+TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
+TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
+TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
+
+Log("COMPLETE", "Completed " runcount3 " runs | Total time=" TotalTimeSeconds " seconds | Random sleeps=" sleepcount)
+
+SoundPlay, C:\Windows\Media\Ring06.wav, 1
+
+IniRead, chance, LLARS Config.ini, Random Sleep, chance
+
+MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
+
+EnableButton()
+LLARS_RUNNING := false
+SetLLARSHOTKEYS()
+
+return
+
 ; ===============================================================================
 ; |     LOGOUT FUNCTION     -     LOGOUT FUNCTION     -     LOGOUT FUNCTION     |
 ; ===============================================================================
-	
+
 ; Performs an optional logout after the timed run completes. The logout
 ; process uses Escape, a randomized delay, and a random point inside
 ; the configured logout rectangle from LLARS Config.ini.
-	Logout(){
+Logout(){
 		IniRead, option, LLARS Config.ini, Logout, option
 		
 		Log("LOGOUT CHECK", "Logout option = " option)
