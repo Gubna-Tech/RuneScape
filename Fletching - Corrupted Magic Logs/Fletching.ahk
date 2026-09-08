@@ -4,6 +4,8 @@
 #Requires AutoHotkey v1.1.37.02
 #SingleInstance Force
 #Persistent
+#InstallKeybdHook
+#InstallMouseHook
 SetBatchLines, -1
 
 ; =========================================================================
@@ -445,6 +447,10 @@ CloseOtherLLARS()
 	}
 }
 
+; Set this to false when the script is in its normal/idle state.
+; Set it to true when the timed script is running.
+LLARS_RUNNING := false
+
 SetLLARSHOTKEYS(state := "On", startOnly := false)
 {
 	global LLARS_lhk1
@@ -453,7 +459,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	global LLARS_lhk4
 	global LLARS_RUNNING
 	
-	IniRead, lhk1, LLARS Config.ini, Start Hotkey, start
+	IniRead, lhk1, LLARS Config.ini, Start Hotkey, hotkey
 	
 	; Disable the previously configured Start hotkey if it changed.
 	if (LLARS_lhk1 != "" && LLARS_lhk1 != lhk1)
@@ -475,9 +481,9 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	if (startOnly)
 		return
 	
-	IniRead, lhk2, LLARS Config.ini, Information Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, color/coordinate/hotkey Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, exit Hotkey, exit
+	IniRead, lhk2, LLARS Config.ini, Information Hotkey, hotkey
+	IniRead, lhk3, LLARS Config.ini, color/coordinate/hotkey Hotkey, hotkey
+	IniRead, lhk4, LLARS Config.ini, exit Hotkey, hotkey
 	
 	; Disable the previously configured Information/Pause hotkey if it changed.
 	if (LLARS_lhk2 != "" && LLARS_lhk2 != lhk2)
@@ -971,11 +977,15 @@ DisableHotkey()
 IniRead, allContents, Config.ini
 IniRead, llarsContents, LLARS Config.ini
 
-sectionList := " ***** Make a Selection ***** "
+sectionList := " ***** Make a Selection ***** | "
+configCoordinatesFound := false
+
+; Add a section header for Config.ini coordinates.
+sectionList .= "| ---- Script Coordinates ---- "
 
 ; Add sections from Config.ini that are explicitly categorized
 ; as coordinates.
-Loop, Parse, allContents, `n
+Loop, Parse, allContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -987,12 +997,22 @@ Loop, Parse, allContents, `n
 	currentSection := Trim(currentSection)
 	
 	if (GetConfigType("Config.ini", currentSection) = "coordinate")
+	{
 		sectionList .= "|" currentSection
+		configCoordinatesFound := true
+	}
 }
+
+; Add a blank space between Config.ini and LLARS Config.ini coordinates.
+if (configCoordinatesFound)
+	sectionList .= "| "
+
+; Add a section header for LLARS Config.ini coordinates.
+sectionList .= "| ---- LLARS Coordinates ---- "
 
 ; Add sections from LLARS Config.ini that are explicitly categorized
 ; as coordinates.
-Loop, Parse, llarsContents, `n
+Loop, Parse, llarsContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -1017,7 +1037,7 @@ WinSet, Transparent, %value%
 
 return
 
-; Closes the coordinate editor and returns to the main LLARS GUI.
+; Closes the coordinate editor and returns to the main LLARS window.
 Close:
 Gui 2: Destroy
 Gui 1: Show
@@ -1029,7 +1049,7 @@ return
 DropDownChanged:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != " ***** Make a Selection ***** ")
+if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " " && selectedSection != " ---- Script Coordinates ---- " && selectedSection != " ---- LLARS Coordinates ---- ")
 	GoSub, ButtonClicked
 
 return
@@ -1051,7 +1071,7 @@ if (selectedSection = "pixel coordinate")
 
     SetTimer, CheckClicksPixel, 10
 
-    Gui 11u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+    Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
     Gui 11u: Color, Red
     Gui 11u: Font, cRed
     Gui 11u: Font, s16 bold
@@ -1060,7 +1080,7 @@ if (selectedSection = "pixel coordinate")
     Gui 11u: -caption
     Gui 11u: Show, NoActivate xcenter y0, BottomGUI
 
-    Gui 11: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+    Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
     Gui 11: Font, s16 bold
     Gui 11: Add, Text, vTone center,Right-click the pixel for [ %selectedSection% ]
     WinSet, ExStyle, ^0x80
@@ -1091,7 +1111,7 @@ else
 
     SetTimer, CheckClicks, 10
 
-    Gui 11u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+    Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
     Gui 11u: Color, Red
     Gui 11u: Font, cRed
     Gui 11u: Font, s16 bold
@@ -1100,7 +1120,7 @@ else
     Gui 11u: -caption
     Gui 11u: Show, NoActivate xcenter y0, BottomGUI
 
-    Gui 11: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+    Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
     Gui 11: Font, s16 bold
     Gui 11: Add, Text, vTone center,Right-click the top-left corner for [ %selectedSection% ]
     Gui 11: -caption
@@ -1108,6 +1128,8 @@ else
 
     wingetpos,,,,bottomH, BottomGUI
     wingetpos,,,,topH, TopGUI
+
+    topPOS := (bottomH - topH) / 2
 
     topPOS := (bottomH - topH) / 2
 
@@ -1137,7 +1159,7 @@ if GetKeyState("RButton", "P")
 		Gui 11: Destroy
 		Gui 11u: Destroy
 		
-		Gui 12u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 12u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 		Gui 12u: Color, Red
 		Gui 12u: Font, cRed
 		Gui 12u: Font, s16 bold
@@ -1146,7 +1168,7 @@ if GetKeyState("RButton", "P")
 		Gui 12u: -caption
 		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
 		
-		Gui 12: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+		Gui 12: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 		Gui 12: Font, s16 bold
 		Gui 12: Add, Text, vTtwo center,Right-click the bottom-right corner for [ %selectedSection% ]
 		Gui 12: -caption
@@ -1177,11 +1199,11 @@ if GetKeyState("RButton", "P")
 		IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
 		IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
 		IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
-		Log("COORDINATES CHANGED", " %buttontext% | X=" x1 "-" x2 " | Y=" y1 "-" y2)
+		Log("COORDINATES CHANGED", " %buttontext% | X=" xmin "-" xmax " | Y=" ymin "-" ymax)
 		
 		if (ButtonText = "Logout")
 		{
-			Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+			Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 			Gui 13u: Color, Green
 			Gui 13u: Font, cGreen
 			Gui 13u: Font, s16 bold
@@ -1190,17 +1212,16 @@ if GetKeyState("RButton", "P")
 			Gui 13u: -caption
 			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 			
-			Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 			Gui 13: Color, White
 			Gui 13: Font, s16 bold
 			Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file
-			WinSet, ExStyle, ^0x80
 			Gui 13: -caption
 			Gui 13: Show, NoActivate xcenter y9999, TopGUI
 		}
 		else
 		{
-			Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+			Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 			Gui 13u: Color, Green
 			Gui 13u: Font, cGreen
 			Gui 13u: Font, s16 bold
@@ -1209,10 +1230,10 @@ if GetKeyState("RButton", "P")
 			Gui 13u: -caption
 			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 			
-			Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 			Gui 13: Color, White
-			Gui 13: Font, s16 bold
-			Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
+			Gui 13u: Font, s16 bold
+			Gui 13u: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
 			Gui 13: -caption
 			Gui 13: Show, NoActivate xcenter y9999, TopGUI
 		}
@@ -1250,7 +1271,7 @@ if GetKeyState("RButton", "P")
 	Gui 11: Destroy
 	Gui 11u: Destroy
 	
-	Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+	Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 	Gui 13u: Color, Green
 	Gui 13u: Font, cGreen
 	Gui 13u: Font, s16 bold
@@ -1259,11 +1280,9 @@ if GetKeyState("RButton", "P")
 	Gui 13u: -caption
 	Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 	
-	Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui 13: Color, White
+	Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 	Gui 13: Font, s16 bold
 	Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
-	WinSet, ExStyle, ^0x80
 	Gui 13: -caption
 	Gui 13: Show, NoActivate xcenter y9999, TopGUI
 	
@@ -1315,7 +1334,7 @@ IniRead, allContents, Config.ini
 sectionList := " ***** Make a Selection ***** "
 
 ; Only add sections that are explicitly categorized as colors.
-Loop, Parse, allContents, `n
+Loop, Parse, allContents, `n, `r
 {
 	currentSection := Trim(A_LoopField)
 	
@@ -1340,7 +1359,7 @@ WinSet, Transparent, %value%
 
 return
 
-; Closes the color editor and returns to the main LLARS window.
+; Closes the color editor and returns to the main LLARS GUI.
 Close1:
 Gui 2: Destroy
 Gui 1: Show
@@ -1381,7 +1400,7 @@ Log("COLOR CHANGED IN CONFIG", ButtonText " = " color)
 
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
-Gui 13u: Font, cgreenhite
+Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----%buttontext% has been updated in the Config.ini file`n----
 WinSet, ExStyle, ^0x80
@@ -1390,7 +1409,6 @@ Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13: Color, White
-Gui 13: Font, cGreen
 Gui 13: Font, s16 bold
 Gui 13: Add, Text, vTthree center, %buttontext% has been updated in the Config.ini file
 Gui 13: -caption
@@ -1440,9 +1458,12 @@ DisableHotkey()
 IniRead, allContents, Config.ini
 IniRead, llarsContents, LLARS Config.ini
 
-sectionList := " ***** Make a Selection ***** "
+sectionList := " ***** Make a Selection ***** | "
 hotkeyConfigFiles := {}
 configHotkeysFound := false
+
+; Add a section header for Config.ini hotkeys.
+sectionList .= "| ---- Script Hotkeys ---- "
 
 ; Add sections from Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
@@ -1465,10 +1486,12 @@ Loop, Parse, allContents, `n
 	}
 }
 
-; Add a blank space between Config.ini and LLARS Config.ini hotkeys
-; only when Config.ini actually contains hotkeys.
-if (configHotkeysFound)
-	sectionList .= "| "
+; Add a blank space between the Script Hotkeys and
+; LLARS Hotkeys sections.
+sectionList .= "| "
+
+; Add a section header for LLARS Config.ini hotkeys.
+sectionList .= "| ---- LLARS Hotkeys ---- "
 
 ; Add sections from LLARS Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
@@ -1513,7 +1536,7 @@ return
 DropDownChanged2:
 GuiControlGet, selectedSection,, SectionList
 
-if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " ")
+if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " " && selectedSection != " ---- Script Hotkeys ---- " && selectedSection != " ---- LLARS Hotkeys ---- ")
 {
 	; Use the configuration file recorded when the dropdown was built.
 	configFile := hotkeyConfigFiles[selectedSection]
