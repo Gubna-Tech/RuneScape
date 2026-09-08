@@ -293,7 +293,7 @@ ConfigError()
 }
 
 ; Displays the configuration error, opens the affected file, logs
-; the missing value, and reloads the script after the user fixes it.
+; the missing value(s), and reloads the script after the user fixes it.
 ConfigErrorMessage(file, section, key)
 {
 	Run, %A_ScriptDir%\%file%
@@ -308,6 +308,8 @@ ConfigErrorMessage(file, section, key)
 	Reload
 }
 
+; Dynamically scans every section/key in a configuration file and
+; checks for blank values. Sections with option=false are skipped.
 CheckConfigFile(file)
 {
 	IniRead, sections, %file%
@@ -319,37 +321,91 @@ CheckConfigFile(file)
 		if (section = "")
 			continue
 		
-		; Remove brackets if returned by IniRead.
-		StringReplace, section, section, [, , All
-		StringReplace, section, section, ], , All
-		section := Trim(section)
-		
-		sectionType := GetConfigType(file, section)
-		
-		; No type=, or unsupported type=.
-		; Do not validate this section.
-		if (sectionType = "")
-			continue
+		IniRead, keys, %file%, %section%
 		
 		IniRead, option, %file%, %section%, option, true
-		option := Trim(option)
-		StringLower, option, option
 		
-		; Disabled sections do not need their values checked.
-		if (option = "false" || option = "disabled")
+		if (option = "false")
 			continue
 		
-		IniRead, keys, %file%, %section%
+		; Determine whether this section is a coordinate section.
+		configType := GetConfigType(file, section)
+		
+		if (configType = "coordinate")
+		{
+			; Read all possible coordinate values.
+			IniRead, x, %file%, %section%, x, ERROR
+			IniRead, y, %file%, %section%, y, ERROR
+			
+			IniRead, xmin, %file%, %section%, xmin, ERROR
+			IniRead, xmax, %file%, %section%, xmax, ERROR
+			IniRead, ymin, %file%, %section%, ymin, ERROR
+			IniRead, ymax, %file%, %section%, ymax, ERROR
+			
+			; Determine which coordinate format is being used.
+			;
+			; If x or y exists, this is treated as a point coordinate.
+			hasPointCoordinates := (x != "ERROR" || y != "ERROR")
+			
+			; If any rectangle coordinate exists, this is treated
+			; as a rectangle coordinate.
+			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
+			
+			if (hasPointCoordinates)
+			{
+				missingCoordinates := ""
+				
+				if (x = "ERROR" || Trim(x) = "")
+					missingCoordinates .= "x`n"
+				
+				if (y = "ERROR" || Trim(y) = "")
+					missingCoordinates .= "y`n"
+				
+				if (missingCoordinates != "")
+				{
+					missingCoordinates := RTrim(missingCoordinates, "`n")
+					ConfigErrorMessage(file, section, missingCoordinates)
+					return true
+				}
+			}
+			else if (hasRectangleCoordinates)
+			{
+				missingCoordinates := ""
+				
+				if (xmin = "ERROR" || Trim(xmin) = "")
+					missingCoordinates .= "xmin`n"
+				
+				if (xmax = "ERROR" || Trim(xmax) = "")
+					missingCoordinates .= "xmax`n"
+				
+				if (ymin = "ERROR" || Trim(ymin) = "")
+					missingCoordinates .= "ymin`n"
+				
+				if (ymax = "ERROR" || Trim(ymax) = "")
+					missingCoordinates .= "ymax`n"
+				
+				if (missingCoordinates != "")
+				{
+					missingCoordinates := RTrim(missingCoordinates, "`n")
+					ConfigErrorMessage(file, section, missingCoordinates)
+					return true
+				}
+			}
+			else
+			{
+				; No coordinate keys exist at all.
+				ConfigErrorMessage(file, section, "coordinates")
+				return true
+			}
+			
+			continue
+		}
 		
 		Loop, Parse, keys, `n, `r
 		{
-			line := Trim(A_LoopField)
+			line := A_LoopField
 			
 			if (line = "")
-				continue
-			
-			; Ignore comments.
-			if (SubStr(line, 1, 1) = ";")
 				continue
 			
 			StringSplit, part, line, =, 2
@@ -357,11 +413,9 @@ CheckConfigFile(file)
 			key := Trim(part1)
 			value := Trim(part2)
 			
-			; Metadata fields are not values that need validation.
 			if (key = "option" || key = "type")
 				continue
 			
-			; Blank value = configuration error.
 			if (value = "")
 			{
 				ConfigErrorMessage(file, section, key)
@@ -369,35 +423,48 @@ CheckConfigFile(file)
 			}
 		}
 	}
-	
 	return false
 }
 
+; Reads and validates the type assigned to a configuration section.
+;
+; Supported types:
+;
+;   type=color
+;   type=coordinate
+;   type=hotkey
+;
+; A section without a type key, or with an unsupported type,
+; is ignored by the Color, Coordinate, and Hotkey editor GUIs.
 GetConfigType(file, section)
 {
 	section := Trim(section)
-	
+
+	; Remove brackets if brackets are present in the section name.
 	StringReplace, section, section, [, , All
 	StringReplace, section, section, ], , All
 	section := Trim(section)
-	
+
+	; Read the type value. ERROR is used so a missing type key
+	; can be distinguished from an actual value.
 	IniRead, sectionType, %file%, %section%, type, ERROR
-	
+
 	if (sectionType = "ERROR")
 		return ""
-	
+
 	sectionType := Trim(sectionType)
 	StringLower, sectionType, sectionType
-	
+
+	; Only recognized configuration types are returned.
 	if (sectionType = "color")
 		return "color"
-	
+
 	if (sectionType = "coordinate")
 		return "coordinate"
-	
+
 	if (sectionType = "hotkey")
 		return "hotkey"
-	
+
 	return ""
 }
 
