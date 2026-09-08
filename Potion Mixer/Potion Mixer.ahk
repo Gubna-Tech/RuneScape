@@ -454,7 +454,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	global LLARS_lhk4
 	global LLARS_RUNNING
 	
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
+	IniRead, lhk1, LLARS Config.ini, Start Hotkey, start
 	
 	; Disable the previously configured Start hotkey if it changed.
 	if (LLARS_lhk1 != "" && LLARS_lhk1 != lhk1)
@@ -476,9 +476,9 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	if (startOnly)
 		return
 	
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	IniRead, lhk2, LLARS Config.ini, Information Hotkey, information
+	IniRead, lhk3, LLARS Config.ini, color/coordinate/hotkey Hotkey, color/coordinate/hotkey
+	IniRead, lhk4, LLARS Config.ini, exit Hotkey, exit
 	
 	; Disable the previously configured Information/Pause hotkey if it changed.
 	if (LLARS_lhk2 != "" && LLARS_lhk2 != lhk2)
@@ -1419,7 +1419,7 @@ Loop, Parse, allContents, `n
 ; ================================================================
 ; |     HOTKEY GUI     -     HOTKEY GUI     -     HOTKEY GUI     |
 ; ================================================================
-	
+
 ; Builds the hotkey editor dynamically by using the type assigned to
 ; each configuration section. Sections marked type=hotkey are
 ; automatically included without requiring their names in the script.
@@ -1427,185 +1427,192 @@ Loop, Parse, allContents, `n
 ; The hotkeyConfigFiles object records which INI file each section
 ; came from. This prevents the script from guessing the source file
 ; later when a hotkey is selected or changed.
-	Hotkey:
-	WinGetPos, GUIxc, GUIyc,,,LLARS
-	IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
-	IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
-	
-	Gui 1: Hide
-	Gui Combo: Destroy
-	Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui 3: Font, s11 Bold
-	DisableHotkey()
-	
-	IniRead, allContents, Config.ini
-	IniRead, llarsContents, LLARS Config.ini
-	
-	sectionList := " ***** Make a Selection ***** "
-	hotkeyConfigFiles := {}
-	
+Hotkey:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
+Gui 1: Hide
+Gui Combo: Destroy
+Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 3: Font, s11 Bold
+DisableHotkey()
+
+IniRead, allContents, Config.ini
+IniRead, llarsContents, LLARS Config.ini
+
+sectionList := " ***** Make a Selection ***** "
+hotkeyConfigFiles := {}
+configHotkeysFound := false
+
 ; Add sections from Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
-	Loop, Parse, allContents, `n
-	{
-		currentSection := Trim(A_LoopField)
-		
-		if (currentSection = "")
-			continue
-		
-		StringReplace, currentSection, currentSection, [, , All
-		StringReplace, currentSection, currentSection, ], , All
-		currentSection := Trim(currentSection)
-		
-		if (GetConfigType("Config.ini", currentSection) = "hotkey")
-		{
-			sectionList .= "|" currentSection
-			hotkeyConfigFiles[currentSection] := "Config.ini"
-		}
-	}
+Loop, Parse, allContents, `n
+{
+	currentSection := Trim(A_LoopField)
 	
+	if (currentSection = "")
+		continue
+	
+	StringReplace, currentSection, currentSection, [, , All
+	StringReplace, currentSection, currentSection, ], , All
+	currentSection := Trim(currentSection)
+	
+	if (GetConfigType("Config.ini", currentSection) = "hotkey")
+	{
+		sectionList .= "|" currentSection
+		hotkeyConfigFiles[currentSection] := "Config.ini"
+		configHotkeysFound := true
+	}
+}
+
+; Add a blank space between Config.ini and LLARS Config.ini hotkeys
+; only when Config.ini actually contains hotkeys.
+if (configHotkeysFound)
+	sectionList .= "| "
+
 ; Add sections from LLARS Config.ini that are explicitly categorized as hotkeys.
 ; Store the source file at the same time the section is added.
-	Loop, Parse, llarsContents, `n
+Loop, Parse, llarsContents, `n
+{
+	currentSection := Trim(A_LoopField)
+	
+	if (currentSection = "")
+		continue
+	
+	StringReplace, currentSection, currentSection, [, , All
+	StringReplace, currentSection, currentSection, ], , All
+	currentSection := Trim(currentSection)
+	
+	if (GetConfigType("LLARS Config.ini", currentSection) = "hotkey")
 	{
-		currentSection := Trim(A_LoopField)
-		
-		if (currentSection = "")
-			continue
-		
-		StringReplace, currentSection, currentSection, [, , All
-		StringReplace, currentSection, currentSection, ], , All
-		currentSection := Trim(currentSection)
-		
-		if (GetConfigType("LLARS Config.ini", currentSection) = "hotkey")
-		{
-			sectionList .= "|" currentSection
-			hotkeyConfigFiles[currentSection] := "LLARS Config.ini"
-		}
+		sectionList .= "|" currentSection
+		hotkeyConfigFiles[currentSection] := "LLARS Config.ini"
 	}
-	
-	Gui, 3: Add, DropDownList, w230 sort vSectionList Choose1 gDropDownChanged2, % sectionList
-	Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
-	Gui, 3: Add, Hotkey, x97 y60 w60 vChosenHotkey gHotkeyChanged Center, ** NONE **
-	Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
-	
-	Gui, 3: Show, w250 h100 Center, Hotkeys
-	Gui 3: -Caption
-	WinSet, ExStyle, ^0x80
-	WinSet, Transparent, %value%
-	return
-	
+}
+
+Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
+Gui, 3: Add, Hotkey, x97 y60 w60 vChosenHotkey gHotkeyChanged Center, ** NONE **
+Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
+
+Gui, 3: Show, w250 h100 Center, Hotkeys
+Gui 3: -Caption
+WinSet, ExStyle, ^0x80
+WinSet, Transparent, %value%
+return
+
 ; Closes the hotkey editor and returns to the main LLARS window.
-	Close2:
-	Gui 3: Destroy
-	Gui 1: Show
-	EnableHotkey()
-	return
-	
+Close2:
+Gui 3: Destroy
+Gui 1: Show
+EnableHotkey()
+return
+
 ; Loads the existing hotkey for the selected section and prepares
 ; the hotkey control for a replacement value.
-	DropDownChanged2:
-	GuiControlGet, selectedSection,, SectionList
-	
-	if (selectedSection != " ***** Make a Selection ***** ")
-	{
+DropDownChanged2:
+GuiControlGet, selectedSection,, SectionList
+
+if (selectedSection != " ***** Make a Selection ***** " && selectedSection != " ")
+{
 	; Use the configuration file recorded when the dropdown was built.
-		configFile := hotkeyConfigFiles[selectedSection]
-		
-		IniRead, existingHotkey, %configFile%, %selectedSection%, Hotkey
-		GuiControl,, ChosenHotkey, %existingHotkey%
-		GoSub, ButtonClicked2
-	}
-	
-	return
-	
-; Gives focus to the hotkey input control and allows Escape to
-; reload the script while the hotkey-selection process is active.
-	ButtonClicked2:
-	if GetKeyState("Esc", "P")
-	{
-		Log("RELOAD", "Reload triggered by Escape")
-		Reload
-	}
-	GuiControl,, HotkeysText, Enter new hotkey
-	GuiControl, Focus, ChosenHotkey
-	return
-	
-; Saves the newly selected hotkey and displays the same confirmation
-; overlay used by the other configuration editors.
-	HotkeyChanged:
-	Gui, 3: Submit, NoHide
-	
-; Write the new hotkey back to the same configuration file
-; from which the selected section was loaded.
 	configFile := hotkeyConfigFiles[selectedSection]
 	
-	IniWrite, %ChosenHotkey%, %configFile%, %selectedSection%, Hotkey
-	Log("HOTKEY CHANGED", "Hotkey = " ChosenHotkey)
-	Gui, 3: Destroy
-	
-	Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui 13u: Color, Green
-	Gui 13u: Font, cgreenhite
-	Gui 13u: Font, s16 bold
-	Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %configFile% file`n----
-	WinSet, ExStyle, ^0x80
-	Gui 13u: -caption
-	Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-	
-	Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui 13: Color, White
-	Gui 13: Font, s16 bold
-	Gui 13: Add, Text, vTthree center, Hotkey has been updated in the %configFile% file
-	Gui 13: -caption
-	Gui 13: Show, NoActivate xcenter y9999, TopGUI
-	
-	wingetpos,,,,bottomH, BottomGUI
-	wingetpos,,,,topH, TopGUI
-	
-	topPOS := (bottomH - topH) / 2
-	
-	Gui, TopGUI: +LabelTopGUI
-	WinMove, TopGUI,, , %topPOS%
-	
-	Sleep 1500
-	
-	Gui 13u: Destroy
-	Gui 13: Destroy
-	Gui 1: Show
-	EnableHotkey()
-	return
-	
+	IniRead, existingHotkey, %configFile%, %selectedSection%, Hotkey
+	GuiControl,, ChosenHotkey, %existingHotkey%
+	GoSub, ButtonClicked2
+}
+
+return
+
+; Gives focus to the hotkey input control and allows Escape to
+; reload the script while the hotkey-selection process is active.
+ButtonClicked2:
+if GetKeyState("Esc", "P")
+{
+	Log("RELOAD", "Reload triggered by Escape")
+	Reload
+}
+GuiControl,, HotkeysText, Enter new hotkey
+GuiControl, Focus, ChosenHotkey
+return
+
+; Saves the newly selected hotkey and displays the same confirmation
+; overlay used by the other configuration editors.
+HotkeyChanged:
+Gui, 3: Submit, NoHide
+
+; Write the new hotkey back to the same configuration file
+; from which the selected section was loaded.
+configFile := hotkeyConfigFiles[selectedSection]
+
+IniWrite, %ChosenHotkey%, %configFile%, %selectedSection%, Hotkey
+Log("HOTKEY CHANGED", "Hotkey = " ChosenHotkey)
+Gui, 3: Destroy
+
+Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13u: Color, Green
+Gui 13u: Font, cgreenhite
+Gui 13u: Font, s16 bold
+Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %configFile% file`n----
+WinSet, ExStyle, ^0x80
+Gui 13u: -caption
+Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+
+Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13: Color, White
+Gui 13: Font, s16 bold
+Gui 13: Add, Text, vTthree center, Hotkey has been updated in the %configFile% file
+Gui 13: -caption
+Gui 13: Show, NoActivate xcenter y9999, TopGUI
+
+wingetpos,,,,bottomH, BottomGUI
+wingetpos,,,,topH, TopGUI
+
+topPOS := (bottomH - topH) / 2
+
+Gui, TopGUI: +LabelTopGUI
+WinMove, TopGUI,, , %topPOS%
+
+Sleep 1500
+
+Gui 13u: Destroy
+Gui 13: Destroy
+Gui 1: Show
+EnableHotkey()
+return
+
 ; =============================================================================================================
 ; |     PAUSE/RESUME BUTTON LOGIC     -     PAUSE/RESUME BUTTON LOGIC     -     PAUSE/RESUME BUTTON LOGIC     |
 ; =============================================================================================================
-	
+
 ; Updates the main GUI state and resumes normal script execution.
-	ResumeB:
-	Log("RESUME", "Script resumed")
-	GuiControl,,ScriptBlue, %scriptname% 
-	GuiControl,,State3, Running
-	Pause, off
-	Return
-	
+ResumeB:
+Log("RESUME", "Script resumed")
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
+Pause, off
+Return
+
 ; Updates the main GUI state and pauses script execution.
-	PauseB:
-	Log("PAUSE", "Script paused")
-	GuiControl,,State2, Paused
-	GuiControl,,ScriptRed, %scriptname%
-	Pause, on
-	Return
-	
+PauseB:
+Log("PAUSE", "Script paused")
+GuiControl,,State2, Paused
+GuiControl,,ScriptRed, %scriptname%
+Pause, on
+Return
+
 ; =========================================================================
 ; |     RANDOM SLEEP COUNTDOWN     -     RANDOM SLEEP COUNTDOWN          |
 ; =========================================================================
-	
-	UpdateCountdown:
-	
-	RemainingTime := EndTime - A_TickCount
-	
-	if (RemainingTime > 0)
-	{
+
+UpdateCountdown:
+
+RemainingTime := EndTime - A_TickCount
+
+if (RemainingTime > 0)
+{
 		GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
 	}
 	
@@ -1980,118 +1987,149 @@ Logout(){
 ; ===================================================================
 ; |     INFORMATION     -     INFORMATION     -     INFORMATION     |
 ; ===================================================================
+
+Info:
+DisableHotkey()
+
+IniRead, logout, LLARS Config.ini, Logout, option
+IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
+IniRead, chance, LLARS Config.ini, Random Sleep, chance
+
+; Build the list of script hotkeys automatically.
+scriptHotkeys := ""
+
+if (LLARS_lhk1 != "")
+	scriptHotkeys .= "Start: " . LLARS_lhk1 . "`n"
+
+if (LLARS_lhk2 != "")
+	scriptHotkeys .= "Information: " . LLARS_lhk2 . "`n"
+
+if (LLARS_lhk3 != "")
+	scriptHotkeys .= "Color/Coordinate/Hotkey: " . LLARS_lhk3 . "`n"
+
+if (LLARS_lhk4 != "")
+	scriptHotkeys .= "Exit: " . LLARS_lhk4 . "`n"
+
+; Add a blank line between LLARS hotkeys and script hotkeys.
+if (scriptHotkeys != "")
+	scriptHotkeys .= "`n"
+
+; Read script-specific hotkeys from Config.ini.
+IniRead, sections, Config.ini
+
+Loop, Parse, sections, `n, `r
+{
+	section := A_LoopField
 	
-	Info:
-	DisableHotkey()
-	IniRead, lhk1, LLARS Config.ini, LLARS Hotkey, start
-	IniRead, lhk2, LLARS Config.ini, LLARS Hotkey, information
-	IniRead, lhk3, LLARS Config.ini, LLARS Hotkey, color/coordinate/hotkey
-	IniRead, lhk4, LLARS Config.ini, LLARS Hotkey, exit
+	if (section = "")
+		continue
 	
-	IniRead, logout, LLARS Config.ini, Logout, option
-	IniRead, sleepoption, LLARS Config.ini, Random Sleep, option
-	IniRead, chance, LLARS Config.ini, Random Sleep, chance
+	IniRead, type, Config.ini, %section%, type
 	
-	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-	IniRead, hkbp, Config.ini, Bank Preset, hotkey
-	
-	if (hk = "")
-		hk := "Not Set"
-	
-	if (hkbp = "")
-		hkbp := "Not Set"
-	
-	WinGetPos, GUIxc, GUIyc,,,LLARS
-	IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
-	IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
-	
-	Gui 1: hide
-	Gui 3: hide	
-	Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
-	Gui 20: Font, S13 bold cMaroon
-	Gui 20: Add, Text, Center w220 x5,%scriptname%
-	Gui 20: Font, s11 Bold underline cTeal
-	Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
-	Gui 20: Font, Norm
-	Gui 20: Add, Text, Center w220 x5,Start: %lhk1%`nCoordinates/Pause: %lhk2%`nHotkey/Resume: %lhk3%`nExit: %lhk4%`nSkillbar: %hk%`nBank Preset: %hkbp%
-	Gui 20: Add, Text, center x5 w220,
-	Gui 20: Font, Bold underline cPurple
-	Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
-	Gui 20: Font, Norm
-	Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
-	Gui 20: Add, Text, center x5 w220,
-	Gui 20: Font, italic s10 c0x152039
-	Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
-	Gui 20: Font, cBlue norm underline bold s11
-	Gui 20: Add, Text, Center gMIT w220 x5,MIT License
-	Gui 20: Font, s11 norm Bold c0x152039
-	Gui 20: Add, Text, Center w220 x5,Created by Gubna
-	Gui 20: Font, cBlack norm bold
-	Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
-	Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
-	Gui 20: Add, Button, gDiscord w150 x40 center,Discord
-	Gui 20: add, button, gCloseInfo w150 x40 center,Close Information
-	WinSet, ExStyle, ^0x80
-	Gui 20: -caption
-	Gui 20: Show, center w230, Information
-	return
-	
+	if (type = "hotkey")
+	{
+		IniRead, hotkey, Config.ini, %section%, hotkey
+		
+		if (hotkey = "")
+			hotkey := "Not Set"
+		
+		scriptHotkeys .= section . ": " . hotkey . "`n"
+	}
+}
+
+if (scriptHotkeys = "")
+	scriptHotkeys := "No script hotkeys configured"
+
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, LLARS Config.ini, GUI POS, guix
+IniWrite, %GUIyc%, LLARS Config.ini, GUI POS, guiy
+
+Gui 1: hide
+Gui 3: hide
+Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
+Gui 20: Font, S13 bold cMaroon
+Gui 20: Add, Text, Center w220 x5,%scriptname%
+Gui 20: Font, s11 Bold underline cTeal
+Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
+Gui 20: Font, Norm
+Gui 20: Add, Text, Center w220 x5,%scriptHotkeys%
+Gui 20: Font, Bold underline cPurple
+Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
+Gui 20: Font, Norm
+Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
+Gui 20: Add, Text, center x5 w220,
+Gui 20: Font, italic s10 c0x152039
+Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
+Gui 20: Font, cBlue norm underline bold s11
+Gui 20: Add, Text, Center gMIT w220 x5,MIT License
+Gui 20: Font, s11 norm Bold c0x152039
+Gui 20: Add, Text, Center w220 x5,Created by Gubna
+Gui 20: Font, cBlack norm bold
+Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
+Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
+Gui 20: Add, Button, gDiscord w150 x40 center,Discord
+Gui 20: Add, Button, gCloseInfo w150 x40 center,Close Information
+WinSet, ExStyle, ^0x80
+Gui 20: -caption
+Gui 20: Show, center w230, Information
+return
+
 ; Closes the information window and restores the main LLARS GUI.
-	CloseInfo:
-	EnableHotkey()
-	gui 20: destroy
-	gui 1: Show		
-	return
-	
+CloseInfo:
+EnableHotkey()
+gui 20: destroy
+gui 1: Show		
+return
+
 ; Opens the Discord link from the information GUI and returns to LLARS.
-	discord:
-	EnableHotkey()
-	Gui 20: destroy
-	Run, https://discord.gg/Wmmf65myPG
-	gui 1: Show		
-	return
-	
+discord:
+EnableHotkey()
+Gui 20: destroy
+Run, https://discord.gg/Wmmf65myPG
+gui 1: Show		
+return
+
 ; Opens the main script configuration file.
-	InfoConfig:
-	EnableHotkey()
-	Run %A_ScriptDir%\Config.ini
-	return
-	
+InfoConfig:
+EnableHotkey()
+Run %A_ScriptDir%\Config.ini
+return
+
 ; Opens the LLARS configuration file.
-	InfoLLARS:
-	EnableHotkey()
-	Run %A_ScriptDir%\LLARS Config.ini
-	return
-	
+InfoLLARS:
+EnableHotkey()
+Run %A_ScriptDir%\LLARS Config.ini
+return
+
 ; Opens the project's GitHub repository from the configuration error window.
-	GitLink:
-	run, https://github.com/Gubna-Tech/RuneScape
-	Exitapp
-	
+GitLink:
+run, https://github.com/Gubna-Tech/RuneScape
+Exitapp
+
 ; Opens Discord from the configuration error window and exits the script.
-	DiscordError:
-	Run, https://discord.gg/Wmmf65myPG
-	Exitapp
-	
+DiscordError:
+Run, https://discord.gg/Wmmf65myPG
+Exitapp
+
 ; Closes the script from the configuration error window.
-	CloseError:	
-	ExitApp
-	
+CloseError:	
+ExitApp
+
 ; Opens the project's MIT license page.
-	MIT:
-	run https://github.com/Gubna-Tech/RuneScape/blob/main/LICENSE
-	return
-	
+MIT:
+run https://github.com/Gubna-Tech/RuneScape/blob/main/LICENSE
+return
+
 ; ============================================================================
 ; |     GAME NOT FOUND     -     GAME NOT FOUND     -     GAME NOT FOUND     |
 ; ============================================================================
-	
-	CloseGNF:
-	Gui GNF: Destroy
-	
+
+CloseGNF:
+Gui GNF: Destroy
+
 ; Checks for the Jagex Launcher and RuneScape client.
-	if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe")
-	{
+if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe")
+{
 		if FileExist("C:\Program Files\Jagex\RuneScape Launcher\RuneScape.exe")
 		{
 			Menu, Tray, NoIcon
