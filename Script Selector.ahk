@@ -56,7 +56,7 @@ if (IsArchivePath)
 ; ===================================================================
 
 ; List of available scripts.
-scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Armour Crafter - Portables - Walking|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Herb Cleaner - Skillcape|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Decoration Maker|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Flatpack Maker - Portables - Non-Walking|Flatpack Maker - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|"
+scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Armour Crafter - Portables - Walking|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Herb Cleaner - Skillcape|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Flatpack Maker - Portables - Non-Walking|Flatpack Maker - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|"
 
 ; Calculates the total number of scripts.
 ScriptTotal := StrSplit(scriptArray, "|").Length()
@@ -863,26 +863,8 @@ if A_GuiEvent = Normal
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
-		
-		Case "Decoration Maker":
-		script := "Decoration Maker"
-		scriptinfo := "Made for the 2023 Christmas Event, creates decorations for crafting xp and holiday rewards."
-		GuiReset()
-		GuiBorderA()
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Advanced
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Fire + Form - Portables":
+
+Case "Fire + Form - Portables":
 		script := "Fire + Form"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will form an urn and then fire it before repeating the process."
 		GuiReset()
@@ -2060,10 +2042,6 @@ Switch selectedScript
     Case "Cooking - Portables - Walking":
         script := "Cooking"
         scriptDir := A_ScriptDir . "\portables\cooking\cooking - with walking"
-
-    Case "Decoration Maker":
-        script := "Decoration Maker"
-        scriptDir := A_ScriptDir . "\Events\2023\Christmas\" . script
 
     Case "Fire + Form - Portables":
         script := "Fire + Form"
