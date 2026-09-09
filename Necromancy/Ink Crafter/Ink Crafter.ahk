@@ -274,12 +274,9 @@ WM_LBUTTONDOWN() {
 	If (A_Gui)
 		PostMessage, 0xA1, 2
 }
-return
-
-WM_WINDOWPOSCHANGED(hwnd, uMsg, wParam, lParam) {
-	CheckPOS(hwnd)
+WM_WINDOWPOSCHANGED() {
+	CheckPOS()
 }
-return
 
 ; Validates both configuration files and stops on the first blank
 ; required configuration value that is found.
@@ -470,14 +467,12 @@ GetConfigType(file, section)
 
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
-CheckPOS(hwnd)
+CheckPOS()
 {
-	WinGetClass, winClass, ahk_id %hwnd%
+	IfWinNotActive, LLARS
+	return
 	
-	if (winClass != "AutoHotkeyGUI")
-		return
-	
-	WinGetPos, GUIx, GUIy, GUIw, GUIh, ahk_id %hwnd%
+	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
 	
 	xmin := GUIx
 	xmax := GUIw + GUIx
@@ -499,7 +494,7 @@ CheckPOS(hwnd)
 		Y := yadj
 	
 	if (X != GUIx || Y != GUIy)
-		WinMove, ahk_id %hwnd%,, X, Y
+		WinMove, LLARS,, X, Y
 }
 
 ; Finds existing LLARS AutoHotkey windows and closes them
@@ -1049,6 +1044,10 @@ return
 ; |     COORDINATES GUI     -     COORDINATES GUI     -     COORDINATES GUI     |
 ; ===============================================================================
 
+; ===============================================================================
+; |     COORDINATES GUI     -     COORDINATES GUI     -     COORDINATES GUI     |
+; ===============================================================================
+
 ; Builds the coordinate editor dynamically by checking the type assigned
 ; to each configuration section. Sections marked type=coordinate are
 ; automatically included without requiring their names in the script.
@@ -1323,11 +1322,16 @@ if GetKeyState("RButton", "P")
 			
 			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 			Gui 13: Color, White
-			Gui 13u: Font, s16 bold
-			Gui 13u: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
+			Gui 13: Font, s16 bold
+			Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
 			Gui 13: -caption
 			Gui 13: Show, NoActivate xcenter y9999, TopGUI
 		}
+		
+		wingetpos,,,,bottomH, BottomGUI
+		wingetpos,,,,topH, TopGUI
+		
+		topPOS := (bottomH - topH) / 2
 		
 		Gui, TopGUI: +LabelTopGUI
 		WinMove, TopGUI,, , %topPOS%
