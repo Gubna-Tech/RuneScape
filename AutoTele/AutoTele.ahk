@@ -640,13 +640,9 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	; Save the current Exit hotkey.
 	LLARS_lhk4 := lhk4
 	
+	; Exit hotkey is always enabled regardless of state.
 	if (lhk4 != "")
-	{
-		if (state = "On")
-			Hotkey, %lhk4%, exitb, On
-		else
-			Hotkey, %lhk4%, exitb, Off
-	}
+		Hotkey, %lhk4%, exitb, On
 }
 
 ; Temporarily disables all LLARS control hotkeys.
@@ -1010,6 +1006,44 @@ NaturalHash(value)
 		value += 2147483647
 	
 	return (value / 1073741823.5) - 1
+}
+
+; Performs an optional logout after the timed run completes. The logout
+; process uses Escape, a randomized delay, and a random point inside
+; the configured logout rectangle from LLARS Config.ini.
+Logout(){
+	IniRead, option, LLARS Config.ini, Logout, option
+	
+	Log("LOGOUT CHECK", "Logout option = " option)
+	
+	if option=true
+	{
+		Log("LOGOUT", "Logout initiated")
+		
+		send {esc}	
+		
+		IniRead, sa1, Config.ini, Sleep Short, min
+		IniRead, sa2, Config.ini, Sleep Short, max
+		Random, SleepAmount, %sa1%, %sa2%
+		
+		Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
+		
+		Sleep, %SleepAmount%	
+		
+		IniRead, x1, LLARS Config.ini, Logout, xmin
+		IniRead, x2, LLARS Config.ini, Logout, xmax
+		IniRead, y1, LLARS Config.ini, Logout, ymin
+		IniRead, y2, LLARS Config.ini, Logout, ymax
+		
+		Random, x, %x1%, %x2%
+		Random, y, %y1%, %y2%
+		
+		Log("LOGOUT CLICK", "Logout coordinates X=" x " Y=" y)
+		
+		Click, %x%, %y%
+		
+		Log("LOGOUT", "Logout click completed")
+	}
 }
 
 ; ===================================================================================================================
@@ -2066,48 +2100,6 @@ LLARS_RUNNING := false
 SetLLARSHOTKEYS()
 
 return
-
-; ===============================================================================
-; |     LOGOUT FUNCTION     -     LOGOUT FUNCTION     -     LOGOUT FUNCTION     |
-; ===============================================================================
-
-; Performs an optional logout after the timed run completes. The logout
-; process uses Escape, a randomized delay, and a random point inside
-; the configured logout rectangle from LLARS Config.ini.
-Logout(){
-	IniRead, option, LLARS Config.ini, Logout, option
-	
-	Log("LOGOUT CHECK", "Logout option = " option)
-	
-	if option=true
-	{
-		Log("LOGOUT", "Logout initiated")
-		
-		send {esc}	
-		
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		
-		Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
-		
-		Sleep, %SleepAmount%	
-
-		IniRead, x1, LLARS Config.ini, Logout, xmin
-		IniRead, x2, LLARS Config.ini, Logout, xmax
-		IniRead, y1, LLARS Config.ini, Logout, ymin
-		IniRead, y2, LLARS Config.ini, Logout, ymax
-		
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		
-		Log("LOGOUT CLICK", "Logout coordinates X=" x " Y=" y)
-		
-		Click, %x%, %y%
-		
-		Log("LOGOUT", "Logout click completed")
-	}
-}
 
 ; ===================================================================
 ; |     INFORMATION     -     INFORMATION     -     INFORMATION     |
