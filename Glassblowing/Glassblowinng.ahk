@@ -560,7 +560,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	; Enable/disable the current Start hotkey.
 	if (lhk1 != "")
 	{
-		if (state = "On")
+		if (state = "On" && !LLARS_RUNNING)
 			Hotkey, %lhk1%, Start, On
 		else
 			Hotkey, %lhk1%, Start, Off

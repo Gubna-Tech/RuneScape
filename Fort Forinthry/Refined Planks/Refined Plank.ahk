@@ -560,7 +560,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	; Enable/disable the current Start hotkey.
 	if (lhk1 != "")
 	{
-		if (state = "On")
+		if (state = "On" && !LLARS_RUNNING)
 			Hotkey, %lhk1%, Start, On
 		else
 			Hotkey, %lhk1%, Start, Off
@@ -1323,11 +1323,16 @@ if GetKeyState("RButton", "P")
 			
 			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
 			Gui 13: Color, White
-			Gui 13u: Font, s16 bold
-			Gui 13u: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
+			Gui 13: Font, s16 bold
+			Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
 			Gui 13: -caption
 			Gui 13: Show, NoActivate xcenter y9999, TopGUI
 		}
+		
+		wingetpos,,,,bottomH, BottomGUI
+		wingetpos,,,,topH, TopGUI
+		
+		topPOS := (bottomH - topH) / 2
 		
 		Gui, TopGUI: +LabelTopGUI
 		WinMove, TopGUI,, , %topPOS%
