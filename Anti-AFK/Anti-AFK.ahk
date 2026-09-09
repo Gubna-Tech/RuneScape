@@ -2089,6 +2089,8 @@ tooltip
 return
 
 AFK:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
 	Log("ANTI-AFK", "Anti-AFK activation triggered")
 	
@@ -2137,18 +2139,11 @@ AFK:
 
 return
 
-
 ; ======================================================================
 ; |     >>> END SCRIPT EDITING <<<       >>> END SCRIPT EDITING <<<    |
 ; |     >>> END SCRIPT EDITING <<<       >>> END SCRIPT EDITING <<<    |
 ; |     >>> END SCRIPT EDITING <<<       >>> END SCRIPT EDITING <<<    |
 ; ======================================================================
-
-; ==================================================================
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
-; ==================================================================
 
 ; =================================================================================================
 ; |     SCRIPT FINISH MESSAGE     -     SCRIPT FINISH MESSAGE     -     SCRIPT FINISH MESSAGE     |

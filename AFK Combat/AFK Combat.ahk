@@ -1983,11 +1983,6 @@ If (option = "true")
 
     Log("AGRO ACTIVATED", "Agro timer activated")
 }
-Else
-{
-    Log("AGRO DISABLED", "Agro option is disabled")
-}
-
 
 IniRead, option, Config.ini, AFK, option
 StringLower, option, option
@@ -2037,11 +2032,6 @@ If (option = "true")
 
     Log("ANTI-AFK ACTIVATED", "Anti-AFK timer activated")
 }
-Else
-{
-    Log("ANTI-AFK DISABLED", "AFK option is disabled")
-}
-
 
 IniRead, option, Config.ini, Prayer, option
 StringLower, option, option
@@ -2079,11 +2069,6 @@ If (option = "true")
 
     Log("PRAYER ACTIVATED", "Prayer timer activated")
 }
-Else
-{
-    Log("PRAYER DISABLED", "Prayer option is disabled")
-}
-
 
 IniRead, option, Config.ini, Strength, option
 StringLower, option, option
@@ -2121,11 +2106,6 @@ If (option = "true")
 
     Log("STRENGTH ACTIVATED", "Strength timer activated")
 }
-Else
-{
-    Log("STRENGTH DISABLED", "Strength option is disabled")
-}
-
 
 IniRead, option, Config.ini, Attack, option
 StringLower, option, option
@@ -2164,10 +2144,6 @@ If (option = "true")
     Log("ATTACK ACTIVATED", "Attack timer activated")
 }
 Else
-{
-    Log("ATTACK DISABLED", "Attack option is disabled")
-}
-
 
 IniRead, option, Config.ini, Magic, option
 StringLower, option, option
@@ -2205,11 +2181,6 @@ If (option = "true")
 
     Log("MAGIC ACTIVATED", "Magic timer activated")
 }
-Else
-{
-    Log("MAGIC DISABLED", "Magic option is disabled")
-}
-
 
 IniRead, option, Config.ini, Ranged, option
 StringLower, option, option
@@ -2247,11 +2218,6 @@ If (option = "true")
 
     Log("RANGED ACTIVATED", "Ranged timer activated")
 }
-Else
-{
-    Log("RANGED DISABLED", "Ranged option is disabled")
-}
-
 
 IniRead, option, Config.ini, Overload, option
 StringLower, option, option
@@ -2289,11 +2255,6 @@ If (option = "true")
 
     Log("OVERLOAD ACTIVATED", "Overload timer activated")
 }
-Else
-{
-    Log("OVERLOAD DISABLED", "Overload option is disabled")
-}
-
 
 IniRead, option, Config.ini, Warmaster, option
 StringLower, option, option
@@ -2331,11 +2292,6 @@ If (option = "true")
 
     Log("WARMASTER ACTIVATED", "Warmaster timer activated")
 }
-Else
-{
-    Log("WARMASTER DISABLED", "Warmaster option is disabled")
-}
-
 
 IniRead, option, Config.ini, Antifire, option
 StringLower, option, option
@@ -2373,11 +2329,6 @@ If (option = "true")
 
     Log("ANTIFIRE ACTIVATED", "Antifire timer activated")
 }
-Else
-{
-    Log("ANTIFIRE DISABLED", "Antifire option is disabled")
-}
-
 
 IniRead, option, Config.ini, Antipoison, option
 StringLower, option, option
@@ -2415,11 +2366,6 @@ If (option = "true")
 
     Log("ANTIPOISON ACTIVATED", "Antipoison timer activated")
 }
-Else
-{
-    Log("ANTIPOISON DISABLED", "Antipoison option is disabled")
-}
-
 
 IniRead, option, Config.ini, Weapon Poison, option
 StringLower, option, option
@@ -2457,11 +2403,6 @@ If (option = "true")
 
     Log("WEAPON POISON ACTIVATED", "Weapon Poison timer activated")
 }
-Else
-{
-    Log("WEAPON POISON DISABLED", "Weapon Poison option is disabled")
-}
-
 
 IniRead, option, Config.ini, Animate Dead, option
 StringLower, option, option
@@ -2499,11 +2440,6 @@ If (option = "true")
 
     Log("ANIMATE DEAD ACTIVATED", "Animate Dead timer activated")
 }
-Else
-{
-    Log("ANIMATE DEAD DISABLED", "Animate Dead option is disabled")
-}
-
 
 IniRead, option, Config.ini, Vecna Skull, option
 StringLower, option, option
@@ -2541,11 +2477,6 @@ If (option = "true")
 
     Log("VECNA ACTIVATED", "Vecna Skull timer activated")
 }
-Else
-{
-    Log("VECNA DISABLED", "Vecna Skull option is disabled")
-}
-
 
 IniRead, option, Config.ini, Ancient Elven Ritual Shard, option
 StringLower, option, option
@@ -2583,11 +2514,6 @@ If (option = "true")
 
     Log("SHARD ACTIVATED", "Ancient Elven Ritual Shard timer activated")
 }
-Else
-{
-    Log("SHARD DISABLED", "Ancient Elven Ritual Shard option is disabled")
-}
-
 
 IniRead, option, Config.ini, Incense Sticks, option
 StringLower, option, option
@@ -2625,11 +2551,6 @@ If (option = "true")
 
     Log("INCENSE STICKS ACTIVATED", "Incense Sticks timer activated")
 }
-Else
-{
-    Log("INCENSE STICKS DISABLED", "Incense Sticks option is disabled")
-}
-
 
 IniRead, option, Config.ini, Prayer Powder, option
 StringLower, option, option
@@ -2667,11 +2588,6 @@ If (option = "true")
 
     Log("PRAYER POWDER ACTIVATED", "Prayer Powder timer activated")
 }
-Else
-{
-    Log("PRAYER POWDER DISABLED", "Prayer Powder option is disabled")
-}
-
 
 IniRead, option, Config.ini, Summon, option
 StringLower, option, option
@@ -2709,11 +2625,6 @@ If (option = "true")
 
     Log("SUMMON ACTIVATED", "Summon timer activated")
 }
-Else
-{
-    Log("SUMMON DISABLED", "Summon option is disabled")
-}
-
 
 IniRead, option, Config.ini, Saradomin Brew, option
 StringLower, option, option
@@ -2751,11 +2662,6 @@ If (option = "true")
 
     Log("SARA BREW ACTIVATED", "Saradomin Brew timer activated")
 }
-Else
-{
-    Log("SARA BREW DISABLED", "Saradomin Brew option is disabled")
-}
-
 
 IniRead, option, Config.ini, Loot, option
 StringLower, option, option
@@ -2792,11 +2698,6 @@ If (option = "true")
 
     Log("LOOT ACTIVATED", "Auto-Loot timer activated")
 }
-Else
-{
-    Log("LOOT DISABLED", "Loot option is disabled")
-}
-
 
 IniRead, option, Config.ini, Cannon Restock, option
 StringLower, option, option
@@ -2841,11 +2742,6 @@ If (option = "true")
 	
 	Log("CANNON RESTOCK ACTIVATED", "Cannon Restock timer activated")
 }
-Else
-{
-    Log("CANNON RESTOCK DISABLED", "Cannon Restock option is disabled")
-}
-
 
 IniRead, option, Config.ini, Binding Contract, option
 StringLower, option, option
@@ -2867,15 +2763,12 @@ If (option = "true")
 
     Log("BINDING CONTRACT TIMER", "Timer=" SleepAmount " ms")
 }
-Else
-{
-    Log("BINDING CONTRACT DISABLED", "Binding Contract option is disabled")
-}
 
 return
 
-
 Agro:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -2910,8 +2803,9 @@ Agro:
 }
 return
 
-
 AFK:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -2958,8 +2852,9 @@ AFK:
 }
 return
 
-
 Strength:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -2994,8 +2889,9 @@ Strength:
 }
 return
 
-
 Attack:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3030,8 +2926,9 @@ Attack:
 }
 return
 
-
 Magic:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3066,8 +2963,9 @@ Magic:
 }
 return
 
-
 Ranged:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3102,8 +3000,9 @@ Ranged:
 }
 return
 
-
 Overload:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3138,8 +3037,9 @@ Overload:
 }
 return
 
-
 Warmaster:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3174,8 +3074,9 @@ Warmaster:
 }
 return
 
-
 Antifire:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3210,8 +3111,9 @@ Antifire:
 }
 return
 
-
 Antipoison:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3246,8 +3148,9 @@ Antipoison:
 }
 return
 
-
 Prayer:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3282,8 +3185,9 @@ Prayer:
 }
 return
 
-
 WeaponPoison:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3318,8 +3222,9 @@ WeaponPoison:
 }
 return
 
-
 AnimateDead:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3354,8 +3259,9 @@ AnimateDead:
 }
 return
 
-
 Vecna:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3390,8 +3296,9 @@ Vecna:
 }
 return
 
-
 Shard:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3426,8 +3333,9 @@ Shard:
 }
 return
 
-
 IncenseSticks:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3462,8 +3370,9 @@ IncenseSticks:
 }
 return
 
-
 PrayerP:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3498,8 +3407,9 @@ PrayerP:
 }
 return
 
-
 Summon:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3534,8 +3444,9 @@ Summon:
 }
 return
 
-
 SaraBrew:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3570,8 +3481,9 @@ SaraBrew:
 }
 return
 
-
 Loot:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
     IfWinNotActive, RuneScape
     {
@@ -3605,8 +3517,9 @@ Loot:
 }
 return
 
-
 CannonRestock:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
 	IfWinNotActive, RuneScape
 	{
@@ -3648,8 +3561,9 @@ CannonRestock:
 }
 return
 
-
 BindingContract:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
 	IfWinNotActive, RuneScape
 	{

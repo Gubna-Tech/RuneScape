@@ -2107,6 +2107,8 @@ Return
 ; The original click and timer sequence is preserved.
 ; Config.ini is re-read each time the timer fires.
 RandomClick:
+GuiControl,,ScriptBlue, %scriptname% 
+GuiControl,,State3, Running
 {
 	; Makes sure RuneScape is the active window before clicking.
 	IfWinNotActive, RuneScape
