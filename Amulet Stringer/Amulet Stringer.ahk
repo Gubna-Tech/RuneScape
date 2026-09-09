@@ -560,7 +560,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	; Enable/disable the current Start hotkey.
 	if (lhk1 != "")
 	{
-		if (state = "On")
+		if (state = "On" && !LLARS_RUNNING)
 			Hotkey, %lhk1%, Start, On
 		else
 			Hotkey, %lhk1%, Start, Off
@@ -598,60 +598,60 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 				Hotkey, %lhk2%, pauseb, Off
 				Hotkey, %lhk2%, Info, On
 			}
-}
-else
-{
-	Hotkey, %lhk2%, Info, Off
-	Hotkey, %lhk2%, pauseb, Off
-}
-}
-
-	; Disable the previously configured Combo/Resume hotkey if it changed.
-if (LLARS_lhk3 != "" && LLARS_lhk3 != lhk3)
-{
-	Hotkey, %LLARS_lhk3%, Combo, Off
-	Hotkey, %LLARS_lhk3%, resumeb, Off
-}
-
-	; Save the current Combo/Resume hotkey.
-LLARS_lhk3 := lhk3
-
-if (lhk3 != "")
-{
-	if (state = "On")
-	{
-		if (LLARS_RUNNING)
-		{
-			Hotkey, %lhk3%, Combo, Off
-			Hotkey, %lhk3%, resumeb, On
 		}
 		else
 		{
-			Hotkey, %lhk3%, resumeb, Off
-			Hotkey, %lhk3%, Combo, On
+			Hotkey, %lhk2%, Info, Off
+			Hotkey, %lhk2%, pauseb, Off
 		}
 	}
-	else
+	
+	; Disable the previously configured Combo/Resume hotkey if it changed.
+	if (LLARS_lhk3 != "" && LLARS_lhk3 != lhk3)
 	{
-		Hotkey, %lhk3%, Combo, Off
-		Hotkey, %lhk3%, resumeb, Off
+		Hotkey, %LLARS_lhk3%, Combo, Off
+		Hotkey, %LLARS_lhk3%, resumeb, Off
 	}
-}
-
+	
+	; Save the current Combo/Resume hotkey.
+	LLARS_lhk3 := lhk3
+	
+	if (lhk3 != "")
+	{
+		if (state = "On")
+		{
+			if (LLARS_RUNNING)
+			{
+				Hotkey, %lhk3%, Combo, Off
+				Hotkey, %lhk3%, resumeb, On
+			}
+			else
+			{
+				Hotkey, %lhk3%, resumeb, Off
+				Hotkey, %lhk3%, Combo, On
+			}
+		}
+		else
+		{
+			Hotkey, %lhk3%, Combo, Off
+			Hotkey, %lhk3%, resumeb, Off
+		}
+	}
+	
 	; Disable the previously configured Exit hotkey if it changed.
-if (LLARS_lhk4 != "" && LLARS_lhk4 != lhk4)
-	Hotkey, %LLARS_lhk4%, exitb, Off
-
+	if (LLARS_lhk4 != "" && LLARS_lhk4 != lhk4)
+		Hotkey, %LLARS_lhk4%, exitb, Off
+	
 	; Save the current Exit hotkey.
-LLARS_lhk4 := lhk4
-
-if (lhk4 != "")
-{
-	if (state = "On")
-		Hotkey, %lhk4%, exitb, On
-	else
-		Hotkey, %lhk4%, exitb, Off
-}
+	LLARS_lhk4 := lhk4
+	
+	if (lhk4 != "")
+	{
+		if (state = "On")
+			Hotkey, %lhk4%, exitb, On
+		else
+			Hotkey, %lhk4%, exitb, Off
+	}
 }
 
 ; Temporarily disables all LLARS control hotkeys.
