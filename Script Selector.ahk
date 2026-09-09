@@ -101,23 +101,18 @@ WM_LBUTTONDOWN() {
 	If (A_Gui)
 		PostMessage, 0xA1, 2
 }
-return
-
-WM_WINDOWPOSCHANGED(hwnd, uMsg, wParam, lParam) {
-	CheckPOS(hwnd)
+WM_WINDOWPOSCHANGED() {
+	CheckPOS()
 }
-return
 
 ; Keeps supported LLARS windows inside the visible screen area when
 ; their position changes or they are moved partially off-screen.
-CheckPOS(hwnd)
+CheckPOS()
 {
-	WinGetClass, winClass, ahk_id %hwnd%
+	IfWinNotActive, LLARS
+	return
 	
-	if (winClass != "AutoHotkeyGUI")
-		return
-	
-	WinGetPos, GUIx, GUIy, GUIw, GUIh, ahk_id %hwnd%
+	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
 	
 	xmin := GUIx
 	xmax := GUIw + GUIx
@@ -139,7 +134,7 @@ CheckPOS(hwnd)
 		Y := yadj
 	
 	if (X != GUIx || Y != GUIy)
-		WinMove, ahk_id %hwnd%,, X, Y
+		WinMove, LLARS,, X, Y
 }
 
 ; Finds existing LLARS AutoHotkey windows and closes them
@@ -157,7 +152,6 @@ CloseOtherLLARS()
 		
 		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
 		{
-			Log("DUPLICATE CLOSE", "Closing existing LLARS AutoHotkey window")
 			WinClose, % "ahk_id " hWnd
 		}
 	}
@@ -170,7 +164,6 @@ CloseOtherLLARS()
 		
 		if (processName = "AutoHotkey.exe" || processName = "AutoHotkeyU64.exe" || processName = "AutoHotkeyU32.exe")
 		{
-			Log("DUPLICATE CLOSE", "Closing existing Script Selector AutoHotkey window")
 			WinClose, % "ahk_id " hWnd
 		}
 	}
