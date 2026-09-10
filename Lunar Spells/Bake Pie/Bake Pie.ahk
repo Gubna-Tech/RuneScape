@@ -127,6 +127,22 @@ IniRead, value, LLARS Config.ini, Transparent, value
 CoordMode, Pixel, Client
 CoordMode, Mouse, Client
 
+runcount3 := runcount
+
+StartTime := A_TickCount
+StartTimeStamp := A_Hour ":" A_Min ":" A_Sec
+
+EstLoopStartTick := 0
+EstLoopTime := 0
+EstAverageLoopTime := 0
+EstCompletedLoops := 0
+
+EstConfiguredLoopMin := 0
+EstConfiguredLoopMax := 0
+EstConfiguredLoopAverage := 0
+EstRuntimeCalculated := false
+EstimationRunCount := 1000
+
 coordcount = 0
 frcount = 0
 LastClickTime := 0
@@ -144,30 +160,43 @@ scriptname := regexreplace(A_scriptname,"\..*","")
 ; controls, status indicators, timer display, transparency, saved position,
 ; and optional LLARS icon.
 Gui +LastFound +OwnDialogs +AlwaysOnTop
-Gui, Font, s11
-Gui, font, bold
-Gui, Add, Button, x5 y5 w100 h25 gStart , Start
-Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
-Gui, Add, Button, x5 y35 w210 h25 gCombo, Color/Coordinate/Hotkey
-Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
-Gui, Font, cBlue
-Gui, Add, Text, x135 y65 w70 h25 vState3
-Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
-Gui, Add, Text, x135 y90 w100 h25 vCounter
-Gui, Add, Text, x8 y90 w125 h25, Total Run Count
+Gui, Font, s12 Bold
+Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
+Gui, Font, s10 Bold
+Gui, Add, Text, x5 y29 w270 h18 Center cGray, %scriptname%
+Gui, Add, Text, x5 y49 w270 h2 0x10
+Gui, Font, s10 Bold
+Gui, Add, Button, x10 y57 w125 h25 gStart , Start
+Gui, Add, Button, x145 y57 w125 h25 gInfo, Information
+Gui, Add, Button, x10 y86 w260 h25 gCombo, Color/Coordinate/Hotkey
+Gui, Add, Text, x5 y117 w270 h2 0x10
+Gui, Font, s10 Bold
+Gui, Add, Text, x10 y123 w165 h20, Run Count
+Gui, Font, s10
+Gui, Add, Text, x170 y123 w115 h20 Center vCounter
+GuiControl,,Counter, ** NOT SET **
 GuiControl,,TimerLabel, Remaining:
 GuiControl,,TimerCount, ** OFF **
-Gui, Font, cRed
-Gui, Add, Text, x135 y65 w70 h25 vState2
-Gui, Add, Text, x8 y65 w125 h25 vScriptRed
+Gui, Font, s10 Bold
+Gui, Add, Text, x10 y147 w165 h20, Status
+Gui, Font, s10 Bold cBlue
+Gui, Add, Text, x175 y147 w95 h20 Center vState3
+Gui, Add, Text, x10 y147 w165 h20 vScriptBlue
+Gui, Font, s10 Bold cRed
+Gui, Add, Text, x175 y147 w95 h20 Center vState2
+Gui, Add, Text, x10 y147 w165 h20 vScriptRed
 GuiControl,,State2, ** OFF **
-Gui, Add, Text, x8 y65 w125 h25, %scriptname%
+Gui, Add, Text, x10 y147 w165 h20, %scriptname%
+Gui, Add, Text, x5 y171 w270 h2 0x10
+Gui, Font, s10 Bold
+Gui, Add, Button, x55 y178 w170 h29 gExitb , Exit LLARS
+
 if FileExist("LLARS Logo.ico")
 {
 	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 }
 WinSet, Transparent, %value%
-Gui, Show,w220 h150, LLARS
+Gui, Show,w290 h215, LLARS
 
 ; Restores the main LLARS GUI to its previously saved screen position.
 IniRead, x, LLARS Config.ini, GUI POS, guix
@@ -1008,6 +1037,298 @@ NaturalHash(value)
 	return (value / 1073741823.5) - 1
 }
 
+CalculateScriptRuntime()
+{
+	global EstConfiguredLoopMin
+	global EstConfiguredLoopMax
+	global EstConfiguredLoopAverage
+	global EstRuntimeCalculated
+	global EstimationRunCount
+
+	EstConfiguredLoopMin := 0
+	EstConfiguredLoopMax := 0
+	EstConfiguredLoopAverage := 0
+	EstRuntimeCalculated := false
+
+	; Read only the section of this script marked for LLARS editing.
+	FileRead, ScriptContents, %A_ScriptFullPath%
+
+	; Build the marker text in pieces so FileRead does not find the
+	; marker strings inside this function itself.
+	BeginMarker := "SCRIPT_EDIT_" . "BEGIN_4C4C415253"
+	EndMarker := "SCRIPT_EDIT_" . "END_4C4C415253"
+
+	StartPos := InStr(ScriptContents, "; " . BeginMarker)
+	if (!StartPos)
+		return false
+
+	EndSearchPos := StartPos + StrLen("; " . BeginMarker)
+	EndPos := InStr(ScriptContents, "; " . EndMarker, false, EndSearchPos)
+	if (!EndPos)
+		return false
+
+	ScriptSection := SubStr(ScriptContents, EndSearchPos, EndPos - EndSearchPos)
+
+	if (!ParseLLARSRuntime(ScriptSection, FirstLoopAverage, FollowingLoopAverage, FirstLoopMin, FirstLoopMax, FollowingLoopMin, FollowingLoopMax))
+		return false
+
+	if (FirstLoopAverage <= 0 || FollowingLoopAverage <= 0)
+		return false
+
+	; Use the fixed estimation count only to stabilize the mathematical
+	; average. It never changes the user's actual runcount.
+	if (EstimationRunCount <= 1)
+	{
+		EstConfiguredLoopAverage := FirstLoopAverage
+		EstConfiguredLoopMin := FirstLoopMin
+		EstConfiguredLoopMax := FirstLoopMax
+	}
+	else
+	{
+		EstConfiguredLoopAverage := (FirstLoopAverage + ((EstimationRunCount - 1) * FollowingLoopAverage)) / EstimationRunCount
+		EstConfiguredLoopMin := FirstLoopMin
+		EstConfiguredLoopMax := FollowingLoopMax
+	}
+
+	if (EstConfiguredLoopAverage <= 0)
+		return false
+
+	EstRuntimeCalculated := true
+	return true
+}
+
+ParseLLARSRuntime(ScriptSection, ByRef FirstAverage, ByRef FollowingAverage, ByRef FirstMin, ByRef FirstMax, ByRef FollowingMin, ByRef FollowingMax)
+{
+	FirstAverage := 0
+	FollowingAverage := 0
+	FirstMin := 0
+	FirstMax := 0
+	FollowingMin := 0
+	FollowingMax := 0
+
+	; Split the editable script into lines so timer occurrences can be
+	; matched to their actual branch instead of counting every timer in
+	; the file as though it runs on every loop.
+	Lines := []
+	Loop, Parse, ScriptSection, `n, `r
+		Lines.Push(A_LoopField)
+
+	TimerEntries := []
+	LineCount := Lines.Length()
+
+	Loop, % LineCount
+	{
+		Index := A_Index
+		Line := Trim(Lines[Index])
+
+		if (!RegExMatch(Line, "i)^IniRead\s*,\s*\w+\s*,\s*([^,]+)\s*,\s*([^,]+)\s*,\s*min\s*$", Match))
+			continue
+
+		ConfigFile := Trim(Match1)
+		SectionName := Trim(Match2)
+		MaxIndex := 0
+		SleepIndex := 0
+
+		Loop, 5
+		{
+			CheckIndex := Index + A_Index
+			if (CheckIndex > LineCount)
+				break
+
+			CheckLine := Trim(Lines[CheckIndex])
+
+			if (MaxIndex = 0 && RegExMatch(CheckLine, "i)^IniRead\s*,\s*\w+\s*,\s*([^,]+)\s*,\s*([^,]+)\s*,\s*max\s*$", MaxMatch))
+			{
+				if (Trim(MaxMatch1) = ConfigFile && Trim(MaxMatch2) = SectionName)
+					MaxIndex := CheckIndex
+			}
+
+			if (MaxIndex > 0 && RegExMatch(CheckLine, "i)^Sleep\s*,\s*%[^%]+%\s*$", SleepMatch))
+			{
+				SleepIndex := CheckIndex
+				break
+			}
+		}
+
+		if (MaxIndex = 0 || SleepIndex = 0)
+			continue
+
+		IniRead, MinValue, %ConfigFile%, %SectionName%, min, ERROR
+		IniRead, MaxValue, %ConfigFile%, %SectionName%, max, ERROR
+
+		if (MinValue = "ERROR" || MaxValue = "ERROR")
+			continue
+		if (MinValue = "" || MaxValue = "")
+			continue
+		if (MinValue + 0 < 0 || MaxValue + 0 < MinValue + 0)
+			continue
+
+		Entry := {}
+		Entry.Min := MinValue + 0
+		Entry.Max := MaxValue + 0
+		Entry.Average := (Entry.Min + Entry.Max) / 2
+		Entry.Line := SleepIndex
+		Entry.File := ConfigFile
+		Entry.Section := SectionName
+		Entry.Weight := 1.0
+		TimerEntries.Push(Entry)
+	}
+
+	if (TimerEntries.Length() = 0)
+		return false
+
+	; Locate top-level firstrun branches when a script uses the common
+	; LLARS first-run pattern. Scripts without that pattern are treated
+	; as having one normal loop path.
+	BranchBlocks := []
+	Depth := 0
+	Loop, % LineCount
+	{
+		Index := A_Index
+		Line := Trim(Lines[Index])
+
+		if (Depth = 1 && RegExMatch(Line, "i)^if\s*\(\s*firstrun\s*=\s*(0|1)\s*\)\s*$", BranchMatch))
+		{
+			State := BranchMatch1
+			OpenIndex := Index + 1
+			while (OpenIndex <= LineCount && Trim(Lines[OpenIndex]) = "")
+				OpenIndex++
+			if (OpenIndex <= LineCount && InStr(Trim(Lines[OpenIndex]), "{"))
+			{
+				BlockDepth := 0
+				EndIndex := OpenIndex
+				Loop
+				{
+					BlockLine := Lines[EndIndex]
+					BlockDepth += StrLen(BlockLine) - StrLen(StrReplace(BlockLine, "{", ""))
+					BlockDepth -= StrLen(BlockLine) - StrLen(StrReplace(BlockLine, "}", ""))
+					if (BlockDepth <= 0)
+						break
+					EndIndex++
+					if (EndIndex > LineCount)
+						break
+				}
+				Branch := {}
+				Branch.State := State
+				Branch.Start := Index
+				Branch.End := EndIndex
+				BranchBlocks.Push(Branch)
+			}
+		}
+
+		Depth += StrLen(Line) - StrLen(StrReplace(Line, "{", ""))
+		Depth -= StrLen(Line) - StrLen(StrReplace(Line, "}", ""))
+	}
+
+	HasFirstRunBranches := (BranchBlocks.Length() > 0)
+	FirstRunOneSeen := false
+	FirstTotal := 0
+	FirstMinTotal := 0
+	FirstMaxTotal := 0
+	FollowingTotal := 0
+	FollowingMinTotal := 0
+	FollowingMaxTotal := 0
+
+	; Add each discovered timer to the path(s) on which it can actually run.
+	for _, Entry in TimerEntries
+	{
+		Path := "normal"
+		BranchState := ""
+		BranchOrder := 0
+
+		for BranchIndex, Branch in BranchBlocks
+		{
+			if (Entry.Line >= Branch.Start && Entry.Line <= Branch.End)
+			{
+				BranchState := Branch.State
+				BranchOrder := BranchIndex
+				break
+			}
+		}
+
+		if (BranchState = "1")
+			FirstRunOneSeen := true
+
+		; Random Sleep is conditional and is represented by its expected value.
+		EntrySectionLower := Entry.Section
+		StringLower, EntrySectionLower, EntrySectionLower
+		if (EntrySectionLower = "random sleep")
+		{
+			ConfigFile := Entry.File
+			ConfigSection := Entry.Section
+			IniRead, Chance, %ConfigFile%, %ConfigSection%, chance, 0
+			if (Chance = "" || Chance + 0 < 0 || Chance + 0 > 100)
+				Chance := 0
+			Entry.Weight := (Chance + 0) / 100
+		}
+
+		ContributionAverage := Entry.Average * Entry.Weight
+		ContributionMin := Entry.Min * Entry.Weight
+		ContributionMax := Entry.Max * Entry.Weight
+
+		if (!HasFirstRunBranches)
+		{
+			FollowingTotal += ContributionAverage
+			FollowingMinTotal += ContributionMin
+			FollowingMaxTotal += ContributionMax
+			continue
+		}
+
+		if (BranchState = "0")
+		{
+			; Before the firstrun=1 branch this belongs to the first loop.
+			; After the firstrun=1 branch it belongs to following loops.
+			if (!FirstRunOneSeen)
+			{
+				FirstTotal += ContributionAverage
+				FirstMinTotal += ContributionMin
+				FirstMaxTotal += ContributionMax
+			}
+			else
+			{
+				FollowingTotal += ContributionAverage
+				FollowingMinTotal += ContributionMin
+				FollowingMaxTotal += ContributionMax
+			}
+		}
+		else if (BranchState = "1")
+		{
+			FollowingTotal += ContributionAverage
+			FollowingMinTotal += ContributionMin
+			FollowingMaxTotal += ContributionMax
+		}
+		else
+		{
+			; Unconditional timers run on both paths.
+			FirstTotal += ContributionAverage
+			FirstMinTotal += ContributionMin
+			FirstMaxTotal += ContributionMax
+			FollowingTotal += ContributionAverage
+			FollowingMinTotal += ContributionMin
+			FollowingMaxTotal += ContributionMax
+		}
+	}
+
+	if (!HasFirstRunBranches)
+	{
+		FirstTotal := FollowingTotal
+		FirstMinTotal := FollowingMinTotal
+		FirstMaxTotal := FollowingMaxTotal
+	}
+
+	FirstAverage := FirstTotal
+	FollowingAverage := FollowingTotal
+	FirstMin := FirstMinTotal
+	FirstMax := FirstMaxTotal
+	FollowingMin := FollowingMinTotal
+	FollowingMax := FollowingMaxTotal
+
+	if (FirstAverage <= 0 || FollowingAverage <= 0)
+		return false
+
+	return true
+}
+
 ; Performs an optional logout after the timed run completes. The logout
 ; process uses Escape, a randomized delay, and a random point inside
 ; the configured logout rectangle from LLARS Config.ini.
@@ -1811,6 +2132,81 @@ RandomSleepAmountToMinutesSeconds(time)
 	return minutes . "m " . seconds . "s"
 }
 
+; =========================================================================
+; |     ESTIMATED TIME COUNTDOWN     -     ESTIMATED TIME COUNTDOWN       |
+; =========================================================================
+
+UpdateEstimatedTime:
+
+if (!LLARS_RUNNING)
+	return
+
+if (EstCompletedLoops > 0 && EstAverageLoopTime > 0)
+{
+	EstimatedLoopTime := EstAverageLoopTime
+}
+else if (EstConfiguredLoopAverage > 0)
+{
+	EstimatedLoopTime := EstConfiguredLoopAverage
+}
+else
+{
+	GuiControl,, EstLoopRemaining, Calculating
+	GuiControl,, EstRunRemaining, Calculating
+	return
+}
+
+if (EstLoopStartTick > 0)
+{
+	ElapsedLoopTime := A_TickCount - EstLoopStartTick
+	EstLoopRemainingTime := EstimatedLoopTime - ElapsedLoopTime
+}
+else
+{
+	EstLoopRemainingTime := EstimatedLoopTime
+}
+
+if (EstLoopRemainingTime < 0)
+	EstLoopRemainingTime := 0
+
+EstLoopTotalSeconds := Floor(EstLoopRemainingTime / 1000)
+
+EstLoopHours := Floor(EstLoopTotalSeconds / 3600)
+EstLoopMinutes := Floor(Mod(EstLoopTotalSeconds, 3600) / 60)
+EstLoopSeconds := Mod(EstLoopTotalSeconds, 60)
+
+EstLoopDisplay := EstLoopHours "h " EstLoopMinutes "m " EstLoopSeconds "s"
+
+GuiControl,, EstLoopRemaining, %EstLoopDisplay%
+
+if (EstLoopStartTick > 0)
+	LoopsRemaining := runcount3 - count
+else
+	LoopsRemaining := runcount3
+
+if (LoopsRemaining < 0)
+	LoopsRemaining := 0
+
+if (EstLoopStartTick > 0)
+	EstRunRemainingTime := EstLoopRemainingTime + ((LoopsRemaining - 1) * EstimatedLoopTime)
+else
+	EstRunRemainingTime := LoopsRemaining * EstimatedLoopTime
+
+if (EstRunRemainingTime < 0)
+	EstRunRemainingTime := 0
+
+EstRunTotalSeconds := Floor(EstRunRemainingTime / 1000)
+
+EstRunHours := Floor(EstRunTotalSeconds / 3600)
+EstRunMinutes := Floor(Mod(EstRunTotalSeconds, 3600) / 60)
+EstRunSeconds := Mod(EstRunTotalSeconds, 60)
+
+EstRunDisplay := EstRunHours "h " EstRunMinutes "m " EstRunSeconds "s"
+
+GuiControl,, EstRunRemaining, %EstRunDisplay%
+
+return
+
 ; =====================================================================================
 ; |     EXIT BUTTON LOGIC     -     EXIT BUTTON LOGIC     -     EXIT BUTTON LOGIC     |
 ; =====================================================================================
@@ -1904,35 +2300,57 @@ If (frcount = 0)
 	WinGetPos, X, Y,,, LLARS
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop
-	Gui, Font, s11
-	Gui, font, bold
-	Gui, Add, Button, x5 y5 w100 h25 gStart , Start
-	Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
-	Gui, Add, Button, x5 y35 w100 h25 gPauseb , Pause
-	Gui, Add, Button, x115 y35 w100 h25 gResumeb , Resume
-	Gui, Add, Button, x35 y140 w150 h25 gExitb , Exit LLARS
-	Gui, Add, Text, x135 y90 w65 h25 center vCounter
-	Gui, Add, Text, x8 y90 w125 h25, Total Run Count
-	Gui, Add, Text, x8 y65 w125 h25, Run Count
-	Gui, Add, Text, x135 y65 w150 h25 vCounter2
-	Gui, Font, cGreen
-	Gui, Add, Text, x135 y115 w70 h25 vState1
-	Gui, Add, Text, x8 y115 w125 h25 vScriptGreen
-	Gui, Font, cBlue
-	Gui, Add, Text, x135 y115 w70 h25 vState3
-	Gui, Add, Text, x8 y115 w125 h25 vScriptBlue
-	Gui, Font, cRed
-	Gui, Add, Text, x135 y115 w70 h25 vState2
-	Gui, Add, Text, x8 y115 w125 h25 vScriptRed
-	GuiControl,,State2, ** OFF **
-	Gui, Add, Text, x8 y115 w125 h25, %scriptname%
+	Gui, Font, s12 Bold
+	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %scriptname%
+	Gui, Add, Text, x5 y49 w270 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Button, x10 y57 w125 h25 gStart, Start
+	Gui, Add, Button, x145 y57 w125 h25 gInfo, Information
+	Gui, Add, Button, x10 y86 w125 h25 gPauseb, Pause
+	Gui, Add, Button, x145 y86 w125 h25 gResumeb, Resume
+	Gui, Add, Text, x5 y114 w270 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y120 w165 h20, Run Count
+	Gui, Font, s10
+	Gui, Add, Text, x175 y120 w95 h20 Center vCounter2
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y141 w165 h20, Total Run Count
+	Gui, Font, s10
+	Gui, Add, Text, x175 y141 w95 h20 Center vCounter
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y162 w165 h20, Est. Loop Remaining
+	Gui, Font, s10
+	Gui, Add, Text, x175 y162 w95 h20 Center vEstLoopRemaining
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y183 w165 h20, Est. Run Remaining
+	Gui, Font, s10
+	Gui, Add, Text, x175 y183 w95 h20 Center vEstRunRemaining
+	Gui, Add, Text, x5 y205 w270 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y211 w165 h20, Status
+	Gui, Font, s10 Bold cGreen
+	Gui, Add, Text, x175 y211 w95 h20 Center vState1
+	Gui, Add, Text, x10 y211 w165 h20 vScriptGreen
+	Gui, Font, s10 Bold cBlue
+	Gui, Add, Text, x175 y211 w95 h20 Center vState3
+	Gui, Add, Text, x10 y211 w165 h20 vScriptBlue
+	Gui, Font, s10 Bold cRed
+	Gui, Add, Text, x175 y211 w95 h20 Center vState2
+	Gui, Add, Text, x10 y211 w165 h20 vScriptRed
+	GuiControl,, State2, ** OFF **
+	Gui, Font, s10 Bold
+	Gui, Add, Button, x55 y239 w170 h29 gExitb, Exit LLARS
+	
 	if FileExist("LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 	}
+	
 	WinSet, Transparent, %value%
-	Gui, Show,w220 h170, LLARS
-	WinMove, LLARS,, X, Y,
+	Gui, Show, w290 h275, LLARS
+	WinMove, LLARS,, X, Y
 	
 	count = 0
 	++frcount
@@ -1940,41 +2358,83 @@ If (frcount = 0)
 
 else
 	
-GuiControl,,ScriptBlue, %scriptname% 
-GuiControl,,State3, Running
-DisableButton()
-startcheck=1
+GuiControl,, ScriptBlue, %scriptname%
+GuiControl,, State3, Running
 
-; Resets per-run state.
+DisableButton()
+
+startcheck := 1
+
+; Reset all values used by the current timed run.
 count2 := 0
 sleepcount := 0
 totalSleepTime := 0
 rightclick := 0
 clickcount := 0
+firstrun := 0
+
+LLARS_RUNNING := true
 
 runcount3 := runcount
 
 StartTime := A_TickCount
 StartTimeStamp := A_Hour ":" A_Min ":" A_Sec
 
-; ======================================================================
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<  |
-; ======================================================================
+EstLoopStartTick := 0
+EstLoopTime := 0
+EstAverageLoopTime := 0
+EstCompletedLoops := 0
 
-Loop, % runcount
+; Calculate the configured estimate BEFORE the automation loop starts.
+if (!CalculateScriptRuntime())
 {
+	GuiControl,, EstLoopRemaining, Estimate Error
+	GuiControl,, EstRunRemaining, Estimate Error
+	Gui, Show
+	Sleep, 250
+	MsgBox, 48, LLARS Estimate Error, Unable to calculate the estimated loop/run time.`n`nThe automation loop will not start.
+	LLARS_RUNNING := false
+	EnableButton()
+	return
+}
+
+; The estimate calculation uses EstimationRunCount (1000) only to
+; establish a stable average loop time. The displayed run time uses
+; the user's actual runcount.
+Gosub, UpdateEstimatedTime
+
+; Show the GUI only after the estimate has been fully calculated and
+; the final values have been written to the controls.
+Gui, Show
+Sleep, 500
+
+SetTimer, UpdateEstimatedTime, 250
+
+Log("RUN START", "Starting " runcount3 " runs")
+
+; =========================================================================
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
+; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
+; =========================================================================
+
+; ================================================================
+; SCRIPT_EDIT_BEGIN_4C4C415253
+; ================================================================
+
+Loop, %runcount%
+{
+	EstLoopStartTick := A_TickCount
 	Log("LOOP START", "Iteration=" A_Index " of " runcount)
-	
-	++count
-	++count2
 	
 	IfWinNotActive, RuneScape
 	{
 		WinActivate, RuneScape
 		Log("WINDOW ACTIVATION", "RuneScape was not active and was activated")
 	}
+	
+	++count
+	++count2
 	
 	GuiControl,, Counter, %count%
 	GuiControl,, Counter2, %count2% / %runcount3%
@@ -2074,20 +2534,41 @@ Loop, % runcount
 	Sleep, %SleepAmount%
 	
 	Log("SLEEP BAKE WAIT", "Sleep completed: " SleepAmount " ms")
+	
+	EstLoopTime := A_TickCount - EstLoopStartTick
+	++EstCompletedLoops
+	if (EstCompletedLoops = 1)
+	{
+		EstAverageLoopTime := EstLoopTime
+	}
+	else
+	{
+		EstAverageLoopTime := ((EstAverageLoopTime * (EstCompletedLoops - 1)) + EstLoopTime) / EstCompletedLoops
+	}
+	
 }
 
+; ================================================================
+; SCRIPT_EDIT_END_4C4C415253
+; ================================================================
+
 ; ==================================================================
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-; calls the logout function
+; Calls the logout function after all requested runs finish.
 Logout()
 
 ; =======================================================================
 ; |     RUN COMPLETE     -     RUN COMPLETE     -     RUN COMPLETE      |
 ; =======================================================================
+
+SetTimer, UpdateEstimatedTime, Off
+
+GuiControl,, EstLoopRemaining, 0h 0m 0s
+GuiControl,, EstRunRemaining, 0h 0m 0s
 
 GuiControl,, ScriptGreen, %scriptname%
 GuiControl,, State1, Finished
