@@ -142,30 +142,42 @@ scriptname := regexreplace(A_scriptname,"\..*","")
 ; controls, status indicators, timer display, transparency, saved position,
 ; and optional LLARS icon.
 Gui +LastFound +OwnDialogs +AlwaysOnTop
-Gui, Font, s11
-Gui, font, bold
-Gui, Add, Button, x5 y5 w100 h25 gStart , Start
-Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
-Gui, Add, Button, x5 y35 w210 h25 gCombo, Coordinate/Hotkey/Timer
-Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
-Gui, Font, cBlue
-Gui, Add, Text, x135 y65 w70 h25 vState3
-Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
-Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
-Gui, Add, Text, x135 y90 w70 h25 vTimerCount
+Gui, Font, s12 Bold
+Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
+Gui, Font, s10 Bold
+Gui, Add, Text, x5 y29 w270 h18 Center cGray, %scriptname%
+Gui, Add, Text, x5 y49 w270 h2 0x10
+Gui, Font, s10 Bold
+Gui, Add, Button, x10 y57 w125 h25 gStart , Start
+Gui, Add, Button, x145 y57 w125 h25 gInfo, Information
+Gui, Add, Button, x10 y86 w260 h25 gCombo, Color/Coordinate/Hotkey
+Gui, Add, Text, x5 y117 w270 h2 0x10
+Gui, Font, s10 Bold
+Gui, Add, Text, x10 y123 w165 h20 vTimerLabel
+Gui, Font, s10
+Gui, Add, Text, x175 y123 w95 h20 Center vTimerCount
 GuiControl,,TimerLabel, Remaining:
 GuiControl,,TimerCount, ** OFF **
-Gui, Font, cRed
-Gui, Add, Text, x135 y65 w70 h25 vState2
-Gui, Add, Text, x8 y65 w125 h25 vScriptRed
+Gui, Font, s10 Bold
+Gui, Add, Text, x10 y147 w165 h20, Status
+Gui, Font, s10 Bold cBlue
+Gui, Add, Text, x175 y147 w95 h20 Center vState3
+Gui, Add, Text, x10 y147 w165 h20 vScriptBlue
+Gui, Font, s10 Bold cRed
+Gui, Add, Text, x175 y147 w95 h20 Center vState2
+Gui, Add, Text, x10 y147 w165 h20 vScriptRed
 GuiControl,,State2, ** OFF **
-Gui, Add, Text, x8 y65 w125 h25, %scriptname%
+Gui, Add, Text, x10 y147 w165 h20, %scriptname%
+Gui, Add, Text, x5 y171 w270 h2 0x10
+Gui, Font, s10 Bold
+Gui, Add, Button, x55 y178 w170 h29 gExitb , Exit LLARS
+
 if FileExist("LLARS Logo.ico")
 {
 	Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 }
 WinSet, Transparent, %value%
-Gui, Show,w220 h150, LLARS
+Gui, Show,w290 h215, LLARS
 
 ; Restores the main LLARS GUI to its previously saved screen position.
 IniRead, x, LLARS Config.ini, GUI POS, guix
@@ -1894,32 +1906,44 @@ If (frcount = 0)
 	WinGetPos, X, Y,,, LLARS
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop
-	Gui, Font, s11
-	Gui, font, bold
-	Gui, Add, Button, x5 y5 w100 h25 gStart , Start
-	Gui, Add, Button, x115 y5 w100 h25 gInfo, Information
-	Gui, Add, Button, x5 y35 w100 h25 gPauseb , Pause
-	Gui, Add, Button, x115 y35 w100 h25 gResumeb , Resume
-	Gui, Add, Button, x35 y115 w150 h25 gExitb , Exit LLARS
-	Gui, Font, cBlue
-	Gui, Add, Text, x135 y65 w70 h25 vState3
-	Gui, Add, Text, x8 y65 w125 h25 vScriptBlue
-	Gui, Add, Text, x8 y90 w100 h25 vTimerLabel
-	Gui, Add, Text, x135 y90 w70 h25 vTimerCount
+	Gui, Font, s12 Bold
+	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %scriptname%
+	Gui, Add, Text, x5 y49 w270 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Button, x10 y57 w125 h25 gStart , Start
+	Gui, Add, Button, x145 y57 w125 h25 gInfo, Information
+	Gui, Add, Button, x10 y86 w125 h25 gPauseb , Pause
+	Gui, Add, Button, x145 y86 w125 h25 gResumeb , Resume
+	Gui, Add, Text, x5 y117 w270 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y123 w165 h20 vTimerLabel
+	Gui, Font, s10
+	Gui, Add, Text, x175 y123 w95 h20 Center vTimerCount
 	GuiControl,,TimerLabel, Remaining:
 	GuiControl,,TimerCount, ** OFF **
-	Gui, Font, cRed
-	Gui, Add, Text, x135 y65 w70 h25 vState2
-	Gui, Add, Text, x8 y65 w125 h25 vScriptRed
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y147 w165 h20, Status
+	Gui, Font, s10 Bold cBlue
+	Gui, Add, Text, x175 y147 w95 h20 Center vState3
+	Gui, Add, Text, x10 y147 w165 h20 vScriptBlue
+	Gui, Font, s10 Bold cRed
+	Gui, Add, Text, x175 y147 w95 h20 Center vState2
+	Gui, Add, Text, x10 y147 w165 h20 vScriptRed
 	GuiControl,,State2, ** OFF **
-	Gui, Add, Text, x8 y65 w125 h25, %scriptname%
+	Gui, Add, Text, x10 y147 w165 h20, %scriptname%
+	Gui, Add, Text, x5 y171 w270 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Button, x55 y178 w170 h29 gExitb , Exit LLARS
+	
 	if FileExist("LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %A_ScriptDir%\LLARS Logo.ico
 	}
 	WinSet, Transparent, %value%
-	Gui, Show,w220 h150, LLARS
-	WinMove, LLARS,, X, Y,
+	Gui, Show,w290 h215, LLARS
+	WinMove, LLARS,, X, Y
 }
 
 else
