@@ -758,7 +758,33 @@ NaturalClick(x, y)
 		return
 	}
 	
-	Random, speed, 2500, 3500
+	; Distance-based mouse speed.
+	; Short movements are more deliberate.
+	; Longer movements naturally become faster.
+	if (distance < 75)
+	{
+		Random, speed, 1400, 2100
+	}
+	else if (distance < 200)
+	{
+		Random, speed, 1800, 2600
+	}
+	else if (distance < 400)
+	{
+		Random, speed, 2200, 3100
+	}
+	else if (distance < 700)
+	{
+		Random, speed, 2500, 3500
+	}
+	else if (distance < 1100)
+	{
+		Random, speed, 2700, 3800
+	}
+	else
+	{
+		Random, speed, 2900, 4100
+	}
 	
 	duration := (distance / speed) * 1000
 	
@@ -1035,6 +1061,31 @@ NaturalHash(value)
 		value += 2147483647
 	
 	return (value / 1073741823.5) - 1
+}
+
+if (distance < 75)
+{
+	Random, speed, 1400, 2100
+}
+else if (distance < 200)
+{
+	Random, speed, 1800, 2600
+}
+else if (distance < 400)
+{
+	Random, speed, 2200, 3100
+}
+else if (distance < 700)
+{
+	Random, speed, 2500, 3500
+}
+else if (distance < 1100)
+{
+	Random, speed, 2700, 3800
+}
+else
+{
+	Random, speed, 2900, 4100
 }
 
 CalculateScriptRuntime()
