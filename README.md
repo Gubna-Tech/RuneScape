@@ -19,13 +19,15 @@
 
 ### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
 
-Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game to ensure compatibility and compliance with the game's terms of service.
+Please note that the scripts in this repository are specifically designed for **RuneScape3 (RS3)** and are not intended for use with Old School RuneScape (OSRS). Make sure to use these scripts only with the appropriate version of the game and understand the risks and responsibilities associated with game automation.
+
+Before using LLARS, please also read the [LLARS Usage & Safety Tip](LLARS%20Usage%20%26%20Safety%20Tip.md). The project disclaimer is included at the bottom of that file.
 
 # LLARS Documentation
 
-Before setting up or running a script, **please read the `LLARS Documentation.pdf`** included with the project.
+Before setting up or running a script, **please read the [LLARS - Setup Guide](Documentation/LLARS%20-%20Setup%20Guide.pdf)** included with the project.
 
-The LLARS Documentation is the primary guide for learning how to:
+The LLARS Setup Guide is the primary guide for learning how to:
 
 * Set up LLARS and its scripts
 * Configure a script through the LLARS GUI
@@ -38,7 +40,9 @@ The LLARS Documentation is the primary guide for learning how to:
 * Troubleshoot common setup problems
 * Keep your RuneScape layout configured correctly for the script
 
-The documentation is written for **first-time users** and is intended to provide the information needed to set up and use LLARS scripts without requiring users to modify the script itself.
+The Setup Guide is written for **first-time users** and is intended to provide the information needed to set up and use LLARS scripts without requiring users to modify the script itself.
+
+LLARS is built around a shared framework used by the scripts in this repository. Script creators who want to create or update LLARS-compatible scripts should also read the [LLARS - Script Creator & Framework Guide](Documentation/LLARS%20-%20Script%20Creator%20%26%20Framework%20Guide.pdf) and [LLARS - Script Creator Library](Documentation/LLARS%20-%20Script%20Creator%20Library.pdf).
 
 ### Config.ini Instructions
 
@@ -53,12 +57,12 @@ For normal setup, use the LLARS GUI whenever possible rather than manually editi
 
 ## Requirements
 
-To run the scripts in this project, you will need to have AutoHotkey (AHK) installed on your system. Please note that all scripts are provided in an uncompiled format, which means you will need AHK installed to execute them.
+To run the scripts in this project, you will need **AutoHotkey v1.1.37.02** installed on your system. LLARS is built for AutoHotkey v1, and the scripts are provided in an uncompiled format.
 
-If you haven't installed AutoHotkey yet, you can download it from the official AutoHotkey website. Visit the following link to download the AHK installer:
+If you haven't installed AutoHotkey yet, you can download the required v1.1.37.02 release from the official AutoHotkey website:
 
 <p align="center">
-  <a href="https://www.autohotkey.com/download/ahk-v2.exe">AutoHotKey Download</a>
+  <a href="https://www.autohotkey.com/download/1.1/AutoHotkey_1.1.37.02_setup.exe">AutoHotkey v1.1.37.02 Download</a>
 </p>
 
 ## Notepad++ for Configuration Files
@@ -79,7 +83,6 @@ If you are unfamiliar with .ini files or find them challenging to read and edit,
 
 This software is distributed as Free Open Source Software (FOSS), which means it is available for use, modification, and distribution under an open-source license. As a FOSS project, this software will never require a one-time purchase fee or impose any monthly subscription costs. You are free to use and modify the software according to the terms of the applicable license.
 
-***The [Disclaimer](Disclaimer.md) should be viewed as it clearly states that the scripts provided are for educational purposes only and holds the script creator harmless from any liability, emphasizing the users' responsibility for their actions and the potential consequences that may arise from using the scripts. It serves as a reminder to exercise caution, make informed decisions, and comply with the game's rules and policies while using automation scripts.***
 
 # Notice: Scripts Designed for RuneScape3 Evolution of Combat (EoC)
 
