@@ -266,6 +266,145 @@ LLARS_CheckHotkeyConfig()
 		LLARS_EnableExitHotkey(lhk4)
 }
 
+; Summarizes the script-specific GUI configuration requirements shown
+; on the main LLARS window. Only active type=hotkey, type=coordinate,
+; and type=color sections are included. Disabled optional sections and
+; sections whose dependency is disabled are intentionally not required.
+LLARS_UpdateConfigStatus()
+{
+	global LLARS_SCRIPT_DIR
+
+	ConfigPath := LLARS_SCRIPT_DIR "\Config.ini"
+	if !FileExist(ConfigPath)
+		return
+
+	hotkeyRequired := 0
+	hotkeyMissing := 0
+	coordinateRequired := 0
+	coordinateMissing := 0
+	colorRequired := 0
+	colorMissing := 0
+
+	IniRead, sections, %ConfigPath%
+	if (sections = "ERROR")
+		return
+
+	Loop, Parse, sections, `n, `r
+	{
+		section := Trim(A_LoopField)
+		if (section = "")
+			continue
+
+		IniRead, option, %ConfigPath%, %section%, option, true
+		option := Trim(option)
+		StringLower, optionLower, option
+		if (optionLower = "false")
+			continue
+
+		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		if (depends != "ERROR" && Trim(depends) != "")
+		{
+			depends := Trim(depends)
+			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := Trim(dependsOption)
+			StringLower, dependsOptionLower, dependsOption
+			if (dependsOptionLower = "false")
+				continue
+		}
+
+		configType := GetConfigType(ConfigPath, section)
+		if (configType = "hotkey")
+		{
+			hotkeyRequired++
+			IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
+			if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "" || !LLARS_IsValidConfigHotkey(hotkeyValue))
+				hotkeyMissing++
+			continue
+		}
+
+		if (configType = "coordinate")
+		{
+			coordinateRequired++
+			IniRead, x, %ConfigPath%, %section%, x, ERROR
+			IniRead, y, %ConfigPath%, %section%, y, ERROR
+			IniRead, xmin, %ConfigPath%, %section%, xmin, ERROR
+			IniRead, xmax, %ConfigPath%, %section%, xmax, ERROR
+			IniRead, ymin, %ConfigPath%, %section%, ymin, ERROR
+			IniRead, ymax, %ConfigPath%, %section%, ymax, ERROR
+
+			hasPointCoordinates := (x != "ERROR" || y != "ERROR")
+			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
+			coordinateInvalid := false
+
+			if (hasPointCoordinates)
+			{
+				if (x = "ERROR" || y = "ERROR" || Trim(x) = "" || Trim(y) = "")
+					coordinateInvalid := true
+				else if (!LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y))
+					coordinateInvalid := true
+			}
+			else if (hasRectangleCoordinates)
+			{
+				if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR")
+					coordinateInvalid := true
+				else if (Trim(xmin) = "" || Trim(xmax) = "" || Trim(ymin) = "" || Trim(ymax) = "")
+					coordinateInvalid := true
+				else if (!LLARS_IsNumericConfigValue(xmin) || !LLARS_IsNumericConfigValue(xmax) || !LLARS_IsNumericConfigValue(ymin) || !LLARS_IsNumericConfigValue(ymax))
+					coordinateInvalid := true
+				else if ((xmin + 0) > (xmax + 0) || (ymin + 0) > (ymax + 0))
+					coordinateInvalid := true
+			}
+			else
+				coordinateInvalid := true
+
+			if (coordinateInvalid)
+				coordinateMissing++
+			continue
+		}
+
+		if (configType = "color")
+		{
+			colorRequired++
+			colorKey := LLARS_GetColorKey(ConfigPath, section)
+			IniRead, colorValue, %ConfigPath%, %section%, %colorKey%, ERROR
+			if (colorValue = "ERROR" || !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$"))
+				colorMissing++
+		}
+	}
+
+	LLARS_SetConfigStatusText("ConfigStatusHotkeys", "ConfigStatusHotkeysLabel", hotkeyRequired, hotkeyMissing)
+	LLARS_SetConfigStatusText("ConfigStatusCoordinates", "ConfigStatusCoordinatesLabel", coordinateRequired, coordinateMissing)
+	LLARS_SetConfigStatusText("ConfigStatusColors", "ConfigStatusColorsLabel", colorRequired, colorMissing)
+}
+
+; Converts configuration requirement counts into the compact text used by
+; the main GUI. A category with no active requirements is shown explicitly
+; as Not Required so users do not mistake it for missing configuration.
+LLARS_SetConfigStatusText(controlName, labelName, requiredCount, missingCount)
+{
+	if (requiredCount = 0)
+	{
+		statusText := "Not Required"
+		statusColor := "Black"
+	}
+	else if (missingCount > 0)
+	{
+		statusText := "Missing"
+		statusColor := "Red"
+	}
+	else
+	{
+		statusText := "Ready"
+		statusColor := "Green"
+	}
+
+	Gui, 1: Font, s10 Bold cBlack
+	GuiControl, 1: Font, %labelName%
+	Gui, 1: Font, s10 Bold c%statusColor%
+	GuiControl, 1: Font, %controlName%
+	GuiControl, 1:, %controlName%, %statusText%
+}
+
 ; Temporarily disables the non-exit LLARS controls and hotkeys.
 ; The lock prevents the periodic hotkey refresh from re-enabling them
 ; while a configuration/editor flow is still active.
@@ -1193,21 +1332,132 @@ CheckConfigFile(file)
 LLARS_GetColorKey(file, section)
 {
 	IniRead, keys, %file%, %section%
+	candidateKey := ""
+	candidateCount := 0
+
 	Loop, Parse, keys, `n, `r
 	{
 		line := Trim(A_LoopField)
 		if (line = "")
 			continue
-		StringSplit, part, line, =
-		key := Trim(part1)
-		color := Trim(part2)
-		if (key = "option" || key = "type")
+
+		equalsPos := InStr(line, "=")
+		if (!equalsPos)
 			continue
+
+		key := Trim(SubStr(line, 1, equalsPos - 1))
+		color := Trim(SubStr(line, equalsPos + 1))
+		if (key = "option" || key = "type" || key = "depends")
+			continue
+
+		candidateKey := key
+		candidateCount++
+
+		if (key = section)
+			return key
+
 		if RegExMatch(color, "i)^0x[0-9A-F]{6}$")
 			return key
 	}
 
+	; A typed color section with exactly one non-metadata key keeps that
+	; same key even after its value is reset to blank. This allows the
+	; normal Color editor to refill the original key rather than creating
+	; a new key named after the section.
+	if (candidateCount = 1)
+		return candidateKey
+
 	return section
+}
+
+; Returns true when a typed Config.ini section currently contains a saved
+; value that the Reset Config GUI is allowed to clear. Only the three
+; framework editor types are eligible; timers, offsets, ranges, options,
+; and all other script-specific values are intentionally ignored.
+LLARS_ConfigItemHasResettableValue(file, section, configType)
+{
+	if (GetConfigType(file, section) != configType)
+		return false
+
+	if (configType = "hotkey")
+	{
+		IniRead, value, %file%, %section%, hotkey, ERROR
+		return (value != "ERROR" && Trim(value) != "")
+	}
+
+	if (configType = "coordinate")
+	{
+		coordinateKeys := "x|y|xmin|xmax|ymin|ymax"
+		Loop, Parse, coordinateKeys, |
+		{
+			key := A_LoopField
+			IniRead, value, %file%, %section%, %key%, ERROR
+			if (value != "ERROR" && Trim(value) != "")
+				return true
+		}
+		return false
+	}
+
+	if (configType = "color")
+	{
+		colorKey := LLARS_GetColorKey(file, section)
+		IniRead, value, %file%, %section%, %colorKey%, ERROR
+		return (value != "ERROR" && Trim(value) != "")
+	}
+
+	return false
+}
+
+; Clears one explicitly typed editor value from Config.ini. This function
+; never deletes sections and never touches unrecognized keys. Coordinate
+; resets are limited to coordinate fields, hotkey resets to hotkey, and
+; color resets to the color key resolved by the framework.
+LLARS_ResetConfigItem(file, section, configType)
+{
+	if (GetConfigType(file, section) != configType)
+		return false
+
+	blank := ""
+	changed := false
+
+	if (configType = "hotkey")
+	{
+		IniRead, value, %file%, %section%, hotkey, ERROR
+		if (value = "ERROR")
+			return false
+
+		IniWrite, %blank%, %file%, %section%, hotkey
+		return true
+	}
+
+	if (configType = "coordinate")
+	{
+		coordinateKeys := "x|y|xmin|xmax|ymin|ymax"
+		Loop, Parse, coordinateKeys, |
+		{
+			key := A_LoopField
+			IniRead, value, %file%, %section%, %key%, ERROR
+			if (value = "ERROR")
+				continue
+
+			IniWrite, %blank%, %file%, %section%, %key%
+			changed := true
+		}
+		return changed
+	}
+
+	if (configType = "color")
+	{
+		colorKey := LLARS_GetColorKey(file, section)
+		IniRead, value, %file%, %section%, %colorKey%, ERROR
+		if (value = "ERROR")
+			return false
+
+		IniWrite, %blank%, %file%, %section%, %colorKey%
+		return true
+	}
+
+	return false
 }
 
 ; Reads and validates the type assigned to a configuration section.

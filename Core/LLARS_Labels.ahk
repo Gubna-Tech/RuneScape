@@ -42,11 +42,18 @@ Else IfWinActive, Hotkeys
 	GoSub, close2
 }
 
+Else IfWinActive, Reset Configuration
+{
+	EnableHotkey()
+	GoSub, CloseResetConfig
+}
+
 Return
 
-; Refreshes LLARS hotkeys only when the shared configuration changes.
+; Refreshes shared LLARS hotkeys and the main GUI configuration status.
 CheckLLARSConfig:
 LLARS_CheckHotkeyConfig()
+LLARS_UpdateConfigStatus()
 return
 
 ; Updates the temporary Random Sleep countdown shown in the status area.
@@ -167,26 +174,35 @@ Gui 1: Hide
 DisableHotkey()
 Menu, Tray, NoIcon
 Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop
-Gui Combo: Font, s12 norm bold
-Gui Combo: Add, Button, x5 y5 w125 h25 gColor , Colors
-Gui Combo: Add, Button, x5 y35 w125 h25 gCoordinates , Coordinates
-Gui Combo: Add, Button, x5 y65 w125 h25 gHotkey , Hotkeys
+Gui Combo: Font, s12 Bold cBlack
+Gui Combo: Add, Text, x5 y5 w210 h25 Center, LLARS
+Gui Combo: Font, s10 Bold cGray
+Gui Combo: Add, Text, x5 y29 w210 h18 Center, Configuration
+Gui Combo: Add, Text, x5 y49 w210 h2 0x10
+Gui Combo: Font, s10 Bold cBlack
+Gui Combo: Add, Button, x25 y57 w170 h25 gColor, Colors
+Gui Combo: Add, Button, x25 y86 w170 h25 gCoordinates, Coordinates
+Gui Combo: Add, Button, x25 y115 w170 h25 gHotkey, Hotkeys
 
 ; Scripts may optionally add one script-specific configuration button.
 if (LLARS_COMBO_TIMER_LABEL != "")
 {
-	Gui Combo: Add, Button, x5 y95 w125 h25 gLLARS_CustomComboTimer , Timer
-	Gui Combo: add, button, x5 y125 w125 h25 gCloseCombo , Close
+	Gui Combo: Add, Button, x25 y144 w170 h25 gLLARS_CustomComboTimer, Timer
+	Gui Combo: Add, Text, x5 y176 w210 h2 0x10
+	Gui Combo: Add, Button, x25 y184 w170 h29 gCloseCombo, Close
+	comboHeight := 220
 }
 
 else
 {
-	Gui Combo: add, button, x5 y95 w125 h25 gCloseCombo , Close
+	Gui Combo: Add, Text, x5 y147 w210 h2 0x10
+	Gui Combo: Add, Button, x25 y155 w170 h29 gCloseCombo, Close
+	comboHeight := 191
 }
 
 WinSet, ExStyle, ^0x80
 Gui Combo: -caption
-Gui Combo: Show, center w135, Combo
+Gui Combo: Show, center w220 h%comboHeight%, Combo
 return
 
 ; Opens the optional script-owned Timer/configuration editor.
@@ -199,6 +215,204 @@ return
 closecombo:
 Gui Combo: Destroy
 Gui 1: Show
+EnableHotkey()
+return
+
+; =====================================================================
+; |     RESET CONFIG GUI     -     RESET CONFIG GUI                    |
+; =====================================================================
+
+; Builds a reset list from the script's Config.ini only. An entry is
+; included only when its section is explicitly type=hotkey, coordinate,
+; or color and currently contains a saved value. Other configuration
+; values such as offsets, timers, ranges, options, and chances can never
+; be selected or modified by this GUI.
+ResetConfig:
+WinGetPos, GUIxc, GUIyc,,,LLARS
+IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
+IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+Gui 1: Hide
+Gui Combo: Destroy
+DisableHotkey()
+Gui Reset: Destroy
+Gui Reset: +LastFound +OwnDialogs +AlwaysOnTop
+Gui Reset: Font, s10 Bold
+resetConfigItems := {}
+resetSectionList := " ***** Make a Selection ***** "
+IniRead, resetSections, Config.ini
+
+if (resetSections != "ERROR")
+{
+	Loop, Parse, resetSections, `n, `r
+	{
+		resetSection := Trim(A_LoopField)
+		if (resetSection = "")
+			continue
+
+		resetType := GetConfigType("Config.ini", resetSection)
+		if (resetType != "hotkey" && resetType != "coordinate" && resetType != "color")
+			continue
+
+		if !LLARS_ConfigItemHasResettableValue("Config.ini", resetSection, resetType)
+			continue
+
+		if (resetType = "hotkey")
+			resetTypeDisplay := "Hotkey"
+		else if (resetType = "coordinate")
+			resetTypeDisplay := "Coordinate"
+		else
+			resetTypeDisplay := "Color"
+
+		resetDisplay := resetTypeDisplay " - " resetSection
+		resetSectionList .= "|" resetDisplay
+		resetConfigItems[resetDisplay] := {section: resetSection, type: resetType, typeDisplay: resetTypeDisplay}
+	}
+}
+
+Gui Reset: Add, Text, x10 y10 w300 h20 Center, Reset Saved Configuration
+Gui Reset: Font, s10 Norm
+Gui Reset: Add, Text, x10 y34 w300 h32 Center, Only saved Hotkeys, Coordinates, and Colors can be reset.
+Gui Reset: Font, s10 Bold
+Gui Reset: Add, DropDownList, x10 y70 w300 vResetSectionList Choose1 gResetConfigSelection, %resetSectionList%
+Gui Reset: Add, Button, x10 y104 w145 h27 vResetConfigButton gResetSelectedConfig Disabled, Reset Selected
+Gui Reset: Add, Button, x165 y104 w145 h27 gResetAllConfig, Clear All
+Gui Reset: Add, Button, x10 y137 w300 h27 gCloseResetConfig, Cancel
+Gui Reset: -Caption
+Gui Reset: Show, w320 h174 Center, Reset Configuration
+WinSet, ExStyle, ^0x80
+WinSet, Transparent, %value%
+return
+
+; Enables the reset button only after a real, framework-recognized item
+; from the generated list has been selected.
+ResetConfigSelection:
+GuiControlGet, resetSelection, Reset:, ResetSectionList
+if (resetConfigItems.HasKey(resetSelection))
+	GuiControl, Reset: Enable, ResetConfigButton
+else
+	GuiControl, Reset: Disable, ResetConfigButton
+return
+
+; Clears only the recognized key(s) belonging to the selected typed editor
+; section. The section itself and every unrelated key remain untouched.
+ResetSelectedConfig:
+GuiControlGet, resetSelection, Reset:, ResetSectionList
+if !resetConfigItems.HasKey(resetSelection)
+	return
+
+resetItem := resetConfigItems[resetSelection]
+resetSection := resetItem.section
+resetType := resetItem.type
+resetTypeDisplay := resetItem.typeDisplay
+Gui Reset: Destroy
+
+if !LLARS_ResetConfigItem("Config.ini", resetSection, resetType)
+{
+	MsgBox, 48, Reset Configuration, The selected configuration value could not be reset.
+	Gui 1: Show
+	EnableHotkey()
+	return
+}
+
+Log("CONFIG RESET", resetTypeDisplay " | " resetSection)
+LLARS_UpdateConfigStatus()
+Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13u: Color, Green
+Gui 13u: Font, cGreen
+Gui 13u: Font, s16 bold
+Gui 13u: Add, Text, valertlabel center,----%resetTypeDisplay% [ %resetSection% ] has been reset in the Config.ini file`n----
+WinSet, ExStyle, ^0x80
+Gui 13u: -caption
+Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13: Color, White
+Gui 13: Font, s16 bold
+Gui 13: Add, Text, vTthree center, %resetTypeDisplay% [ %resetSection% ] has been reset in the Config.ini file
+Gui 13: -caption
+Gui 13: Show, NoActivate xcenter y9999, TopGUI
+wingetpos,,,,bottomH, BottomGUI
+wingetpos,,,,topH, TopGUI
+topPOS := (bottomH - topH) / 2
+Gui, TopGUI: +LabelTopGUI
+WinMove, TopGUI,, , %topPOS%
+Sleep 1500
+Gui 13u: Destroy
+Gui 13: Destroy
+Gui 1: Show
+EnableHotkey()
+return
+
+
+; Clears every saved framework-recognized Hotkey, Coordinate, and Color
+; currently shown by the Reset Config GUI. No other Config.ini keys can be
+; touched because every item still passes through LLARS_ResetConfigItem().
+ResetAllConfig:
+resetCount := 0
+for resetDisplay, resetItem in resetConfigItems
+	resetCount++
+
+if (resetCount = 0)
+	return
+
+Gui Reset: Destroy
+MsgBox, 36, Reset Configuration, Clear all saved Hotkeys, Coordinates, and Colors?`n`nOffsets, timers, options, ranges, and all other settings will remain unchanged.
+IfMsgBox, No
+{
+	Gui 1: Show
+	EnableHotkey()
+	return
+}
+
+resetChanged := false
+for resetDisplay, resetItem in resetConfigItems
+{
+	if LLARS_ResetConfigItem("Config.ini", resetItem.section, resetItem.type)
+	{
+		resetChanged := true
+		Log("CONFIG RESET", resetItem.typeDisplay " | " resetItem.section)
+	}
+}
+
+if !resetChanged
+{
+	MsgBox, 48, Reset Configuration, No saved Hotkeys, Coordinates, or Colors could be reset.
+	Gui 1: Show
+	EnableHotkey()
+	return
+}
+
+LLARS_UpdateConfigStatus()
+Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13u: Color, Green
+Gui 13u: Font, cGreen
+Gui 13u: Font, s16 bold
+Gui 13u: Add, Text, valertlabel center,----All saved Hotkeys, Coordinates, and Colors have been reset in the Config.ini file`n----
+WinSet, ExStyle, ^0x80
+Gui 13u: -caption
+Gui 13u: Show, NoActivate xcenter y0, BottomGUI
+Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+Gui 13: Color, White
+Gui 13: Font, s16 bold
+Gui 13: Add, Text, vTthree center, All saved Hotkeys, Coordinates, and Colors have been reset in the Config.ini file
+Gui 13: -caption
+Gui 13: Show, NoActivate xcenter y9999, TopGUI
+wingetpos,,,,bottomH, BottomGUI
+wingetpos,,,,topH, TopGUI
+topPOS := (bottomH - topH) / 2
+Gui, TopGUI: +LabelTopGUI
+WinMove, TopGUI,, , %topPOS%
+Sleep 1500
+Gui 13u: Destroy
+Gui 13: Destroy
+Gui 1: Show
+EnableHotkey()
+return
+
+; Cancels the reset workflow without changing Config.ini.
+CloseResetConfig:
+Gui Reset: Destroy
+Gui 1: Show
+EnableHotkey()
 return
 
 ; ===============================================================================
@@ -215,7 +429,12 @@ IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
 Gui 1: Hide
 Gui Combo: Destroy
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
-Gui 2: Font, s11 Bold
+Gui 2: Font, s12 Bold cBlack
+Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
+Gui 2: Font, s10 Bold cGray
+Gui 2: Add, Text, x5 y29 w280 h18 Center, %scriptname%
+Gui 2: Add, Text, x10 y49 w270 h2 0x10
+Gui 2: Font, s10 Bold cBlack
 DisableHotkey()
 IniRead, allContents, Config.ini
 IniRead, llarsContents, %LLARS_CONFIG_FILE%
@@ -263,10 +482,10 @@ Loop, Parse, llarsContents, `n, `r
 		sectionList .= "|" currentSection
 }
 
-Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged, % sectionList
-Gui, 2: Add, Button, x52 w150 gClose, Close Coordinates
-Gui, 2: Show, w250 h45 Center, Coordinates
+Gui, 2: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged, % sectionList
+Gui, 2: Add, Button, x60 y91 w170 h25 gClose, Close Coordinates
 Gui 2: -Caption
+Gui, 2: Show, w290 h126 Center, Coordinates
 WinSet, ExStyle, ^0x80
 WinSet, Transparent, %value%
 return
@@ -590,7 +809,12 @@ IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
 Gui 1: Hide
 Gui Combo: Destroy
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
-Gui 2: Font, s11 Bold
+Gui 2: Font, s12 Bold cBlack
+Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
+Gui 2: Font, s10 Bold cGray
+Gui 2: Add, Text, x5 y29 w280 h18 Center, %scriptname%
+Gui 2: Add, Text, x10 y49 w270 h2 0x10
+Gui 2: Font, s10 Bold cBlack
 DisableHotkey()
 IniRead, allContents, Config.ini
 sectionList := " ***** Make a Selection ***** "
@@ -608,10 +832,10 @@ Loop, Parse, allContents, `n, `r
 		sectionList .= "|" currentSection
 }
 
-Gui, 2: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged1, % sectionList
-Gui, 2: Add, Button, x52 w150 gClose1, Close Colors
-Gui, 2: Show, w250 h45 Center, Colors
+Gui, 2: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged1, % sectionList
+Gui, 2: Add, Button, x60 y91 w170 h25 gClose1, Close Colors
 Gui 2: -Caption
+Gui, 2: Show, w290 h126 Center, Colors
 WinSet, ExStyle, ^0x80
 WinSet, Transparent, %value%
 return
@@ -690,7 +914,12 @@ IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
 Gui 1: Hide
 Gui Combo: Destroy
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
-Gui 3: Font, s11 Bold
+Gui 3: Font, s12 Bold cBlack
+Gui 3: Add, Text, x5 y5 w280 h25 Center, LLARS
+Gui 3: Font, s10 Bold cGray
+Gui 3: Add, Text, x5 y29 w280 h18 Center, %scriptname%
+Gui 3: Add, Text, x10 y49 w270 h2 0x10
+Gui 3: Font, s10 Bold cBlack
 DisableHotkey()
 IniRead, allContents, Config.ini
 IniRead, llarsContents, %LLARS_CONFIG_FILE%
@@ -747,12 +976,12 @@ Loop, Parse, llarsContents, `n
 ; from the dropdown selection.
 selectedHotkeySection := ""
 selectedHotkeyConfigFile := ""
-Gui, 3: Add, DropDownList, w230 vSectionList Choose1 gDropDownChanged2, % sectionList
-Gui, 3: Add, Text, w230 vHotkeysText, Hotkeys will be displayed here
-Gui, 3: Add, Hotkey, x97 y60 w60 vChosenHotkey gHotkeyChanged Center Disabled, ** NONE **
-Gui, 3: Add, Button, x64 y90 w125 gClose2, Close Hotkeys
-Gui, 3: Show, w250 h100 Center, Hotkeys
+Gui, 3: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, Text, x30 y88 w230 h18 Center vHotkeysText, Hotkeys will be displayed here
+Gui, 3: Add, Hotkey, x115 y109 w60 h23 vChosenHotkey gHotkeyChanged Center Disabled, ** NONE **
+Gui, 3: Add, Button, x60 y141 w170 h25 gClose2, Close Hotkeys
 Gui 3: -Caption
+Gui, 3: Show, w290 h176 Center, Hotkeys
 WinSet, ExStyle, ^0x80
 WinSet, Transparent, %value%
 return
@@ -924,11 +1153,8 @@ if (LLARS_lhk3 != "")
 if (LLARS_lhk4 != "")
 	scriptHotkeys .= "Exit: " . LLARS_lhk4 . "`n"
 
-; Add a blank line between LLARS hotkeys and script hotkeys.
-if (scriptHotkeys != "")
-	scriptHotkeys .= "`n"
-
 ; Read script-specific hotkeys from Config.ini.
+configHotkeys := ""
 IniRead, sections, Config.ini
 Loop, Parse, sections, `n, `r
 {
@@ -941,58 +1167,125 @@ Loop, Parse, sections, `n, `r
 		IniRead, hotkey, Config.ini, %section%, hotkey
 		if (hotkey = "")
 			hotkey := "Not Set"
-		scriptHotkeys .= section . ": " . hotkey . "`n"
+		configHotkeys .= section . ": " . hotkey . "`n"
 	}
+}
+
+; Add a blank line only when script-specific hotkeys actually exist.
+if (configHotkeys != "")
+{
+	if (scriptHotkeys != "")
+		scriptHotkeys .= "`n"
+	scriptHotkeys .= configHotkeys
 }
 
 if (scriptHotkeys = "")
 	scriptHotkeys := "No script hotkeys configured"
+else
+	scriptHotkeys := RTrim(scriptHotkeys, "`n`r")
 WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
 IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
-Gui 1: hide
 Gui 3: hide
+; Size the Information GUI from its actual hotkey content so each section
+; keeps its own space without relying on relative Y positions.
+hotkeyLineCount := 0
+Loop, Parse, scriptHotkeys, `n, `r
+	hotkeyLineCount++
+if (hotkeyLineCount < 1)
+	hotkeyLineCount := 1
+
+hotkeyHeight := hotkeyLineCount * 18
+hotkeyBoxY := 57
+hotkeyTextY := hotkeyBoxY + 21
+hotkeyBoxHeight := hotkeyHeight + 29
+
+; When there are no script-specific Config.ini hotkeys, keep the full text
+; height so every LLARS hotkey remains visible while trimming only the unused
+; bottom padding from the group box.
+if (configHotkeys = "")
+	hotkeyBoxHeight := hotkeyHeight + 25
+additionalTitleY := hotkeyBoxY + hotkeyBoxHeight + 4
+optionsBoxY := additionalTitleY + 23
+notesBoxY := optionsBoxY + 91
+notesBoxHeight := 94
+projectDividerY := notesBoxY + notesBoxHeight + 7
+mitY := projectDividerY + 8
+createdY := mitY + 22
+resourceDividerY := createdY + 27
+resourceTitleY := resourceDividerY + 8
+llarsConfigY := resourceTitleY + 23
+scriptConfigY := llarsConfigY + 29
+discordY := scriptConfigY + 29
+closeDividerY := discordY + 32
+closeInfoY := closeDividerY + 8
+informationHeight := closeInfoY + 39
+
 Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
-Gui 20: Font, S13 bold cMaroon
-Gui 20: Add, Text, Center w220 x5,%scriptname%
-Gui 20: Font, s11 Bold underline cTeal
-Gui 20: Add, Text, Center w220 x5,[ Script Hotkeys ]
-Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,%scriptHotkeys%
-Gui 20: Font, Bold underline cPurple
-Gui 20: Add, Text, Center w220 x5,[ Additional Info ]
-Gui 20: Font, Norm
-Gui 20: Add, Text, Center w220 x5,Logout: %logout%`nRandom Sleep: %sleepoption%`nSleep Chance: %chance%`%
-Gui 20: Add, Text, center x5 w220,
-Gui 20: Font, italic s10 c0x152039
-Gui 20: Add, Text, Center w220 x5, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below
-Gui 20: Font, cBlue norm underline bold s11
-Gui 20: Add, Text, Center gMIT w220 x5,MIT License
-Gui 20: Font, s11 norm Bold c0x152039
-Gui 20: Add, Text, Center w220 x5,Created by Gubna
-Gui 20: Font, cBlack norm bold
-Gui 20: Add, Button, gInfoLLARS w150 x40 center,LLARS Config
-Gui 20: Add, Button, gInfoConfig w150 x40 center,Script Config
-Gui 20: Add, Button, gDiscord w150 x40 center,Discord
-Gui 20: Add, Button, gCloseInfo w150 x40 center,Close Information
+Gui 20: Font, s12 Bold cBlack
+Gui 20: Add, Text, x5 y5 w280 h25 Center, LLARS
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, Text, x5 y29 w280 h18 Center, Information
+Gui 20: Add, Text, x10 y49 w270 h2 0x10
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, GroupBox, x20 y%hotkeyBoxY% w250 h%hotkeyBoxHeight%, Script Hotkeys
+Gui 20: Font, s10 Norm cBlack
+Gui 20: Add, Text, x32 y%hotkeyTextY% w226 h%hotkeyHeight% Center, %scriptHotkeys%
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, Text, x10 y%additionalTitleY% w270 h20 Center, Script Information
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, GroupBox, x20 y%optionsBoxY% w250 h84, Script Options
+Gui 20: Font, s10 Norm cBlack
+optionsRow1Y := optionsBoxY + 23
+optionsRow2Y := optionsBoxY + 43
+optionsRow3Y := optionsBoxY + 63
+Gui 20: Add, Text, x35 y%optionsRow1Y% w105 h18, Logout
+Gui 20: Add, Text, x35 y%optionsRow2Y% w105 h18, Random Sleep
+Gui 20: Add, Text, x35 y%optionsRow3Y% w105 h18, Sleep Chance
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, Text, x145 y%optionsRow1Y% w105 h18 Right, %logout%
+Gui 20: Add, Text, x145 y%optionsRow2Y% w105 h18 Right, %sleepoption%
+Gui 20: Add, Text, x145 y%optionsRow3Y% w105 h18 Right, %chance%`%
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, GroupBox, x20 y%notesBoxY% w250 h%notesBoxHeight%, Script Notes
+notesTextY := notesBoxY + 23
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, Text, x32 y%notesTextY% w226 h62 Center, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below.
+Gui 20: Add, Text, x10 y%projectDividerY% w270 h2 0x10
+Gui 20: Font, s10 Bold cBlue underline
+Gui 20: Add, Text, x10 y%mitY% w270 h20 Center gMIT, MIT License
+Gui 20: Font, s10 Norm cBlack
+Gui 20: Add, Text, x91 y%createdY% w70 h20 Right, Created by
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, Text, x163 y%createdY% w45 h20, Gubna
+Gui 20: Add, Text, x10 y%resourceDividerY% w270 h2 0x10
+Gui 20: Font, s10 Bold cBlack
+Gui 20: Add, Text, x10 y%resourceTitleY% w270 h20 Center, Resources
+Gui 20: Add, Button, x60 y%llarsConfigY% w170 h25 gInfoLLARS, LLARS Config
+Gui 20: Add, Button, x60 y%scriptConfigY% w170 h25 gInfoConfig, Script Config
+Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
+Gui 20: Add, Text, x10 y%closeDividerY% w270 h2 0x10
+Gui 20: Add, Button, x60 y%closeInfoY% w170 h29 gCloseInfo, Close Information
 WinSet, ExStyle, ^0x80
 Gui 20: -caption
-Gui 20: Show, center w230, Information
+Gui 20: Show, center w290 h%informationHeight%, Information
 return
 
 ; Closes the information window and restores the main LLARS GUI.
 CloseInfo:
+Gui 1: Default
 EnableHotkey()
-gui 20: destroy
-gui 1: Show
+Gui 20: Destroy
+Gui 1: Show
 return
 
 ; Opens the Discord link from the information GUI and returns to LLARS.
 discord:
+Gui 1: Default
 EnableHotkey()
-Gui 20: destroy
+Gui 20: Destroy
 Run, https://discord.gg/Wmmf65myPG
-gui 1: Show
+Gui 1: Show
 return
 
 ; Opens the main script configuration file.
