@@ -44,9 +44,9 @@ Else IfWinActive, Hotkeys
 
 Return
 
-; Refreshes LLARS hotkeys after the shared configuration changes.
+; Refreshes LLARS hotkeys only when the shared configuration changes.
 CheckLLARSConfig:
-SetLLARSHOTKEYS()
+LLARS_CheckHotkeyConfig()
 return
 
 ; Updates the temporary Random Sleep countdown shown in the status area.
@@ -831,20 +831,27 @@ Gui, 3: Submit, NoHide
 ; Use the locked section and configuration file instead of whatever
 ; the dropdown may currently be highlighting.
 IniWrite, %ChosenHotkey%, %selectedHotkeyConfigFile%, %selectedHotkeySection%, Hotkey
+if (selectedHotkeyConfigFile = LLARS_CONFIG_FILE)
+{
+	LLARS_CheckHotkeyConfig()
+	hotkeyConfigDisplay := "LLARS Config.ini"
+}
+else
+	hotkeyConfigDisplay := "Config.ini"
 Log("HOTKEY CHANGED", "Hotkey = " ChosenHotkey)
 Gui, 3: Destroy
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
 Gui 13u: Font, cgreenhite
 Gui 13u: Font, s16 bold
-Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %selectedHotkeyConfigFile% file`n----
+Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %hotkeyConfigDisplay% file`n----
 WinSet, ExStyle, ^0x80
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13: Color, White
 Gui 13: Font, s16 bold
-Gui 13: Add, Text, vTthree center, Hotkey has been updated in the %selectedHotkeyConfigFile% file
+Gui 13: Add, Text, vTthree center, Hotkey has been updated in the %hotkeyConfigDisplay% file
 Gui 13: -caption
 Gui 13: Show, NoActivate xcenter y9999, TopGUI
 wingetpos,,,,bottomH, BottomGUI

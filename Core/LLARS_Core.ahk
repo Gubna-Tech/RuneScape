@@ -78,33 +78,52 @@ CloseOtherLLARS()
 	}
 }
 
+; Forces LLARS keyboard hotkeys to use AutoHotkey's keyboard hook instead
+; of Windows RegisterHotKey. This is especially important for F12, which
+; Windows reserves for debugger use and should not be registered globally.
+LLARS_HookHotkey(hotkey)
+{
+	hotkey := Trim(hotkey)
+	if (hotkey = "")
+		return ""
+	if (SubStr(hotkey, 1, 1) = "$")
+		return hotkey
+	return "$" . hotkey
+}
+
 ; Reads the shared LLARS hotkeys and safely enables, disables, or remaps them.
-; The Exit hotkey always remains available.
+; Start/Information/Combo follow the current LLARS state. Exit is managed
+; separately and is never disabled by normal framework control locking.
 SetLLARSHOTKEYS(state := "On", startOnly := false)
 {
 	global LLARS_lhk1
 	global LLARS_lhk2
 	global LLARS_lhk3
-	global LLARS_lhk4
 	global LLARS_RUNNING
 	global LLARS_CONTROLS_LOCKED
 
 	IniRead, lhk1, %LLARS_CONFIG_FILE%, Start Hotkey, hotkey
+	if (lhk1 = "ERROR")
+		lhk1 := ""
+	lhk1 := Trim(lhk1)
+
+	oldlhk1 := LLARS_HookHotkey(LLARS_lhk1)
+	newlhk1 := LLARS_HookHotkey(lhk1)
 
 	; Disable the previously configured Start hotkey if it changed.
-	if (LLARS_lhk1 != "" && LLARS_lhk1 != lhk1)
-		Hotkey, %LLARS_lhk1%, Start, Off
+	if (oldlhk1 != "" && LLARS_lhk1 != lhk1)
+		Hotkey, %oldlhk1%, Start, Off
 
 	; Save the current Start hotkey.
 	LLARS_lhk1 := lhk1
 
 	; Enable/disable the current Start hotkey.
-	if (lhk1 != "")
+	if (newlhk1 != "")
 	{
 		if (state = "On" && !LLARS_RUNNING && !LLARS_CONTROLS_LOCKED)
-			Hotkey, %lhk1%, Start, On
+			Hotkey, %newlhk1%, Start, On
 		else
-			Hotkey, %lhk1%, Start, Off
+			Hotkey, %newlhk1%, Start, Off
 	}
 
 	; Only update the Start hotkey when requested.
@@ -113,76 +132,83 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 
 	IniRead, lhk2, %LLARS_CONFIG_FILE%, Information Hotkey, hotkey
 	IniRead, lhk3, %LLARS_CONFIG_FILE%, color/coordinate/hotkey Hotkey, hotkey
-	IniRead, lhk4, %LLARS_CONFIG_FILE%, exit Hotkey, hotkey
+	if (lhk2 = "ERROR")
+		lhk2 := ""
+	if (lhk3 = "ERROR")
+		lhk3 := ""
+	lhk2 := Trim(lhk2)
+	lhk3 := Trim(lhk3)
+
+	oldlhk2 := LLARS_HookHotkey(LLARS_lhk2)
+	newlhk2 := LLARS_HookHotkey(lhk2)
+	oldlhk3 := LLARS_HookHotkey(LLARS_lhk3)
+	newlhk3 := LLARS_HookHotkey(lhk3)
 
 	; Disable the previously configured Information/Pause hotkey if it changed.
-	if (LLARS_lhk2 != "" && LLARS_lhk2 != lhk2)
+	if (oldlhk2 != "" && LLARS_lhk2 != lhk2)
 	{
-		Hotkey, %LLARS_lhk2%, Info, Off
-		Hotkey, %LLARS_lhk2%, pauseb, Off
+		Hotkey, %oldlhk2%, Info, Off
+		Hotkey, %oldlhk2%, pauseb, Off
 	}
 
 	; Save the current Information/Pause hotkey.
 	LLARS_lhk2 := lhk2
-	if (lhk2 != "")
+	if (newlhk2 != "")
 	{
 		if (state = "On" && !LLARS_CONTROLS_LOCKED)
 		{
 			if (LLARS_RUNNING)
 			{
-				Hotkey, %lhk2%, Info, Off
-				Hotkey, %lhk2%, pauseb, On
+				Hotkey, %newlhk2%, Info, Off
+				Hotkey, %newlhk2%, pauseb, On
 			}
 			else
 			{
-				Hotkey, %lhk2%, pauseb, Off
-				Hotkey, %lhk2%, Info, On
+				Hotkey, %newlhk2%, pauseb, Off
+				Hotkey, %newlhk2%, Info, On
 			}
 		}
 		else
 		{
-			Hotkey, %lhk2%, Info, Off
-			Hotkey, %lhk2%, pauseb, Off
+			Hotkey, %newlhk2%, Info, Off
+			Hotkey, %newlhk2%, pauseb, Off
 		}
 	}
 
 	; Disable the previously configured Combo/Resume hotkey if it changed.
-	if (LLARS_lhk3 != "" && LLARS_lhk3 != lhk3)
+	if (oldlhk3 != "" && LLARS_lhk3 != lhk3)
 	{
-		Hotkey, %LLARS_lhk3%, Combo, Off
-		Hotkey, %LLARS_lhk3%, resumeb, Off
+		Hotkey, %oldlhk3%, Combo, Off
+		Hotkey, %oldlhk3%, resumeb, Off
 	}
 
 	; Save the current Combo/Resume hotkey.
 	LLARS_lhk3 := lhk3
-	if (lhk3 != "")
+	if (newlhk3 != "")
 	{
 		if (state = "On" && !LLARS_CONTROLS_LOCKED)
 		{
 			if (LLARS_RUNNING)
 			{
-				Hotkey, %lhk3%, Combo, Off
-				Hotkey, %lhk3%, resumeb, On
+				Hotkey, %newlhk3%, Combo, Off
+				Hotkey, %newlhk3%, resumeb, On
 			}
 			else
 			{
-				Hotkey, %lhk3%, resumeb, Off
-				Hotkey, %lhk3%, Combo, On
+				Hotkey, %newlhk3%, resumeb, Off
+				Hotkey, %newlhk3%, Combo, On
 			}
 		}
 		else
 		{
-			Hotkey, %lhk3%, Combo, Off
-			Hotkey, %lhk3%, resumeb, Off
+			Hotkey, %newlhk3%, Combo, Off
+			Hotkey, %newlhk3%, resumeb, Off
 		}
 	}
-
-	LLARS_EnableExitHotkey(lhk4)
 }
 
-; Keeps the Exit hotkey registered independently of the normal LLARS
-; control state. A temporary missing/blank config read never disables the
-; last known Exit hotkey.
+; Keeps the Exit hotkey independent of every other LLARS control state.
+; Once registered it is left alone until the configured key actually changes.
 LLARS_EnableExitHotkey(lhk4 := "")
 {
 	global LLARS_lhk4
@@ -190,20 +216,54 @@ LLARS_EnableExitHotkey(lhk4 := "")
 	if (lhk4 = "")
 		IniRead, lhk4, %LLARS_CONFIG_FILE%, exit Hotkey, hotkey
 
-	if (lhk4 = "" || lhk4 = "ERROR")
-	{
-		if (LLARS_lhk4 != "")
-			Hotkey, %LLARS_lhk4%, exitb, On
-		return
-	}
+	if (lhk4 = "ERROR")
+		lhk4 := ""
+	lhk4 := Trim(lhk4)
 
-	; Disable the previously configured Exit hotkey only after a valid
-	; replacement has been read.
-	if (LLARS_lhk4 != "" && LLARS_lhk4 != lhk4)
-		Hotkey, %LLARS_lhk4%, exitb, Off
+	; A temporary missing/blank config read never disables the last known
+	; Exit hotkey.
+	if (lhk4 = "")
+		return
+
+	; Do not repeatedly tear down/re-register an unchanged Exit hotkey.
+	if (LLARS_lhk4 = lhk4)
+		return
+
+	oldlhk4 := LLARS_HookHotkey(LLARS_lhk4)
+	newlhk4 := LLARS_HookHotkey(lhk4)
+
+	if (oldlhk4 != "")
+		Hotkey, %oldlhk4%, exitb, Off
 
 	LLARS_lhk4 := lhk4
-	Hotkey, %LLARS_lhk4%, exitb, On
+	Hotkey, %newlhk4%, exitb, On
+}
+
+; Checks the shared config for actual hotkey changes. The old implementation
+; rewrote the hotkey table every 250 ms even when nothing changed. This keeps
+; the same live-config behavior without continuously cycling hotkeys Off/On.
+LLARS_CheckHotkeyConfig()
+{
+	global LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4
+
+	IniRead, lhk1, %LLARS_CONFIG_FILE%, Start Hotkey, hotkey
+	IniRead, lhk2, %LLARS_CONFIG_FILE%, Information Hotkey, hotkey
+	IniRead, lhk3, %LLARS_CONFIG_FILE%, color/coordinate/hotkey Hotkey, hotkey
+	IniRead, lhk4, %LLARS_CONFIG_FILE%, exit Hotkey, hotkey
+
+	if (lhk1 = "ERROR" || lhk2 = "ERROR" || lhk3 = "ERROR" || lhk4 = "ERROR")
+		return
+
+	lhk1 := Trim(lhk1)
+	lhk2 := Trim(lhk2)
+	lhk3 := Trim(lhk3)
+	lhk4 := Trim(lhk4)
+
+	if (lhk1 != LLARS_lhk1 || lhk2 != LLARS_lhk2 || lhk3 != LLARS_lhk3)
+		SetLLARSHOTKEYS("On")
+
+	if (lhk4 != "" && lhk4 != LLARS_lhk4)
+		LLARS_EnableExitHotkey(lhk4)
 }
 
 ; Temporarily disables the non-exit LLARS controls and hotkeys.
@@ -291,7 +351,9 @@ LLARS_Initialize()
 	LLARS_lhk3 := ""
 	LLARS_lhk4 := ""
 	LLARS_CONTROLS_LOCKED := false
+	LLARS_RUNNING := false
 	SetLLARSHOTKEYS("On")
+	LLARS_EnableExitHotkey()
 	StartLogSession()
 	Log("STARTUP", "Script started")
 	DetectHiddenWindows, On
@@ -306,9 +368,8 @@ LLARS_Initialize()
 	frcount = 0
 	LastClickTime := 0
 	clickspot := 1
-	SetTimer, CheckLLARSConfig, 250
+	SetTimer, CheckLLARSConfig, 1000
 	scriptname := regexreplace(A_scriptname,"\..*","")
-	LLARS_RUNNING := false
 	EstimationRunCount := 1000
 	LLARS_CreateMainGUI()
 	OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
@@ -391,6 +452,7 @@ LLARS_StartRun()
 	startcheck := 1
 	LLARS_ResetRunState()
 	LLARS_RUNNING := true
+	SetLLARSHOTKEYS("On")
 	runcount3 := runcount
 	StartTime := A_TickCount
 	StartTimeStamp := A_Hour ":" A_Min ":" A_Sec
@@ -609,9 +671,9 @@ LLARS_RunComplete()
 	SoundPlay, C:\Windows\Media\Ring06.wav, 1
 	IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance
 	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
-	EnableButton()
 	LLARS_RUNNING := false
-	SetLLARSHOTKEYS()
+	EnableButton()
+	SetLLARSHOTKEYS("On")
 }
 
 ; ================================================================
@@ -1282,8 +1344,15 @@ NaturalClick(x, y, button := "left")
 	distance := Sqrt((dx * dx) + (dy * dy))
 	if (distance <= 2)
 	{
+		MouseMove, %x%, %y%, 0
 		Random, pause, 50, 120
 		Sleep, %pause%
+		MouseGetPos, clickX, clickY
+		if (clickX != x || clickY != y)
+		{
+			NaturalClick(x, y, button)
+			return
+		}
 		if (button = "right")
 			Click, Right
 		else
@@ -1473,6 +1542,12 @@ NaturalClick(x, y, button := "left")
 	MouseMove, %x%, %y%, 0
 	Random, pause, 50, 120
 	Sleep, %pause%
+	MouseGetPos, clickX, clickY
+	if (clickX != x || clickY != y)
+	{
+		NaturalClick(x, y, button)
+		return
+	}
 	if (button = "right")
 		Click, Right
 	else
