@@ -2312,6 +2312,96 @@ EndLogSession(Reason := "Normal Exit")
 	Log("STOP", Reason)
 }
 
+; Returns the active typed coordinate section that contains a click target.
+; This lets Developer Mode identify configured locations without requiring
+; script creators to add diagnostic-only click labels.
+LLARS_DeveloperClickTarget(x, y)
+{
+	global LLARS_SCRIPT_DIR
+
+	ConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
+	if !FileExist(ConfigPath)
+		return ""
+
+	IniRead, sections, %ConfigPath%
+	if (sections = "ERROR")
+		return ""
+
+	Loop, Parse, sections, `n, `r
+	{
+		section := Trim(A_LoopField)
+		if (section = "")
+			continue
+
+		if (GetConfigType(ConfigPath, section) != "coordinate")
+			continue
+
+		IniRead, option, %ConfigPath%, %section%, option, true
+		option := Trim(option)
+		StringLower, optionLower, option
+		if (optionLower = "false")
+			continue
+
+		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		if (depends != "ERROR" && Trim(depends) != "")
+		{
+			depends := Trim(depends)
+			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := Trim(dependsOption)
+			StringLower, dependsOptionLower, dependsOption
+			if (dependsOptionLower = "false")
+				continue
+		}
+
+		IniRead, configX, %ConfigPath%, %section%, x, ERROR
+		IniRead, configY, %ConfigPath%, %section%, y, ERROR
+		if (configX != "ERROR" && configY != "ERROR")
+		{
+			configX := Trim(configX)
+			configY := Trim(configY)
+			if (configX != "" && configY != "" && x = configX && y = configY)
+				return section
+		}
+
+		IniRead, xmin, %ConfigPath%, %section%, xmin, ERROR
+		IniRead, xmax, %ConfigPath%, %section%, xmax, ERROR
+		IniRead, ymin, %ConfigPath%, %section%, ymin, ERROR
+		IniRead, ymax, %ConfigPath%, %section%, ymax, ERROR
+
+		if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR")
+			continue
+
+		xmin := Trim(xmin)
+		xmax := Trim(xmax)
+		ymin := Trim(ymin)
+		ymax := Trim(ymax)
+		if (xmin = "" || xmax = "" || ymin = "" || ymax = "")
+			continue
+
+		if (x >= xmin && x <= xmax && y >= ymin && y <= ymax)
+			return section
+	}
+
+	return ""
+}
+
+; Records an actual NaturalClick and includes the matching Config.ini
+; coordinate section name whenever the target belongs to one.
+LLARS_DeveloperNaturalClick(x, y, button)
+{
+	clickTarget := LLARS_DeveloperClickTarget(x, y)
+
+	if (button = "right")
+		clickButton := "Right"
+	else
+		clickButton := "Left"
+
+	if (clickTarget != "")
+		LLARS_DeveloperAction("NaturalClick || " . clickTarget . " || " . clickButton . " (" . x . ", " . y . ")")
+	else
+		LLARS_DeveloperAction("NaturalClick || " . clickButton . " (" . x . ", " . y . ")")
+}
+
 ; ================================================================
 ; |     MOUSE     -     MOUSE     -     MOUSE     -     MOUSE    |
 ; ================================================================
@@ -2341,12 +2431,12 @@ NaturalClick(x, y, button := "left")
 		if (button = "right")
 		{
 			Click, Right
-			LLARS_DeveloperAction("NaturalClick || Right (" . x . ", " . y . ")")
+			LLARS_DeveloperNaturalClick(x, y, "right")
 		}
 		else
 		{
 			Click
-			LLARS_DeveloperAction("NaturalClick || Left (" . x . ", " . y . ")")
+			LLARS_DeveloperNaturalClick(x, y, "left")
 		}
 		return
 	}
@@ -2542,12 +2632,12 @@ NaturalClick(x, y, button := "left")
 	if (button = "right")
 	{
 		Click, Right
-		LLARS_DeveloperAction("NaturalClick || Right (" . x . ", " . y . ")")
+		LLARS_DeveloperNaturalClick(x, y, "right")
 	}
 	else
 	{
 		Click
-		LLARS_DeveloperAction("NaturalClick || Left (" . x . ", " . y . ")")
+		LLARS_DeveloperNaturalClick(x, y, "left")
 	}
 }
 

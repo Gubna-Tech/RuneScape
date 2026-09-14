@@ -1021,7 +1021,7 @@ selectedHotkeySection := ""
 selectedHotkeyConfigFile := ""
 Gui, 3: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged2, % sectionList
 Gui, 3: Add, Text, x30 y88 w230 h18 Center vHotkeysText, Hotkeys will be displayed here
-Gui, 3: Add, Hotkey, x115 y109 w60 h23 vChosenHotkey gHotkeyChanged Center Disabled, ** NONE **
+Gui, 3: Add, Hotkey, x70 y109 w150 h23 vChosenHotkey gHotkeyChanged Center Disabled, ** NONE **
 Gui, 3: Add, Button, x60 y141 w170 h25 gClose2, Close Hotkeys
 Gui 3: -Caption
 Gui, 3: Show, w290 h176 Center, Hotkeys
@@ -1451,12 +1451,12 @@ developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
 developerConfigName := LLARS_RUNNING ? "Resume" : "Configuration"
 
 developerHotkeys := ""
-developerHotkeys .= "Start: " . LLARS_lhk1 . " (" . developerStartState . ")`n"
-developerHotkeys .= developerInfoName . ": " . LLARS_lhk2 . " (" . developerInfoState . ")`n"
-developerHotkeys .= developerConfigName . ": " . LLARS_lhk3 . " (" . developerConfigState . ")`n"
-developerHotkeys .= "Exit: " . LLARS_lhk4 . " (Enabled)"
+developerHotkeys .= "Start: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk1) . " (" . developerStartState . ")`n"
+developerHotkeys .= developerInfoName . ": " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk2) . " (" . developerInfoState . ")`n"
+developerHotkeys .= developerConfigName . ": " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk3) . " (" . developerConfigState . ")`n"
+developerHotkeys .= "Exit: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk4) . " (Enabled)"
 if (LLARS_lhk5 != "")
-	developerHotkeys .= "`nDeveloper Mode: " . LLARS_lhk5 . " (Enabled)"
+	developerHotkeys .= "`nDeveloper Mode: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk5)
 
 developerScriptHotkeys := LLARS_DeveloperScriptHotkeys()
 if (developerScriptHotkeys != "")
@@ -1594,12 +1594,12 @@ developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
 developerConfigName := LLARS_RUNNING ? "Resume" : "Configuration"
 
 developerHotkeys := ""
-developerHotkeys .= "Start: " . LLARS_lhk1 . " (" . developerStartState . ")`n"
-developerHotkeys .= developerInfoName . ": " . LLARS_lhk2 . " (" . developerInfoState . ")`n"
-developerHotkeys .= developerConfigName . ": " . LLARS_lhk3 . " (" . developerConfigState . ")`n"
-developerHotkeys .= "Exit: " . LLARS_lhk4 . " (Enabled)"
+developerHotkeys .= "Start: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk1) . " (" . developerStartState . ")`n"
+developerHotkeys .= developerInfoName . ": " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk2) . " (" . developerInfoState . ")`n"
+developerHotkeys .= developerConfigName . ": " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk3) . " (" . developerConfigState . ")`n"
+developerHotkeys .= "Exit: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk4) . " (Enabled)"
 if (LLARS_lhk5 != "")
-	developerHotkeys .= "`nDeveloper Mode: " . LLARS_lhk5 . " (Enabled)"
+	developerHotkeys .= "`nDeveloper Mode: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk5)
 
 developerScriptHotkeys := LLARS_DeveloperScriptHotkeys()
 if (developerScriptHotkeys != "")
@@ -1713,6 +1713,52 @@ LLARS_DeveloperPixelTarget()
 	return "Non-Color"
 }
 
+LLARS_DeveloperHotkeyDisplay(hotkey)
+{
+	hotkey := Trim(hotkey)
+	if (hotkey = "")
+		return "Not Set"
+
+	hasCtrl := InStr(hotkey, "^")
+	hasAlt := InStr(hotkey, "!")
+	hasShift := InStr(hotkey, "+")
+	hasWin := InStr(hotkey, "#")
+
+	keyName := hotkey
+	StringReplace, keyName, keyName, ~, , All
+	StringReplace, keyName, keyName, $, , All
+	StringReplace, keyName, keyName, *, , All
+	StringReplace, keyName, keyName, <, , All
+	StringReplace, keyName, keyName, >, , All
+	StringReplace, keyName, keyName, ^, , All
+	StringReplace, keyName, keyName, !, , All
+	StringReplace, keyName, keyName, +, , All
+	StringReplace, keyName, keyName, #, , All
+	keyName := Trim(keyName)
+	keyName := RegExReplace(keyName, "i)\s+Up$")
+
+	if (StrLen(keyName) = 1)
+		StringUpper, keyName, keyName
+	else
+	{
+		displayKey := GetKeyName(keyName)
+		if (displayKey != "")
+			keyName := displayKey
+	}
+
+	displayHotkey := ""
+	if (hasCtrl)
+		displayHotkey .= "Ctrl+"
+	if (hasAlt)
+		displayHotkey .= "Alt+"
+	if (hasShift)
+		displayHotkey .= "Shift+"
+	if (hasWin)
+		displayHotkey .= "Win+"
+
+	return displayHotkey . keyName
+}
+
 LLARS_DeveloperScriptHotkeys()
 {
 	global LLARS_SCRIPT_DIR
@@ -1756,7 +1802,7 @@ LLARS_DeveloperScriptHotkeys()
 		if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
 			hotkeys .= section . ": Not Set`n"
 		else
-			hotkeys .= section . ": " . Trim(hotkeyValue) . "`n"
+			hotkeys .= section . ": " . LLARS_DeveloperHotkeyDisplay(Trim(hotkeyValue)) . "`n"
 	}
 
 	return RTrim(hotkeys, "`n`r")
