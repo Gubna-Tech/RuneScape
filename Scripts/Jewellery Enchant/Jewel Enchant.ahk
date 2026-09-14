@@ -55,40 +55,7 @@ Loop, %runcount%
 	Send, {%hkbank%}
 	Log("BANK PRESET", "Hotkey=" hkbank)
 
-	IniRead, option, %LLARS_CONFIG_FILE%, Random Sleep, option
-	StringLower, option, option
-
-	If (option = "true")
-	{
-		IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance
-		Random, RandomNumber, 1, 100
-
-		If (RandomNumber <= chance)
-		{
-			++sleepcount
-			IniRead, rs1, %LLARS_CONFIG_FILE%, Random Sleep, min
-			IniRead, rs2, %LLARS_CONFIG_FILE%, Random Sleep, max
-			Random, RandomSleepAmount, %rs1%, %rs2%
-			GuiControl,, ScriptBlue, Random Sleep
-			EndTime := A_TickCount + RandomSleepAmount
-			totalSleepTime += RandomSleepAmount
-			SetTimer, UpdateCountdown, 1000
-			Log("RANDOM SLEEP", "Sleep=" RandomSleepAmount " ms | Chance=" chance "% | Roll=" RandomNumber)
-			Sleep, %RandomSleepAmount%
-			SetTimer, UpdateCountdown, Off
-			GuiControl,, ScriptBlue, %scriptname%
-			GuiControl,, State3, Running
-			Log("RANDOM SLEEP COMPLETE", "Random sleep completed: " RandomSleepAmount " ms")
-		}
-		Else
-		{
-			Log("RANDOM SLEEP SKIPPED", "Chance=" chance "% | Roll=" RandomNumber)
-		}
-	}
-	Else
-	{
-		Log("RANDOM SLEEP DISABLED", "Random Sleep option is disabled")
-	}
+	LLARS_RandomSleep()
 
 	IniRead, sa1, Config.ini, Sleep Short, min
 	IniRead, sa2, Config.ini, Sleep Short, max
@@ -174,54 +141,14 @@ LLARS_FrameworkError()
 	ExitApp
 }
 
-; Automatically searches upward for the LLARS Core folder.
-#Include *i %A_ScriptDir%\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS.ahk
-
-; Automatically searches upward for the LLARS label library.
-#Include *i %A_ScriptDir%\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
-#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_Labels.ahk
+; Automatically searches upward for the LLARS Core bootstrap.
+#Include *i %A_ScriptDir%\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
+#Include *i %A_ScriptDir%\..\..\..\..\..\..\..\..\..\..\..\Core\LLARS_ScriptBootstrap.ahk
