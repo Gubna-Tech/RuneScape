@@ -3,7 +3,7 @@
 ; ================================================================
 
 ; Provides Escape-key shortcuts for closing the various secondary
-; LLARS GUIs and returning to the main window.
+; LLARS GUIs through the same close paths used by their Close buttons.
 ~Esc::
 IfWinActive, Coordinates
 {
@@ -20,8 +20,12 @@ Else IfWinActive, Timer
 
 Else IfWinActive, Information
 {
-	EnableHotkey()
-	GoSub, closeinfo
+	GoSub, CloseInfo
+}
+
+Else IfWinActive, Developer Mode
+{
+	GoSub, CloseDeveloperMode
 }
 
 Else IfWinActive, Combo
@@ -48,6 +52,26 @@ Else IfWinActive, Reset Configuration
 	GoSub, CloseResetConfig
 }
 
+Else IfWinActive, Multiple Client
+{
+	GoSub, CloseClient
+}
+
+Else IfWinActive, No Client Detected
+{
+	GoSub, CloseClient
+}
+
+Else IfWinActive, Config Error
+{
+	GoSub, CloseError
+}
+
+Else IfWinActive, Game Not Found
+{
+	GoSub, CloseGNF
+}
+
 Return
 
 ; Refreshes shared LLARS hotkeys and the main GUI configuration status.
@@ -58,10 +82,25 @@ return
 
 ; Updates the temporary Random Sleep countdown shown in the status area.
 UpdateCountdown:
+global LLARS_DeveloperLastRandomSleepEndTime
+
 RemainingTime := EndTime - A_TickCount
 if (RemainingTime > 0)
 {
 	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
+
+	if (EndTime != LLARS_DeveloperLastRandomSleepEndTime)
+	{
+		IniRead, developerRandomSleepMin, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
+		IniRead, developerRandomSleepMax, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
+
+		if (developerRandomSleepMin != "ERROR" && developerRandomSleepMax != "ERROR")
+			LLARS_DeveloperAction("Random Sleep || " . RandomSleepAmount . " ms || " . developerRandomSleepMin . "-" . developerRandomSleepMax . " ms")
+		else
+			LLARS_DeveloperAction("Random Sleep || " . RandomSleepAmount . " ms")
+
+		LLARS_DeveloperLastRandomSleepEndTime := EndTime
+	}
 }
 
 return
@@ -432,11 +471,12 @@ Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s12 Bold cBlack
 Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
 Gui 2: Font, s10 Bold cGray
-Gui 2: Add, Text, x5 y29 w280 h18 Center, %scriptname%
+Gui 2: Add, Text, x5 y29 w280 h18 Center, Coordinates
 Gui 2: Add, Text, x10 y49 w270 h2 0x10
 Gui 2: Font, s10 Bold cBlack
 DisableHotkey()
-IniRead, allContents, Config.ini
+scriptHotkeyConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
+IniRead, allContents, %scriptHotkeyConfigFile%
 IniRead, llarsContents, %LLARS_CONFIG_FILE%
 sectionList := " ***** Make a Selection ***** | "
 configCoordinatesFound := false
@@ -628,6 +668,7 @@ if GetKeyState("RButton", "P")
 		IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
 		IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
 		IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
+		LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . xmin . "-" . xmax . " || Y=" . ymin . "-" . ymax)
 		Log("COORDINATES CHANGED", " %buttontext% | X=" xmin "-" xmax " | Y=" ymin "-" ymax)
 		if (ButtonText = "Logout")
 		{
@@ -717,6 +758,7 @@ if GetKeyState("RButton", "P")
 	SetTimer, CheckClicksPixel, Off
 	IniWrite, %x%, Config.ini, %ButtonText%, x
 	IniWrite, %y%, Config.ini, %ButtonText%, y
+	LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . x . " || Y=" . y)
 	Log("COORDINATES CHANGED", "Pixel Coordinate | X=" x " | Y=" y)
 	Sleep, 1500
 	Gui 13: Destroy
@@ -812,7 +854,7 @@ Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 2: Font, s12 Bold cBlack
 Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
 Gui 2: Font, s10 Bold cGray
-Gui 2: Add, Text, x5 y29 w280 h18 Center, %scriptname%
+Gui 2: Add, Text, x5 y29 w280 h18 Center, Colors
 Gui 2: Add, Text, x10 y49 w270 h2 0x10
 Gui 2: Font, s10 Bold cBlack
 DisableHotkey()
@@ -917,11 +959,12 @@ Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
 Gui 3: Font, s12 Bold cBlack
 Gui 3: Add, Text, x5 y5 w280 h25 Center, LLARS
 Gui 3: Font, s10 Bold cGray
-Gui 3: Add, Text, x5 y29 w280 h18 Center, %scriptname%
+Gui 3: Add, Text, x5 y29 w280 h18 Center, Hotkeys
 Gui 3: Add, Text, x10 y49 w270 h2 0x10
 Gui 3: Font, s10 Bold cBlack
 DisableHotkey()
-IniRead, allContents, Config.ini
+scriptHotkeyConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
+IniRead, allContents, %scriptHotkeyConfigFile%
 IniRead, llarsContents, %LLARS_CONFIG_FILE%
 sectionList := " ***** Make a Selection ***** | "
 hotkeyConfigFiles := {}
@@ -940,10 +983,10 @@ Loop, Parse, allContents, `n
 	StringReplace, currentSection, currentSection, [, , All
 	StringReplace, currentSection, currentSection, ], , All
 	currentSection := Trim(currentSection)
-	if (GetConfigType("Config.ini", currentSection) = "hotkey")
+	if (GetConfigType(scriptHotkeyConfigFile, currentSection) = "hotkey")
 	{
 		sectionList .= "|" currentSection
-		hotkeyConfigFiles[currentSection] := "Config.ini"
+		hotkeyConfigFiles[currentSection] := scriptHotkeyConfigFile
 		configHotkeysFound := true
 	}
 }
@@ -1057,9 +1100,18 @@ if (selectedHotkeySection = "" || selectedHotkeyConfigFile = "")
 
 Gui, 3: Submit, NoHide
 
+; The Hotkey control fires while modifiers are still being pressed.
+; Wait for a complete valid combination so entries such as Ctrl+Shift+D
+; are not saved as only Ctrl or Ctrl+Shift.
+if !LLARS_IsValidConfigHotkey(ChosenHotkey)
+	return
+
 ; Use the locked section and configuration file instead of whatever
 ; the dropdown may currently be highlighting.
 IniWrite, %ChosenHotkey%, %selectedHotkeyConfigFile%, %selectedHotkeySection%, Hotkey
+LLARS_DeveloperAction("Hotkey Config || " . selectedHotkeySection . " || " . ChosenHotkey)
+if WinExist("Developer Mode ahk_class AutoHotkeyGUI")
+	Gosub, LLARS_DeveloperAutoRefresh
 if (selectedHotkeyConfigFile = LLARS_CONFIG_FILE)
 {
 	LLARS_CheckHotkeyConfig()
@@ -1101,18 +1153,37 @@ return
 
 ; Updates the main GUI state and resumes normal script execution.
 ResumeB:
+LLARS_PAUSED := false
+LLARS_DeveloperHotkey("Resume")
+LLARS_DeveloperAction("Script || Resumed")
 Log("RESUME", "Script resumed")
 GuiControl,,ScriptBlue, %scriptname%
 GuiControl,,State3, Running
-Pause, off
+GuiControl, Dev:, DeveloperRunningText, Running
 Return
 
-; Updates the main GUI state and pauses script execution.
+; Pauses the interrupted automation thread while keeping this hotkey thread
+; alive so Developer Mode can continue refreshing elapsed time and live data.
 PauseB:
+LLARS_PAUSED := true
+LLARS_DeveloperHotkey("Pause")
+LLARS_DeveloperAction("Script || Paused")
 Log("PAUSE", "Script paused")
 GuiControl,,State2, Paused
 GuiControl,,ScriptRed, %scriptname%
-Pause, on
+GuiControl, Dev:, DeveloperRunningText, Paused
+
+Pause, On, 1
+
+while (LLARS_PAUSED)
+{
+	if WinExist("Developer Mode ahk_class AutoHotkeyGUI")
+		Gosub, LLARS_DeveloperAutoRefresh
+
+	Sleep, 250
+}
+
+Pause, Off, 1
 Return
 
 ; =========================================================================
@@ -1122,11 +1193,20 @@ Return
 ; Handles both the Exit button and normal GUI close event.
 ExitB:
 	Suspend, Permit
+LLARS_DeveloperHotkey("Exit")
 guiclose:
 Log("EXIT", "LLARS exited normally")
 WinGetPos, GUIxc, GUIyc,,,LLARS ahk_class AutoHotkeyGUI
 IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
 IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+
+if WinExist("Developer Mode ahk_class AutoHotkeyGUI")
+{
+	WinGetPos, DeveloperGUIxc, DeveloperGUIyc,,, Developer Mode ahk_class AutoHotkeyGUI
+	IniWrite, %DeveloperGUIxc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
+	IniWrite, %DeveloperGUIyc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+}
+
 EndLogSession("Normal Exit")
 ExitApp
 
@@ -1137,7 +1217,6 @@ ExitApp
 ; Builds the Information window with current LLARS/script hotkeys,
 ; shared options, configuration shortcuts, and project links.
 Info:
-DisableHotkey()
 IniRead, logout, %LLARS_CONFIG_FILE%, Logout, option
 IniRead, sleepoption, %LLARS_CONFIG_FILE%, Random Sleep, option
 IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance
@@ -1152,6 +1231,8 @@ if (LLARS_lhk3 != "")
 	scriptHotkeys .= "Color/Coordinate/Hotkey: " . LLARS_lhk3 . "`n"
 if (LLARS_lhk4 != "")
 	scriptHotkeys .= "Exit: " . LLARS_lhk4 . "`n"
+if (LLARS_lhk5 != "")
+	scriptHotkeys .= "Developer Mode: " . LLARS_lhk5 . "`n"
 
 ; Read script-specific hotkeys from Config.ini.
 configHotkeys := ""
@@ -1216,7 +1297,8 @@ resourceDividerY := createdY + 27
 resourceTitleY := resourceDividerY + 8
 llarsConfigY := resourceTitleY + 23
 scriptConfigY := llarsConfigY + 29
-discordY := scriptConfigY + 29
+developerModeY := scriptConfigY + 29
+discordY := developerModeY + 29
 closeDividerY := discordY + 32
 closeInfoY := closeDividerY + 8
 informationHeight := closeInfoY + 39
@@ -1263,6 +1345,7 @@ Gui 20: Font, s10 Bold cBlack
 Gui 20: Add, Text, x10 y%resourceTitleY% w270 h20 Center, Resources
 Gui 20: Add, Button, x60 y%llarsConfigY% w170 h25 gInfoLLARS, LLARS Config
 Gui 20: Add, Button, x60 y%scriptConfigY% w170 h25 gInfoConfig, Script Config
+Gui 20: Add, Button, x60 y%developerModeY% w170 h25 gDeveloperMode, Developer Mode
 Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
 Gui 20: Add, Text, x10 y%closeDividerY% w270 h2 0x10
 Gui 20: Add, Button, x60 y%closeInfoY% w170 h29 gCloseInfo, Close Information
@@ -1274,7 +1357,6 @@ return
 ; Closes the information window and restores the main LLARS GUI.
 CloseInfo:
 Gui 1: Default
-EnableHotkey()
 Gui 20: Destroy
 Gui 1: Show
 return
@@ -1282,7 +1364,6 @@ return
 ; Opens the Discord link from the information GUI and returns to LLARS.
 discord:
 Gui 1: Default
-EnableHotkey()
 Gui 20: Destroy
 Run, https://discord.gg/Wmmf65myPG
 Gui 1: Show
@@ -1294,11 +1375,493 @@ EnableHotkey()
 Run %LLARS_SCRIPT_DIR%\Config.ini
 return
 
+DeveloperModeHotkey:
+LLARS_DeveloperHotkey("Developer Mode")
+Gosub, DeveloperModeDashboard
+return
+
 ; Opens the LLARS configuration file.
 InfoLLARS:
 EnableHotkey()
 Run %LLARS_CONFIG_FILE%
 return
+
+; ============================================================================
+; |     DEVELOPER MODE     -     DEVELOPER MODE     -     DEVELOPER MODE     |
+; ============================================================================
+
+; Opens the live Developer Mode dashboard directly from Information or the dedicated hotkey.
+DeveloperMode:
+EnableHotkey()
+Gui 20: Destroy
+Gosub, DeveloperModeDashboard
+return
+
+DeveloperModeDashboard:
+Gui Dev: Destroy
+Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound
+
+Gui Dev: Font, s12 Bold cBlack
+Gui Dev: Add, Text, x5 y5 w440 h25 Center, LLARS
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x5 y29 w440 h18 Center, Developer Mode
+Gui Dev: Add, Text, x90 y49 w270 h2 0x10
+
+if (LLARS_RUNNING)
+{
+	if (LLARS_PAUSED)
+		developerRunning := "Paused"
+	else
+		developerRunning := "Running"
+}
+else
+	developerRunning := "Idle"
+
+developerControls := LLARS_CONTROLS_LOCKED ? "Locked" : "Unlocked"
+developerFinalSleep := EstFinalSleepActive ? "Active" : "Inactive"
+developerRunType := (LLARS_RUN_TYPE != "") ? LLARS_RUN_TYPE : "Not Started"
+
+if (LLARS_RUNNING && LLARS_RunStartTick > 0)
+{
+	developerElapsedMS := A_TickCount - LLARS_RunStartTick
+	developerElapsedHours := Floor(developerElapsedMS / 3600000)
+	developerElapsedMinutes := Floor(Mod(developerElapsedMS, 3600000) / 60000)
+	developerElapsedSeconds := Floor(Mod(developerElapsedMS, 60000) / 1000)
+	developerElapsed := developerElapsedHours . "h " . developerElapsedMinutes . "m " . developerElapsedSeconds . "s"
+}
+else
+	developerElapsed := "--"
+
+if (developerRunType = "RunCount" && runcount3 != "")
+	developerProgress := count2 . " / " . runcount3
+else if (developerRunType = "Timer" && LLARS_RUNNING)
+	developerProgress := "Timed Run"
+else
+	developerProgress := "--"
+
+LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor)
+LLARS_DeveloperCheckPixelReset()
+developerPixelTarget := LLARS_DeveloperPixelTarget()
+
+developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
+developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
+developerConfigState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
+
+developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
+developerConfigName := LLARS_RUNNING ? "Resume" : "Configuration"
+
+developerHotkeys := ""
+developerHotkeys .= "Start: " . LLARS_lhk1 . " (" . developerStartState . ")`n"
+developerHotkeys .= developerInfoName . ": " . LLARS_lhk2 . " (" . developerInfoState . ")`n"
+developerHotkeys .= developerConfigName . ": " . LLARS_lhk3 . " (" . developerConfigState . ")`n"
+developerHotkeys .= "Exit: " . LLARS_lhk4 . " (Enabled)"
+if (LLARS_lhk5 != "")
+	developerHotkeys .= "`nDeveloper Mode: " . LLARS_lhk5 . " (Enabled)"
+
+developerScriptHotkeys := LLARS_DeveloperScriptHotkeys()
+if (developerScriptHotkeys != "")
+	developerHotkeys .= "`n`n" . developerScriptHotkeys
+
+developerActions := LLARS_DeveloperActions
+actionLineCount := 0
+Loop, Parse, developerActions, `n, `r
+	actionLineCount++
+if (developerActions = "")
+	developerActions := "No framework actions recorded yet."
+
+developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x15 y60 w190 h20 Center, Framework State
+Gui Dev: Add, GroupBox, x20 y83 w180 h164, Current State
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x32 y106 w74 h18, Script
+Gui Dev: Add, Text, x32 y126 w74 h18, State
+Gui Dev: Add, Text, x32 y146 w74 h18, Run Type
+Gui Dev: Add, Text, x32 y166 w74 h18, Progress
+Gui Dev: Add, Text, x32 y186 w74 h18, Elapsed
+Gui Dev: Add, Text, x32 y206 w74 h18, Controls
+Gui Dev: Add, Text, x32 y226 w74 h18, Final Sleep
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x108 y106 w80 h18 Right vDeveloperScriptText, %scriptname%
+Gui Dev: Add, Text, x108 y126 w80 h18 Right vDeveloperRunningText, %developerRunning%
+Gui Dev: Add, Text, x108 y146 w80 h18 Right vDeveloperRunTypeText, %developerRunType%
+Gui Dev: Add, Text, x108 y166 w80 h18 Right vDeveloperProgressText, %developerProgress%
+Gui Dev: Add, Text, x108 y186 w80 h18 Right vDeveloperElapsedText, %developerElapsed%
+Gui Dev: Add, Text, x108 y206 w80 h18 Right vDeveloperControlsText, %developerControls%
+Gui Dev: Add, Text, x108 y226 w80 h18 Right vDeveloperFinalSleepText, %developerFinalSleep%
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x205 y60 w230 h20 Center, Active Hotkeys
+Gui Dev: Add, GroupBox, x210 y83 w220 h164, Hotkey State
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x220 y108 w200 h112 Center vDeveloperHotkeysText, %developerHotkeys%
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x15 y258 w190 h20 Center, Mouse / Pixel
+Gui Dev: Add, GroupBox, x20 y281 w180 h124, Live Inspector
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x32 y306 w74 h18, RuneScape X
+Gui Dev: Add, Text, x32 y330 w74 h18, RuneScape Y
+Gui Dev: Add, Text, x32 y354 w74 h18, Pixel RGB
+Gui Dev: Add, Text, x32 y378 w74 h18, Pixel Target
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x108 y306 w80 h18 Right vDeveloperMouseXText, %developerMouseX%
+Gui Dev: Add, Text, x108 y330 w80 h18 Right vDeveloperMouseYText, %developerMouseY%
+Gui Dev: Add, Text, x108 y354 w80 h18 Right vDeveloperPixelColorText, %developerPixelColor%
+Gui Dev: Add, Text, x108 y378 w80 h18 Right vDeveloperPixelTargetText, %developerPixelTarget%
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x205 y258 w230 h20 Center, Configuration Diagnostics
+Gui Dev: Add, GroupBox, x210 y281 w220 h124, Script Config
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Edit, x220 y304 w200 h88 ReadOnly -TabStop +VScroll vDeveloperDiagnosticsText, %developerDiagnostics%
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x20 y416 w410 h20 Center, Live Actions
+Gui Dev: Add, GroupBox, x20 y439 w410 h190, Recent Framework Actions
+Gui Dev: Font, s9 Norm cBlack
+Gui Dev: Add, Edit, x30 y462 w390 h154 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Button, x140 y641 w170 h27 gCloseDeveloperMode, Close
+WinSet, ExStyle, ^0x80
+Gui Dev: -Caption
+Gui Dev: Show, Center w450 h678, Developer Mode
+
+; Restores the Developer Mode GUI to its previously saved screen position.
+IniRead, DeveloperGUIx, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
+IniRead, DeveloperGUIy, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+WinMove, Developer Mode,, %DeveloperGUIx%, %DeveloperGUIy%
+
+LLARS_EnableExitHotkey()
+LLARS_DeveloperLastDiagnostics := developerDiagnostics
+LLARS_DeveloperLastActions := developerActions
+PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
+SetTimer, LLARS_DeveloperAutoRefresh, 750
+return
+
+; Toggles Developer Mode without changing any normal LLARS runtime behavior.
+; Refreshes only the live Developer Mode values so the window itself stays
+; in place and does not flash or rebuild.
+LLARS_DeveloperAutoRefresh:
+if !WinExist("Developer Mode ahk_class AutoHotkeyGUI")
+{
+	SetTimer, LLARS_DeveloperAutoRefresh, Off
+	return
+}
+
+if (LLARS_RUNNING)
+{
+	if (LLARS_PAUSED)
+		developerRunning := "Paused"
+	else
+		developerRunning := "Running"
+}
+else
+	developerRunning := "Idle"
+
+developerControls := LLARS_CONTROLS_LOCKED ? "Locked" : "Unlocked"
+developerFinalSleep := EstFinalSleepActive ? "Active" : "Inactive"
+developerRunType := (LLARS_RUN_TYPE != "") ? LLARS_RUN_TYPE : "Not Started"
+
+if (LLARS_RUNNING && LLARS_RunStartTick > 0)
+{
+	developerElapsedMS := A_TickCount - LLARS_RunStartTick
+	developerElapsedHours := Floor(developerElapsedMS / 3600000)
+	developerElapsedMinutes := Floor(Mod(developerElapsedMS, 3600000) / 60000)
+	developerElapsedSeconds := Floor(Mod(developerElapsedMS, 60000) / 1000)
+	developerElapsed := developerElapsedHours . "h " . developerElapsedMinutes . "m " . developerElapsedSeconds . "s"
+}
+else
+	developerElapsed := "--"
+
+if (developerRunType = "RunCount" && runcount3 != "")
+	developerProgress := count2 . " / " . runcount3
+else if (developerRunType = "Timer" && LLARS_RUNNING)
+	developerProgress := "Timed Run"
+else
+	developerProgress := "--"
+
+LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor)
+developerPixelTarget := LLARS_DeveloperPixelTarget()
+
+developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
+developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
+developerConfigState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
+
+developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
+developerConfigName := LLARS_RUNNING ? "Resume" : "Configuration"
+
+developerHotkeys := ""
+developerHotkeys .= "Start: " . LLARS_lhk1 . " (" . developerStartState . ")`n"
+developerHotkeys .= developerInfoName . ": " . LLARS_lhk2 . " (" . developerInfoState . ")`n"
+developerHotkeys .= developerConfigName . ": " . LLARS_lhk3 . " (" . developerConfigState . ")`n"
+developerHotkeys .= "Exit: " . LLARS_lhk4 . " (Enabled)"
+if (LLARS_lhk5 != "")
+	developerHotkeys .= "`nDeveloper Mode: " . LLARS_lhk5 . " (Enabled)"
+
+developerScriptHotkeys := LLARS_DeveloperScriptHotkeys()
+if (developerScriptHotkeys != "")
+	developerHotkeys .= "`n`n" . developerScriptHotkeys
+
+developerActions := LLARS_DeveloperActions
+if (developerActions = "")
+	developerActions := "No framework actions recorded yet."
+
+developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
+
+GuiControl, Dev:, DeveloperScriptText, %scriptname%
+GuiControl, Dev:, DeveloperRunningText, %developerRunning%
+GuiControl, Dev:, DeveloperRunTypeText, %developerRunType%
+GuiControl, Dev:, DeveloperProgressText, %developerProgress%
+GuiControl, Dev:, DeveloperElapsedText, %developerElapsed%
+GuiControl, Dev:, DeveloperControlsText, %developerControls%
+GuiControl, Dev:, DeveloperFinalSleepText, %developerFinalSleep%
+GuiControl, Dev:, DeveloperMouseXText, %developerMouseX%
+GuiControl, Dev:, DeveloperMouseYText, %developerMouseY%
+GuiControl, Dev:, DeveloperPixelColorText, %developerPixelColor%
+GuiControl, Dev:, DeveloperPixelTargetText, %developerPixelTarget%
+GuiControl, Dev:, DeveloperHotkeysText, %developerHotkeys%
+
+if (developerActions != LLARS_DeveloperLastActions)
+{
+	GuiControl, Dev:, DeveloperActionsText, %developerActions%
+	LLARS_DeveloperLastActions := developerActions
+	PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
+}
+
+if (developerDiagnostics != LLARS_DeveloperLastDiagnostics)
+{
+	GuiControl, Dev:, DeveloperDiagnosticsText, %developerDiagnostics%
+	LLARS_DeveloperLastDiagnostics := developerDiagnostics
+}
+return
+
+; Closes only the developer diagnostics window. The Information window and
+; main LLARS GUI remain open exactly as they were.
+CloseDeveloperMode:
+SetTimer, LLARS_DeveloperAutoRefresh, Off
+WinGetPos, DeveloperGUIxc, DeveloperGUIyc,,, Developer Mode
+IniWrite, %DeveloperGUIxc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
+IniWrite, %DeveloperGUIyc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+Gui Dev: Destroy
+Gui 1: Default
+Gui 1: Show
+return
+
+; Builds a concise list of active typed Config.ini problems for Developer Mode.
+; Disabled optional sections and dependency-disabled sections are ignored in
+; the same way as the normal Configuration Status panel.
+LLARS_DeveloperPixelTarget()
+{
+	global LLARS_SCRIPT_DIR
+
+	ConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
+	if !FileExist(ConfigPath)
+		return "Non-Color"
+
+	IniRead, sections, %ConfigPath%
+	if (sections = "ERROR")
+		return "Non-Color"
+
+	colorSectionFound := false
+
+	Loop, Parse, sections, `n, `r
+	{
+		section := Trim(A_LoopField)
+		if (section = "")
+			continue
+
+		if (GetConfigType(ConfigPath, section) != "color")
+			continue
+
+		colorSectionFound := true
+
+		IniRead, option, %ConfigPath%, %section%, option, true
+		option := Trim(option)
+		StringLower, optionLower, option
+		if (optionLower = "false")
+			continue
+
+		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		if (depends != "ERROR" && Trim(depends) != "")
+		{
+			depends := Trim(depends)
+			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := Trim(dependsOption)
+			StringLower, dependsOptionLower, dependsOption
+			if (dependsOptionLower = "false")
+				continue
+		}
+
+		colorKey := LLARS_GetColorKey(ConfigPath, section)
+		if (colorKey = "")
+			continue
+
+		IniRead, targetColor, %ConfigPath%, %section%, %colorKey%, ERROR
+		targetColor := Trim(targetColor)
+		if (targetColor = "ERROR" || targetColor = "")
+			return "Not Set"
+
+		return targetColor
+	}
+
+	if (colorSectionFound)
+		return "Not Set"
+
+	return "Non-Color"
+}
+
+LLARS_DeveloperScriptHotkeys()
+{
+	global LLARS_SCRIPT_DIR
+
+	ConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
+	if !FileExist(ConfigPath)
+		return ""
+
+	hotkeys := ""
+	IniRead, sections, %ConfigPath%
+	if (sections = "ERROR")
+		return ""
+
+	Loop, Parse, sections, `n, `r
+	{
+		section := Trim(A_LoopField)
+		if (section = "")
+			continue
+
+		if (GetConfigType(ConfigPath, section) != "hotkey")
+			continue
+
+		IniRead, option, %ConfigPath%, %section%, option, true
+		option := Trim(option)
+		StringLower, optionLower, option
+		if (optionLower = "false")
+			continue
+
+		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		if (depends != "ERROR" && Trim(depends) != "")
+		{
+			depends := Trim(depends)
+			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := Trim(dependsOption)
+			StringLower, dependsOptionLower, dependsOption
+			if (dependsOptionLower = "false")
+				continue
+		}
+
+		IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
+		if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
+			hotkeys .= section . ": Not Set`n"
+		else
+			hotkeys .= section . ": " . Trim(hotkeyValue) . "`n"
+	}
+
+	return RTrim(hotkeys, "`n`r")
+}
+
+LLARS_DeveloperConfigDiagnostics()
+{
+	global LLARS_SCRIPT_DIR
+
+	ConfigPath := LLARS_SCRIPT_DIR "\Config.ini"
+	if !FileExist(ConfigPath)
+		return "Config.ini not found"
+
+	diagnostics := ""
+	IniRead, sections, %ConfigPath%
+	if (sections = "ERROR")
+		return "Unable to read Config.ini"
+
+	Loop, Parse, sections, `n, `r
+	{
+		section := Trim(A_LoopField)
+		if (section = "")
+			continue
+
+		IniRead, option, %ConfigPath%, %section%, option, true
+		option := Trim(option)
+		StringLower, optionLower, option
+		if (optionLower = "false")
+			continue
+
+		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		if (depends != "ERROR" && Trim(depends) != "")
+		{
+			depends := Trim(depends)
+			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := Trim(dependsOption)
+			StringLower, dependsOptionLower, dependsOption
+			if (dependsOptionLower = "false")
+				continue
+		}
+
+		configType := GetConfigType(ConfigPath, section)
+		if (configType = "hotkey")
+		{
+			IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
+			if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
+				diagnostics .= section . ": Hotkey missing`n`n"
+			else if (!LLARS_IsValidConfigHotkey(hotkeyValue))
+				diagnostics .= section . ": Hotkey invalid`n`n"
+			continue
+		}
+
+		if (configType = "coordinate")
+		{
+			IniRead, x, %ConfigPath%, %section%, x, ERROR
+			IniRead, y, %ConfigPath%, %section%, y, ERROR
+			IniRead, xmin, %ConfigPath%, %section%, xmin, ERROR
+			IniRead, xmax, %ConfigPath%, %section%, xmax, ERROR
+			IniRead, ymin, %ConfigPath%, %section%, ymin, ERROR
+			IniRead, ymax, %ConfigPath%, %section%, ymax, ERROR
+
+			hasPointCoordinates := (x != "ERROR" || y != "ERROR")
+			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
+			coordinateInvalid := false
+
+			if (hasPointCoordinates)
+			{
+				if (x = "ERROR" || y = "ERROR" || Trim(x) = "" || Trim(y) = "")
+					coordinateInvalid := true
+				else if (!LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y))
+					coordinateInvalid := true
+			}
+			else if (hasRectangleCoordinates)
+			{
+				if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR")
+					coordinateInvalid := true
+				else if (Trim(xmin) = "" || Trim(xmax) = "" || Trim(ymin) = "" || Trim(ymax) = "")
+					coordinateInvalid := true
+				else if (!LLARS_IsNumericConfigValue(xmin) || !LLARS_IsNumericConfigValue(xmax) || !LLARS_IsNumericConfigValue(ymin) || !LLARS_IsNumericConfigValue(ymax))
+					coordinateInvalid := true
+				else if ((xmin + 0) > (xmax + 0) || (ymin + 0) > (ymax + 0))
+					coordinateInvalid := true
+			}
+			else
+				coordinateInvalid := true
+
+			if (coordinateInvalid)
+				diagnostics .= section . ": Coordinates missing/invalid`n`n"
+			continue
+		}
+
+		if (configType = "color")
+		{
+			colorKey := LLARS_GetColorKey(ConfigPath, section)
+			IniRead, colorValue, %ConfigPath%, %section%, %colorKey%, ERROR
+			if (colorValue = "ERROR" || !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$"))
+				diagnostics .= section . ": Color missing/invalid`n`n"
+		}
+	}
+
+	if (diagnostics = "")
+		return "No typed configuration problems found."
+
+	return RTrim(diagnostics, "`n`r")
+}
 
 ; Opens the project's GitHub repository from the configuration error window.
 GitLink:

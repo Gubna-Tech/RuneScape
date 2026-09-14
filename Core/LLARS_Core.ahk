@@ -12,23 +12,104 @@ global LLARS_CONFIG_FILE
 ; |     LLARS CORE LIBRARY     -     LLARS CORE LIBRARY          |
 ; ================================================================
 ; Allows LLARS borderless GUI windows to be dragged with the mouse.
+; Holding Ctrl when beginning the drag temporarily disables CheckPOS so
+; an LLARS GUI can intentionally be moved onto another monitor.
 WM_LBUTTONDOWN() {
+	global LLARS_CHECKPOS_DISABLED
+
 	If (A_Gui)
+	{
+		if GetKeyState("Ctrl", "P")
+			LLARS_CHECKPOS_DISABLED := true
 		PostMessage, 0xA1, 2
+	}
 }
 
-; Rechecks the LLARS window position whenever Windows reports a move.
-WM_WINDOWPOSCHANGED() {
-	CheckPOS()
+; Restores normal CheckPOS protection after a Ctrl+drag move completes.
+WM_EXITSIZEMOVE() {
+	global LLARS_CHECKPOS_DISABLED
+
+	LLARS_CHECKPOS_DISABLED := false
 }
 
-; Keeps the LLARS GUI fully inside the visible desktop area.
-CheckPOS()
+; Provides a Developer Mode keyboard fallback for the configured Exit hotkey.
+; The normal global hotkey remains registered; this only handles the case where
+; the Developer Mode GUI itself receives the key instead of the global hotkey.
+LLARS_DeveloperExitKey(wParam, lParam, msg, hwnd)
 {
-	IfWinNotActive, LLARS
-	return
+	global LLARS_lhk4
 
-	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
+	rootHwnd := DllCall("GetAncestor", "Ptr", hwnd, "UInt", 2, "Ptr")
+	if (!rootHwnd)
+		rootHwnd := hwnd
+
+	WinGetTitle, guiTitle, ahk_id %rootHwnd%
+	if (guiTitle != "Developer Mode")
+		return
+
+	exitHotkey := Trim(LLARS_lhk4)
+	if (exitHotkey = "")
+		return
+
+	requiresCtrl := InStr(exitHotkey, "^")
+	requiresAlt := InStr(exitHotkey, "!")
+	requiresShift := InStr(exitHotkey, "+")
+	requiresWin := InStr(exitHotkey, "#")
+
+	exitKey := RegExReplace(exitHotkey, "^[\$\*\~<>\^!+#]+")
+	if (exitKey = "")
+		return
+
+	exitVK := GetKeyVK(exitKey)
+	if (!exitVK || wParam != exitVK)
+		return
+
+	if (requiresCtrl && !GetKeyState("Ctrl", "P"))
+		return
+	if (requiresAlt && !GetKeyState("Alt", "P"))
+		return
+	if (requiresShift && !GetKeyState("Shift", "P"))
+		return
+	if (requiresWin && !GetKeyState("LWin", "P") && !GetKeyState("RWin", "P"))
+		return
+
+	SetTimer, ExitB, -1
+	return 0
+}
+
+; Rechecks interactive LLARS window positions whenever Windows reports a move.
+WM_WINDOWPOSCHANGED(wParam, lParam, msg, hwnd) {
+	CheckPOS(hwnd)
+}
+
+; Keeps every interactive LLARS GUI fully inside the visible desktop area.
+; Preview and border helper windows are intentionally excluded because some
+; of them are positioned off-screen as part of normal LLARS behavior.
+CheckPOS(hwnd := "")
+{
+	global LLARS_CHECKPOS_DISABLED
+
+	if (LLARS_CHECKPOS_DISABLED)
+		return
+
+	if (hwnd = "")
+		hwnd := WinExist("A")
+
+	if (!hwnd)
+		return
+
+	WinGet, processID, PID, ahk_id %hwnd%
+	if (processID != DllCall("GetCurrentProcessId"))
+		return
+
+	WinGetTitle, guiTitle, ahk_id %hwnd%
+	if guiTitle not in LLARS,Combo,Reset Configuration,Coordinates,Colors,Hotkeys,Information,Developer Mode,Multiple Client,No Client Detected,Config Error,Game Not Found,Timer
+		return
+
+	WinGetPos, GUIx, GUIy, GUIw, GUIh, ahk_id %hwnd%
+	if (GUIw = "" || GUIh = "")
+		return
+
 	xmin := GUIx
 	xmax := GUIw + GUIx
 	ymin := GUIy
@@ -37,6 +118,7 @@ CheckPOS()
 	yadj := A_ScreenHeight - GUIh
 	X := GUIx
 	Y := GUIy
+
 	if (xmin < 0)
 		X := 0
 	if (ymin < 0)
@@ -45,8 +127,9 @@ CheckPOS()
 		X := xadj
 	if (ymax > A_ScreenHeight)
 		Y := yadj
+
 	if (X != GUIx || Y != GUIy)
-		WinMove, LLARS,, X, Y
+		WinMove, ahk_id %hwnd%,, X, Y
 }
 
 ; Finds existing LLARS AutoHotkey windows and closes them
@@ -225,9 +308,15 @@ LLARS_EnableExitHotkey(lhk4 := "")
 	if (lhk4 = "")
 		return
 
-	; Do not repeatedly tear down/re-register an unchanged Exit hotkey.
+	; If the configured Exit key is unchanged, explicitly make sure its
+	; hook is still enabled. This restores Exit after any GUI/hotkey state
+	; change without tearing down or remapping the registration.
 	if (LLARS_lhk4 = lhk4)
+	{
+		newlhk4 := LLARS_HookHotkey(lhk4)
+		Hotkey, %newlhk4%, exitb, On
 		return
+	}
 
 	oldlhk4 := LLARS_HookHotkey(LLARS_lhk4)
 	newlhk4 := LLARS_HookHotkey(lhk4)
@@ -239,31 +328,64 @@ LLARS_EnableExitHotkey(lhk4 := "")
 	Hotkey, %newlhk4%, exitb, On
 }
 
+; Keeps the Developer Mode hotkey independent of the normal Start /
+; Information / Configuration state. Modifier combinations such as ^+D
+; are supported and remain available while a script is running.
+LLARS_EnableDeveloperHotkey(lhk5 := "")
+{
+	global LLARS_lhk5
+
+	if (lhk5 = "")
+		IniRead, lhk5, %LLARS_CONFIG_FILE%, Developer Mode, hotkey
+
+	if (lhk5 = "ERROR")
+		lhk5 := ""
+	lhk5 := Trim(lhk5)
+
+	oldlhk5 := LLARS_HookHotkey(LLARS_lhk5)
+	newlhk5 := LLARS_HookHotkey(lhk5)
+
+	if (LLARS_lhk5 != lhk5 && oldlhk5 != "")
+		Hotkey, %oldlhk5%, DeveloperModeHotkey, Off
+
+	LLARS_lhk5 := lhk5
+
+	if (newlhk5 != "")
+		Hotkey, %newlhk5%, DeveloperModeHotkey, On
+}
+
 ; Checks the shared config for actual hotkey changes. The old implementation
 ; rewrote the hotkey table every 250 ms even when nothing changed. This keeps
 ; the same live-config behavior without continuously cycling hotkeys Off/On.
 LLARS_CheckHotkeyConfig()
 {
-	global LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4
+	global LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5
 
 	IniRead, lhk1, %LLARS_CONFIG_FILE%, Start Hotkey, hotkey
 	IniRead, lhk2, %LLARS_CONFIG_FILE%, Information Hotkey, hotkey
 	IniRead, lhk3, %LLARS_CONFIG_FILE%, color/coordinate/hotkey Hotkey, hotkey
 	IniRead, lhk4, %LLARS_CONFIG_FILE%, exit Hotkey, hotkey
+	IniRead, lhk5, %LLARS_CONFIG_FILE%, Developer Mode, hotkey
 
 	if (lhk1 = "ERROR" || lhk2 = "ERROR" || lhk3 = "ERROR" || lhk4 = "ERROR")
 		return
+
+	if (lhk5 = "ERROR")
+		lhk5 := ""
 
 	lhk1 := Trim(lhk1)
 	lhk2 := Trim(lhk2)
 	lhk3 := Trim(lhk3)
 	lhk4 := Trim(lhk4)
+	lhk5 := Trim(lhk5)
 
 	if (lhk1 != LLARS_lhk1 || lhk2 != LLARS_lhk2 || lhk3 != LLARS_lhk3)
 		SetLLARSHOTKEYS("On")
 
-	if (lhk4 != "" && lhk4 != LLARS_lhk4)
+	if (lhk4 != "")
 		LLARS_EnableExitHotkey(lhk4)
+
+	LLARS_EnableDeveloperHotkey(lhk5)
 }
 
 ; Summarizes the script-specific GUI configuration requirements shown
@@ -429,6 +551,7 @@ EnableHotkey()
 	Control, Enable,, Button2, LLARS ahk_class AutoHotkeyGUI
 	Control, Enable,, Button3, LLARS ahk_class AutoHotkeyGUI
 	SetLLARSHOTKEYS("On")
+	LLARS_EnableExitHotkey()
 }
 
 ; Disables only the Start control while the timed script is running.
@@ -470,7 +593,11 @@ LLARS_FindRoot()
 LLARS_Initialize()
 {
 	global LLARS_ROOT, LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE, LastLogTick
-	global LLARS_RUNNING, LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_CONTROLS_LOCKED
+	global LLARS_RUNNING, LLARS_PAUSED, LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5, LLARS_CONTROLS_LOCKED, LLARS_CHECKPOS_DISABLED
+	global LLARS_DeveloperActions, LLARS_DeveloperLastHotkey, LLARS_RunStartTick, LLARS_RUN_TYPE
+	global LLARS_DeveloperPixelWatchActive, LLARS_DeveloperDetectedPixelColor, LLARS_DeveloperPixelSource
+	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
+	global LLARS_DeveloperKeyboardHook, LLARS_DeveloperKeyboardCallback
 	global EstimationRunCount
 	global coordcount, frcount, LastClickTime, clickspot, scriptname
 
@@ -489,10 +616,25 @@ LLARS_Initialize()
 	LLARS_lhk2 := ""
 	LLARS_lhk3 := ""
 	LLARS_lhk4 := ""
+	LLARS_lhk5 := ""
 	LLARS_CONTROLS_LOCKED := false
 	LLARS_RUNNING := false
+	LLARS_PAUSED := false
+	LLARS_CHECKPOS_DISABLED := false
+	LLARS_DeveloperActions := ""
+	LLARS_DeveloperLastHotkey := "None"
+	LLARS_DeveloperPixelWatchActive := false
+	LLARS_DeveloperDetectedPixelColor := ""
+	LLARS_DeveloperPixelSource := ""
+	LLARS_DeveloperLastSleepValue := ""
+	LLARS_DeveloperLastSleepName := ""
+	LLARS_DeveloperKeyboardHook := 0
+	LLARS_DeveloperKeyboardCallback := 0
+	LLARS_RunStartTick := 0
+	LLARS_RUN_TYPE := "Not Started"
 	SetLLARSHOTKEYS("On")
 	LLARS_EnableExitHotkey()
+	LLARS_EnableDeveloperHotkey()
 	StartLogSession()
 	Log("STARTUP", "Script started")
 	DetectHiddenWindows, On
@@ -512,8 +654,205 @@ LLARS_Initialize()
 	EstimationRunCount := 1000
 	LLARS_CreateMainGUI()
 	OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
+	OnMessage(0x0100, "LLARS_DeveloperExitKey")
+	OnMessage(0x0104, "LLARS_DeveloperExitKey")
 	OnMessage(0x0201, "WM_LBUTTONDOWN")
+	OnMessage(0x0232, "WM_EXITSIZEMOVE")
+	LLARS_DeveloperInitializeKeyboardHook()
 	return true
+}
+
+; Stores a short in-memory history for the Developer Mode live action panel.
+; The history is intentionally limited and is never written to disk.
+LLARS_DeveloperInitializeKeyboardHook()
+{
+	global LLARS_DeveloperKeyboardHook, LLARS_DeveloperKeyboardCallback
+
+	if (LLARS_DeveloperKeyboardHook)
+		return
+
+	LLARS_DeveloperKeyboardCallback := RegisterCallback("LLARS_DeveloperKeyboardProc", "Fast")
+	if (!LLARS_DeveloperKeyboardCallback)
+		return
+
+	LLARS_DeveloperKeyboardHook := DllCall("SetWindowsHookEx"
+		, "Int", 13
+		, "Ptr", LLARS_DeveloperKeyboardCallback
+		, "Ptr", DllCall("GetModuleHandle", "Ptr", 0, "Ptr")
+		, "UInt", 0
+		, "Ptr")
+}
+
+LLARS_DeveloperKeyboardProc(nCode, wParam, lParam)
+{
+	global LLARS_RUNNING
+
+	if (nCode >= 0 && LLARS_RUNNING && (wParam = 0x0100 || wParam = 0x0104))
+	{
+		flags := NumGet(lParam + 0, 8, "UInt")
+
+		; LLKHF_INJECTED. Physical user keypresses are never handled or
+		; blocked here. Existing LLARS hotkeys, especially Exit, remain fully
+		; owned by the normal framework hotkey system.
+		if (flags & 0x10)
+		{
+			vkCode := NumGet(lParam + 0, 0, "UInt")
+			LLARS_DeveloperKeyPressed(vkCode)
+		}
+	}
+
+	return DllCall("CallNextHookEx"
+		, "Ptr", 0
+		, "Int", nCode
+		, "Ptr", wParam
+		, "Ptr", lParam
+		, "Ptr")
+}
+
+LLARS_DeveloperKeyPressed(vkCode)
+{
+	global LLARS_SCRIPT_DIR
+
+	keyName := GetKeyName("vk" . Format("{:02X}", vkCode))
+	if (keyName = "")
+		keyName := "VK" . Format("{:02X}", vkCode)
+
+	if keyName in LControl,RControl,Control,LShift,RShift,Shift,LAlt,RAlt,Alt,LWin,RWin
+		return
+
+	ConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
+	if FileExist(ConfigPath)
+	{
+		IniRead, sections, %ConfigPath%
+		if (sections != "ERROR")
+		{
+			Loop, Parse, sections, `n, `r
+			{
+				section := Trim(A_LoopField)
+				if (section = "")
+					continue
+
+				if (GetConfigType(ConfigPath, section) != "hotkey")
+					continue
+
+				IniRead, option, %ConfigPath%, %section%, option, true
+				option := Trim(option)
+				StringLower, optionLower, option
+				if (optionLower = "false")
+					continue
+
+				IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+				if (depends != "ERROR" && Trim(depends) != "")
+				{
+					depends := Trim(depends)
+					IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+					dependsOption := Trim(dependsOption)
+					StringLower, dependsOptionLower, dependsOption
+					if (dependsOptionLower = "false")
+						continue
+				}
+
+				IniRead, configuredHotkey, %ConfigPath%, %section%, hotkey, ERROR
+				configuredHotkey := Trim(configuredHotkey)
+				if (configuredHotkey = "ERROR" || configuredHotkey = "")
+					continue
+
+				compareKey := RegExReplace(configuredHotkey, "^[\$\*\~<>\^!+#]+")
+				if (compareKey = "")
+					continue
+
+				configuredVK := GetKeyVK(compareKey)
+				if (configuredVK = vkCode)
+				{
+					LLARS_DeveloperAction(section . " || " . keyName)
+					return
+				}
+			}
+		}
+	}
+
+	LLARS_DeveloperAction("Key Pressed || " . keyName)
+}
+
+LLARS_DeveloperAction(action)
+{
+	global LLARS_DeveloperActions
+
+	FormatTime, developerActionTime,, HH:mm:ss
+	developerActionLine := developerActionTime . "  " . action
+	if (LLARS_DeveloperActions = "")
+		LLARS_DeveloperActions := developerActionLine
+	else
+		LLARS_DeveloperActions .= "`n" . developerActionLine
+
+	developerActionCount := 0
+	Loop, Parse, LLARS_DeveloperActions, `n, `r
+		developerActionCount++
+
+	while (developerActionCount > 25)
+	{
+		developerActionBreak := InStr(LLARS_DeveloperActions, "`n")
+		if (!developerActionBreak)
+			break
+		LLARS_DeveloperActions := SubStr(LLARS_DeveloperActions, developerActionBreak + 1)
+		developerActionCount--
+	}
+}
+
+; Records a shared LLARS hotkey when the current label was entered by a hotkey.
+LLARS_DeveloperHotkey(action)
+{
+	global LLARS_DeveloperLastHotkey
+
+	if (A_ThisHotkey = "")
+		return
+
+	developerHotkey := A_ThisHotkey
+	StringReplace, developerHotkey, developerHotkey, $, , All
+	LLARS_DeveloperLastHotkey := developerHotkey . " - " . action
+	LLARS_DeveloperAction("Hotkey " . developerHotkey . " || " . action)
+}
+
+; Returns the live cursor position in RuneScape client coordinates and the
+; RGB pixel color directly under the cursor without changing LLARS CoordMode.
+LLARS_DeveloperMousePixel(ByRef mouseX, ByRef mouseY, ByRef pixelColor)
+{
+	mouseX := "--"
+	mouseY := "--"
+	pixelColor := "--"
+
+	VarSetCapacity(developerPoint, 8, 0)
+	if !DllCall("GetCursorPos", "Ptr", &developerPoint)
+		return
+
+	developerScreenX := NumGet(developerPoint, 0, "Int")
+	developerScreenY := NumGet(developerPoint, 4, "Int")
+
+	developerDC := DllCall("GetDC", "Ptr", 0, "Ptr")
+	if (developerDC)
+	{
+		developerColor := DllCall("GetPixel", "Ptr", developerDC, "Int", developerScreenX, "Int", developerScreenY, "UInt")
+		DllCall("ReleaseDC", "Ptr", 0, "Ptr", developerDC)
+		if (developerColor != 0xFFFFFFFF)
+		{
+			developerRed := developerColor & 0xFF
+			developerGreen := (developerColor >> 8) & 0xFF
+			developerBlue := (developerColor >> 16) & 0xFF
+			pixelColor := Format("0x{:02X}{:02X}{:02X}", developerRed, developerGreen, developerBlue)
+		}
+	}
+
+	WinGet, developerRuneScapeHWND, ID, RuneScape
+	if (!developerRuneScapeHWND)
+		return
+
+	NumPut(developerScreenX, developerPoint, 0, "Int")
+	NumPut(developerScreenY, developerPoint, 4, "Int")
+	if DllCall("ScreenToClient", "Ptr", developerRuneScapeHWND, "Ptr", &developerPoint)
+	{
+		mouseX := NumGet(developerPoint, 0, "Int")
+		mouseY := NumGet(developerPoint, 4, "Int")
+	}
 }
 
 ; Confirms RuneScape is available before allowing automation to begin.
@@ -556,6 +895,7 @@ LLARS_StartRun()
 	global StartTime, StartTimeStamp
 	global EstLoopStartTick, EstLoopTime, EstAverageLoopTime, EstFollowingAverageLoopTime, EstFollowingCompletedLoops, EstCompletedLoops
 	global EstFinalSleepActive, EstFinalSleepEndTick
+	global LLARS_RunStartTick, LLARS_RUN_TYPE
 
 	if (!LLARS_CheckGame())
 		return false
@@ -563,6 +903,7 @@ LLARS_StartRun()
 	if (ConfigError())
 		return false
 
+	LLARS_DeveloperHotkey("Start")
 	Log("START", "Start button/hotkey activated")
 	InputBox, runcount, Run How Many Times?,,,250,100
 	if (ErrorLevel)
@@ -591,10 +932,14 @@ LLARS_StartRun()
 	startcheck := 1
 	LLARS_ResetRunState()
 	LLARS_RUNNING := true
+	LLARS_PAUSED := false
 	SetLLARSHOTKEYS("On")
 	runcount3 := runcount
 	StartTime := A_TickCount
+	LLARS_RunStartTick := StartTime
+	LLARS_RUN_TYPE := "RunCount"
 	StartTimeStamp := A_Hour ":" A_Min ":" A_Sec
+	LLARS_DeveloperAction("Run Started || " . runcount3 . " runs")
 	EstLoopStartTick := 0
 	EstLoopTime := 0
 	EstAverageLoopTime := 0
@@ -626,8 +971,9 @@ LLARS_StartRun()
 ; Validates and starts a duration-based script using the user's run time.
 LLARS_StartTimerRun()
 {
-	global scriptname, LLARS_RUNNING
+	global scriptname, LLARS_RUNNING, LLARS_PAUSED
 	global timeToRunMinutes, timeToRunMS, endTime, startcheck
+	global LLARS_RunStartTick, LLARS_RUN_TYPE
 
 	if (!LLARS_CheckGame())
 		return false
@@ -635,6 +981,7 @@ LLARS_StartTimerRun()
 	if (ConfigError())
 		return false
 
+	LLARS_DeveloperHotkey("Start")
 	Log("START", "Start button/hotkey activated")
 	InputBox, timeToRunMinutes, Set Run Time, Enter how long to run in minutes.`nExample: 1 = 1 minute or 0.5 = 30 seconds.,,270,165
 	if (ErrorLevel)
@@ -654,6 +1001,10 @@ LLARS_StartTimerRun()
 	endTime := A_TickCount + timeToRunMS
 	startcheck := 1
 	LLARS_RUNNING := true
+	LLARS_PAUSED := false
+	LLARS_RunStartTick := A_TickCount
+	LLARS_RUN_TYPE := "Timer"
+	LLARS_DeveloperAction("Timed Run Started || " . timeToRunMinutes . " min")
 	LLARS_CreateTimerGUI()
 	GuiControl,, ScriptBlue, %scriptname%
 	GuiControl,, State3, Running
@@ -667,9 +1018,11 @@ LLARS_StartTimerRun()
 ; Clears the shared running state and restores controls after a timed run.
 LLARS_EndTimerRun()
 {
-	global LLARS_RUNNING
+	global LLARS_RUNNING, LLARS_RunStartTick
 
+	LLARS_DeveloperAction("Timed Run Completed")
 	LLARS_RUNNING := false
+	LLARS_RunStartTick := 0
 	EnableButton()
 	SetLLARSHOTKEYS()
 }
@@ -711,6 +1064,7 @@ LLARS_BeginLoop()
 	EstFinalSleepEndTick := 0
 	EstLoopStartTick := A_TickCount
 	Log("LOOP START", "Iteration=" A_Index " of " runcount)
+	LLARS_DeveloperAction("Loop Started || " . (count2 + 1) . "/" . runcount3)
 	IfWinNotActive, RuneScape
 	{
 		WinActivate, RuneScape
@@ -726,12 +1080,89 @@ LLARS_BeginLoop()
 	DisableButton()
 }
 
+; Finds the configured timer section that produced the current randomized
+; duration so Developer Mode can show the timer name, range, and actual value.
+LLARS_DeveloperTimerInfo(time, ByRef timerName, ByRef timerMin, ByRef timerMax)
+{
+	global LLARS_SCRIPT_DIR, sa1, sa2
+
+	timerName := ""
+	timerMin := ""
+	timerMax := ""
+	configFile := LLARS_SCRIPT_DIR . "\Config.ini"
+
+	if !FileExist(configFile)
+		return false
+
+	IniRead, developerSections, %configFile%
+	bestRange := ""
+
+	Loop, Parse, developerSections, `n, `r
+	{
+		sectionName := Trim(A_LoopField)
+		if (sectionName = "")
+			continue
+
+		IniRead, sectionMin, %configFile%, %sectionName%, min, ERROR
+		IniRead, sectionMax, %configFile%, %sectionName%, max, ERROR
+
+		if (sectionMin = "ERROR" || sectionMax = "ERROR")
+			continue
+		if sectionMin is not number
+			continue
+		if sectionMax is not number
+			continue
+
+		if (sa1 != "" && sa2 != "" && sectionMin = sa1 && sectionMax = sa2)
+		{
+			timerName := sectionName
+			timerMin := sectionMin
+			timerMax := sectionMax
+			return true
+		}
+
+		if (time >= sectionMin && time <= sectionMax)
+		{
+			sectionRange := sectionMax - sectionMin
+			if (bestRange = "" || sectionRange < bestRange)
+			{
+				bestRange := sectionRange
+				timerName := sectionName
+				timerMin := sectionMin
+				timerMax := sectionMax
+			}
+		}
+	}
+
+	return (timerName != "")
+}
+
+; Adds one compact configured-timer entry to Recent Framework Actions.
+LLARS_DeveloperTimerAction(time)
+{
+	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
+
+	if LLARS_DeveloperTimerInfo(time, timerName, timerMin, timerMax)
+	{
+		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . time)
+		LLARS_DeveloperLastSleepName := timerName
+	}
+	else
+	{
+		LLARS_DeveloperAction("Sleep || " . time . " ms")
+		LLARS_DeveloperLastSleepName := "Sleep"
+	}
+
+	LLARS_DeveloperLastSleepValue := time
+}
+
 ; Runs an ordinary configured sleep while the current-loop display remains
 ; predictive. LLARS_FinalSleep() performs the exact per-loop handoff.
 LLARS_EstimatedSleep(time)
 {
 	; Ordinary configured sleep. The GUI remains on the predictive loop
 	; estimate until the script explicitly reaches LLARS_FinalSleep().
+	LLARS_DeveloperTimerAction(time)
 	Sleep, %time%
 }
 
@@ -743,6 +1174,7 @@ LLARS_FinalSleep(time)
 
 	EstFinalSleepActive := true
 	EstFinalSleepEndTick := A_TickCount + time
+	LLARS_DeveloperTimerAction(time)
 	Gosub, UpdateEstimatedTime
 	Sleep, %time%
 }
@@ -771,6 +1203,7 @@ LLARS_EndLoop()
 	}
 
 	Gosub, UpdateEstimatedTime
+	LLARS_DeveloperAction("Loop Completed || " . EstCompletedLoops)
 }
 
 ; Finalizes a completed RunCount session, restores controls, and performs
@@ -785,7 +1218,9 @@ LLARS_RunComplete()
 	global AverageTimeMinutes, AverageTimeSecondsDisplay, percentage
 	global totalSleepTimeSeconds, TotalSleepHours, TotalSleepMinutes, TotalSleepSeconds
 	global chance
+	global LLARS_RunStartTick
 
+	LLARS_DeveloperAction("Run Completed || " . runcount3 . " runs")
 	Logout()
 	SetTimer, UpdateEstimatedTime, Off
 	GuiControl,, EstLoopRemaining, 0h 0m 0s
@@ -811,6 +1246,7 @@ LLARS_RunComplete()
 	IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance
 	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 	LLARS_RUNNING := false
+	LLARS_RunStartTick := 0
 	EnableButton()
 	SetLLARSHOTKEYS("On")
 }
@@ -1522,10 +1958,308 @@ LoggingCheck()
 
 ; Centralized logging functions used throughout the script to record
 ; events, timestamps, session state, and important actions.
+LLARS_DeveloperAntiAFKAction(Event, Details := "")
+{
+	global SleepAmount
+
+	eventUpper := Event
+	StringUpper, eventUpper, eventUpper
+
+	detailText := Trim(Details)
+	rangeText := ""
+	actualValue := ""
+
+	if RegExMatch(detailText, "i)(\d+)\D+(?:to|and|-)\D*(\d+)", timerRange)
+		rangeText := timerRange1 . "-" . timerRange2 . " ms"
+	else if RegExMatch(detailText, "i)(\d+)\s*-\s*(\d+)", timerRange)
+		rangeText := timerRange1 . "-" . timerRange2 . " ms"
+
+	if (rangeText != "")
+	{
+		rangeEndPos := InStr(detailText, timerRange2, false, 1)
+		if (rangeEndPos)
+		{
+			remainingDetails := SubStr(detailText, rangeEndPos + StrLen(timerRange2))
+			if RegExMatch(remainingDetails, "(\d+)", actualTimer)
+				actualValue := actualTimer1
+		}
+	}
+
+	if (actualValue = "" && SleepAmount != "")
+		actualValue := SleepAmount
+
+	if (InStr(eventUpper, "TIMER"))
+	{
+		if (rangeText != "" && actualValue != "")
+			LLARS_DeveloperAction("Anti-AFK Timer Set || " . rangeText . " || " . actualValue)
+		else if (rangeText != "")
+			LLARS_DeveloperAction("Anti-AFK Timer Set || " . rangeText)
+		else if RegExMatch(detailText, "i)(\d+)\s*ms", timerValue)
+			LLARS_DeveloperAction("Anti-AFK Timer Set || " . timerValue1 . " ms")
+		else
+			LLARS_DeveloperAction("Anti-AFK Timer Set")
+		return
+	}
+
+	if (InStr(eventUpper, "TRIGGER"))
+	{
+		LLARS_DeveloperAction("Anti-AFK Triggered")
+		return
+	}
+
+	if (InStr(eventUpper, "MOVE") || InStr(eventUpper, "MOUSE"))
+	{
+		LLARS_DeveloperAction("Mouse Moved")
+		return
+	}
+
+	if (InStr(eventUpper, "CLICK"))
+	{
+		LLARS_DeveloperAction("Mouse Clicked")
+		return
+	}
+
+	if (InStr(eventUpper, "KEY") || InStr(eventUpper, "HOTKEY"))
+	{
+		if RegExMatch(detailText, "i)(?:key|hotkey)\s*[=:|-]?\s*([^\s|,;]+)", keyValue)
+			LLARS_DeveloperAction("Key Pressed || " . keyValue1)
+		else
+			LLARS_DeveloperAction("Key Pressed")
+		return
+	}
+
+	if (InStr(detailText, "Mouse moved"))
+	{
+		LLARS_DeveloperAction("Mouse Moved")
+		return
+	}
+
+	if (InStr(detailText, "Mouse clicked"))
+	{
+		LLARS_DeveloperAction("Mouse Clicked")
+		return
+	}
+
+	if (detailText != "")
+	{
+		StringReplace, detailText, detailText, ANTI-AFK, , All
+		StringReplace, detailText, detailText, Anti-AFK, , All
+		detailText := Trim(detailText, " `t-|:")
+		if (StrLen(detailText) > 60)
+			detailText := SubStr(detailText, 1, 57) . "..."
+	}
+
+	if (detailText != "")
+		LLARS_DeveloperAction(detailText)
+	else
+		LLARS_DeveloperAction("Anti-AFK")
+}
+
+LLARS_DeveloperLoggedSleepAction(Event, Details := "")
+{
+	global SleepAmount
+	global LLARS_SCRIPT_DIR
+	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
+
+	eventText := Trim(Event)
+	detailText := Trim(Details)
+
+	if LLARS_DeveloperStatusOnly(eventText, detailText)
+		return
+
+	actualValue := ""
+	timerName := ""
+	timerMin := ""
+	timerMax := ""
+
+	if RegExMatch(detailText, "i)(\d+)\s*ms", loggedSleepValue)
+		actualValue := loggedSleepValue1
+	else if (SleepAmount != "")
+		actualValue := SleepAmount
+
+	if RegExMatch(detailText, "i)^\s*([^:|]+?)\s+(?:completed|triggered|started|set)\s*[:|-]?", loggedSleepName)
+		timerName := Trim(loggedSleepName1)
+
+	if (timerName = "" && InStr(eventText, "SLEEP"))
+	{
+		timerName := RegExReplace(eventText, "i)\s+WAIT$")
+		timerName := Trim(timerName)
+		StringLower, timerName, timerName
+		StringUpper, timerName, timerName, T
+	}
+
+	if (actualValue != "" && LLARS_DeveloperTimerInfo(actualValue, configuredName, configuredMin, configuredMax))
+	{
+		if (timerName = "" || timerName = "Wait" || timerName = "Sleep")
+			timerName := configuredName
+
+		timerMin := configuredMin
+		timerMax := configuredMax
+	}
+
+	if (timerName = "")
+		timerName := "Sleep"
+
+	; LLARS_EstimatedSleep() / LLARS_FinalSleep() already add the sleep when it
+	; begins. Many scripts also Log("SLEEP", ...) after it finishes. Suppress
+	; that one matching follow-up so Recent Framework Actions stays concise.
+	if (actualValue != "" && actualValue = LLARS_DeveloperLastSleepValue)
+	{
+		if (LLARS_DeveloperLastSleepName = timerName || LLARS_DeveloperLastSleepName = "Sleep" || timerName = "Sleep")
+		{
+			LLARS_DeveloperLastSleepValue := ""
+			LLARS_DeveloperLastSleepName := ""
+			return
+		}
+	}
+
+	if (actualValue != "" && timerMin != "" && timerMax != "")
+		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . actualValue)
+	else if (actualValue != "")
+		LLARS_DeveloperAction(timerName . " || " . actualValue . " ms")
+	else
+		LLARS_DeveloperAction(timerName)
+}
+
+LLARS_DeveloperScriptTimerAction(Details)
+{
+	global SleepAmount
+
+	detailText := Trim(Details)
+	if (detailText = "")
+		return
+
+	; Recent Framework Actions is for actions that actually occurred.
+	; Configuration/state messages such as a timer being disabled or stopped
+	; belong in the normal log, not the live action pane.
+	if RegExMatch(detailText, "i)\b(disabled|stopped|turned off|not enabled|inactive|skipped)\b")
+		return
+
+	timerName := detailText
+	timerName := RegExReplace(timerName, "i)\s+(timer\s+)?(triggered|rescheduled|scheduled|set|completed|started|fired).*$")
+	timerName := Trim(timerName, " `t-|:")
+
+	if (timerName = "")
+		timerName := "Timer"
+
+	if (SubStr(timerName, 1, 1) ~= "[a-z]")
+		StringUpper, timerName, timerName, T
+
+	if LLARS_DeveloperTimerInfo(SleepAmount, configuredName, timerMin, timerMax)
+	{
+		if (InStr(configuredName, timerName) || InStr(timerName, configuredName))
+			timerName := configuredName
+	}
+
+	if (SleepAmount != "" && LLARS_DeveloperTimerInfo(SleepAmount, configuredName, timerMin, timerMax))
+		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . SleepAmount)
+	else
+		LLARS_DeveloperAction(timerName)
+}
+
+LLARS_DeveloperColorConfigAction(Details)
+{
+	detailText := Trim(Details)
+	colorSection := detailText
+	colorValue := ""
+
+	pipePos := InStr(detailText, "|")
+	if (pipePos)
+		colorSection := Trim(SubStr(detailText, 1, pipePos - 1))
+
+	if RegExMatch(detailText, "i)(0x[0-9A-F]{6})", developerColorValue)
+		colorValue := developerColorValue1
+
+	if (colorSection = "")
+		colorSection := "Color"
+
+	if (colorValue != "")
+		LLARS_DeveloperAction("Color Config || " . colorSection . " || " . colorValue)
+	else
+		LLARS_DeveloperAction("Color Config || " . colorSection)
+}
+
+LLARS_DeveloperPixelDetectedAction()
+{
+	global color, currentColor
+	global LLARS_DeveloperPixelWatchActive, LLARS_DeveloperDetectedPixelColor, LLARS_DeveloperPixelSource
+
+	LLARS_DeveloperPixelWatchActive := true
+	LLARS_DeveloperDetectedPixelColor := ""
+	LLARS_DeveloperPixelSource := ""
+
+	if (currentColor != "")
+	{
+		LLARS_DeveloperDetectedPixelColor := currentColor
+		LLARS_DeveloperPixelSource := "currentColor"
+	}
+	else if (color != "")
+	{
+		LLARS_DeveloperDetectedPixelColor := color
+		LLARS_DeveloperPixelSource := "color"
+	}
+
+	LLARS_DeveloperAction("Pixel Detected")
+}
+
+LLARS_DeveloperCheckPixelReset()
+{
+	global color, currentColor
+	global LLARS_DeveloperPixelWatchActive, LLARS_DeveloperDetectedPixelColor, LLARS_DeveloperPixelSource
+
+	if (!LLARS_DeveloperPixelWatchActive)
+		return
+
+	if (LLARS_DeveloperDetectedPixelColor = "")
+		return
+
+	if (LLARS_DeveloperPixelSource = "currentColor")
+		developerCurrentPixel := currentColor
+	else if (LLARS_DeveloperPixelSource = "color")
+		developerCurrentPixel := color
+	else
+		return
+
+	if (developerCurrentPixel = "")
+		return
+
+	if (developerCurrentPixel = LLARS_DeveloperDetectedPixelColor)
+		return
+
+	LLARS_DeveloperPixelWatchActive := false
+	LLARS_DeveloperDetectedPixelColor := ""
+	LLARS_DeveloperPixelSource := ""
+	LLARS_DeveloperAction("Pixel Search Reset")
+}
+
+LLARS_DeveloperStatusOnly(Event, Details := "")
+{
+	statusText := Trim(Event . " " . Details)
+
+	if RegExMatch(statusText, "i)\b(disabled|not enabled|inactive|turned off|stopped|skipped)\b")
+		return true
+
+	return false
+}
+
 Log(Event, Details := "")
 {
 	global LogCount
 	global LLARS_SCRIPT_DIR
+
+	if !LLARS_DeveloperStatusOnly(Event, Details)
+	{
+		if (InStr(Event, "ANTI-AFK") = 1)
+			LLARS_DeveloperAntiAFKAction(Event, Details)
+		else if (Event = "TIMER")
+			LLARS_DeveloperScriptTimerAction(Details)
+		else if (InStr(Event, "SLEEP") || (Event = "WAIT" && InStr(Details, "sleep")))
+			LLARS_DeveloperLoggedSleepAction(Event, Details)
+		else if (Event = "COLOR CHANGED IN CONFIG")
+			LLARS_DeveloperColorConfigAction(Details)
+		else if (Event = "PIXEL DETECTED")
+			LLARS_DeveloperPixelDetectedAction()
+	}
 
 	if !LoggingCheck()
 		return
@@ -1589,6 +2323,7 @@ EndLogSession(Reason := "Normal Exit")
 NaturalClick(x, y, button := "left")
 {
 	MouseGetPos, startX, startY
+	LLARS_DeveloperAction("MouseMove || (" . startX . ", " . startY . ") > (" . x . ", " . y . ")")
 	dx := x - startX
 	dy := y - startY
 	distance := Sqrt((dx * dx) + (dy * dy))
@@ -1604,9 +2339,15 @@ NaturalClick(x, y, button := "left")
 			return
 		}
 		if (button = "right")
+		{
 			Click, Right
+			LLARS_DeveloperAction("NaturalClick || Right (" . x . ", " . y . ")")
+		}
 		else
+		{
 			Click
+			LLARS_DeveloperAction("NaturalClick || Left (" . x . ", " . y . ")")
+		}
 		return
 	}
 
@@ -1799,9 +2540,15 @@ NaturalClick(x, y, button := "left")
 		return
 	}
 	if (button = "right")
+	{
 		Click, Right
+		LLARS_DeveloperAction("NaturalClick || Right (" . x . ", " . y . ")")
+	}
 	else
+	{
 		Click
+		LLARS_DeveloperAction("NaturalClick || Left (" . x . ", " . y . ")")
+	}
 }
 
 ; Produces layered deterministic noise used to vary natural mouse movement.
