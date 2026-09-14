@@ -48,7 +48,7 @@ CalculateScriptRuntime()
 	EstConfiguredFirstLoopAverage := FirstLoopAverage
 	EstConfiguredFollowingLoopAverage := FollowingLoopAverage
 
-	if InStr(ScriptSection, "LLARS_FinalSleep(")
+	if (RegExMatch(ScriptSection, "im)^\s*LLARS_FinalSleep\(") || RegExMatch(ScriptSection, "im)^\s*LLARS_Sleep\(\s*""[^""]+""\s*,\s*true(?:\s*,[^)]*)?\)\s*(?:;.*)?$"))
 	{
 		IniRead, FinalSleepOption, %LLARS_CONFIG_FILE%, Random Sleep, option, false
 		StringLower, FinalSleepOption, FinalSleepOption
@@ -89,6 +89,8 @@ CalculateScriptRuntime()
 ; timing used by subsequent loops.
 ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, ByRef FollowingAverage, ByRef FirstMin, ByRef FirstMax, ByRef FollowingMin, ByRef FollowingMax, ByRef FirstFinalSleepID, ByRef FollowingFinalSleepID)
 {
+	global LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
+
 	FirstAverage := 0
 	FollowingAverage := 0
 	FirstMin := 0
@@ -111,9 +113,35 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		Index := A_Index
 		Line := Trim(Lines[Index])
 
+		; The standardized creator API keeps configured sleep reads in Core.
+		; Literal section names are intentionally required so runtime estimation
+		; remains deterministic and can resolve the exact Config.ini range.
+		if RegExMatch(Line, "i)^LLARS_Sleep\(\s*""([^""]+)""(?:\s*,\s*(true|false))?(?:\s*,\s*""([^""]+)""\s*)?\)\s*(?:;.*)?$", CreatorSleepMatch)
+		{
+			CreatorSection := CreatorSleepMatch1
+			CreatorScope := (CreatorSleepMatch3 != "") ? CreatorSleepMatch3 : "script"
+			if !LLARS_ConfigEnabled(CreatorSection, true, CreatorScope)
+				continue
+			if !LLARS_ConfigRange(CreatorSection, CreatorMin, CreatorMax, CreatorScope)
+				continue
+
+			Entry := {}
+			Entry.Min := CreatorMin + 0
+			Entry.Max := CreatorMax + 0
+			Entry.Average := (Entry.Min + Entry.Max) / 2
+			Entry.Line := Index
+			Entry.SourceLine := ScriptSectionLineOffset + Index
+			Entry.File := LLARS_ConfigPath(CreatorScope)
+			Entry.Section := CreatorSection
+			Entry.Weight := 1.0
+			Entry.IsEstimatedSleep := true
+			TimerEntries.Push(Entry)
+			continue
+		}
+
 		; The shared Random Sleep helper keeps its configuration reads in Core,
 		; so add its configured timer when the script calls LLARS_RandomSleep().
-		if RegExMatch(Line, "i)^LLARS_RandomSleep\(\s*\)\s*$")
+		if RegExMatch(Line, "i)^LLARS_RandomSleep\(\s*\)\s*(?:;.*)?$")
 		{
 			IniRead, RandomSleepMin, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
 			IniRead, RandomSleepMax, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
@@ -453,25 +481,50 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 ; the configured logout rectangle from LLARS Config.ini.
 ; Performs the shared end-of-run logout action when Logout is enabled.
 Logout(){
-	IniRead, option, %LLARS_CONFIG_FILE%, Logout, option
-	Log("LOGOUT CHECK", "Logout option = " option)
-	if option=true
+	if !LLARS_ConfigEnabled("Logout", false, "shared")
+		return false
+
+	runeScapeHwnd := LLARS_FindRuneScapeWindow()
+	if (!runeScapeHwnd)
 	{
-		Log("LOGOUT", "Logout initiated")
-		send {esc}
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
-		Sleep, %SleepAmount%
-		IniRead, x1, %LLARS_CONFIG_FILE%, Logout, xmin
-		IniRead, x2, %LLARS_CONFIG_FILE%, Logout, xmax
-		IniRead, y1, %LLARS_CONFIG_FILE%, Logout, ymin
-		IniRead, y2, %LLARS_CONFIG_FILE%, Logout, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		Log("LOGOUT CLICK", "Logout coordinates X=" x " Y=" y)
-		Click, %x%, %y%
-		Log("LOGOUT", "Logout click completed")
+		Log("LOGOUT BLOCKED", "RuneScape window was not found")
+		return false
 	}
+
+	if (WinExist("A") != runeScapeHwnd)
+	{
+		WinActivate, ahk_id %runeScapeHwnd%
+		WinWaitActive, ahk_id %runeScapeHwnd%,, 1
+	}
+
+	if (WinExist("A") != runeScapeHwnd)
+	{
+		Log("LOGOUT BLOCKED", "RuneScape could not be activated")
+		return false
+	}
+
+	Log("LOGOUT", "Logout initiated")
+	Send, {Esc}
+
+	; Logout owns its short menu delay. It must not depend on a script-specific
+	; [Sleep Short] section because Logout is a shared framework feature.
+	Random, SleepAmount, 1000, 3500
+	Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
+	Sleep, %SleepAmount%
+
+	if !LLARS_ConfigReadPoint("Logout", x, y, "shared")
+	{
+		Log("LOGOUT BLOCKED", "Logout coordinates are invalid or missing")
+		return false
+	}
+
+	Log("LOGOUT CLICK", "Logout coordinates X=" x " Y=" y)
+	if !NaturalClick(x, y)
+	{
+		Log("LOGOUT BLOCKED", "NaturalClick did not complete the logout click")
+		return false
+	}
+
+	Log("LOGOUT", "Logout click completed")
+	return true
 }

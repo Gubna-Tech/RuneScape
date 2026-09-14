@@ -5,6 +5,9 @@
 ; Loads the shared Core functions used by every LLARS script.
 #Include %A_LineFile%\..\LLARS_Core.ahk
 
+; Loads the standardized creator-facing API.
+#Include %A_LineFile%\..\LLARS_CreatorAPI.ahk
+
 ; Loads the main, RunCount, and Timer GUI builders.
 #Include %A_LineFile%\..\LLARS_GUI.ahk
 

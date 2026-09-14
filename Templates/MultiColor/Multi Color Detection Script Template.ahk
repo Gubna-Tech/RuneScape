@@ -8,7 +8,7 @@
 #InstallMouseHook
 SetBatchLines, -1
 
-LLARS_SCRIPT_TYPE := "MultiTimer"
+LLARS_SCRIPT_TYPE := "Timer"
 
 if !LLARS_FrameworkAvailable()
 	LLARS_FrameworkError()
@@ -22,6 +22,7 @@ Start:
 if (!LLARS_StartTimerRun())
 	return
 
+MultiColor_Setup()
 SetTimer, Countdown, 1000
 
 IfWinNotActive, RuneScape
@@ -29,7 +30,7 @@ IfWinNotActive, RuneScape
 	WinActivate, RuneScape
 }
 
-Gosub, MultiTimerSetup
+SetTimer, CheckPixel, 100
 
 return
 
@@ -49,7 +50,7 @@ if (RemainingTime > 0)
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-MultiTimer_StopTimers()
+SetTimer, Countdown, Off
 
 Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
@@ -62,63 +63,115 @@ Goto, EndMsg
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-MultiTimerSetup:
 
-; ============================================================
-; |     ENABLE / SCHEDULE EACH TIMER HERE                   |
-; ============================================================
-;
-; Duplicate this pattern for every independent timer your
-; script needs.
+; ================================================================
+; |     MULTI COLOR / MULTI LOCATION LOGIC                      |
+; ================================================================
+; The watched pixel may match any color section listed below.
+; Each completed trigger clicks the next location in sequence.
+; Add/remove section names here when expanding the template.
 
-TimerOneInterval := LLARS_TimerInterval("Timer One")
-if (TimerOneInterval > 0)
-	SetTimer, TimerOne, %TimerOneInterval%
-
-TimerTwoInterval := LLARS_TimerInterval("Timer Two")
-if (TimerTwoInterval > 0)
-	SetTimer, TimerTwo, %TimerTwoInterval%
-
-return
-
-
-TimerOne:
-if (!LLARS_RUNNING)
-	return
-
-; WRITE TIMER ONE ACTION HERE
-
-; Reschedule this timer using its configured random range.
-TimerOneInterval := LLARS_TimerInterval("Timer One")
-if (TimerOneInterval > 0)
-	SetTimer, TimerOne, %TimerOneInterval%
-else
-	SetTimer, TimerOne, Off
-
-return
-
-
-TimerTwo:
-if (!LLARS_RUNNING)
-	return
-
-; WRITE TIMER TWO ACTION HERE
-
-; Reschedule this timer using its configured random range.
-TimerTwoInterval := LLARS_TimerInterval("Timer Two")
-if (TimerTwoInterval > 0)
-	SetTimer, TimerTwo, %TimerTwoInterval%
-else
-	SetTimer, TimerTwo, Off
-
-return
-
-
-MultiTimer_StopTimers()
+MultiColor_Setup()
 {
-	SetTimer, Countdown, Off
-	SetTimer, TimerOne, Off
-	SetTimer, TimerTwo, Off
+	global MultiColorColorSections, MultiColorLocationSections
+	global MultiColorLocationIndex
+
+	MultiColorColorSections := ["Target Color One", "Target Color Two"]
+	MultiColorLocationSections := ["Action Location One", "Action Location Two"]
+	MultiColorLocationIndex := 1
+}
+
+
+CheckPixel:
+if (!LLARS_RUNNING)
+	return
+
+; Pixel coordinates are client-relative. Do not inspect another app if
+; the user has switched away from RuneScape.
+if !LLARS_IsRuneScapeActive()
+	return
+
+MatchedColorSection := MultiColor_FindMatchedColor()
+if (MatchedColorSection != "")
+{
+	; Stop detection while this trigger is handled.
+	SetTimer, CheckPixel, Off
+	LLARS_SetStatus("Waiting", MatchedColorSection)
+
+	; Standard configured delay before the action.
+	LLARS_Sleep("Sleep Timer")
+
+	if (!LLARS_RUNNING)
+		return
+
+	; Eternal Tree style location switching: click the current location,
+	; then advance so the next trigger uses the next configured location.
+	MultiColor_ClickNextLocation()
+
+	; Do not permit another trigger until the watched pixel leaves every
+	; configured target color.
+	SetTimer, ResetCheck, 100
+}
+
+return
+
+
+ResetCheck:
+if (!LLARS_RUNNING)
+	return
+
+if !LLARS_IsRuneScapeActive()
+	return
+
+if (MultiColor_FindMatchedColor() = "")
+{
+	SetTimer, ResetCheck, Off
+	SetTimer, CheckPixel, 100
+	LLARS_SetStatus("Running")
+}
+
+return
+
+
+MultiColor_FindMatchedColor()
+{
+	global MultiColorColorSections
+
+	for index, colorSection in MultiColorColorSections
+	{
+		if LLARS_PixelMatches("Pixel Coordinate", colorSection)
+			return colorSection
+	}
+
+	return ""
+}
+
+
+MultiColor_ClickNextLocation()
+{
+	global MultiColorLocationSections, MultiColorLocationIndex
+
+	if !IsObject(MultiColorLocationSections)
+		return false
+
+	locationCount := MultiColorLocationSections.Length()
+	if (locationCount < 1)
+		return false
+
+	if (MultiColorLocationIndex < 1 || MultiColorLocationIndex > locationCount)
+		MultiColorLocationIndex := 1
+
+	locationSection := MultiColorLocationSections[MultiColorLocationIndex]
+	LLARS_SetStatus("Running", locationSection)
+
+	if !LLARS_Click(locationSection)
+		return false
+
+	MultiColorLocationIndex++
+	if (MultiColorLocationIndex > locationCount)
+		MultiColorLocationIndex := 1
+
+	return true
 }
 
 ; ================================================================
@@ -134,7 +187,9 @@ EndMsg:
 hours := Floor(timeToRunMinutes / 60)
 minutes := Mod(timeToRunMinutes, 60)
 
-MultiTimer_StopTimers()
+SetTimer, Countdown, Off
+SetTimer, CheckPixel, Off
+SetTimer, ResetCheck, Off
 LLARS_EndTimerRun()
 Logout()
 

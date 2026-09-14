@@ -14,7 +14,7 @@ LLARS_CreateMainGUI()
 	global ConfigStatusHotkeysLabel, ConfigStatusCoordinatesLabel, ConfigStatusColorsLabel
 
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
-	Gui +LastFound +OwnDialogs +AlwaysOnTop
+	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
 	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
 	Gui, Font, s10 Bold
@@ -60,7 +60,7 @@ LLARS_CreateMainGUI()
 		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
 	}
 
-	WinSet, Transparent, %value%
+	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	LLARS_UpdateConfigStatus()
 	Gui, Show,w290 h337, LLARS
 
@@ -93,7 +93,7 @@ LLARS_CreateRunCountGUI()
 	SetLLARSHOTKEYS()
 	WinGetPos, X, Y,,, LLARS
 	Gui destroy
-	Gui +LastFound +OwnDialogs +AlwaysOnTop
+	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
 	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
 	Gui, Font, s10 Bold
@@ -141,7 +141,7 @@ LLARS_CreateRunCountGUI()
 	Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
 	}
 
-	WinSet, Transparent, %value%
+	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	Gui, Show, w290 h275, LLARS
 	WinMove, LLARS,, X, Y
 	count = 0
@@ -161,7 +161,7 @@ LLARS_CreateTimerGUI()
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
 	WinGetPos, X, Y,,, LLARS
 	Gui destroy
-	Gui +LastFound +OwnDialogs +AlwaysOnTop
+	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
 	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
 	Gui, Font, s10 Bold
@@ -194,7 +194,7 @@ LLARS_CreateTimerGUI()
 		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
 	}
 
-	WinSet, Transparent, %value%
+	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	Gui, Show, w290 h212, LLARS
 	WinMove, LLARS,, X, Y
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")

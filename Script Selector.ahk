@@ -25,7 +25,7 @@ if (!FileExist(A_ScriptDir . "\Core")
 	Gui Error: Add, Button, gDiscordError w150 x40 Center, Discord
 	Gui Error: Add, Button, gCloseError w150 x40 Center, Close Error
 
-	WinSet, ExStyle, ^0x80
+	Gui Error: +ToolWindow
 
 	Gui Error: -caption
 	Gui Error: Show, Center w230, File Error
@@ -78,7 +78,7 @@ Gui, Add, Button, gSelect w120 x150 Center, Select Script
 Gui, Add, Button, gClear w120 x150 Center, Clear Selection
 Gui, Add, Button, gExit w120 x150 Center, Close Selector
 Gui, Show, w420 h460 Center, Script Selector
-WinSet, ExStyle, ^0x80
+Gui, +ToolWindow
 
 ; ==================================================================================
 ; |     FUNCTION STORAGE     -     FUNCTION STORAGE     -     FUNCTION STORAGE     |
@@ -184,7 +184,7 @@ GuiBorderHard()
 	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 	Gui Border: Color, Red
 	
-	WinSet, ExStyle, ^0x80
+	Gui Border: +ToolWindow
 	
 	Gui Border: -caption
 	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
@@ -196,7 +196,7 @@ GuiBorderEasy()
 	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 	Gui Border: Color, Green
 	
-	WinSet, ExStyle, ^0x80
+	Gui Border: +ToolWindow
 	
 	Gui Border: -caption
 	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
@@ -208,7 +208,7 @@ GuiBorderIntermediate()
 	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 	Gui Border: Color, CC5500
 	
-	WinSet, ExStyle, ^0x80
+	Gui Border: +ToolWindow
 	
 	Gui Border: -caption
 	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
@@ -256,7 +256,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -274,7 +274,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -292,7 +292,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -310,7 +310,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -328,7 +328,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -346,7 +346,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -364,7 +364,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -382,7 +382,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -400,7 +400,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -418,7 +418,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -436,7 +436,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -454,7 +454,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -472,7 +472,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -490,7 +490,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -508,7 +508,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -526,7 +526,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -544,7 +544,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -562,7 +562,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -580,7 +580,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -598,7 +598,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -616,7 +616,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -634,7 +634,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -652,7 +652,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -670,7 +670,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -688,7 +688,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -706,7 +706,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -724,7 +724,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -742,7 +742,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -760,7 +760,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -778,7 +778,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -796,7 +796,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -814,7 +814,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -832,7 +832,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -850,7 +850,7 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -868,7 +868,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -886,7 +886,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -904,7 +904,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -922,7 +922,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -940,7 +940,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -958,7 +958,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -976,7 +976,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -994,7 +994,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1012,7 +1012,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1030,7 +1030,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1048,7 +1048,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1066,7 +1066,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1084,7 +1084,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1102,7 +1102,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1120,7 +1120,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1138,7 +1138,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1156,7 +1156,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1174,7 +1174,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1192,7 +1192,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1210,7 +1210,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1228,7 +1228,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1246,7 +1246,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1264,7 +1264,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1282,7 +1282,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1300,7 +1300,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1318,7 +1318,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1336,7 +1336,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1354,7 +1354,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1372,7 +1372,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1390,7 +1390,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1408,7 +1408,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1426,7 +1426,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1444,7 +1444,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1462,7 +1462,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1480,7 +1480,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1498,7 +1498,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1516,7 +1516,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1534,7 +1534,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1552,7 +1552,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1570,7 +1570,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1588,7 +1588,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1606,7 +1606,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1624,7 +1624,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1642,7 +1642,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1660,7 +1660,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1678,7 +1678,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1696,7 +1696,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1714,7 +1714,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1732,7 +1732,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1750,7 +1750,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1768,7 +1768,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1786,7 +1786,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1804,7 +1804,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1822,7 +1822,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1840,7 +1840,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1858,7 +1858,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1876,7 +1876,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1894,7 +1894,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
@@ -1912,7 +1912,7 @@ Case "Fire + Form - Portables":
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		WinSet, ExStyle, ^0x80
+		Gui Info: +ToolWindow
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()

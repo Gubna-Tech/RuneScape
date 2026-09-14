@@ -4,70 +4,77 @@
 
 ; Provides Escape-key shortcuts for closing the various secondary
 ; LLARS GUIs through the same close paths used by their Close buttons.
+; Only windows owned by this LLARS process are handled here so Escape in
+; RuneScape, message boxes, or unrelated applications is never intercepted.
 ~Esc::
-IfWinActive, Coordinates
+WinGet, LLARS_EscapeActivePID, PID, A
+if (LLARS_EscapeActivePID != DllCall("GetCurrentProcessId"))
+	Return
+
+IfWinActive, Coordinates ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
 	GoSub, close
 }
 
-Else IfWinActive, Timer
+Else IfWinActive, Timer ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
+	LLARS_DeveloperUIAction("Timer Configuration", "Closed")
 	Gui 5: Destroy
 	Gui 1: Show
 }
 
-Else IfWinActive, Information
+Else IfWinActive, Information ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseInfo
 }
 
-Else IfWinActive, Developer Mode
+Else IfWinActive, Developer Mode ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseDeveloperMode
 }
 
-Else IfWinActive, Combo
+Else IfWinActive, Combo ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
 	GoSub, closecombo
 }
 
-Else IfWinActive, Colors
+Else IfWinActive, Colors ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
 	GoSub, close1
 }
 
-Else IfWinActive, Hotkeys
+Else IfWinActive, Hotkeys ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
 	GoSub, close2
 }
 
-Else IfWinActive, Reset Configuration
+Else IfWinActive, Reset Configuration ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
 	GoSub, CloseResetConfig
 }
 
-Else IfWinActive, Multiple Client
+Else IfWinActive, Multiple Client ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseClient
 }
 
-Else IfWinActive, No Client Detected
+Else IfWinActive, No Client Detected ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseClient
 }
 
-Else IfWinActive, Config Error
+Else IfWinActive, Config Error ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseError
 }
 
-Else IfWinActive, Game Not Found
+Else IfWinActive, Game Not Found ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseGNF
 }
@@ -84,7 +91,7 @@ return
 UpdateCountdown:
 RemainingTime := EndTime - A_TickCount
 if (RemainingTime > 0)
-	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
+	GuiControl, 1:, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
 else
 	SetTimer, UpdateCountdown, Off
 
@@ -137,12 +144,12 @@ else
 if (EstLoopStartTick > 0)
 {
 	ElapsedLoopTime := A_TickCount - EstLoopStartTick
-	PredictiveLoopRemainingTime := EstimatedLoopTime - ElapsedLoopTime
+	PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment - ElapsedLoopTime
 }
 
 else
 {
-	PredictiveLoopRemainingTime := EstimatedLoopTime
+	PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment
 }
 
 if (PredictiveLoopRemainingTime < 0)
@@ -194,6 +201,7 @@ return
 
 ; Handles normal LLARS shutdown, saves the GUI position, closes the
 Combo:
+LLARS_DeveloperHotkey("Configuration")
 Gui 1: Hide
 DisableHotkey()
 Menu, Tray, NoIcon
@@ -224,19 +232,25 @@ else
 	comboHeight := 191
 }
 
-WinSet, ExStyle, ^0x80
+Gui Combo: +ToolWindow
 Gui Combo: -caption
 Gui Combo: Show, center w220 h%comboHeight%, Combo
+LLARS_DeveloperUIAction("Configuration")
 return
 
 ; Opens the optional script-owned Timer/configuration editor.
 LLARS_CustomComboTimer:
 if (LLARS_COMBO_TIMER_LABEL != "")
+{
+	LLARS_DeveloperUIAction("Configuration", "Closed")
+	LLARS_DeveloperUIAction("Timer Configuration")
 	GoSub, %LLARS_COMBO_TIMER_LABEL%
+}
 return
 
 ; Returns from the Combo menu to the main LLARS window.
 closecombo:
+LLARS_DeveloperUIAction("Configuration", "Closed")
 Gui Combo: Destroy
 Gui 1: Show
 EnableHotkey()
@@ -259,7 +273,7 @@ Gui 1: Hide
 Gui Combo: Destroy
 DisableHotkey()
 Gui Reset: Destroy
-Gui Reset: +LastFound +OwnDialogs +AlwaysOnTop
+Gui Reset: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSResetGuiHwnd
 Gui Reset: Font, s10 Bold
 resetConfigItems := {}
 resetSectionList := " ***** Make a Selection ***** "
@@ -303,8 +317,9 @@ Gui Reset: Add, Button, x165 y104 w145 h27 gResetAllConfig, Clear All
 Gui Reset: Add, Button, x10 y137 w300 h27 gCloseResetConfig, Cancel
 Gui Reset: -Caption
 Gui Reset: Show, w320 h174 Center, Reset Configuration
-WinSet, ExStyle, ^0x80
-WinSet, Transparent, %value%
+LLARS_DeveloperUIAction("Reset Configuration")
+Gui Reset: +ToolWindow
+WinSet, Transparent, %value%, ahk_id %LLARSResetGuiHwnd%
 return
 
 ; Enables the reset button only after a real, framework-recognized item
@@ -328,6 +343,7 @@ resetItem := resetConfigItems[resetSelection]
 resetSection := resetItem.section
 resetType := resetItem.type
 resetTypeDisplay := resetItem.typeDisplay
+LLARS_DeveloperUIAction("Reset Configuration", "Closed")
 Gui Reset: Destroy
 
 if !LLARS_ResetConfigItem("Config.ini", resetSection, resetType)
@@ -339,13 +355,14 @@ if !LLARS_ResetConfigItem("Config.ini", resetSection, resetType)
 }
 
 Log("CONFIG RESET", resetTypeDisplay " | " resetSection)
+LLARS_DeveloperAction("Config Reset || " . resetTypeDisplay . " || " . resetSection)
 LLARS_UpdateConfigStatus()
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
 Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----%resetTypeDisplay% [ %resetSection% ] has been reset in the Config.ini file`n----
-WinSet, ExStyle, ^0x80
+Gui 13u: +ToolWindow
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -378,6 +395,7 @@ for resetDisplay, resetItem in resetConfigItems
 if (resetCount = 0)
 	return
 
+LLARS_DeveloperUIAction("Reset Configuration", "Closed")
 Gui Reset: Destroy
 MsgBox, 36, Reset Configuration, Clear all saved Hotkeys, Coordinates, and Colors?`n`nOffsets, timers, options, ranges, and all other settings will remain unchanged.
 IfMsgBox, No
@@ -405,13 +423,14 @@ if !resetChanged
 	return
 }
 
+LLARS_DeveloperAction("Config Reset || Clear All")
 LLARS_UpdateConfigStatus()
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
 Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----All saved Hotkeys, Coordinates, and Colors have been reset in the Config.ini file`n----
-WinSet, ExStyle, ^0x80
+Gui 13u: +ToolWindow
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -434,6 +453,7 @@ return
 
 ; Cancels the reset workflow without changing Config.ini.
 CloseResetConfig:
+LLARS_DeveloperUIAction("Reset Configuration", "Closed")
 Gui Reset: Destroy
 Gui 1: Show
 EnableHotkey()
@@ -451,8 +471,9 @@ WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
 IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
 Gui 1: Hide
+LLARS_DeveloperUIAction("Configuration", "Closed")
 Gui Combo: Destroy
-Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 2: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSConfigGuiHwnd
 Gui 2: Font, s12 Bold cBlack
 Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
 Gui 2: Font, s10 Bold cGray
@@ -511,12 +532,14 @@ Gui, 2: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged, %
 Gui, 2: Add, Button, x60 y91 w170 h25 gClose, Close Coordinates
 Gui 2: -Caption
 Gui, 2: Show, w290 h126 Center, Coordinates
-WinSet, ExStyle, ^0x80
-WinSet, Transparent, %value%
+LLARS_DeveloperUIAction("Coordinates")
+Gui 2: +ToolWindow
+WinSet, Transparent, %value%, ahk_id %LLARSConfigGuiHwnd%
 return
 
 ; Closes the coordinate editor and returns to the main LLARS window.
 Close:
+LLARS_DeveloperUIAction("Coordinates", "Closed")
 Gui 2: Destroy
 Gui 1: Show
 EnableHotkey()
@@ -549,13 +572,13 @@ if (selectedSection = "pixel coordinate")
     Gui 11u: Font, cRed
     Gui 11u: Font, s16 bold
     Gui 11u: Add, Text, valertlabel center,----Right-click the pixel for [ %selectedSection% ]`n----
-    WinSet, ExStyle, ^0x80
+    Gui 11u: +ToolWindow
     Gui 11u: -caption
     Gui 11u: Show, NoActivate xcenter y0, BottomGUI
     Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
     Gui 11: Font, s16 bold
     Gui 11: Add, Text, vTone center,Right-click the pixel for [ %selectedSection% ]
-    WinSet, ExStyle, ^0x80
+    Gui 11: +ToolWindow
     Gui 11: -caption
     Gui 11: Show, NoActivate xcenter y9999, TopGUI
     wingetpos,,,,bottomH, BottomGUI
@@ -581,7 +604,7 @@ else
     Gui 11u: Font, cRed
     Gui 11u: Font, s16 bold
     Gui 11u: Add, Text, valertlabel center,----Right-click the top-left corner for [ %selectedSection% ]`n----
-    WinSet, ExStyle, ^0x80
+    Gui 11u: +ToolWindow
     Gui 11u: -caption
     Gui 11u: Show, NoActivate xcenter y0, BottomGUI
     Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
@@ -622,7 +645,7 @@ if GetKeyState("RButton", "P")
 		Gui 12u: Font, cRed
 		Gui 12u: Font, s16 bold
 		Gui 12u: Add, Text, valertlabel center,----Right-click the bottom-right corner for [ %selectedSection% ]`n----
-		WinSet, ExStyle, ^0x80
+		Gui 12u: +ToolWindow
 		Gui 12u: -caption
 		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
 		Gui 12: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
@@ -653,7 +676,7 @@ if GetKeyState("RButton", "P")
 		IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
 		IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
 		IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
-		LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . xmin . "-" . xmax . " || Y=" . ymin . "-" . ymax)
+		LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . xmin . "-" . xmax . " || Y=" . ymin . "-" . ymax, false)
 		Log("COORDINATES CHANGED", " %buttontext% | X=" xmin "-" xmax " | Y=" ymin "-" ymax)
 		if (ButtonText = "Logout")
 		{
@@ -662,7 +685,7 @@ if GetKeyState("RButton", "P")
 			Gui 13u: Font, cGreen
 			Gui 13u: Font, s16 bold
 			Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file`n----
-			WinSet, ExStyle, ^0x80
+			Gui 13u: +ToolWindow
 			Gui 13u: -caption
 			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
@@ -679,7 +702,7 @@ if GetKeyState("RButton", "P")
 			Gui 13u: Font, cGreen
 			Gui 13u: Font, s16 bold
 			Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
-			WinSet, ExStyle, ^0x80
+			Gui 13u: +ToolWindow
 			Gui 13u: -caption
 			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
@@ -699,6 +722,7 @@ if GetKeyState("RButton", "P")
 		LLARS_HideCoordinatePreview()
 		Gui 13: Destroy
 		Gui 13u: Destroy
+		LLARS_DeveloperUIAction("Coordinates", "Closed")
 		Gui, 2: Destroy
 		Gui, 1: Show
 		EnableHotkey()
@@ -728,7 +752,7 @@ if GetKeyState("RButton", "P")
 	Gui 13u: Font, cGreen
 	Gui 13u: Font, s16 bold
 	Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
-	WinSet, ExStyle, ^0x80
+	Gui 13u: +ToolWindow
 	Gui 13u: -caption
 	Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 	Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
@@ -743,11 +767,12 @@ if GetKeyState("RButton", "P")
 	SetTimer, CheckClicksPixel, Off
 	IniWrite, %x%, Config.ini, %ButtonText%, x
 	IniWrite, %y%, Config.ini, %ButtonText%, y
-	LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . x . " || Y=" . y)
+	LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . x . " || Y=" . y, false)
 	Log("COORDINATES CHANGED", "Pixel Coordinate | X=" x " | Y=" y)
 	Sleep, 1500
 	Gui 13: Destroy
 	Gui 13u: Destroy
+	LLARS_DeveloperUIAction("Coordinates", "Closed")
 	Gui, 2: Destroy
 	Gui, 1: Show
 	EnableHotkey()
@@ -834,8 +859,9 @@ WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
 IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
 Gui 1: Hide
+LLARS_DeveloperUIAction("Configuration", "Closed")
 Gui Combo: Destroy
-Gui 2: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 2: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSConfigGuiHwnd
 Gui 2: Font, s12 Bold cBlack
 Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
 Gui 2: Font, s10 Bold cGray
@@ -863,12 +889,14 @@ Gui, 2: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged1, 
 Gui, 2: Add, Button, x60 y91 w170 h25 gClose1, Close Colors
 Gui 2: -Caption
 Gui, 2: Show, w290 h126 Center, Colors
-WinSet, ExStyle, ^0x80
-WinSet, Transparent, %value%
+LLARS_DeveloperUIAction("Colors")
+Gui 2: +ToolWindow
+WinSet, Transparent, %value%, ahk_id %LLARSConfigGuiHwnd%
 return
 
 ; Closes the color editor and returns to the main LLARS GUI.
 Close1:
+LLARS_DeveloperUIAction("Colors", "Closed")
 Gui 2: Destroy
 Gui 1: Show
 EnableHotkey()
@@ -901,7 +929,7 @@ Gui 13u: Color, Green
 Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----%buttontext% has been updated in the Config.ini file`n----
-WinSet, ExStyle, ^0x80
+Gui 13u: +ToolWindow
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -918,6 +946,7 @@ WinMove, TopGUI,, , %topPOS%
 Sleep 1500
 Gui 13: Destroy
 Gui 13u: Destroy
+LLARS_DeveloperUIAction("Colors", "Closed")
 Gui, 2: Destroy
 Gui, 1: Show
 EnableHotkey()
@@ -939,8 +968,9 @@ WinGetPos, GUIxc, GUIyc,,,LLARS
 IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
 IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
 Gui 1: Hide
+LLARS_DeveloperUIAction("Configuration", "Closed")
 Gui Combo: Destroy
-Gui 3: +LastFound +OwnDialogs +AlwaysOnTop
+Gui 3: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSHotkeyGuiHwnd
 Gui 3: Font, s12 Bold cBlack
 Gui 3: Add, Text, x5 y5 w280 h25 Center, LLARS
 Gui 3: Font, s10 Bold cGray
@@ -1010,12 +1040,14 @@ Gui, 3: Add, Hotkey, x70 y109 w150 h23 vChosenHotkey gHotkeyChanged Center Disab
 Gui, 3: Add, Button, x60 y141 w170 h25 gClose2, Close Hotkeys
 Gui 3: -Caption
 Gui, 3: Show, w290 h176 Center, Hotkeys
-WinSet, ExStyle, ^0x80
-WinSet, Transparent, %value%
+LLARS_DeveloperUIAction("Hotkeys")
+Gui 3: +ToolWindow
+WinSet, Transparent, %value%, ahk_id %LLARSHotkeyGuiHwnd%
 return
 
 ; Closes the hotkey editor and returns to the main LLARS GUI.
 Close2:
+LLARS_DeveloperUIAction("Hotkeys", "Closed")
 Gui 3: Destroy
 Gui 1: Show
 EnableHotkey()
@@ -1094,7 +1126,7 @@ if !LLARS_IsValidConfigHotkey(ChosenHotkey)
 ; Use the locked section and configuration file instead of whatever
 ; the dropdown may currently be highlighting.
 IniWrite, %ChosenHotkey%, %selectedHotkeyConfigFile%, %selectedHotkeySection%, Hotkey
-LLARS_DeveloperAction("Hotkey Config || " . selectedHotkeySection . " || " . ChosenHotkey)
+LLARS_DeveloperAction("Hotkey Config || " . selectedHotkeySection . " || " . ChosenHotkey, false)
 if WinExist("Developer Mode ahk_class AutoHotkeyGUI")
 	Gosub, LLARS_DeveloperAutoRefresh
 if (selectedHotkeyConfigFile = LLARS_CONFIG_FILE)
@@ -1105,13 +1137,14 @@ if (selectedHotkeyConfigFile = LLARS_CONFIG_FILE)
 else
 	hotkeyConfigDisplay := "Config.ini"
 Log("HOTKEY CHANGED", "Hotkey = " ChosenHotkey)
+LLARS_DeveloperUIAction("Hotkeys", "Closed")
 Gui, 3: Destroy
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 Gui 13u: Color, Green
 Gui 13u: Font, cgreenhite
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %hotkeyConfigDisplay% file`n----
-WinSet, ExStyle, ^0x80
+Gui 13u: +ToolWindow
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -1202,6 +1235,7 @@ ExitApp
 ; Builds the Information window with current LLARS/script hotkeys,
 ; shared options, configuration shortcuts, and project links.
 Info:
+LLARS_DeveloperHotkey("Information")
 IniRead, logout, %LLARS_CONFIG_FILE%, Logout, option
 IniRead, sleepoption, %LLARS_CONFIG_FILE%, Random Sleep, option
 IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance
@@ -1334,14 +1368,16 @@ Gui 20: Add, Button, x60 y%developerModeY% w170 h25 gDeveloperMode, Developer Mo
 Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
 Gui 20: Add, Text, x10 y%closeDividerY% w270 h2 0x10
 Gui 20: Add, Button, x60 y%closeInfoY% w170 h29 gCloseInfo, Close Information
-WinSet, ExStyle, ^0x80
+Gui 20: +ToolWindow
 Gui 20: -caption
 Gui 20: Show, center w290 h%informationHeight%, Information
+LLARS_DeveloperUIAction("Information")
 return
 
 ; Closes the information window and restores the main LLARS GUI.
 CloseInfo:
 Gui 1: Default
+LLARS_DeveloperUIAction("Information", "Closed")
 Gui 20: Destroy
 Gui 1: Show
 return
@@ -1349,6 +1385,7 @@ return
 ; Opens the Discord link from the information GUI and returns to LLARS.
 discord:
 Gui 1: Default
+LLARS_DeveloperUIAction("Information", "Closed")
 Gui 20: Destroy
 Run, https://discord.gg/Wmmf65myPG
 Gui 1: Show
@@ -1360,8 +1397,16 @@ EnableHotkey()
 Run %LLARS_SCRIPT_DIR%\Config.ini
 return
 
+LLARS_DeveloperControlHotkeyReleaseTimer:
+if IsFunc("LLARS_DeveloperCheckControlHotkeyReleases")
+	LLARS_DeveloperCheckControlHotkeyReleases()
+else
+	SetTimer, LLARS_DeveloperControlHotkeyReleaseTimer, Off
+return
+
 DeveloperModeHotkey:
 LLARS_DeveloperHotkey("Developer Mode")
+LLARS_DeveloperUIAction("Developer Mode")
 Gosub, DeveloperModeDashboard
 return
 
@@ -1378,11 +1423,19 @@ return
 ; Opens the live Developer Mode dashboard directly from Information or the dedicated hotkey.
 DeveloperMode:
 EnableHotkey()
+LLARS_DeveloperUIAction("Information", "Closed")
 Gui 20: Destroy
+LLARS_DeveloperUIAction("Developer Mode")
 Gosub, DeveloperModeDashboard
 return
 
 DeveloperModeDashboard:
+if (LLARS_DeveloperLightweight)
+{
+	Gosub, DeveloperModeLightweightDashboard
+	return
+}
+
 Gui Dev: Destroy
 Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound
 
@@ -1424,7 +1477,7 @@ else if (developerRunType = "Timer" && LLARS_RUNNING)
 else
 	developerProgress := "--"
 
-LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor)
+LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor, developerInspectorStatus)
 LLARS_DeveloperCheckPixelReset()
 developerPixelTarget := LLARS_DeveloperPixelTarget()
 
@@ -1484,35 +1537,38 @@ Gui Dev: Add, Text, x220 y108 w200 h112 Center vDeveloperHotkeysText, %developer
 
 Gui Dev: Font, s10 Bold cBlack
 Gui Dev: Add, Text, x15 y258 w190 h20 Center, Mouse / Pixel
-Gui Dev: Add, GroupBox, x20 y281 w180 h124, Live Inspector
+Gui Dev: Add, GroupBox, x20 y281 w180 h148, Live Inspector
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Text, x32 y306 w74 h18, RuneScape X
-Gui Dev: Add, Text, x32 y330 w74 h18, RuneScape Y
-Gui Dev: Add, Text, x32 y354 w74 h18, Pixel RGB
-Gui Dev: Add, Text, x32 y378 w74 h18, Pixel Target
+Gui Dev: Add, Text, x32 y306 w74 h18, Game Status
+Gui Dev: Add, Text, x32 y330 w74 h18, RuneScape X
+Gui Dev: Add, Text, x32 y354 w74 h18, RuneScape Y
+Gui Dev: Add, Text, x32 y378 w74 h18, Pixel RGB
+Gui Dev: Add, Text, x32 y402 w74 h18, Pixel Target
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x108 y306 w80 h18 Right vDeveloperMouseXText, %developerMouseX%
-Gui Dev: Add, Text, x108 y330 w80 h18 Right vDeveloperMouseYText, %developerMouseY%
-Gui Dev: Add, Text, x108 y354 w80 h18 Right vDeveloperPixelColorText, %developerPixelColor%
-Gui Dev: Add, Text, x108 y378 w80 h18 Right vDeveloperPixelTargetText, %developerPixelTarget%
+Gui Dev: Add, Text, x108 y306 w80 h18 Right vDeveloperInspectorStatusText, %developerInspectorStatus%
+Gui Dev: Add, Text, x108 y330 w80 h18 Right vDeveloperMouseXText, %developerMouseX%
+Gui Dev: Add, Text, x108 y354 w80 h18 Right vDeveloperMouseYText, %developerMouseY%
+Gui Dev: Add, Text, x108 y378 w80 h18 Right vDeveloperPixelColorText, %developerPixelColor%
+Gui Dev: Add, Text, x108 y402 w80 h18 Right vDeveloperPixelTargetText, %developerPixelTarget%
 
 Gui Dev: Font, s10 Bold cBlack
 Gui Dev: Add, Text, x205 y258 w230 h20 Center, Configuration Diagnostics
-Gui Dev: Add, GroupBox, x210 y281 w220 h124, Script Config
+Gui Dev: Add, GroupBox, x210 y281 w220 h148, Script Config
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Edit, x220 y304 w200 h88 ReadOnly -TabStop +VScroll vDeveloperDiagnosticsText, %developerDiagnostics%
+Gui Dev: Add, Edit, x220 y304 w200 h112 ReadOnly -TabStop +VScroll vDeveloperDiagnosticsText, %developerDiagnostics%
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x20 y416 w410 h20 Center, Live Actions
-Gui Dev: Add, GroupBox, x20 y439 w410 h190, Recent Framework Actions
+Gui Dev: Add, Text, x20 y440 w410 h20 Center, Live Actions
+Gui Dev: Add, GroupBox, x20 y463 w410 h190, Recent Framework Actions
 Gui Dev: Font, s9 Norm cBlack
-Gui Dev: Add, Edit, x30 y462 w390 h154 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+Gui Dev: Add, Edit, x30 y486 w390 h154 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Button, x140 y641 w170 h27 gCloseDeveloperMode, Close
-WinSet, ExStyle, ^0x80
+Gui Dev: Add, Button, x52 y665 w165 h27 gToggleDeveloperLightweight, Lightweight Mode
+Gui Dev: Add, Button, x233 y665 w165 h27 gCloseDeveloperMode, Close
+Gui Dev: +ToolWindow
 Gui Dev: -Caption
-Gui Dev: Show, Center w450 h678, Developer Mode
+Gui Dev: Show, Center w450 h702, Developer Mode
 
 ; Restores the Developer Mode GUI to its previously saved screen position.
 IniRead, DeveloperGUIx, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
@@ -1526,6 +1582,54 @@ PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
 SetTimer, LLARS_DeveloperAutoRefresh, 750
 return
 
+DeveloperModeLightweightDashboard:
+Gui Dev: Destroy
+Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound
+
+developerActions := LLARS_DeveloperActions
+if (developerActions = "")
+	developerActions := "No framework actions recorded yet."
+
+Gui Dev: Font, s12 Bold cBlack
+Gui Dev: Add, Text, x5 y5 w440 h25 Center, LLARS
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x5 y29 w440 h18 Center, Developer Mode - Lightweight
+Gui Dev: Add, Text, x90 y49 w270 h2 0x10
+Gui Dev: Font, s9 Norm cGray
+Gui Dev: Add, Text, x15 y58 w420 h18 Center, %scriptname% - Same action log as Full Mode
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, GroupBox, x20 y82 w410 h218, Recent Framework Actions
+Gui Dev: Font, s9 Norm cBlack
+Gui Dev: Add, Edit, x30 y104 w390 h184 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Button, x52 y312 w165 h27 gToggleDeveloperLightweight, Full Mode
+Gui Dev: Add, Button, x233 y312 w165 h27 gCloseDeveloperMode, Close
+Gui Dev: +ToolWindow
+Gui Dev: -Caption
+Gui Dev: Show, Center w450 h350, Developer Mode
+
+IniRead, DeveloperGUIx, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
+IniRead, DeveloperGUIy, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+WinMove, Developer Mode,, %DeveloperGUIx%, %DeveloperGUIy%
+
+LLARS_EnableExitHotkey()
+LLARS_DeveloperLastActions := developerActions
+PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
+SetTimer, LLARS_DeveloperAutoRefresh, 750
+return
+
+ToggleDeveloperLightweight:
+SetTimer, LLARS_DeveloperAutoRefresh, Off
+WinGetPos, DeveloperGUIxc, DeveloperGUIyc,,, Developer Mode
+if (DeveloperGUIxc != "" && DeveloperGUIyc != "")
+{
+	IniWrite, %DeveloperGUIxc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
+	IniWrite, %DeveloperGUIyc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+}
+LLARS_DeveloperLightweight := !LLARS_DeveloperLightweight
+Gosub, DeveloperModeDashboard
+return
+
 ; Toggles Developer Mode without changing any normal LLARS runtime behavior.
 ; Refreshes only the live Developer Mode values so the window itself stays
 ; in place and does not flash or rebuild.
@@ -1533,6 +1637,20 @@ LLARS_DeveloperAutoRefresh:
 if !WinExist("Developer Mode ahk_class AutoHotkeyGUI")
 {
 	SetTimer, LLARS_DeveloperAutoRefresh, Off
+	return
+}
+
+if (LLARS_DeveloperLightweight)
+{
+	developerActions := LLARS_DeveloperActions
+	if (developerActions = "")
+		developerActions := "No framework actions recorded yet."
+	if (developerActions != LLARS_DeveloperLastActions)
+	{
+		GuiControl, Dev:, DeveloperActionsText, %developerActions%
+		LLARS_DeveloperLastActions := developerActions
+		PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
+	}
 	return
 }
 
@@ -1568,7 +1686,7 @@ else if (developerRunType = "Timer" && LLARS_RUNNING)
 else
 	developerProgress := "--"
 
-LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor)
+LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor, developerInspectorStatus)
 developerPixelTarget := LLARS_DeveloperPixelTarget()
 
 developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
@@ -1603,6 +1721,7 @@ GuiControl, Dev:, DeveloperProgressText, %developerProgress%
 GuiControl, Dev:, DeveloperElapsedText, %developerElapsed%
 GuiControl, Dev:, DeveloperControlsText, %developerControls%
 GuiControl, Dev:, DeveloperFinalSleepText, %developerFinalSleep%
+GuiControl, Dev:, DeveloperInspectorStatusText, %developerInspectorStatus%
 GuiControl, Dev:, DeveloperMouseXText, %developerMouseX%
 GuiControl, Dev:, DeveloperMouseYText, %developerMouseY%
 GuiControl, Dev:, DeveloperPixelColorText, %developerPixelColor%
@@ -1630,6 +1749,7 @@ SetTimer, LLARS_DeveloperAutoRefresh, Off
 WinGetPos, DeveloperGUIxc, DeveloperGUIyc,,, Developer Mode
 IniWrite, %DeveloperGUIxc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
 IniWrite, %DeveloperGUIyc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+LLARS_DeveloperUIAction("Developer Mode", "Closed")
 Gui Dev: Destroy
 Gui 1: Default
 Gui 1: Show
@@ -1939,7 +2059,7 @@ if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe")
 		Gui Client: Add, Text, center x5 w220,
 		Gui Client: Add, Button, gJagex w150 x40 center, Jagex
 		Gui Client: Add, Button, gRuneScape w150 x40 center, RuneScape
-		WinSet, ExStyle, ^0x80
+		Gui Client: +ToolWindow
 		Gui Client: -caption
 		Gui Client: Show, center w230, Multiple Client
 		return
@@ -1975,7 +2095,7 @@ else
 	Gui Client: Add, Text, Center w220 x5, Please ensure that RuneScape is open before attempting to start the script again.
 	Gui Client: Add, Text, center x5 w220,
 	Gui Client: Add, Button, gCloseClient w150 x40 center, Close Error
-	WinSet, ExStyle, ^0x80
+	Gui Client: +ToolWindow
 	Gui Client: -caption
 	Gui Client: Show, center w230, No Client Detected
 	return
