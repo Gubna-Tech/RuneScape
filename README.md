@@ -73,11 +73,6 @@ If you haven't installed AutoHotkey yet, you can download the required v1.1.37.0
   <a href="https://www.autohotkey.com/download/1.1/AutoHotkey_1.1.37.02_setup.exe">AutoHotkey v1.1.37.02 Download</a>
 </p>
 
-## Free Open Source Software
-
-This software is distributed as Free Open Source Software (FOSS), which means it is available for use, modification, and distribution under an open-source license. As a FOSS project, this software will never require a one-time purchase fee or impose any monthly subscription costs. You are free to use and modify the software according to the terms of the applicable license.
-
-
 # Notice: Scripts Designed for RuneScape3 Evolution of Combat (EoC)
 
 *The primary purpose of the Gubna's Script Support Discord Server is to share updates and provide information about recent developments, distinct from the usage of GitHub for the same purpose.*
