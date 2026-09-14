@@ -181,7 +181,7 @@ Gui 5: Add, Text, center x5 w190, Maximum click timer
 Gui 5: Add, Edit, vMaxEdit center x50 w100, % sa2
 Gui 5: Add, Text,,
 Gui 5: Add, Button, Default gAutoClickerTimerSave x50 w100, Save Timer
-WinSet, ExStyle, ^0x80
+Gui 5: +ToolWindow
 Gui 5: -caption
 Gui 5: Show, center w200, Timer
 return
@@ -227,7 +227,7 @@ Gui 13u: Color, Green
 Gui 13u: Font, cGreen
 Gui 13u: Font, s16 bold
 Gui 13u: Add, Text, valertlabel center, ----Timer has been updated in the Config.ini file`n----
-WinSet, ExStyle, ^0x80
+Gui 13u: +ToolWindow
 Gui 13u: -caption
 Gui 13u: Show, NoActivate xcenter y0, BottomGUI
 Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -235,7 +235,7 @@ Gui 13: Color, White
 Gui 13: Font, cGreen
 Gui 13: Font, s16 bold
 Gui 13: Add, Text, vTthree center, Timer has been updated in the Config.ini file
-WinSet, ExStyle, ^0x80
+Gui 13: +ToolWindow
 Gui 13: -caption
 Gui 13: Show, NoActivate xcenter y9999, TopGUI
 WinGetPos,,,,bottomH, BottomGUI
