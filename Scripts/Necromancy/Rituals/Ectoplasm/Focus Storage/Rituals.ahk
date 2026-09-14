@@ -156,8 +156,6 @@ Loop, %runcount%
 
 	If (firstrun = 1)
 	{
-		++count
-		++count2
 		firstrun := 0
 
 		IfWinNotActive, RuneScape
