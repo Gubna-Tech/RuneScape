@@ -15,6 +15,14 @@
   </a>
 </p>
 
+# What is LLARS?
+
+**LLARS** stands for **L**ocal **L**ibrary of **A**utomated **R**outines and **S**cripts.
+
+LLARS is a free and open-source AutoHotkey framework and script-building toolkit designed for **RuneScape 3 Evolution of Combat (EoC)**. It provides a shared framework, reusable functions, configuration system, GUI tools, and supporting libraries for creating and running LLARS-compatible scripts.
+
+LLARS is designed both for users who want to configure and run existing scripts and for script creators who want to build, maintain, and expand their own automation using the LLARS framework.
+
 # Important Note for Script Use
 
 ### *Please be aware that you do not need to make changes to the script itself, only to the LLARS Config and Config files that have been provided.*
