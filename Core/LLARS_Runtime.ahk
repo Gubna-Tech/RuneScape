@@ -110,6 +110,33 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 	{
 		Index := A_Index
 		Line := Trim(Lines[Index])
+
+		; The shared Random Sleep helper keeps its configuration reads in Core,
+		; so add its configured timer when the script calls LLARS_RandomSleep().
+		if RegExMatch(Line, "i)^LLARS_RandomSleep\(\s*\)\s*$")
+		{
+			IniRead, RandomSleepMin, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
+			IniRead, RandomSleepMax, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
+			if (RandomSleepMin != "ERROR" && RandomSleepMax != "ERROR" && RandomSleepMin != "" && RandomSleepMax != "")
+			{
+				if (RandomSleepMin + 0 >= 0 && RandomSleepMax + 0 >= RandomSleepMin + 0)
+				{
+					Entry := {}
+					Entry.Min := RandomSleepMin + 0
+					Entry.Max := RandomSleepMax + 0
+					Entry.Average := (Entry.Min + Entry.Max) / 2
+					Entry.Line := Index
+					Entry.SourceLine := ScriptSectionLineOffset + Index
+					Entry.File := LLARS_CONFIG_FILE
+					Entry.Section := "Random Sleep"
+					Entry.Weight := 1.0
+					Entry.IsEstimatedSleep := false
+					TimerEntries.Push(Entry)
+				}
+			}
+			continue
+		}
+
 		if (!RegExMatch(Line, "i)^IniRead\s*,\s*\w+\s*,\s*([^,]+)\s*,\s*([^,]+)\s*,\s*min\s*$", Match))
 			continue
 		ConfigFile := Trim(Match1)
@@ -360,8 +387,10 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		{
 			ConfigFile := Entry.File
 			ConfigSection := Entry.Section
+			IniRead, RandomSleepOption, %ConfigFile%, %ConfigSection%, option, false
+			StringLower, RandomSleepOption, RandomSleepOption
 			IniRead, Chance, %ConfigFile%, %ConfigSection%, chance, 0
-			if (Chance = "" || Chance + 0 < 0 || Chance + 0 > 100)
+			if (RandomSleepOption != "true" || Chance = "" || Chance + 0 < 0 || Chance + 0 > 100)
 				Chance := 0
 			Entry.Weight := (Chance + 0) / 100
 		}

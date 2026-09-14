@@ -82,26 +82,11 @@ return
 
 ; Updates the temporary Random Sleep countdown shown in the status area.
 UpdateCountdown:
-global LLARS_DeveloperLastRandomSleepEndTime
-
 RemainingTime := EndTime - A_TickCount
 if (RemainingTime > 0)
-{
 	GuiControl,, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
-
-	if (EndTime != LLARS_DeveloperLastRandomSleepEndTime)
-	{
-		IniRead, developerRandomSleepMin, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
-		IniRead, developerRandomSleepMax, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
-
-		if (developerRandomSleepMin != "ERROR" && developerRandomSleepMax != "ERROR")
-			LLARS_DeveloperAction("Random Sleep || " . RandomSleepAmount . " ms || " . developerRandomSleepMin . "-" . developerRandomSleepMax . " ms")
-		else
-			LLARS_DeveloperAction("Random Sleep || " . RandomSleepAmount . " ms")
-
-		LLARS_DeveloperLastRandomSleepEndTime := EndTime
-	}
-}
+else
+	SetTimer, UpdateCountdown, Off
 
 return
 
