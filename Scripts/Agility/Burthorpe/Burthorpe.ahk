@@ -37,50 +37,50 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Agility", "Log Beam Prime")
 		LLARS_Click("Log Beam Prime")
 
-		LLARS_Sleep("Log Beam Prime")
+		LLARS_Sleep("Sleep Log Beam Prime")
 
 	}
 	else
 	{
+		LLARS_SetStatus("Agility", "Log Beam Main")
 		LLARS_Click("Log Beam Main")
 
-		LLARS_Sleep("Log Beam Main")
+		LLARS_Sleep("Sleep Log Beam Main")
 
 	}
 
+	LLARS_SetStatus("Agility", "Wall")
 	LLARS_Click("Wall")
 
-	LLARS_Sleep("Wall")
+	LLARS_Sleep("Sleep Wall")
 
+	LLARS_SetStatus("Agility", "Balancing Ledge")
 	LLARS_Click("Balancing Ledge")
 
-	LLARS_Sleep("Balancing Ledge")
+	LLARS_Sleep("Sleep Balancing Ledge")
 
+	LLARS_SetStatus("Agility", "Obstacle low wall")
 	LLARS_Click("Obstacle low wall")
 
-	LLARS_Sleep("Obstacle low wall")
+	LLARS_Sleep("Sleep Obstacle low wall")
 
+	LLARS_SetStatus("Agility", "Rope swing")
 	LLARS_Click("Rope swing")
 
-	LLARS_Sleep("Rope swing")
+	LLARS_Sleep("Sleep Rope swing")
 
+	LLARS_SetStatus("Agility", "Monkey bars")
 	LLARS_Click("Monkey bars")
 
-	LLARS_Sleep("Monkey bars")
+	LLARS_Sleep("Sleep Monkey bars")
 
+	LLARS_SetStatus("Agility", "Ledge")
 	LLARS_Click("Ledge")
 
-	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-	IniRead, sa1, Config.ini, Ledge, min
-	IniRead, sa2, Config.ini, Ledge, max
-	Random, SleepAmount, %sa1%, %sa2%
-	if (LLARS_RandomSleepThisLoop)
-		LLARS_EstimatedSleep(SleepAmount)
-	else
-		LLARS_FinalSleep(SleepAmount)
+	LLARS_Sleep("Sleep Ledge", !LLARS_RandomSleepRoll())
 
 	LLARS_RandomSleep()
 }

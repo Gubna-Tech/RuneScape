@@ -37,6 +37,7 @@ Run(ctx)
 
 	LLARS_RandomSleep()
 
+	LLARS_SetStatus("Teleporting", "Teleport")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Teleport", true)

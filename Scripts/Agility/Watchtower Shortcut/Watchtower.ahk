@@ -37,6 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Agility", "Trellis Prime")
 		LLARS_Click("Trellis Prime")
 
 		LLARS_Sleep("Sleep Climb 1")
@@ -44,23 +45,17 @@ Run(ctx)
 	}
 	else
 	{
+		LLARS_SetStatus("Agility", "Trellis Main")
 		LLARS_Click("Trellis Main")
 
 		LLARS_Sleep("Sleep Climb 2")
 
 	}
 
+	LLARS_SetStatus("Agility", "Ladder")
 	LLARS_Click("Ladder")
 
-	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-	IniRead, sa1, Config.ini, Sleep Ladder, min
-	IniRead, sa2, Config.ini, Sleep Ladder, max
-	Random, SleepAmount, %sa1%, %sa2%
-	if (LLARS_RandomSleepThisLoop)
-		LLARS_EstimatedSleep(SleepAmount)
-	else
-		LLARS_FinalSleep(SleepAmount)
+	LLARS_Sleep("Sleep Ladder", !LLARS_RandomSleepRoll())
 
 	LLARS_RandomSleep()
 }

@@ -37,52 +37,52 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Agility", "Rope swing prime")
 		LLARS_Click("Rope swing prime")
 
-		LLARS_Sleep("Rope swing prime")
+		LLARS_Sleep("Sleep Rope swing prime")
 
 	}
 	else
 	{
 		; Make sure RuneScape is active before continuing.
 
+		LLARS_SetStatus("Agility", "Rope swing Main")
 		LLARS_Click("Rope swing Main")
 
-		LLARS_Sleep("Rope swing Main")
+		LLARS_Sleep("Sleep Rope swing Main")
 
 	}
 
+	LLARS_SetStatus("Agility", "Log balance")
 	LLARS_Click("Log balance")
 
-	LLARS_Sleep("Log balance")
+	LLARS_Sleep("Sleep Log balance")
 
+	LLARS_SetStatus("Agility", "Obstacle net")
 	LLARS_Click("Obstacle net")
 
-	LLARS_Sleep("Obstacle net")
+	LLARS_Sleep("Sleep Obstacle net")
 
+	LLARS_SetStatus("Agility", "Balancing ledge")
 	LLARS_Click("Balancing ledge")
 
-	LLARS_Sleep("Balancing ledge")
+	LLARS_Sleep("Sleep Balancing ledge")
 
+	LLARS_SetStatus("Agility", "Ladder")
 	LLARS_Click("Ladder")
 
-	LLARS_Sleep("Ladder")
+	LLARS_Sleep("Sleep Ladder")
 
+	LLARS_SetStatus("Agility", "Crumbling Wall 1")
 	LLARS_Click("Crumbling Wall 1")
 
-	LLARS_Sleep("Crumbling Wall 1")
+	LLARS_Sleep("Sleep Crumbling Wall 1")
 
+	LLARS_SetStatus("Agility", "Crumbling Wall 2")
 	LLARS_Click("Crumbling Wall 2")
 
-	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-	IniRead, sa1, Config.ini, Crumbling Wall 2, min
-	IniRead, sa2, Config.ini, Crumbling Wall 2, max
-	Random, SleepAmount, %sa1%, %sa2%
-	if (LLARS_RandomSleepThisLoop)
-		LLARS_EstimatedSleep(SleepAmount)
-	else
-		LLARS_FinalSleep(SleepAmount)
+	LLARS_Sleep("Sleep Crumbling Wall 2", !LLARS_RandomSleepRoll())
 
 	LLARS_RandomSleep()
 }

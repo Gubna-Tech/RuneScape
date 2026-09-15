@@ -37,86 +37,95 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Agility", "Fallen Palm Tree prime")
 		LLARS_Click("Fallen Palm Tree prime")
 
-		LLARS_Sleep("Fallen Palm Tree prime")
+		LLARS_Sleep("Sleep Fallen Palm Tree prime")
 
 	}
 	else
 	{
+		LLARS_SetStatus("Agility", "Fallen Palm Tree Main")
 		LLARS_Click("Fallen Palm Tree Main")
 
-		LLARS_Sleep("Fallen Palm Tree Main")
+		LLARS_Sleep("Sleep Fallen Palm Tree Main")
 
 	}
 
+	LLARS_SetStatus("Agility", "Fallen Palm Tree 1")
 	LLARS_Click("Fallen Palm Tree 1")
 
-	LLARS_Sleep("Fallen Palm Tree 1")
+	LLARS_Sleep("Sleep Fallen Palm Tree 1")
 
+	LLARS_SetStatus("Agility", "Rope Ladder")
 	LLARS_Click("Rope Ladder")
 
-	LLARS_Sleep("Rope Ladder")
+	LLARS_Sleep("Sleep Rope Ladder")
 
+	LLARS_SetStatus("Agility", "Gap 1")
 	LLARS_Click("Gap 1")
 
-	LLARS_Sleep("Gap 1")
+	LLARS_Sleep("Sleep Gap 1")
 
+	LLARS_SetStatus("Agility", "Stone Pillar")
 	LLARS_Click("Stone Pillar")
 
-	LLARS_Sleep("Stone Pillar")
+	LLARS_Sleep("Sleep Stone Pillar")
 
+	LLARS_SetStatus("Agility", "Rock Wall")
 	LLARS_Click("Rock Wall")
 
-	LLARS_Sleep("Rock Wall")
+	LLARS_Sleep("Sleep Rock Wall")
 
+	LLARS_SetStatus("Agility", "Fallen Palm Tree 2")
 	LLARS_Click("Fallen Palm Tree 2")
 
-	LLARS_Sleep("Fallen Palm Tree 2")
+	LLARS_Sleep("Sleep Fallen Palm Tree 2")
 
+	LLARS_SetStatus("Agility", "Small Gap")
 	LLARS_Click("Small Gap")
 
-	LLARS_Sleep("Small Gap")
+	LLARS_Sleep("Sleep Small Gap")
 
+	LLARS_SetStatus("Agility", "Medium Gap")
 	LLARS_Click("Medium Gap")
 
-	LLARS_Sleep("Medium Gap")
+	LLARS_Sleep("Sleep Medium Gap")
 
+	LLARS_SetStatus("Agility", "Fallen Palm Tree 3")
 	LLARS_Click("Fallen Palm Tree 3")
 
-	LLARS_Sleep("Fallen Palm Tree 3")
+	LLARS_Sleep("Sleep Fallen Palm Tree 3")
 
+	LLARS_SetStatus("Agility", "Collapsed Walls")
 	LLARS_Click("Collapsed Walls")
 
-	LLARS_Sleep("Collapsed Walls")
+	LLARS_Sleep("Sleep Collapsed Walls")
 
+	LLARS_SetStatus("Agility", "Large Rock 1")
 	LLARS_Click("Large Rock 1")
 
-	LLARS_Sleep("Large Rock 1")
+	LLARS_Sleep("Sleep Large Rock 1")
 
+	LLARS_SetStatus("Agility", "Ledge 1")
 	LLARS_Click("Ledge 1")
 
-	LLARS_Sleep("Ledge 1")
+	LLARS_Sleep("Sleep Ledge 1")
 
+	LLARS_SetStatus("Agility", "Gap 2")
 	LLARS_Click("Gap 2")
 
-	LLARS_Sleep("Gap 2")
+	LLARS_Sleep("Sleep Gap 2")
 
+	LLARS_SetStatus("Agility", "Ledge 2")
 	LLARS_Click("Ledge 2")
 
-	LLARS_Sleep("Ledge 2")
+	LLARS_Sleep("Sleep Ledge 2")
 
+	LLARS_SetStatus("Agility", "Large Rock 2")
 	LLARS_Click("Large Rock 2")
 
-	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-	IniRead, sa1, Config.ini, Large Rock 2, min
-	IniRead, sa2, Config.ini, Large Rock 2, max
-	Random, SleepAmount, %sa1%, %sa2%
-	if (LLARS_RandomSleepThisLoop)
-		LLARS_EstimatedSleep(SleepAmount)
-	else
-		LLARS_FinalSleep(SleepAmount)
+	LLARS_Sleep("Sleep Large Rock 2", !LLARS_RandomSleepRoll())
 
 	LLARS_RandomSleep()
 }

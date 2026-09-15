@@ -37,44 +37,42 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Agility", "Obstacle Pipe Prime")
 		LLARS_Click("Obstacle Pipe Prime")
 
-		LLARS_Sleep("Obstacle Pipe Prime")
+		LLARS_Sleep("Sleep Obstacle Pipe Prime")
 
 	}
 	else
 	{
 		LLARS_Sleep("Sleep Brief")
 
+		LLARS_SetStatus("Agility", "Obstacle Pipe Main")
 		LLARS_Click("Obstacle Pipe Main")
 
-		LLARS_Sleep("Obstacle Pipe Main")
+		LLARS_Sleep("Sleep Obstacle Pipe Main")
 
 	}
 
+	LLARS_SetStatus("Agility", "Ropeswing")
 	LLARS_Click("Ropeswing")
 
-	LLARS_Sleep("Ropeswing")
+	LLARS_Sleep("Sleep Ropeswing")
 
+	LLARS_SetStatus("Agility", "Stepping Stone")
 	LLARS_Click("Stepping Stone")
 
-	LLARS_Sleep("Stepping Stone")
+	LLARS_Sleep("Sleep Stepping Stone")
 
+	LLARS_SetStatus("Agility", "Log Balance")
 	LLARS_Click("Log Balance")
 
-	LLARS_Sleep("Log Balance")
+	LLARS_Sleep("Sleep Log Balance")
 
+	LLARS_SetStatus("Agility", "Cliffside")
 	LLARS_Click("Cliffside")
 
-	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-	IniRead, sa1, Config.ini, Cliffside, min
-	IniRead, sa2, Config.ini, Cliffside, max
-	Random, SleepAmount, %sa1%, %sa2%
-	if (LLARS_RandomSleepThisLoop)
-		LLARS_EstimatedSleep(SleepAmount)
-	else
-		LLARS_FinalSleep(SleepAmount)
+	LLARS_Sleep("Sleep Cliffside", !LLARS_RandomSleepRoll())
 
 	LLARS_RandomSleep()
 }

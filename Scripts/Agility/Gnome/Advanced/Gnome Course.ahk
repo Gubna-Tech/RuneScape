@@ -37,56 +37,57 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Agility", "Log balance prime")
 		LLARS_Click("Log balance prime")
 
-		LLARS_Sleep("Log balance prime")
+		LLARS_Sleep("Sleep Log balance prime")
 
 	}
 	else
 	{
 		LLARS_Sleep("Sleep Brief")
 
+		LLARS_SetStatus("Agility", "Log balance Main")
 		LLARS_Click("Log balance Main")
 
-		LLARS_Sleep("Log balance Main")
+		LLARS_Sleep("Sleep Log balance Main")
 
 	}
 
+	LLARS_SetStatus("Agility", "Obstacle net")
 	LLARS_Click("Obstacle net")
 
-	LLARS_Sleep("Obstacle net")
+	LLARS_Sleep("Sleep Obstacle net")
 
+	LLARS_SetStatus("Agility", "Tree branch")
 	LLARS_Click("Tree branch")
 
-	LLARS_Sleep("Tree branch")
+	LLARS_Sleep("Sleep Tree branch")
 
+	LLARS_SetStatus("Agility", "Tree")
 	LLARS_Click("Tree")
 
-	LLARS_Sleep("Tree")
+	LLARS_Sleep("Sleep Tree")
 
+	LLARS_SetStatus("Agility", "Signpost")
 	LLARS_Click("Signpost")
 
-	LLARS_Sleep("Signpost")
+	LLARS_Sleep("Sleep Signpost")
 
+	LLARS_SetStatus("Agility", "Pole")
 	LLARS_Click("Pole")
 
-	LLARS_Sleep("Pole")
+	LLARS_Sleep("Sleep Pole")
 
+	LLARS_SetStatus("Agility", "Tile")
 	LLARS_Click("Tile")
 
-	LLARS_Sleep("Tile")
+	LLARS_Sleep("Sleep Tile")
 
+	LLARS_SetStatus("Agility", "Barrier")
 	LLARS_Click("Barrier")
 
-	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-	IniRead, sa1, Config.ini, Barrier, min
-	IniRead, sa2, Config.ini, Barrier, max
-	Random, SleepAmount, %sa1%, %sa2%
-	if (LLARS_RandomSleepThisLoop)
-		LLARS_EstimatedSleep(SleepAmount)
-	else
-		LLARS_FinalSleep(SleepAmount)
+	LLARS_Sleep("Sleep Barrier", !LLARS_RandomSleepRoll())
 
 	LLARS_RandomSleep()
 }

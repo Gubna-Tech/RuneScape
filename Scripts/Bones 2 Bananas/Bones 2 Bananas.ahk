@@ -35,16 +35,19 @@ Run(ctx)
 {
 	global
 
+	LLARS_SetStatus("Banking", "Bank")
 	LLARS_Click("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Banking", "Bank Preset")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_RandomSleep()
 
+	LLARS_SetStatus("Casting", "Bones to Bananas")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Normal", true)

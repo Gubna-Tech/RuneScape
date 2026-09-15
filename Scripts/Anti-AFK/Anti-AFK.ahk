@@ -83,6 +83,7 @@ AntiAFK()
     maxY := clientH - 1
     Random, x, 0, %maxX%
     Random, y, 0, %maxY%
+    LLARS_SetStatus("Moving", "Anti-AFK")
     if !AntiAFKNaturalClick(x, y)
         return
 

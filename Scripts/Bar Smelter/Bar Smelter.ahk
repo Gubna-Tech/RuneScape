@@ -37,6 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Using", "Smelter")
 		LLARS_Click("Smelter Coords")
 
 		LLARS_Sleep("Sleep Short")
@@ -50,6 +51,7 @@ Run(ctx)
 	}
 	else
 	{
+		LLARS_SetStatus("Using", "Smelter")
 		LLARS_Click("Smelter Coords")
 
 		LLARS_Sleep("Sleep Short")
@@ -62,6 +64,7 @@ Run(ctx)
 
 	LLARS_RandomSleep()
 
+	LLARS_SetStatus("Smelting", "Bars")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Smelt", true)

@@ -35,6 +35,7 @@ Run(ctx)
 {
 	global
 
+	LLARS_SetStatus("Fletching", "Arrows")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")

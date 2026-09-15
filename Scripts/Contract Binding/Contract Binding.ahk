@@ -35,10 +35,12 @@ Run(ctx)
 {
 	global
 
+	LLARS_SetStatus("Trading", "Magestix")
 	LLARS_Click("Magestix")
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Selling", "Materials")
 	LLARS_Click("Sell Tab")
 
 	LLARS_Sleep("Sleep Short")
@@ -95,10 +97,12 @@ Run(ctx)
 		LLARS_Sleep("Sleep Brief")
 	}
 
+	LLARS_SetStatus("Buying", "Materials")
 	LLARS_Click("Buy Tab")
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Buying", "Blood of Orcus")
 	LLARS_Click("Blood of Orcus - Buy", "right")
 
 	LLARS_Sleep("Sleep Brief")
@@ -116,6 +120,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Buying", "Hellfire Metal")
 	LLARS_Click("Hellfire Metal - Buy", "right")
 
 	LLARS_Sleep("Sleep Brief")
@@ -133,16 +138,20 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Infusing", "Obelisk")
 	LLARS_Click("Obelisk")
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Infusing", "Binding Contract")
 	LLARS_PressKey("space")
 
 	LLARS_Sleep("Sleep Infuse")
 
+	LLARS_SetStatus("Binding", "Binding Contract")
 	loop 14
 	{
+		LLARS_SetStatus("Buying", "Materials")
 		x1 := LLARS_ConfigRead("Magestix", "xmin", "")
 		x2 := LLARS_ConfigRead("Magestix", "xmax", "")
 		y1 := LLARS_ConfigRead("Magestix", "ymin", "")
@@ -209,6 +218,7 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Infusing", "Binding Contract")
 		LLARS_PressKey("space")
 
 		LLARS_Sleep("Sleep Infuse", true)

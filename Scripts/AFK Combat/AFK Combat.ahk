@@ -99,6 +99,7 @@ AFKCombat_SetupHotkey(section, tooltipText)
         return
 
     AFKCombat_ScheduleHotkey(section, tooltipText)
+    LLARS_SetStatus("Combat", section)
     LLARS_PressHotkey(section)
     AFKCombat_ShowTooltip(tooltipText)
 }
@@ -118,6 +119,7 @@ AFKCombat_HotkeyTimer(section, tooltipText)
     ; the action. Scheduling first preserves that cadence.
     AFKCombat_ScheduleHotkey(section, tooltipText)
     DisableButton()
+    LLARS_SetStatus("Combat", section)
     LLARS_PressHotkey(section)
     AFKCombat_ShowTooltip(tooltipText)
 }
@@ -150,6 +152,7 @@ AFKCombat_MouseMoveAction()
 {
     global LLARS_RunRuneScapeHwnd
 
+    LLARS_SetStatus("Moving", "Anti-AFK")
     DisableButton()
     if !LLARS_WaitForRuneScape("Anti-AFK MouseMove")
         return
@@ -182,6 +185,7 @@ AFKCombat_SetupLoot()
         return
 
     AFKCombat_ScheduleLoot()
+    LLARS_SetStatus("Looting", "Auto-Loot")
     LLARS_PressKey("Space")
     AFKCombat_ShowTooltip("Auto-Loot Activated")
 }
@@ -199,6 +203,7 @@ AFKCombat_LootTimer()
 
     AFKCombat_ScheduleLoot()
     DisableButton()
+    LLARS_SetStatus("Looting", "Auto-Loot")
     LLARS_PressKey("Space")
     AFKCombat_ShowTooltip("Auto-Loot Activated")
 }
@@ -209,6 +214,7 @@ AFKCombat_SetupCannon()
         return
 
     AFKCombat_ScheduleCannon()
+    LLARS_SetStatus("Restocking", "Cannon")
     LLARS_Click("Cannon Restock")
     AFKCombat_ShowTooltip("Cannon Restock Activated")
 }
@@ -226,6 +232,7 @@ AFKCombat_CannonTimer()
 
     AFKCombat_ScheduleCannon()
     DisableButton()
+    LLARS_SetStatus("Restocking", "Cannon")
     LLARS_Click("Cannon Restock")
     AFKCombat_ShowTooltip("Cannon Restock Activated")
 }
@@ -253,6 +260,7 @@ AFKCombat_BindingContractTimer()
 
     AFKCombat_ScheduleBindingContract()
     DisableButton()
+    LLARS_SetStatus("Noting", "Binding Contract")
     LLARS_Click("Notepaper - Binding Contract")
     LLARS_Sleep("Sleep Brief")
     if !LLARS_RunActive()

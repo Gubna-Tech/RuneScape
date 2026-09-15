@@ -65,7 +65,7 @@ CheckPixel:
 if (!LLARS_RUNNING)
     return
 
-LLARS_SetStatus("Running")
+LLARS_SetStatus("Monitoring", "Eternal Tree")
 
 if LLARS_PixelMatches("Pixel Coordinate", "Red")
 {
@@ -92,6 +92,7 @@ if LLARS_PixelMatches("Pixel Coordinate", "Red")
     else
         TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
 
+    LLARS_SetStatus("Chopping", TreeName)
     LLARS_Click(TreeName)
     LastClickTime := A_TickCount
     Log("CLICK", TreeName " | " TimeSinceClick)
