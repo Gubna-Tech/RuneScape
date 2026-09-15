@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -29,134 +30,56 @@ if (!LLARS_StartRun())
 ; ================================================================
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
-Loop, %runcount%
+
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Obstacle Pipe Prime")
 
-		IniRead, x1, Config.ini, Obstacle Pipe Prime, xmin
-		IniRead, x2, Config.ini, Obstacle Pipe Prime, xmax
-		IniRead, y1, Config.ini, Obstacle Pipe Prime, ymin
-		IniRead, y2, Config.ini, Obstacle Pipe Prime, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("OBSTACLE PIPE PRIME", "X=" x " Y=" y)
+		LLARS_Sleep("Obstacle Pipe Prime")
 
-		IniRead, sa1, Config.ini, Obstacle Pipe Prime, min
-		IniRead, sa2, Config.ini, Obstacle Pipe Prime, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("OBSTACLE PIPE PRIME WAIT", "Sleep completed: " SleepAmount " ms")
+	}
+	else
+	{
+		LLARS_Sleep("Sleep Brief")
+
+		LLARS_Click("Obstacle Pipe Main")
+
+		LLARS_Sleep("Obstacle Pipe Main")
+
 	}
 
-	If (firstrun = 1)
-	{
-		firstrun := 0
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+	LLARS_Click("Ropeswing")
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
+	LLARS_Sleep("Ropeswing")
+
+	LLARS_Click("Stepping Stone")
+
+	LLARS_Sleep("Stepping Stone")
+
+	LLARS_Click("Log Balance")
+
+	LLARS_Sleep("Log Balance")
+
+	LLARS_Click("Cliffside")
+
+	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
+
+	IniRead, sa1, Config.ini, Cliffside, min
+	IniRead, sa2, Config.ini, Cliffside, max
+	Random, SleepAmount, %sa1%, %sa2%
+	if (LLARS_RandomSleepThisLoop)
 		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP BRIEF WAIT", "Sleep completed: " SleepAmount " ms")
+	else
+		LLARS_FinalSleep(SleepAmount)
 
-		IniRead, x1, Config.ini, Obstacle Pipe Main, xmin
-		IniRead, x2, Config.ini, Obstacle Pipe Main, xmax
-		IniRead, y1, Config.ini, Obstacle Pipe Main, ymin
-		IniRead, y2, Config.ini, Obstacle Pipe Main, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("OBSTACLE PIPE MAIN", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Obstacle Pipe Main, min
-		IniRead, sa2, Config.ini, Obstacle Pipe Main, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("OBSTACLE PIPE MAIN WAIT", "Sleep completed: " SleepAmount " ms")
-	}
-
-	If (firstrun = 0)
-	{
-		++firstrun
-
-		IniRead, x1, Config.ini, Ropeswing, xmin
-		IniRead, x2, Config.ini, Ropeswing, xmax
-		IniRead, y1, Config.ini, Ropeswing, ymin
-		IniRead, y2, Config.ini, Ropeswing, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ROPESWING", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Ropeswing, min
-		IniRead, sa2, Config.ini, Ropeswing, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("ROPESWING WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Stepping Stone, xmin
-		IniRead, x2, Config.ini, Stepping Stone, xmax
-		IniRead, y1, Config.ini, Stepping Stone, ymin
-		IniRead, y2, Config.ini, Stepping Stone, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("STEPPING STONE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Stepping Stone, min
-		IniRead, sa2, Config.ini, Stepping Stone, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("STEPPING STONE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Log Balance, xmin
-		IniRead, x2, Config.ini, Log Balance, xmax
-		IniRead, y1, Config.ini, Log Balance, ymin
-		IniRead, y2, Config.ini, Log Balance, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BALANCE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Log Balance, min
-		IniRead, sa2, Config.ini, Log Balance, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BALANCE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Cliffside, xmin
-		IniRead, x2, Config.ini, Cliffside, xmax
-		IniRead, y1, Config.ini, Cliffside, ymin
-		IniRead, y2, Config.ini, Cliffside, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLIFFSIDE", "X=" x " Y=" y)
-
-		LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-		IniRead, sa1, Config.ini, Cliffside, min
-		IniRead, sa2, Config.ini, Cliffside, max
-		Random, SleepAmount, %sa1%, %sa2%
-		if (LLARS_RandomSleepThisLoop)
-			LLARS_EstimatedSleep(SleepAmount)
-		else
-			LLARS_FinalSleep(SleepAmount)
-		Log("CLIFFSIDE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		LLARS_RandomSleep()
-	}
-	LLARS_EndLoop()
+	LLARS_RandomSleep()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -166,10 +89,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

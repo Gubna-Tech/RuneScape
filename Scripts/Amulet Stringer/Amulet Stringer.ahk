@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,75 +31,35 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	IniRead, x1, Config.ini, Bank Coords, xmin
-	IniRead, x2, Config.ini, Bank Coords, xmax
-	IniRead, y1, Config.ini, Bank Coords, ymin
-	IniRead, y2, Config.ini, Bank Coords, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("BANK CLICK", "X=" x " Y=" y)
+	LLARS_Click("Bank Coords")
 
 	; Short randomized delay after banking.
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, hkbank, Config.ini, Bank Preset, hotkey
-	Send, {%hkbank%}
-	Log("BANK PRESET", "Hotkey sent: " hkbank)
+	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Amulet, xmin
-	IniRead, x2, Config.ini, Amulet, xmax
-	IniRead, y1, Config.ini, Amulet, ymin
-	IniRead, y2, Config.ini, Amulet, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("AMULET CLICK", "X=" x " Y=" y)
+	LLARS_Click("Amulet")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Ball of Wool, xmin
-	IniRead, x2, Config.ini, Ball of Wool, xmax
-	IniRead, y1, Config.ini, Ball of Wool, ymin
-	IniRead, y2, Config.ini, Ball of Wool, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("BALL OF WOOL CLICK", "X=" x " Y=" y)
+	LLARS_Click("Ball of Wool")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Send, {Space}
-	Log("CRAFT START", "Space key sent")
+	LLARS_Sleep("Sleep Short")
+	LLARS_PressKey("Space")
 
 	; Crafting wait.
-	IniRead, sa1, Config.ini, Sleep Craft, min
-	IniRead, sa2, Config.ini, Sleep Craft, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("CRAFT COMPLETE", "Crafting wait completed: " SleepAmount " ms")
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Craft", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -108,10 +69,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

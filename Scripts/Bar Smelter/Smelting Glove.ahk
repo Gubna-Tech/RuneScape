@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,84 +31,37 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Smelter Coords")
 
-		IniRead, x1, Config.ini, Smelter Coords, xmin
-		IniRead, x2, Config.ini, Smelter Coords, xmax
-		IniRead, y1, Config.ini, Smelter Coords, ymin
-		IniRead, y2, Config.ini, Smelter Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("SMELTER CLICK", "X=" x " Y=" y)
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Click("bar type")
 
-		IniRead, x1, Config.ini, bar type, xmin
-		IniRead, x2, Config.ini, bar type, xmax
-		IniRead, y1, Config.ini, bar type, ymin
-		IniRead, y2, Config.ini, bar type, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BAR TYPE CLICK", "X=" x " Y=" y)
+	}
+	else
+	{
+		LLARS_Sleep("Sleep Normal")
+
+		LLARS_Click("Smelter Coords")
+
 	}
 
-	If (firstrun = 1)
-	{
-		firstrun := 0
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+	LLARS_Sleep("Sleep Short")
 
-		IniRead, sa1, Config.ini, Sleep Normal, min
-		IniRead, sa2, Config.ini, Sleep Normal, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Normal completed: " SleepAmount " ms")
+	LLARS_RandomSleep()
 
-		IniRead, x1, Config.ini, Smelter Coords, xmin
-		IniRead, x2, Config.ini, Smelter Coords, xmax
-		IniRead, y1, Config.ini, Smelter Coords, ymin
-		IniRead, y2, Config.ini, Smelter Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("SMELTER CLICK", "X=" x " Y=" y)
-	}
+	LLARS_PressKey("Space")
 
-	If (firstrun = 0)
-	{
-		++firstrun
-
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-		LLARS_RandomSleep()
-
-		Send, {Space}
-		Log("SPACE", "Space key sent")
-
-		IniRead, sa1, Config.ini, Sleep Smelting Gauntlet, min
-		IniRead, sa2, Config.ini, Sleep Smelting Gauntlet, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_FinalSleep(SleepAmount)
-		Log("SMELTING GAUNTLET WAIT", "Sleep Smelting Gauntlet completed: " SleepAmount " ms")
-	}
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Smelting Gauntlet", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -117,10 +71,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,39 +31,23 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
 	LLARS_RandomSleep()
 
-	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-	Send, {%hk%}
-	Log("SKILLBAR", "Hotkey sent: " hk)
+	LLARS_PressHotkey("Skillbar Hotkey")
 
 	; Short randomized delay after skillbar activation.
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Item, xmin
-	IniRead, x2, Config.ini, Item, xmax
-	IniRead, y1, Config.ini, Item, ymin
-	IniRead, y2, Config.ini, Item, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("ITEM CLICK", "X=" x " Y=" y)
+	LLARS_Click("Item")
 
-	IniRead, saf1, Config.ini, Sleep Alch, min
-	IniRead, saf2, Config.ini, Sleep Alch, max
-	Random, SleepAmount, %saf1%, %saf2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("ALCH COMPLETE", "Alchemy wait completed: " SleepAmount " ms")
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Alch", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -72,10 +57,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

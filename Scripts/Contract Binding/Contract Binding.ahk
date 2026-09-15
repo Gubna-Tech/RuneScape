@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,329 +31,191 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	Log("RUN", "Run " count " of " runcount3 " started")
+	LLARS_Click("Magestix")
 
-	IniRead, x1, Config.ini, Magestix, xmin
-	IniRead, x2, Config.ini, Magestix, xmax
-	IniRead, y1, Config.ini, Magestix, ymin
-	IniRead, y2, Config.ini, Magestix, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("CLICK", "Magestix X=" x " Y=" y)
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Click("Sell Tab")
 
-	IniRead, x1, Config.ini, Sell Tab, xmin
-	IniRead, x2, Config.ini, Sell Tab, xmax
-	IniRead, y1, Config.ini, Sell Tab, ymin
-	IniRead, y2, Config.ini, Sell Tab, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("CLICK", "Sell Tab X=" x " Y=" y)
-
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
 	loop 3
 	{
-			IniRead, x1, Config.ini, Hellfire Metal - Sell, xmin
-		IniRead, x2, Config.ini, Hellfire Metal - Sell, xmax
-		IniRead, y1, Config.ini, Hellfire Metal - Sell, ymin
-		IniRead, y2, Config.ini, Hellfire Metal - Sell, ymax
+		x1 := LLARS_ConfigRead("Hellfire Metal - Sell", "xmin", "")
+		x2 := LLARS_ConfigRead("Hellfire Metal - Sell", "xmax", "")
+		y1 := LLARS_ConfigRead("Hellfire Metal - Sell", "ymin", "")
+		y2 := LLARS_ConfigRead("Hellfire Metal - Sell", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		NaturalClick(x, y, "right")
-		Log("RIGHT CLICK", "Hellfire Metal - Sell X=" x " Y=" y)
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 
-		IniRead, minx, Config.ini, Offset - Sell, minx
-		IniRead, maxx, Config.ini, Offset - Sell, maxx
-		IniRead, miny, Config.ini, Offset - Sell, miny
-		IniRead, maxy, Config.ini, Offset - Sell, maxy
+		minx := LLARS_ConfigReadNumber("Offset - Sell", "minx")
+		maxx := LLARS_ConfigReadNumber("Offset - Sell", "maxx")
+		miny := LLARS_ConfigReadNumber("Offset - Sell", "miny")
+		maxy := LLARS_ConfigReadNumber("Offset - Sell", "maxy")
 		MouseGetPos, RightClickX, RightClickY
 		Random, XOffset, %minx%, %maxx%
 		Random, YOffset, %miny%, %maxy%
 		TargetX := RightClickX + XOffset
 		TargetY := RightClickY + YOffset
 		NaturalClick(TargetX, TargetY)
-		Log("MENU CLICK", "Offset - Sell X=" TargetX " Y=" TargetY " | XOffset=" XOffset " YOffset=" YOffset)
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 	}
 
 	loop 3
 	{
-			IniRead, x1, Config.ini, Blood of Orcus - Sell, xmin
-		IniRead, x2, Config.ini, Blood of Orcus - Sell, xmax
-		IniRead, y1, Config.ini, Blood of Orcus - Sell, ymin
-		IniRead, y2, Config.ini, Blood of Orcus - Sell, ymax
+		x1 := LLARS_ConfigRead("Blood of Orcus - Sell", "xmin", "")
+		x2 := LLARS_ConfigRead("Blood of Orcus - Sell", "xmax", "")
+		y1 := LLARS_ConfigRead("Blood of Orcus - Sell", "ymin", "")
+		y2 := LLARS_ConfigRead("Blood of Orcus - Sell", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		NaturalClick(x, y, "right")
-		Log("RIGHT CLICK", "Blood of Orcus - Sell X=" x " Y=" y)
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 
-		IniRead, minx, Config.ini, Offset - Sell, minx
-		IniRead, maxx, Config.ini, Offset - Sell, maxx
-		IniRead, miny, Config.ini, Offset - Sell, miny
-		IniRead, maxy, Config.ini, Offset - Sell, maxy
+		minx := LLARS_ConfigReadNumber("Offset - Sell", "minx")
+		maxx := LLARS_ConfigReadNumber("Offset - Sell", "maxx")
+		miny := LLARS_ConfigReadNumber("Offset - Sell", "miny")
+		maxy := LLARS_ConfigReadNumber("Offset - Sell", "maxy")
 		MouseGetPos, RightClickX, RightClickY
 		Random, XOffset, %minx%, %maxx%
 		Random, YOffset, %miny%, %maxy%
 		TargetX := RightClickX + XOffset
 		TargetY := RightClickY + YOffset
 		NaturalClick(TargetX, TargetY)
-		Log("MENU CLICK", "Offset - Sell X=" TargetX " Y=" TargetY " | XOffset=" XOffset " YOffset=" YOffset)
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 	}
 
-	IniRead, x1, Config.ini, Buy Tab, xmin
-	IniRead, x2, Config.ini, Buy Tab, xmax
-	IniRead, y1, Config.ini, Buy Tab, ymin
-	IniRead, y2, Config.ini, Buy Tab, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("CLICK", "Buy Tab X=" x " Y=" y)
+	LLARS_Click("Buy Tab")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Blood of Orcus - Buy, xmin
-	IniRead, x2, Config.ini, Blood of Orcus - Buy, xmax
-	IniRead, y1, Config.ini, Blood of Orcus - Buy, ymin
-	IniRead, y2, Config.ini, Blood of Orcus - Buy, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y, "right")
-	Log("RIGHT CLICK", "Blood of Orcus - Buy X=" x " Y=" y)
+	LLARS_Click("Blood of Orcus - Buy", "right")
 
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Brief")
 
-	IniRead, minx, Config.ini, Offset - Buy, minx
-	IniRead, maxx, Config.ini, Offset - Buy, maxx
-	IniRead, miny, Config.ini, Offset - Buy, miny
-	IniRead, maxy, Config.ini, Offset - Buy, maxy
+	minx := LLARS_ConfigReadNumber("Offset - Buy", "minx")
+	maxx := LLARS_ConfigReadNumber("Offset - Buy", "maxx")
+	miny := LLARS_ConfigReadNumber("Offset - Buy", "miny")
+	maxy := LLARS_ConfigReadNumber("Offset - Buy", "maxy")
 	MouseGetPos, RightClickX, RightClickY
 	Random, XOffset, %minx%, %maxx%
 	Random, YOffset, %miny%, %maxy%
 	TargetX := RightClickX + XOffset
 	TargetY := RightClickY + YOffset
 	NaturalClick(TargetX, TargetY)
-	Log("MENU CLICK", "Offset - Buy X=" TargetX " Y=" TargetY " | XOffset=" XOffset " YOffset=" YOffset)
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Hellfire Metal - Buy, xmin
-	IniRead, x2, Config.ini, Hellfire Metal - Buy, xmax
-	IniRead, y1, Config.ini, Hellfire Metal - Buy, ymin
-	IniRead, y2, Config.ini, Hellfire Metal - Buy, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y, "right")
-	Log("RIGHT CLICK", "Hellfire Metal - Buy X=" x " Y=" y)
+	LLARS_Click("Hellfire Metal - Buy", "right")
 
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Brief")
 
-	IniRead, minx, Config.ini, Offset - Buy, minx
-	IniRead, maxx, Config.ini, Offset - Buy, maxx
-	IniRead, miny, Config.ini, Offset - Buy, miny
-	IniRead, maxy, Config.ini, Offset - Buy, maxy
+	minx := LLARS_ConfigReadNumber("Offset - Buy", "minx")
+	maxx := LLARS_ConfigReadNumber("Offset - Buy", "maxx")
+	miny := LLARS_ConfigReadNumber("Offset - Buy", "miny")
+	maxy := LLARS_ConfigReadNumber("Offset - Buy", "maxy")
 	MouseGetPos, RightClickX, RightClickY
 	Random, XOffset, %minx%, %maxx%
 	Random, YOffset, %miny%, %maxy%
 	TargetX := RightClickX + XOffset
 	TargetY := RightClickY + YOffset
 	NaturalClick(TargetX, TargetY)
-	Log("MENU CLICK", "Offset - Buy X=" TargetX " Y=" TargetY " | XOffset=" XOffset " YOffset=" YOffset)
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Obelisk, xmin
-	IniRead, x2, Config.ini, Obelisk, xmax
-	IniRead, y1, Config.ini, Obelisk, ymin
-	IniRead, y2, Config.ini, Obelisk, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("CLICK", "Obelisk X=" x " Y=" y)
+	LLARS_Click("Obelisk")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	send {space}
-	Log("SPACE", "Space key sent to begin infusion")
+	LLARS_PressKey("space")
 
-	IniRead, sa1, Config.ini, Sleep Infuse, min
-	IniRead, sa2, Config.ini, Sleep Infuse, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Infuse completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Infuse")
 
 	loop 14
 	{
-			IniRead, x1, Config.ini, Magestix, xmin
-		IniRead, x2, Config.ini, Magestix, xmax
-		IniRead, y1, Config.ini, Magestix, ymin
-		IniRead, y2, Config.ini, Magestix, ymax
+		x1 := LLARS_ConfigRead("Magestix", "xmin", "")
+		x2 := LLARS_ConfigRead("Magestix", "xmax", "")
+		y1 := LLARS_ConfigRead("Magestix", "ymin", "")
+		y2 := LLARS_ConfigRead("Magestix", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		NaturalClick(x, y)
-		Log("CLICK", "Magestix X=" x " Y=" y)
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-			IniRead, x1, Config.ini, Blood of Orcus - Buy, xmin
-		IniRead, x2, Config.ini, Blood of Orcus - Buy, xmax
-		IniRead, y1, Config.ini, Blood of Orcus - Buy, ymin
-		IniRead, y2, Config.ini, Blood of Orcus - Buy, ymax
+		x1 := LLARS_ConfigRead("Blood of Orcus - Buy", "xmin", "")
+		x2 := LLARS_ConfigRead("Blood of Orcus - Buy", "xmax", "")
+		y1 := LLARS_ConfigRead("Blood of Orcus - Buy", "ymin", "")
+		y2 := LLARS_ConfigRead("Blood of Orcus - Buy", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		NaturalClick(x, y, "right")
-		Log("RIGHT CLICK", "Blood of Orcus - Buy X=" x " Y=" y)
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 
-		IniRead, minx, Config.ini, Offset - Buy, minx
-		IniRead, maxx, Config.ini, Offset - Buy, maxx
-		IniRead, miny, Config.ini, Offset - Buy, miny
-		IniRead, maxy, Config.ini, Offset - Buy, maxy
+		minx := LLARS_ConfigReadNumber("Offset - Buy", "minx")
+		maxx := LLARS_ConfigReadNumber("Offset - Buy", "maxx")
+		miny := LLARS_ConfigReadNumber("Offset - Buy", "miny")
+		maxy := LLARS_ConfigReadNumber("Offset - Buy", "maxy")
 		MouseGetPos, RightClickX, RightClickY
 		Random, XOffset, %minx%, %maxx%
 		Random, YOffset, %miny%, %maxy%
 		TargetX := RightClickX + XOffset
 		TargetY := RightClickY + YOffset
 		NaturalClick(TargetX, TargetY)
-		Log("MENU CLICK", "Offset - Buy X=" TargetX " Y=" TargetY " | XOffset=" XOffset " YOffset=" YOffset)
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-			IniRead, x1, Config.ini, Hellfire Metal - Buy, xmin
-		IniRead, x2, Config.ini, Hellfire Metal - Buy, xmax
-		IniRead, y1, Config.ini, Hellfire Metal - Buy, ymin
-		IniRead, y2, Config.ini, Hellfire Metal - Buy, ymax
+		x1 := LLARS_ConfigRead("Hellfire Metal - Buy", "xmin", "")
+		x2 := LLARS_ConfigRead("Hellfire Metal - Buy", "xmax", "")
+		y1 := LLARS_ConfigRead("Hellfire Metal - Buy", "ymin", "")
+		y2 := LLARS_ConfigRead("Hellfire Metal - Buy", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		NaturalClick(x, y, "right")
-		Log("RIGHT CLICK", "Hellfire Metal - Buy X=" x " Y=" y)
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 
-		IniRead, minx, Config.ini, Offset - Buy, minx
-		IniRead, maxx, Config.ini, Offset - Buy, maxx
-		IniRead, miny, Config.ini, Offset - Buy, miny
-		IniRead, maxy, Config.ini, Offset - Buy, maxy
+		minx := LLARS_ConfigReadNumber("Offset - Buy", "minx")
+		maxx := LLARS_ConfigReadNumber("Offset - Buy", "maxx")
+		miny := LLARS_ConfigReadNumber("Offset - Buy", "miny")
+		maxy := LLARS_ConfigReadNumber("Offset - Buy", "maxy")
 		MouseGetPos, RightClickX, RightClickY
 		Random, XOffset, %minx%, %maxx%
 		Random, YOffset, %miny%, %maxy%
 		TargetX := RightClickX + XOffset
 		TargetY := RightClickY + YOffset
 		NaturalClick(TargetX, TargetY)
-		Log("MENU CLICK", "Offset - Buy X=" TargetX " Y=" TargetY " | XOffset=" XOffset " YOffset=" YOffset)
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-			IniRead, x1, Config.ini, Obelisk, xmin
-		IniRead, x2, Config.ini, Obelisk, xmax
-		IniRead, y1, Config.ini, Obelisk, ymin
-		IniRead, y2, Config.ini, Obelisk, ymax
+		x1 := LLARS_ConfigRead("Obelisk", "xmin", "")
+		x2 := LLARS_ConfigRead("Obelisk", "xmax", "")
+		y1 := LLARS_ConfigRead("Obelisk", "ymin", "")
+		y2 := LLARS_ConfigRead("Obelisk", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		NaturalClick(x, y)
-		Log("CLICK", "Obelisk X=" x " Y=" y)
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		send {space}
-		Log("SPACE", "Space key sent to begin infusion")
+		LLARS_PressKey("space")
 
-		IniRead, sa1, Config.ini, Sleep Infuse, min
-		IniRead, sa2, Config.ini, Sleep Infuse, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_FinalSleep(SleepAmount)
-		Log("SLEEP", "Sleep Infuse completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Infuse", true)
 	}
-
-	LLARS_EndLoop()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -362,10 +225,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

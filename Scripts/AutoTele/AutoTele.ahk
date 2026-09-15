@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,24 +31,18 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
 	LLARS_RandomSleep()
 
-	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-	Send, {%hk%}
-	Log("SKILLBAR", "Hotkey sent: " hk)
+	LLARS_PressHotkey("Skillbar Hotkey")
 
-	IniRead, saf1, Config.ini, Sleep Teleport, min
-	IniRead, saf2, Config.ini, Sleep Teleport, max
-	Random, SleepAmount, %saf1%, %saf2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("TELEPORT SLEEP", "Sleep completed: " SleepAmount " ms")
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Teleport", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -57,10 +52,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

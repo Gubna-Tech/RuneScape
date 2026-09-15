@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -29,176 +30,68 @@ if (!LLARS_StartRun())
 ; ================================================================
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
-Loop, %runcount%
+
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Rope swing prime")
 
-		IniRead, x1, Config.ini, Rope swing prime, xmin
-		IniRead, x2, Config.ini, Rope swing prime, xmax
-		IniRead, y1, Config.ini, Rope swing prime, ymin
-		IniRead, y2, Config.ini, Rope swing prime, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ROPE SWING PRIME", "X=" x " Y=" y)
+		LLARS_Sleep("Rope swing prime")
 
-		IniRead, sa1, Config.ini, Rope swing prime, min
-		IniRead, sa2, Config.ini, Rope swing prime, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("ROPE SWING PRIME WAIT", "Sleep completed: " SleepAmount " ms")
+	}
+	else
+	{
+		; Make sure RuneScape is active before continuing.
+
+		LLARS_Click("Rope swing Main")
+
+		LLARS_Sleep("Rope swing Main")
+
 	}
 
-	if (firstrun = 1)
-	{
-		firstrun := 0
+	LLARS_Click("Log balance")
 
-	; Make sure RuneScape is active before continuing.
+	LLARS_Sleep("Log balance")
 
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+	LLARS_Click("Wall 1")
 
-		IniRead, x1, Config.ini, Rope swing Main, xmin
-		IniRead, x2, Config.ini, Rope swing Main, xmax
-		IniRead, y1, Config.ini, Rope swing Main, ymin
-		IniRead, y2, Config.ini, Rope swing Main, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ROPE SWING MAIN", "X=" x " Y=" y)
+	LLARS_Sleep("Wall 1")
 
-		IniRead, sa1, Config.ini, Rope swing Main, min
-		IniRead, sa2, Config.ini, Rope swing Main, max
-		Random, SleepAmount, %sa1%, %sa2%
+	LLARS_Click("Wall 2")
+
+	LLARS_Sleep("Wall 2")
+
+	LLARS_Click("Spring Device")
+
+	LLARS_Sleep("Spring Device")
+
+	LLARS_Click("Balance Beam")
+
+	LLARS_Sleep("Balance Beam")
+
+	LLARS_Click("Gap")
+
+	LLARS_Sleep("Gap")
+
+	LLARS_Click("Roof")
+
+	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
+
+	IniRead, sa1, Config.ini, Roof, min
+	IniRead, sa2, Config.ini, Roof, max
+	Random, SleepAmount, %sa1%, %sa2%
+	if (LLARS_RandomSleepThisLoop)
 		LLARS_EstimatedSleep(SleepAmount)
-		Log("ROPE SWING MAIN WAIT", "Sleep completed: " SleepAmount " ms")
-	}
+	else
+		LLARS_FinalSleep(SleepAmount)
 
-	if (firstrun = 0)
-	{
-		++firstrun
-
-		IniRead, x1, Config.ini, Log balance, xmin
-		IniRead, x2, Config.ini, Log balance, xmax
-		IniRead, y1, Config.ini, Log balance, ymin
-		IniRead, y2, Config.ini, Log balance, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BALANCE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Log balance, min
-		IniRead, sa2, Config.ini, Log balance, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BALANCE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Wall 1, xmin
-		IniRead, x2, Config.ini, Wall 1, xmax
-		IniRead, y1, Config.ini, Wall 1, ymin
-		IniRead, y2, Config.ini, Wall 1, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("WALL 1", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Wall 1, min
-		IniRead, sa2, Config.ini, Wall 1, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("WALL 1 WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Wall 2, xmin
-		IniRead, x2, Config.ini, Wall 2, xmax
-		IniRead, y1, Config.ini, Wall 2, ymin
-		IniRead, y2, Config.ini, Wall 2, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("WALL 2", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Wall 2, min
-		IniRead, sa2, Config.ini, Wall 2, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("WALL 2 WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Spring Device, xmin
-		IniRead, x2, Config.ini, Spring Device, xmax
-		IniRead, y1, Config.ini, Spring Device, ymin
-		IniRead, y2, Config.ini, Spring Device, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("SPRING DEVICE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Spring Device, min
-		IniRead, sa2, Config.ini, Spring Device, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SPRING DEVICE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Balance Beam, xmin
-		IniRead, x2, Config.ini, Balance Beam, xmax
-		IniRead, y1, Config.ini, Balance Beam, ymin
-		IniRead, y2, Config.ini, Balance Beam, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BALANCE BEAM", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Balance Beam, min
-		IniRead, sa2, Config.ini, Balance Beam, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("BALANCE BEAM WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Gap, xmin
-		IniRead, x2, Config.ini, Gap, xmax
-		IniRead, y1, Config.ini, Gap, ymin
-		IniRead, y2, Config.ini, Gap, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("GAP", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Gap, min
-		IniRead, sa2, Config.ini, Gap, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("GAP WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Roof, xmin
-		IniRead, x2, Config.ini, Roof, xmax
-		IniRead, y1, Config.ini, Roof, ymin
-		IniRead, y2, Config.ini, Roof, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ROOF", "X=" x " Y=" y)
-
-		LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-		IniRead, sa1, Config.ini, Roof, min
-		IniRead, sa2, Config.ini, Roof, max
-		Random, SleepAmount, %sa1%, %sa2%
-		if (LLARS_RandomSleepThisLoop)
-			LLARS_EstimatedSleep(SleepAmount)
-		else
-			LLARS_FinalSleep(SleepAmount)
-		Log("ROOF WAIT", "Sleep completed: " SleepAmount " ms")
-
-		LLARS_RandomSleep()
-	}
-	LLARS_EndLoop()
+	LLARS_RandomSleep()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -208,10 +101,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

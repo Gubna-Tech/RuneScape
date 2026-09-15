@@ -24,11 +24,6 @@ if (!LLARS_StartTimerRun())
 
 SetTimer, Countdown, 1000
 
-IfWinNotActive, RuneScape
-{
-	WinActivate, RuneScape
-}
-
 SetTimer, CheckPixel, 100
 return
 
@@ -52,10 +47,6 @@ SetTimer, Countdown, Off
 Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
-; =========================================================================
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
-; =========================================================================
-
 ; ========================================================================================
 ; |     PIXEL DETECT LOGIC     -     PIXEL DETECT LOGIC     -     PIXEL DETECT LOGIC     |
 ; ========================================================================================
@@ -70,93 +61,55 @@ Goto, EndMsg
 
 CheckPixel:
 if (!LLARS_RUNNING)
-	return
+    return
 
-IniRead, x, Config.ini, Pixel Coordinate, x
-IniRead, y, Config.ini, Pixel Coordinate, y
-IniRead, red, Config.ini, Red, red
-PixelGetColor, color, %x%, %y%, RGB
+LLARS_SetStatus("Running")
 
-if (color = red)
+if LLARS_PixelMatches("Pixel Coordinate", "Red")
 {
-	Log("PIXEL DETECTED", "Expected color detected at X=" x " Y=" y)
+    DisableButton()
+    SetTimer, CheckPixel, Off
 
-	IfWinNotActive, RuneScape
-	{
-		WinActivate, RuneScape
-	}
+    LLARS_Sleep("Sleep Timer")
+    if (!LLARS_RUNNING)
+        return
 
-	DisableButton()
-	SetTimer, CheckPixel, Off
+    if (LastClickTime = 0)
+        TimeSinceClick := "N/A - first click"
+    else
+        TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
 
-	IniRead, sa1, Config.ini, Sleep Timer, min
-	IniRead, sa2, Config.ini, Sleep Timer, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Log("WAIT", "Random sleep before click: " SleepAmount " ms")
+    LLARS_Click("Guard Location")
+    LastClickTime := A_TickCount
+    Log("CLICK", "Guard Location | " TimeSinceClick)
 
-	Sleep, %SleepAmount%
-
-	if (!LLARS_RUNNING)
-		return
-
-	IniRead, x1, Config.ini, Guard Location, xmin
-	IniRead, x2, Config.ini, Guard Location, xmax
-	IniRead, y1, Config.ini, Guard Location, ymin
-	IniRead, y2, Config.ini, Guard Location, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-
-	if (LastClickTime = 0)
-	{
-		TimeSinceClick := "N/A - first click"
-	}
-	else
-	{
-		TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
-	}
-
-	Log("CLICK", "Guard Location X=" x " Y=" y " | " TimeSinceClick)
-
-	NaturalClick(x, y)
-	LastClickTime := A_TickCount
-
-	Loop, 100
-	{
-		MouseGetPos, xm, ym
-		ToolTip, %scriptname% - Activated Click, xm+25, ym+25, 1
-		Sleep, 25
-	}
-	ToolTip
-	SetTimer, ResetCheck, 500
+    Loop, 100
+    {
+        MouseGetPos, xm, ym
+        ToolTip, %scriptname% - Activated Click, xm+25, ym+25, 1
+        Sleep, 25
+    }
+    ToolTip
+    SetTimer, ResetCheck, 500
 }
 return
 
-; ========================================================================================
-; |     PIXEL SEARCH LOGIC     -     PIXEL SEARCH LOGIC     -     PIXEL SEARCH LOGIC     |
-; ========================================================================================
-; Waits for the watched pixel to change away from the target color.
-; Once it changes, normal pixel detection is re-enabled.
 ResetCheck:
 if (!LLARS_RUNNING)
-	return
+    return
 
-IniRead, red, Config.ini, Red, red
-IniRead, x, Config.ini, Pixel Coordinate, x
-IniRead, y, Config.ini, Pixel Coordinate, y
-PixelGetColor, color, %x%, %y%, RGB
-
-if (color != red)
+if !LLARS_PixelMatches("Pixel Coordinate", "Red")
 {
-	SetTimer, ResetCheck, Off
-	SetTimer, CheckPixel, 100
+    SetTimer, ResetCheck, Off
+    SetTimer, CheckPixel, 100
 
-	Loop, 100
-	{
-		MouseGetPos, xm, ym
-		ToolTip, %scriptname% - Detecting Pixel Change, xm+25, ym+25, 1
-		Sleep, 25
-	}
-	ToolTip
+    Loop, 100
+    {
+        MouseGetPos, xm, ym
+        ToolTip, %scriptname% - Detecting Pixel Change, xm+25, ym+25, 1
+        Sleep, 25
+    }
+    ToolTip
 }
 return
 

@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -29,164 +30,64 @@ if (!LLARS_StartRun())
 ; ================================================================
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
-Loop, %runcount%
+
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Log Balance Prime")
 
-		IniRead, x1, Config.ini, Log Balance Prime, xmin
-		IniRead, x2, Config.ini, Log Balance Prime, xmax
-		IniRead, y1, Config.ini, Log Balance Prime, ymin
-		IniRead, y2, Config.ini, Log Balance Prime, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BALANCE PRIME", "X=" x " Y=" y)
+		LLARS_Sleep("Sleep Log")
 
-		IniRead, sa1, Config.ini, Sleep Log, min
-		IniRead, sa2, Config.ini, Sleep Log, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BALANCE PRIME WAIT", "Sleep completed: " SleepAmount " ms")
+	}
+	else
+	{
+		LLARS_Sleep("Sleep Brief")
+
+		LLARS_Click("Log Balance Main")
+
+		LLARS_Sleep("Sleep Loop")
+
 	}
 
-	if (firstrun = 1)
-	{
-		firstrun := 0
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+	LLARS_Click("Obstacle Net 1")
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
+	LLARS_Sleep("Sleep Net 1")
+
+	LLARS_Click("Tree Branch 1")
+
+	LLARS_Sleep("Sleep Normal")
+
+	LLARS_Click("Balance Rope")
+
+	LLARS_Sleep("Sleep Rope")
+
+	LLARS_Click("Tree Branch 2")
+
+	LLARS_Sleep("Sleep Action")
+
+	LLARS_Click("Obstacle Net 2")
+
+	LLARS_Sleep("Sleep Net 2")
+
+	LLARS_Click("Obstacle Pipe")
+
+	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
+
+	IniRead, sa1, Config.ini, Sleep Pipe, min
+	IniRead, sa2, Config.ini, Sleep Pipe, max
+	Random, SleepAmount, %sa1%, %sa2%
+	if (LLARS_RandomSleepThisLoop)
 		LLARS_EstimatedSleep(SleepAmount)
-		Log("BRIEF WAIT", "Sleep completed: " SleepAmount " ms")
+	else
+		LLARS_FinalSleep(SleepAmount)
 
-		IniRead, x1, Config.ini, Log Balance Main, xmin
-		IniRead, x2, Config.ini, Log Balance Main, xmax
-		IniRead, y1, Config.ini, Log Balance Main, ymin
-		IniRead, y2, Config.ini, Log Balance Main, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BALANCE MAIN", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Loop, min
-		IniRead, sa2, Config.ini, Sleep Loop, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BALANCE MAIN WAIT", "Sleep completed: " SleepAmount " ms")
-	}
-
-	if (firstrun = 0)
-	{
-		++firstrun
-
-		IniRead, x1, Config.ini, Obstacle Net 1, xmin
-		IniRead, x2, Config.ini, Obstacle Net 1, xmax
-		IniRead, y1, Config.ini, Obstacle Net 1, ymin
-		IniRead, y2, Config.ini, Obstacle Net 1, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("OBSTACLE NET 1", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Net 1, min
-		IniRead, sa2, Config.ini, Sleep Net 1, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("OBSTACLE NET 1 WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Tree Branch 1, xmin
-		IniRead, x2, Config.ini, Tree Branch 1, xmax
-		IniRead, y1, Config.ini, Tree Branch 1, ymin
-		IniRead, y2, Config.ini, Tree Branch 1, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("TREE BRANCH 1", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Normal, min
-		IniRead, sa2, Config.ini, Sleep Normal, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("TREE BRANCH 1 WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Balance Rope, xmin
-		IniRead, x2, Config.ini, Balance Rope, xmax
-		IniRead, y1, Config.ini, Balance Rope, ymin
-		IniRead, y2, Config.ini, Balance Rope, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BALANCE ROPE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Rope, min
-		IniRead, sa2, Config.ini, Sleep Rope, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("BALANCE ROPE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Tree Branch 2, xmin
-		IniRead, x2, Config.ini, Tree Branch 2, xmax
-		IniRead, y1, Config.ini, Tree Branch 2, ymin
-		IniRead, y2, Config.ini, Tree Branch 2, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("TREE BRANCH 2", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Action, min
-		IniRead, sa2, Config.ini, Sleep Action, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("TREE BRANCH 2 WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Obstacle Net 2, xmin
-		IniRead, x2, Config.ini, Obstacle Net 2, xmax
-		IniRead, y1, Config.ini, Obstacle Net 2, ymin
-		IniRead, y2, Config.ini, Obstacle Net 2, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("OBSTACLE NET 2", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Net 2, min
-		IniRead, sa2, Config.ini, Sleep Net 2, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("OBSTACLE NET 2 WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Obstacle Pipe, xmin
-		IniRead, x2, Config.ini, Obstacle Pipe, xmax
-		IniRead, y1, Config.ini, Obstacle Pipe, ymin
-		IniRead, y2, Config.ini, Obstacle Pipe, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("OBSTACLE PIPE", "X=" x " Y=" y)
-
-		LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-		IniRead, sa1, Config.ini, Sleep Pipe, min
-		IniRead, sa2, Config.ini, Sleep Pipe, max
-		Random, SleepAmount, %sa1%, %sa2%
-		if (LLARS_RandomSleepThisLoop)
-			LLARS_EstimatedSleep(SleepAmount)
-		else
-			LLARS_FinalSleep(SleepAmount)
-		Log("OBSTACLE PIPE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		LLARS_RandomSleep()
-	}
-	LLARS_EndLoop()
+	LLARS_RandomSleep()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -196,10 +97,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

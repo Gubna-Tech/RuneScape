@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -29,83 +30,42 @@ if (!LLARS_StartRun())
 ; ================================================================
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
-Loop, %runcount%
+
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Trellis Prime")
 
-		IniRead, x1, Config.ini, Trellis Prime, xmin
-		IniRead, x2, Config.ini, Trellis Prime, xmax
-		IniRead, y1, Config.ini, Trellis Prime, ymin
-		IniRead, y2, Config.ini, Trellis Prime, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("TRELLIS PRIME", "X=" x " Y=" y)
+		LLARS_Sleep("Sleep Climb 1")
 
-		IniRead, sa1, Config.ini, Sleep Climb 1, min
-		IniRead, sa2, Config.ini, Sleep Climb 1, max
-		Random, SleepAmount, %sa1%, %sa2%
+	}
+	else
+	{
+		LLARS_Click("Trellis Main")
+
+		LLARS_Sleep("Sleep Climb 2")
+
+	}
+
+	LLARS_Click("Ladder")
+
+	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
+
+	IniRead, sa1, Config.ini, Sleep Ladder, min
+	IniRead, sa2, Config.ini, Sleep Ladder, max
+	Random, SleepAmount, %sa1%, %sa2%
+	if (LLARS_RandomSleepThisLoop)
 		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP CLIMB 1 WAIT", "Sleep completed: " SleepAmount " ms")
-	}
+	else
+		LLARS_FinalSleep(SleepAmount)
 
-	If (firstrun = 1)
-	{
-		firstrun := 0
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
-
-		IniRead, x1, Config.ini, Trellis Main, xmin
-		IniRead, x2, Config.ini, Trellis Main, xmax
-		IniRead, y1, Config.ini, Trellis Main, ymin
-		IniRead, y2, Config.ini, Trellis Main, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("TRELLIS MAIN", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Climb 2, min
-		IniRead, sa2, Config.ini, Sleep Climb 2, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP CLIMB 2 WAIT", "Sleep completed: " SleepAmount " ms")
-	}
-
-	If (firstrun = 0)
-	{
-		++firstrun
-
-		IniRead, x1, Config.ini, Ladder, xmin
-		IniRead, x2, Config.ini, Ladder, xmax
-		IniRead, y1, Config.ini, Ladder, ymin
-		IniRead, y2, Config.ini, Ladder, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LADDER", "X=" x " Y=" y)
-
-		LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-		IniRead, sa1, Config.ini, Sleep Ladder, min
-		IniRead, sa2, Config.ini, Sleep Ladder, max
-		Random, SleepAmount, %sa1%, %sa2%
-		if (LLARS_RandomSleepThisLoop)
-			LLARS_EstimatedSleep(SleepAmount)
-		else
-			LLARS_FinalSleep(SleepAmount)
-		Log("SLEEP LADDER WAIT", "Sleep completed: " SleepAmount " ms")
-
-		LLARS_RandomSleep()
-	}
-	LLARS_EndLoop()
+	LLARS_RandomSleep()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -115,10 +75,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

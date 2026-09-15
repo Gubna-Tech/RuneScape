@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,33 +31,22 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-	Send, {%hk%}
-	Log("SKILLBAR", "Hotkey sent: " hk)
+	LLARS_PressHotkey("Skillbar Hotkey")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SHORT SLEEP", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
 	LLARS_RandomSleep()
 
-	Send, {Space}
-	Log("SPACE", "Space key sent")
+	LLARS_PressKey("Space")
 
-	IniRead, saf1, Config.ini, Sleep Fletch, min
-	IniRead, saf2, Config.ini, Sleep Fletch, max
-	Random, SleepAmount, %saf1%, %saf2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("FLETCH SLEEP", "Sleep completed: " SleepAmount " ms")
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Fletch", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -66,10 +56,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

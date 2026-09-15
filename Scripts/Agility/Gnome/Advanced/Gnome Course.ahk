@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -29,179 +30,68 @@ if (!LLARS_StartRun())
 ; ================================================================
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
-Loop, %runcount%
+
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Log balance prime")
 
-		IniRead, x1, Config.ini, Log balance prime, xmin
-		IniRead, x2, Config.ini, Log balance prime, xmax
-		IniRead, y1, Config.ini, Log balance prime, ymin
-		IniRead, y2, Config.ini, Log balance prime, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BALANCE PRIME", "X=" x " Y=" y)
+		LLARS_Sleep("Log balance prime")
 
-		IniRead, sa1, Config.ini, Log balance prime, min
-		IniRead, sa2, Config.ini, Log balance prime, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BALANCE PRIME WAIT", "Sleep completed: " SleepAmount " ms")
+	}
+	else
+	{
+		LLARS_Sleep("Sleep Brief")
+
+		LLARS_Click("Log balance Main")
+
+		LLARS_Sleep("Log balance Main")
+
 	}
 
-	if (firstrun = 1)
-	{
-		firstrun := 0
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+	LLARS_Click("Obstacle net")
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
+	LLARS_Sleep("Obstacle net")
+
+	LLARS_Click("Tree branch")
+
+	LLARS_Sleep("Tree branch")
+
+	LLARS_Click("Tree")
+
+	LLARS_Sleep("Tree")
+
+	LLARS_Click("Signpost")
+
+	LLARS_Sleep("Signpost")
+
+	LLARS_Click("Pole")
+
+	LLARS_Sleep("Pole")
+
+	LLARS_Click("Tile")
+
+	LLARS_Sleep("Tile")
+
+	LLARS_Click("Barrier")
+
+	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
+
+	IniRead, sa1, Config.ini, Barrier, min
+	IniRead, sa2, Config.ini, Barrier, max
+	Random, SleepAmount, %sa1%, %sa2%
+	if (LLARS_RandomSleepThisLoop)
 		LLARS_EstimatedSleep(SleepAmount)
-		Log("BRIEF WAIT", "Sleep completed: " SleepAmount " ms")
+	else
+		LLARS_FinalSleep(SleepAmount)
 
-		IniRead, x1, Config.ini, Log balance Main, xmin
-		IniRead, x2, Config.ini, Log balance Main, xmax
-		IniRead, y1, Config.ini, Log balance Main, ymin
-		IniRead, y2, Config.ini, Log balance Main, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BALANCE MAIN", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Log balance Main, min
-		IniRead, sa2, Config.ini, Log balance Main, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BALANCE MAIN WAIT", "Sleep completed: " SleepAmount " ms")
-	}
-
-	if (firstrun = 0)
-	{
-		++firstrun
-
-		IniRead, x1, Config.ini, Obstacle net, xmin
-		IniRead, x2, Config.ini, Obstacle net, xmax
-		IniRead, y1, Config.ini, Obstacle net, ymin
-		IniRead, y2, Config.ini, Obstacle net, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("OBSTACLE NET", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Obstacle net, min
-		IniRead, sa2, Config.ini, Obstacle net, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("OBSTACLE NET WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Tree branch, xmin
-		IniRead, x2, Config.ini, Tree branch, xmax
-		IniRead, y1, Config.ini, Tree branch, ymin
-		IniRead, y2, Config.ini, Tree branch, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("TREE BRANCH", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Tree branch, min
-		IniRead, sa2, Config.ini, Tree branch, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("TREE BRANCH WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Tree, xmin
-		IniRead, x2, Config.ini, Tree, xmax
-		IniRead, y1, Config.ini, Tree, ymin
-		IniRead, y2, Config.ini, Tree, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("TREE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Tree, min
-		IniRead, sa2, Config.ini, Tree, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("TREE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Signpost, xmin
-		IniRead, x2, Config.ini, Signpost, xmax
-		IniRead, y1, Config.ini, Signpost, ymin
-		IniRead, y2, Config.ini, Signpost, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("SIGNPOST", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Signpost, min
-		IniRead, sa2, Config.ini, Signpost, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SIGNPOST WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Pole, xmin
-		IniRead, x2, Config.ini, Pole, xmax
-		IniRead, y1, Config.ini, Pole, ymin
-		IniRead, y2, Config.ini, Pole, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("POLE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Pole, min
-		IniRead, sa2, Config.ini, Pole, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("POLE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Tile, xmin
-		IniRead, x2, Config.ini, Tile, xmax
-		IniRead, y1, Config.ini, Tile, ymin
-		IniRead, y2, Config.ini, Tile, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("TILE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Tile, min
-		IniRead, sa2, Config.ini, Tile, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("TILE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Barrier, xmin
-		IniRead, x2, Config.ini, Barrier, xmax
-		IniRead, y1, Config.ini, Barrier, ymin
-		IniRead, y2, Config.ini, Barrier, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BARRIER", "X=" x " Y=" y)
-
-		LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-		IniRead, sa1, Config.ini, Barrier, min
-		IniRead, sa2, Config.ini, Barrier, max
-		Random, SleepAmount, %sa1%, %sa2%
-		if (LLARS_RandomSleepThisLoop)
-			LLARS_EstimatedSleep(SleepAmount)
-		else
-			LLARS_FinalSleep(SleepAmount)
-		Log("BARRIER WAIT", "Sleep completed: " SleepAmount " ms")
-
-		LLARS_RandomSleep()
-	}
-	LLARS_EndLoop()
+	LLARS_RandomSleep()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -211,10 +101,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

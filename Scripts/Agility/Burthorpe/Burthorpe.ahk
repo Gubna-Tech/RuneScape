@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -29,158 +30,62 @@ if (!LLARS_StartRun())
 ; ================================================================
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
-Loop, %runcount%
+
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Log Beam Prime")
 
-		IniRead, x1, Config.ini, Log Beam Prime, xmin
-		IniRead, x2, Config.ini, Log Beam Prime, xmax
-		IniRead, y1, Config.ini, Log Beam Prime, ymin
-		IniRead, y2, Config.ini, Log Beam Prime, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BEAM PRIME", "X=" x " Y=" y)
+		LLARS_Sleep("Log Beam Prime")
 
-		IniRead, sa1, Config.ini, Log Beam Prime, min
-		IniRead, sa2, Config.ini, Log Beam Prime, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BEAM PRIME WAIT", "Sleep completed: " SleepAmount " ms")
+	}
+	else
+	{
+		LLARS_Click("Log Beam Main")
+
+		LLARS_Sleep("Log Beam Main")
+
 	}
 
-	if (firstrun = 1)
-	{
-		firstrun := 0
-		GuiControl,, ScriptBlue, %scriptname%
-		GuiControl,, State3, Running
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+	LLARS_Click("Wall")
 
-		IniRead, x1, Config.ini, Log Beam Main, xmin
-		IniRead, x2, Config.ini, Log Beam Main, xmax
-		IniRead, y1, Config.ini, Log Beam Main, ymin
-		IniRead, y2, Config.ini, Log Beam Main, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LOG BEAM MAIN", "X=" x " Y=" y)
+	LLARS_Sleep("Wall")
 
-		IniRead, sa1, Config.ini, Log Beam Main, min
-		IniRead, sa2, Config.ini, Log Beam Main, max
-		Random, SleepAmount, %sa1%, %sa2%
+	LLARS_Click("Balancing Ledge")
+
+	LLARS_Sleep("Balancing Ledge")
+
+	LLARS_Click("Obstacle low wall")
+
+	LLARS_Sleep("Obstacle low wall")
+
+	LLARS_Click("Rope swing")
+
+	LLARS_Sleep("Rope swing")
+
+	LLARS_Click("Monkey bars")
+
+	LLARS_Sleep("Monkey bars")
+
+	LLARS_Click("Ledge")
+
+	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
+
+	IniRead, sa1, Config.ini, Ledge, min
+	IniRead, sa2, Config.ini, Ledge, max
+	Random, SleepAmount, %sa1%, %sa2%
+	if (LLARS_RandomSleepThisLoop)
 		LLARS_EstimatedSleep(SleepAmount)
-		Log("LOG BEAM MAIN WAIT", "Sleep completed: " SleepAmount " ms")
-	}
+	else
+		LLARS_FinalSleep(SleepAmount)
 
-	if (firstrun = 0)
-	{
-		++firstrun
-
-		IniRead, x1, Config.ini, Wall, xmin
-		IniRead, x2, Config.ini, Wall, xmax
-		IniRead, y1, Config.ini, Wall, ymin
-		IniRead, y2, Config.ini, Wall, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("WALL", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Wall, min
-		IniRead, sa2, Config.ini, Wall, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("WALL WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Balancing Ledge, xmin
-		IniRead, x2, Config.ini, Balancing Ledge, xmax
-		IniRead, y1, Config.ini, Balancing Ledge, ymin
-		IniRead, y2, Config.ini, Balancing Ledge, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BALANCING LEDGE", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Balancing Ledge, min
-		IniRead, sa2, Config.ini, Balancing Ledge, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("BALANCING LEDGE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Obstacle low wall, xmin
-		IniRead, x2, Config.ini, Obstacle low wall, xmax
-		IniRead, y1, Config.ini, Obstacle low wall, ymin
-		IniRead, y2, Config.ini, Obstacle low wall, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("OBSTACLE LOW WALL", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Obstacle low wall, min
-		IniRead, sa2, Config.ini, Obstacle low wall, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("OBSTACLE LOW WALL WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Rope swing, xmin
-		IniRead, x2, Config.ini, Rope swing, xmax
-		IniRead, y1, Config.ini, Rope swing, ymin
-		IniRead, y2, Config.ini, Rope swing, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ROPE SWING", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Rope swing, min
-		IniRead, sa2, Config.ini, Rope swing, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("ROPE SWING WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Monkey bars, xmin
-		IniRead, x2, Config.ini, Monkey bars, xmax
-		IniRead, y1, Config.ini, Monkey bars, ymin
-		IniRead, y2, Config.ini, Monkey bars, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("MONKEY BARS", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Monkey bars, min
-		IniRead, sa2, Config.ini, Monkey bars, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("MONKEY BARS WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Ledge, xmin
-		IniRead, x2, Config.ini, Ledge, xmax
-		IniRead, y1, Config.ini, Ledge, ymin
-		IniRead, y2, Config.ini, Ledge, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("LEDGE", "X=" x " Y=" y)
-
-		LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
-
-		IniRead, sa1, Config.ini, Ledge, min
-		IniRead, sa2, Config.ini, Ledge, max
-		Random, SleepAmount, %sa1%, %sa2%
-		if (LLARS_RandomSleepThisLoop)
-			LLARS_EstimatedSleep(SleepAmount)
-		else
-			LLARS_FinalSleep(SleepAmount)
-		Log("LEDGE WAIT", "Sleep completed: " SleepAmount " ms")
-
-		LLARS_RandomSleep()
-	}
-	LLARS_EndLoop()
+	LLARS_RandomSleep()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -190,10 +95,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

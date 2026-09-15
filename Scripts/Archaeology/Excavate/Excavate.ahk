@@ -24,11 +24,6 @@ if (!LLARS_StartTimerRun())
 
 SetTimer, Countdown, 1000
 
-IfWinNotActive, RuneScape
-{
-	WinActivate, RuneScape
-}
-
 SetTimer, CheckPixel, 100
 return
 
@@ -52,10 +47,6 @@ SetTimer, Countdown, Off
 Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
-; =========================================================================
-; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
-; =========================================================================
-
 ; ========================================================================================
 ; |     PIXEL DETECT LOGIC     -     PIXEL DETECT LOGIC     -     PIXEL DETECT LOGIC     |
 ; ========================================================================================
@@ -67,92 +58,58 @@ Goto, EndMsg
 ; ================================================================
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
-; Watches the configured AfkWarden pixel for the red no-XP state.
-; When detected, waits for the configured random delay and presses Space.
+
 CheckPixel:
 if (!LLARS_RUNNING)
-	return
+    return
 
-GuiControl,, ScriptBlue, %scriptname%
-GuiControl,, State3, Running
+LLARS_SetStatus("Running")
 
-IniRead, x, Config.ini, Pixel Coordinate, x
-IniRead, y, Config.ini, Pixel Coordinate, y
-IniRead, red, Config.ini, Red, red
-PixelGetColor, color, %x%, %y%, RGB
-
-if (color = red)
+if LLARS_PixelMatches("Pixel Coordinate", "Red")
 {
-	Log("PIXEL DETECTED", "Expected color detected at X=" x " Y=" y)
+    DisableButton()
+    SetTimer, CheckPixel, Off
 
-	IfWinNotActive, RuneScape
-	{
-		WinActivate, RuneScape
-	}
+    LLARS_Sleep("Sleep Timer")
+    if (!LLARS_RUNNING)
+        return
 
-	DisableButton()
-	SetTimer, CheckPixel, Off
+    if (LastActionTime = 0)
+        TimeSinceAction := "N/A - first action"
+    else
+        TimeSinceAction := A_TickCount - LastActionTime " ms since previous action"
 
-	IniRead, sa1, Config.ini, Sleep Timer, min
-	IniRead, sa2, Config.ini, Sleep Timer, max
-	Random, SleepAmount, %sa1%, %sa2%
-	Log("WAIT", "Random sleep before spacebar: " SleepAmount " ms")
+    LLARS_PressKey("Space")
+    LastActionTime := A_TickCount
+    Log("KEY", "Space | " TimeSinceAction)
 
-	Sleep, %SleepAmount%
-
-	if (!LLARS_RUNNING)
-		return
-
-	if (LastActionTime = 0)
-	{
-		TimeSinceAction := "N/A - first action"
-	}
-	else
-	{
-		TimeSinceAction := A_TickCount - LastActionTime " ms since previous action"
-	}
-
-	Log("SPACEBAR", "Spacebar pressed | " TimeSinceAction)
-
-	Send, {Space}
-	LastActionTime := A_TickCount
-
-	Loop, 100
-	{
-		MouseGetPos, xm, ym
-		ToolTip, %scriptname% - Activated Spacebar, xm+25, ym+25, 1
-		Sleep, 25
-	}
-	ToolTip
-	SetTimer, ResetCheck, 500
+    Loop, 100
+    {
+        MouseGetPos, xm, ym
+        ToolTip, %scriptname% - Activated Space, xm+25, ym+25, 1
+        Sleep, 25
+    }
+    ToolTip
+    SetTimer, ResetCheck, 500
 }
 return
 
-; ========================================================================================
-; |     PIXEL SEARCH LOGIC     -     PIXEL SEARCH LOGIC     -     PIXEL SEARCH LOGIC     |
-; ========================================================================================
-; Waits for the AfkWarden pixel to change away from red before monitoring again.
 ResetCheck:
 if (!LLARS_RUNNING)
-	return
+    return
 
-IniRead, red, Config.ini, Red, red
-IniRead, x, Config.ini, Pixel Coordinate, x
-IniRead, y, Config.ini, Pixel Coordinate, y
-PixelGetColor, color, %x%, %y%, RGB
-
-if (color != red)
+if !LLARS_PixelMatches("Pixel Coordinate", "Red")
 {
-	SetTimer, ResetCheck, Off
-	SetTimer, CheckPixel, 100
+    SetTimer, ResetCheck, Off
+    SetTimer, CheckPixel, 100
 
-	Loop, 100
-	{
-		MouseGetPos, xm, ym
-		ToolTip, %scriptname% - Detecting Pixel Change, xm+25, ym+25, 1
-		Sleep, 25
-	}
-	ToolTip
+    Loop, 100
+    {
+        MouseGetPos, xm, ym
+        ToolTip, %scriptname% - Detecting Pixel Change, xm+25, ym+25, 1
+        Sleep, 25
+    }
+    ToolTip
 }
 return
 

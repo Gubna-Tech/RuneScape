@@ -25,34 +25,11 @@ if (!LLARS_StartTimerRun())
 
 SetTimer, Countdown, 1000
 
-IfWinNotActive, RuneScape
-{
-	WinActivate, RuneScape
-}
-
 LastClickTime := 0
-
-Log("AUTOCLICKER", "Random click routine started")
-
-IniRead, x1, Config.ini, Click, xmin
-IniRead, x2, Config.ini, Click, xmax
-IniRead, y1, Config.ini, Click, ymin
-IniRead, y2, Config.ini, Click, ymax
-Random, x, %x1%, %x2%
-Random, y, %y1%, %y2%
-
-NaturalClick(x, y)
-
+LLARS_SetStatus("Running")
+LLARS_Click("Click")
 LastClickTime := A_TickCount
-
-Log("CLICK", "Click Location X=" x " Y=" y " | N/A - first click")
-
-IniRead, sa1, Config.ini, Timer, min
-IniRead, sa2, Config.ini, Timer, max
-Random, SleepClick, %sa1%, %sa2%
-SetTimer, RandomClick, %SleepClick%
-
-Log("WAIT", "Random sleep before click: " SleepClick " ms")
+AutoClickerTimerID := LLARS_TimerOnce("Timer", Func("RandomClick"))
 
 Loop, 100
 {
@@ -91,57 +68,37 @@ Goto, EndMsg
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-RandomClick:
-if (!LLARS_RUNNING)
-	return
-
-GuiControl,, ScriptBlue, %scriptname%
-GuiControl,, State3, Running
-
-IfWinNotActive, RuneScape
+RandomClick()
 {
-	WinActivate, RuneScape
+    global LastClickTime, AutoClickerTimerID, scriptname
+
+    if !LLARS_RunActive()
+        return
+
+    LLARS_SetStatus("Running")
+    DisableButton()
+
+    LLARS_Click("Click")
+
+    if (LastClickTime = 0)
+        TimeSinceClick := "N/A - first click"
+    else
+        TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
+    LastClickTime := A_TickCount
+    Log("CLICK", "Click Location | " TimeSinceClick)
+
+    ; Match the old script: start the next randomized interval before the
+    ; tooltip delay, rather than waiting until this callback fully returns.
+    AutoClickerTimerID := LLARS_TimerOnce("Timer", Func("RandomClick"))
+
+    Loop, 100
+    {
+        MouseGetPos, xm, ym
+        ToolTip, Activated AutoClicker, (xm+15), (ym+15), 1
+        Sleep, 25
+    }
+    ToolTip
 }
-
-DisableButton()
-
-IniRead, x1, Config.ini, Click, xmin
-IniRead, x2, Config.ini, Click, xmax
-IniRead, y1, Config.ini, Click, ymin
-IniRead, y2, Config.ini, Click, ymax
-Random, x, %x1%, %x2%
-Random, y, %y1%, %y2%
-
-NaturalClick(x, y)
-
-if (LastClickTime = 0)
-{
-	TimeSinceClick := "N/A - first click"
-}
-else
-{
-	TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
-}
-
-LastClickTime := A_TickCount
-
-Log("CLICK", "Click Location X=" x " Y=" y " | " TimeSinceClick)
-
-IniRead, sa1, Config.ini, Timer, min
-IniRead, sa2, Config.ini, Timer, max
-Random, SleepClick, %sa1%, %sa2%
-SetTimer, RandomClick, %SleepClick%
-
-Log("WAIT", "Random sleep before click: " SleepClick " ms")
-
-Loop, 100
-{
-	MouseGetPos, xm, ym
-	ToolTip, Activated AutoClicker, (xm+15), (ym+15), 1
-	Sleep, 25
-}
-ToolTip
-return
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -257,7 +214,7 @@ EndMsg:
 hours := timeToRunMinutes // 60
 minutes := Mod(timeToRunMinutes, 60)
 SetTimer, Countdown, Off
-SetTimer, RandomClick, Off
+LLARS_TimerStopAll()
 ToolTip
 LLARS_EndTimerRun()
 Logout()
