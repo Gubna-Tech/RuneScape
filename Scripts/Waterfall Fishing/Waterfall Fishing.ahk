@@ -64,7 +64,7 @@ CheckPixel:
 if (!LLARS_RUNNING)
     return
 
-LLARS_SetStatus("Running")
+LLARS_SetStatus("Monitoring", "Waterfall Fishing")
 
 if LLARS_PixelMatches("Pixel Coordinate", "Red")
 {
@@ -80,6 +80,7 @@ if LLARS_PixelMatches("Pixel Coordinate", "Red")
     else
         TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
 
+    LLARS_SetStatus("Fishing", "Fishing Spot")
     LLARS_Click("Fishing Spot")
     LastClickTime := A_TickCount
     Log("CLICK", "Fishing Spot | " TimeSinceClick)

@@ -35,6 +35,7 @@ Run(ctx)
 {
 	global
 
+	LLARS_SetStatus("Burning", "Sharp Shell")
 	LLARS_Click("Sharp Shell Shard", "right")
 
 	LLARS_Sleep("Sleep Brief")

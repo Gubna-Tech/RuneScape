@@ -44,6 +44,7 @@ Run(ctx)
 		If (ctx.IsFirst)
 		{
 
+			LLARS_SetStatus("Banking", "Bank")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
@@ -52,6 +53,7 @@ Run(ctx)
 
 			LLARS_Sleep("Sleep Short")
 
+			LLARS_SetStatus("Preparing", "Powder of Burials")
 			LLARS_PressHotkey("Powder of burials")
 
 			powdertime := 1800000
@@ -70,6 +72,7 @@ Run(ctx)
 		If (ctx.IsFirst)
 		{
 
+			LLARS_SetStatus("Banking", "Bank")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
@@ -78,6 +81,7 @@ Run(ctx)
 
 			LLARS_Sleep("Sleep Short")
 
+			LLARS_SetStatus("Preparing", "Beast of Burden")
 			LLARS_PressHotkey("beast of burden", "restore pot hotkey")
 
 			LLARS_Sleep("Sleep Short")
@@ -95,10 +99,12 @@ Run(ctx)
 	{
 	}
 
+	LLARS_SetStatus("Banking", "Bank")
 	LLARS_Click("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Banking", "Bank Preset")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_Sleep("Sleep Short")
@@ -106,6 +112,7 @@ Run(ctx)
 	LLARS_RandomSleep()
 
 	hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+	LLARS_SetStatus("Praying", "Prayer")
 	LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
 	LLARS_Sleep("Sleep Prayer")
@@ -118,11 +125,13 @@ Run(ctx)
 	{
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Preparing", "Beast of Burden")
 		LLARS_PressHotkey("beast of burden", "bob icon hotkey")
 
 		LLARS_Sleep("Sleep Short")
 
 		hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+		LLARS_SetStatus("Praying", "Prayer")
 		LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
 		LLARS_Sleep("Sleep Prayer Extra")
@@ -140,6 +149,7 @@ Run(ctx)
 	{
 		If (bobtime <= 60000)
 		{
+			LLARS_SetStatus("Banking", "Bank")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
@@ -148,6 +158,7 @@ Run(ctx)
 
 			LLARS_Sleep("Sleep Short")
 
+			LLARS_SetStatus("Preparing", "Beast of Burden")
 			LLARS_PressHotkey("beast of burden", "restore pot hotkey")
 
 			LLARS_Sleep("Sleep Short")
@@ -170,6 +181,7 @@ Run(ctx)
 	{
 		If (powdertime <= 60000)
 		{
+			LLARS_SetStatus("Banking", "Bank")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
@@ -178,6 +190,7 @@ Run(ctx)
 
 			LLARS_Sleep("Sleep Short")
 
+			LLARS_SetStatus("Preparing", "Powder of Burials")
 			LLARS_PressHotkey("Powder of burials")
 
 			powdertime := 1800000
