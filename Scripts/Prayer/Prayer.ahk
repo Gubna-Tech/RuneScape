@@ -19,13 +19,12 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
-
-prime := 0
-bobprime := 0
 powdertime := 0
 bobtime := 0
+
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -35,335 +34,164 @@ bobtime := 0
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	Log("RUN", "Run " count " of " runcount3 " started")
-
-	IniRead, option, Config.ini, Powder of burials, option
-	StringLower, option, option
-
-	If (option = "true")
+	option := LLARS_ConfigReadBool("Powder of burials")
+	If (option)
 	{
-		If (prime = 0)
+		If (ctx.IsFirst)
 		{
-			++prime
 
-			IniRead, x1, Config.ini, Bank Coords, xmin
-			IniRead, x2, Config.ini, Bank Coords, xmax
-			IniRead, y1, Config.ini, Bank Coords, ymin
-			IniRead, y2, Config.ini, Bank Coords, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			NaturalClick(x, y)
-			Log("POWDER PRIME BANK", "X=" x " Y=" y)
+			LLARS_Click("Bank Coords")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hkbank, Config.ini, Powder of burials, bank preset
-			Send, {%hkbank%}
-			Log("POWDER BANK PRESET", "Hotkey=" hkbank)
+			LLARS_PressHotkey("Powder of burials", "bank preset")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hk, Config.ini, Powder of burials, hotkey
-			Send, {%hk%}
-			Log("POWDER HOTKEY", "Hotkey=" hk)
+			LLARS_PressHotkey("Powder of burials")
 
 			powdertime := 1800000
 			SetTimer, UpdateTime, 1000
-			Log("POWDER TIMER", "Powder timer started: " powdertime " ms")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 		}
 	}
 	Else
 	{
-		Log("POWDER OF BURIALS", "Option disabled")
 	}
 
-	IniRead, option, Config.ini, beast of burden, option
-	StringLower, option, option
-
-	If (option = "true")
+	option := LLARS_ConfigReadBool("beast of burden")
+	If (option)
 	{
-		If (bobprime = 0)
+		If (ctx.IsFirst)
 		{
-			++bobprime
 
-			IniRead, x1, Config.ini, Bank Coords, xmin
-			IniRead, x2, Config.ini, Bank Coords, xmax
-			IniRead, y1, Config.ini, Bank Coords, ymin
-			IniRead, y2, Config.ini, Bank Coords, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			NaturalClick(x, y)
-			Log("BOB PRIME BANK", "X=" x " Y=" y)
+			LLARS_Click("Bank Coords")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hkbank, Config.ini, beast of burden, bank preset
-			Send, {%hkbank%}
-			Log("BOB BANK PRESET", "Hotkey=" hkbank)
+			LLARS_PressHotkey("beast of burden", "bank preset")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hk, Config.ini, beast of burden, restore pot hotkey
-			Send, {%hk%}
-			Log("BOB RESTORE POT", "Hotkey=" hk)
+			LLARS_PressHotkey("beast of burden", "restore pot hotkey")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hk, Config.ini, beast of burden, bob hotkey
-			Send, {%hk%}
-			Log("BOB HOTKEY", "Hotkey=" hk)
+			LLARS_PressHotkey("beast of burden", "bob hotkey")
 
-			IniRead, bobtimer, Config.ini, beast of burden, bob timer
+			bobtimer := LLARS_ConfigReadInteger("beast of burden", "bob timer")
 			bobtime := (bobtimer * 60 * 1000)
 			SetTimer, updatebob, 1000
-			Log("BOB TIMER", "Bob timer started: " bobtime " ms")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 		}
 	}
 	Else
 	{
-		Log("BEAST OF BURDEN", "Option disabled")
 	}
 
-	IniRead, x1, Config.ini, Bank Coords, xmin
-	IniRead, x2, Config.ini, Bank Coords, xmax
-	IniRead, y1, Config.ini, Bank Coords, ymin
-	IniRead, y2, Config.ini, Bank Coords, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("BANK", "X=" x " Y=" y)
+	LLARS_Click("Bank Coords")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, hkbank, Config.ini, Bank Preset, hotkey
-	Send, {%hkbank%}
-	Log("BANK PRESET", "Hotkey=" hkbank)
+	LLARS_PressHotkey("Bank Preset")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
 	LLARS_RandomSleep()
 
-	IniRead, hkdown, Config.ini, Skillbar Hotkey, hotkey
-	Send, {%hkdown% down}
-	Log("SKILLBAR DOWN", "Hotkey=" hkdown)
+	hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+	LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
-	IniRead, sap1, Config.ini, Sleep Prayer, min
-	IniRead, sap2, Config.ini, Sleep Prayer, max
-	Random, SleepAmount, %sap1%, %sap2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP PRAYER WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Prayer")
 
-	IniRead, hkup, Config.ini, Skillbar Hotkey, hotkey
-	Send, {%hkup% up}
-	Log("SKILLBAR UP", "Hotkey=" hkup)
+	hkup := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+	LLARS_CreatorSendInput("{" . hkup . " up}", "Key Up")
 
-	IniRead, option, Config.ini, beast of burden, option
-	StringLower, option, option
-
-	If (option = "true")
+	option := LLARS_ConfigReadBool("beast of burden")
+	If (option)
 	{
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, hk, Config.ini, beast of burden, bob icon hotkey
-		Send, {%hk%}
-		Log("BOB ICON", "Hotkey=" hk)
+		LLARS_PressHotkey("beast of burden", "bob icon hotkey")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, hkdown, Config.ini, Skillbar Hotkey, hotkey
-		Send, {%hkdown% down}
-		Log("SKILLBAR DOWN EXTRA", "Hotkey=" hkdown)
+		hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+		LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
-		IniRead, sap1, Config.ini, Sleep Prayer Extra, min
-		IniRead, sap2, Config.ini, Sleep Prayer Extra, max
-		Random, SleepAmountPrayer, %sap1%, %sap2%
-		LLARS_EstimatedSleep(SleepAmountPrayer)
-		Log("SLEEP PRAYER EXTRA WAIT", "Sleep completed: " SleepAmountPrayer " ms")
+		LLARS_Sleep("Sleep Prayer Extra")
+		hkup := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+		LLARS_CreatorSendInput("{" . hkup . " up}", "Key Up")
 
-		IniRead, hkup, Config.ini, Skillbar Hotkey, hotkey
-		Send, {%hkup% up}
-		Log("SKILLBAR UP EXTRA", "Hotkey=" hkup)
-
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP BRIEF WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 	}
 	Else
 	{
-		Log("BOB EXTRA", "Option disabled")
 	}
 
-	IniRead, option, Config.ini, beast of burden, option
-	StringLower, option, option
-
-	If (option = "true")
+	option := LLARS_ConfigReadBool("beast of burden")
+	If (option)
 	{
 		If (bobtime <= 60000)
 		{
-			IniRead, x1, Config.ini, Bank Coords, xmin
-			IniRead, x2, Config.ini, Bank Coords, xmax
-			IniRead, y1, Config.ini, Bank Coords, ymin
-			IniRead, y2, Config.ini, Bank Coords, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			NaturalClick(x, y)
-			Log("BOB TIMER BANK", "X=" x " Y=" y " | BobTime=" bobtime " ms")
+			LLARS_Click("Bank Coords")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hkbank, Config.ini, beast of burden, bank preset
-			Send, {%hkbank%}
-			Log("BOB BANK PRESET", "Hotkey=" hkbank)
+			LLARS_PressHotkey("beast of burden", "bank preset")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hk, Config.ini, beast of burden, restore pot hotkey
-			Send, {%hk%}
-			Log("BOB RESTORE POT", "Hotkey=" hk)
+			LLARS_PressHotkey("beast of burden", "restore pot hotkey")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hk, Config.ini, beast of burden, bob hotkey
-			Send, {%hk%}
-			Log("BOB HOTKEY", "Hotkey=" hk)
+			LLARS_PressHotkey("beast of burden", "bob hotkey")
 
-			IniRead, bobtimer, Config.ini, beast of burden, bob timer
+			bobtimer := LLARS_ConfigReadInteger("beast of burden", "bob timer")
 			bobtime := (bobtimer * 60 * 1000)
 			SetTimer, updatebob, 1000
-			Log("BOB TIMER", "Bob timer restarted: " bobtime " ms")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 		}
 		Else
 		{
-			Log("BOB TIMER CHECK", "No refill needed | BobTime=" bobtime " ms")
 		}
 	}
 
-	IniRead, option, Config.ini, Powder of burials, option
-	StringLower, option, option
-
-	If (option = "true")
+	option := LLARS_ConfigReadBool("Powder of burials")
+	If (option)
 	{
 		If (powdertime <= 60000)
 		{
-			IniRead, x1, Config.ini, Bank Coords, xmin
-			IniRead, x2, Config.ini, Bank Coords, xmax
-			IniRead, y1, Config.ini, Bank Coords, ymin
-			IniRead, y2, Config.ini, Bank Coords, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			NaturalClick(x, y)
-			Log("POWDER TIMER BANK", "X=" x " Y=" y " | PowderTime=" powdertime " ms")
+			LLARS_Click("Bank Coords")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hkbank, Config.ini, Powder of burials, bank preset
-			Send, {%hkbank%}
-			Log("POWDER BANK PRESET", "Hotkey=" hkbank)
+			LLARS_PressHotkey("Powder of burials", "bank preset")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_EstimatedSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short")
 
-			IniRead, hk, Config.ini, Powder of burials, hotkey
-			Send, {%hk%}
-			Log("POWDER HOTKEY", "Hotkey=" hk)
+			LLARS_PressHotkey("Powder of burials")
 
 			powdertime := 1800000
 			SetTimer, UpdateTime, 1000
-			Log("POWDER TIMER", "Powder timer restarted: " powdertime " ms")
 
-			IniRead, sa1, Config.ini, Sleep Short, min
-			IniRead, sa2, Config.ini, Sleep Short, max
-			Random, SleepAmount, %sa1%, %sa2%
-			LLARS_FinalSleep(SleepAmount)
-			Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+			LLARS_Sleep("Sleep Short", true)
 		}
 		Else
 		{
-			Log("POWDER TIMER CHECK", "No refill needed | PowderTime=" powdertime " ms")
 		}
 	}
-
-	LLARS_EndLoop()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -373,10 +201,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 UpdateTime:
 powdertime -= 1000
 return

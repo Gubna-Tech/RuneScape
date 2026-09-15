@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,155 +31,80 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Anvil Coords")
 
-		IniRead, x1, Config.ini, Anvil Coords, xmin
-		IniRead, x2, Config.ini, Anvil Coords, xmax
-		IniRead, y1, Config.ini, Anvil Coords, ymin
-		IniRead, y2, Config.ini, Anvil Coords, ymax
+		LLARS_Sleep("Sleep Normal")
+
+		LLARS_Click("bar")
+
+		LLARS_Sleep("Sleep Short")
+
+		x1 := LLARS_ConfigRead("item", "xmin", "")
+		x2 := LLARS_ConfigRead("item", "xmax", "")
+		y1 := LLARS_ConfigRead("item", "ymin", "")
+		y2 := LLARS_ConfigRead("item", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ANVIL", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Normal, min
-		IniRead, sa2, Config.ini, Sleep Normal, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP NORMAL WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, bar, xmin
-		IniRead, x2, Config.ini, bar, xmax
-		IniRead, y1, Config.ini, bar, ymin
-		IniRead, y2, Config.ini, bar, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BAR", "X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, item, xmin
-		IniRead, x2, Config.ini, item, xmax
-		IniRead, y1, Config.ini, item, ymin
-		IniRead, y2, Config.ini, item, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
+		if !LLARS_WaitForRuneScape("MouseMove")
+			return
 		MouseMove, %x%, %y%
-		Log("ITEM MOVE", "X=" x " Y=" y)
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP BRIEF WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 
-		IniRead, scroll1, Config.ini, Scroll, min
-		IniRead, scroll2, Config.ini, Scroll, max
+		scroll1 := LLARS_ConfigRead("Scroll", "min", "")
+		scroll2 := LLARS_ConfigRead("Scroll", "max", "")
 		Random, scrollrandom, %scroll1%, %scroll2%
-		Log("SCROLL", "WheelDown count=" scrollrandom)
 
 		Loop, % scrollrandom
 		{
-			Send, {WheelDown}
+			LLARS_PressKey("WheelDown")
 			Random, ScrollSleep, 50, 250
 			Sleep, %ScrollSleep%
-			Log("SCROLL STEP", "WheelDown | Sleep=" ScrollSleep " ms")
 		}
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP BRIEF WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 
-		IniRead, x1, Config.ini, item, xmin
-		IniRead, x2, Config.ini, item, xmax
-		IniRead, y1, Config.ini, item, ymin
-		IniRead, y2, Config.ini, item, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ITEM", "X=" x " Y=" y)
+		LLARS_Click("item")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		iniread, amount, Config.ini, Extra Items, amount
+		amount := LLARS_ConfigReadInteger("Extra Items", "amount")
 
 		Loop, % amount
 		{
-			IniRead, x1, Config.ini, quantity, xmin
-			IniRead, x2, Config.ini, quantity, xmax
-			IniRead, y1, Config.ini, quantity, ymin
-			IniRead, y2, Config.ini, quantity, ymax
-			Random, x, %x1%, %x2%
-			Random, y, %y1%, %y2%
-			NaturalClick(x, y)
-			Log("QUANTITY", "Iteration=" A_Index " of 27 | X=" x " Y=" y)
+			LLARS_Click("quantity")
 
 			Random, ransleep, 25, 100
 			Sleep, %ransleep%
-			Log("QUANTITY WAIT", "Iteration=" A_Index " of 27 | Sleep=" ransleep " ms")
 		}
-	}
 
-	If (firstrun = 1)
+	}
+	else
 	{
-		firstrun := 0
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+		LLARS_Click("Anvil Coords")
 
-		IniRead, x1, Config.ini, Anvil Coords, xmin
-		IniRead, x2, Config.ini, Anvil Coords, xmax
-		IniRead, y1, Config.ini, Anvil Coords, ymin
-		IniRead, y2, Config.ini, Anvil Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("ANVIL", "X=" x " Y=" y)
 	}
 
-	If (firstrun = 0)
-	{
-		++firstrun
-		Log("FIRSTRUN", "firstrun incremented to " firstrun)
+	LLARS_Sleep("Sleep Short")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_RandomSleep()
 
-		LLARS_RandomSleep()
+	LLARS_PressKey("Space")
 
-		Send, {Space}
-		Log("SPACE", "Sent {Space}")
-
-		IniRead, sa1, Config.ini, Sleep Smith, min
-		IniRead, sa2, Config.ini, Sleep Smith, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_FinalSleep(SleepAmount)
-		Log("SLEEP SMITH WAIT", "Sleep completed: " SleepAmount " ms")
-	}
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Smith", true)
 }
+
+
 
 ; ================================================================
 ;
+
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
 ; ================================================================
@@ -187,10 +113,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

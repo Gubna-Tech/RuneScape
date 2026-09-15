@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,61 +31,39 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	Log("RUN", "Run " count " of " runcount3 " started")
+	LLARS_Click("Sharp Shell Shard", "right")
 
-	IniRead, x1, Config.ini, Sharp Shell Shard, xmin
-	IniRead, x2, Config.ini, Sharp Shell Shard, xmax
-	IniRead, y1, Config.ini, Sharp Shell Shard, ymin
-	IniRead, y2, Config.ini, Sharp Shell Shard, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y, "right")
-	Log("SHARP SHELL SHARD", "Right Click X=" x " Y=" y)
+	LLARS_Sleep("Sleep Brief")
 
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP BRIEF WAIT", "Sleep completed: " SleepAmount " ms")
-
-	IniRead, minx, Config.ini, Offset - Shard, minx
-	IniRead, maxx, Config.ini, Offset - Shard, maxx
-	IniRead, miny, Config.ini, Offset - Shard, miny
-	IniRead, maxy, Config.ini, Offset - Shard, maxy
+	minx := LLARS_ConfigReadNumber("Offset - Shard", "minx")
+	maxx := LLARS_ConfigReadNumber("Offset - Shard", "maxx")
+	miny := LLARS_ConfigReadNumber("Offset - Shard", "miny")
+	maxy := LLARS_ConfigReadNumber("Offset - Shard", "maxy")
 	MouseGetPos, RightClickX, RightClickY
 	Random, XOffset, %minx%, %maxx%
 	Random, YOffset, %miny%, %maxy%
 	TargetX := RightClickX + XOffset
 	TargetY := RightClickY + YOffset
 	NaturalClick(TargetX, TargetY)
-	Log("SHARD TARGET", "Origin X=" RightClickX " Y=" RightClickY " | Offset X=" XOffset " Y=" YOffset " | Target X=" TargetX " Y=" TargetY)
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
 	LLARS_RandomSleep()
 
-	Send, {Space}
-	Log("SPACE", "Sent {Space}")
+	LLARS_PressKey("Space")
 
-	IniRead, sa1, Config.ini, Sleep Burn, min
-	IniRead, sa2, Config.ini, Sleep Burn, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("SLEEP BURN WAIT", "Sleep completed: " SleepAmount " ms")
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Burn", true)
 }
+
+
 
 ; ================================================================
 ;
+
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
 ; ================================================================
@@ -93,10 +72,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir
