@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,58 +31,30 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	IniRead, x1, Config.ini, Bank Coords, xmin
-	IniRead, x2, Config.ini, Bank Coords, xmax
-	IniRead, y1, Config.ini, Bank Coords, ymin
-	IniRead, y2, Config.ini, Bank Coords, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("BANK CLICK", "X=" x " Y=" y)
+	LLARS_Click("Bank Coords")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, hkbank, Config.ini, Bank Preset, hotkey
-	Send, {%hkbank%}
-	Log("BANK PRESET", "Hotkey sent: " hkbank)
+	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, hk, Config.ini, Cape Hotkey, hotkey
-	Send, {%hk%}
-	Log("CAPE", "Hotkey sent: " hk)
+	LLARS_PressHotkey("Cape Hotkey")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	Send, {Space}
-	Log("SPACE", "Space key sent")
+	LLARS_PressKey("Space")
 
-	IniRead, sa1, Config.ini, Sleep Brief, min
-	IniRead, sa2, Config.ini, Sleep Brief, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Brief", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -91,10 +64,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

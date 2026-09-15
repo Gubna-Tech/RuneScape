@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,75 +31,34 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	Log("RUN", "Run " count " of " runcount3 " started")
+	LLARS_Click("Bank Coords")
 
-	IniRead, x1, Config.ini, Bank Coords, xmin
-	IniRead, x2, Config.ini, Bank Coords, xmax
-	IniRead, y1, Config.ini, Bank Coords, ymin
-	IniRead, y2, Config.ini, Bank Coords, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("BANK", "X=" x " Y=" y)
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
-
-	IniRead, hkbank, Config.ini, Bank Preset, hotkey
-	Send, {%hkbank%}
-	Log("BANK PRESET", "Hotkey=" hkbank)
+	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, hk, Config.ini, Skillbar Hotkey, hotkey
-	Send, {%hk%}
-	Log("SKILLBAR HOTKEY", "Hotkey=" hk)
+	LLARS_PressHotkey("Skillbar Hotkey")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Jewellery Coords, xmin
-	IniRead, x2, Config.ini, Jewellery Coords, xmax
-	IniRead, y1, Config.ini, Jewellery Coords, ymin
-	IniRead, y2, Config.ini, Jewellery Coords, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("JEWELLERY", "X=" x " Y=" y)
+	LLARS_Click("Jewellery Coords")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	Send, {Space}
-	Log("SPACE", "Sent {Space}")
+	LLARS_PressKey("Space")
 
-	IniRead, sa1, Config.ini, Sleep Enchant, min
-	IniRead, sa2, Config.ini, Sleep Enchant, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("SLEEP ENCHANT WAIT", "Sleep completed: " SleepAmount " ms")
-
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Enchant", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -108,10 +68,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

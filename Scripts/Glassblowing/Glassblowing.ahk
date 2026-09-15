@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_Click("Bank Prime")
+		LLARS_Click("Bank Coords")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -45,14 +45,22 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Short")
 
-		LLARS_Click("Woodworking Bench")
+		LLARS_PressHotkey("Skillbar Hotkey")
+
+		LLARS_Sleep("Sleep Short")
+
+		LLARS_PressKey("2")
+
+		LLARS_Sleep("Sleep Short")
+
+		LLARS_Click("item")
 
 	}
 	else
 	{
-		LLARS_Click("Bank Main")
+		LLARS_Click("Bank Coords")
 
-		LLARS_Sleep("Sleep Walk")
+		LLARS_Sleep("Sleep Short")
 
 		LLARS_PressHotkey("Bank Preset")
 
@@ -60,15 +68,15 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Short")
 
-		LLARS_Click("Woodworking Bench")
+		LLARS_PressHotkey("Skillbar Hotkey")
 
 	}
 
-	LLARS_Sleep("Sleep Walk")
+	LLARS_Sleep("Sleep Short")
 
 	LLARS_PressKey("Space")
 
-	LLARS_Sleep("Sleep Construct", true)
+	LLARS_Sleep("Sleep Blow", true)
 }
 
 

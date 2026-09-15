@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,39 +31,23 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
-	Log("RUN", "Run " count " of " runcount3 " started")
+	global
 
-	IniRead, x1, Config.ini, Spinning Wheel - Fungal Only, xmin
-	IniRead, x2, Config.ini, Spinning Wheel - Fungal Only, xmax
-	IniRead, y1, Config.ini, Spinning Wheel - Fungal Only, ymin
-	IniRead, y2, Config.ini, Spinning Wheel - Fungal Only, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("SPINNING WHEEL - FUNGAL ONLY", "X=" x " Y=" y)
+	LLARS_Click("Spinning Wheel - Fungal Only")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
 	LLARS_RandomSleep()
 
-	IniRead, hkbank, Config.ini, Bank Preset, hotkey
-	Send, {Space}
-	Log("SPACE", "Sent {Space}")
+	hkbank := LLARS_ConfigReadHotkey("Bank Preset", "hotkey")
+	LLARS_PressKey("Space")
 
-	IniRead, sa1, Config.ini, Sleep Fungal, min
-	IniRead, sa2, Config.ini, Sleep Fungal, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("SLEEP FUNGAL WAIT", "Sleep completed: " SleepAmount " ms")
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Fungal", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -72,10 +57,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

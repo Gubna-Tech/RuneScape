@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,63 +31,30 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
-	Log("RUN", "Run " count " of " runcount3 " started")
+	global
 
-	IniRead, x1, Config.ini, Bank Chest, xmin
-	IniRead, x2, Config.ini, Bank Chest, xmax
-	IniRead, y1, Config.ini, Bank Chest, ymin
-	IniRead, y2, Config.ini, Bank Chest, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("BANK CHEST", "X=" x " Y=" y)
+	LLARS_Click("Bank Chest")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, hkbank, Config.ini, Bank Preset, hotkey
-	Send, {%hkbank%}
-	Log("BANK PRESET", "Hotkey=" hkbank)
+	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	IniRead, x1, Config.ini, Range, xmin
-	IniRead, x2, Config.ini, Range, xmax
-	IniRead, y1, Config.ini, Range, ymin
-	IniRead, y2, Config.ini, Range, ymax
-	Random, x, %x1%, %x2%
-	Random, y, %y1%, %y2%
-	NaturalClick(x, y)
-	Log("RANGE", "X=" x " Y=" y)
+	LLARS_Click("Range")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_EstimatedSleep(SleepAmount)
-	Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_Sleep("Sleep Short")
 
-	Send, {Space}
-	Log("SPACE", "Sent {Space}")
+	LLARS_PressKey("Space")
 
-	IniRead, sa1, Config.ini, Sleep Cook, min
-	IniRead, sa2, Config.ini, Sleep Cook, max
-	Random, SleepAmount, %sa1%, %sa2%
-	LLARS_FinalSleep(SleepAmount)
-	Log("SLEEP COOK WAIT", "Sleep completed: " SleepAmount " ms")
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Cook", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -96,10 +64,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

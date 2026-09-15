@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,112 +31,47 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
-	if (firstrun = 0)
+	global
+
+	if (ctx.IsFirst)
 	{
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=0")
+		LLARS_Click("Bank Prime")
 
-		IniRead, x1, Config.ini, Bank Prime, xmin
-		IniRead, x2, Config.ini, Bank Prime, xmax
-		IniRead, y1, Config.ini, Bank Prime, ymin
-		IniRead, y2, Config.ini, Bank Prime, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BANK PRIME", "X=" x " Y=" y)
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_PressHotkey("Bank Preset")
 
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		Send, {%hkbank%}
-		Log("BANK PRESET", "Hotkey=" hkbank)
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Click("Sawmill")
 
-		IniRead, x1, Config.ini, Sawmill, xmin
-		IniRead, x2, Config.ini, Sawmill, xmax
-		IniRead, y1, Config.ini, Sawmill, ymin
-		IniRead, y2, Config.ini, Sawmill, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("SAWMILL", "X=" x " Y=" y)
 	}
-
-	If (firstrun = 1)
+	else
 	{
-		firstrun := 0
-		Log("RUN", "Run " count " of " runcount3 " started | firstrun=1")
+		LLARS_Click("Bank Main")
 
-		IniRead, x1, Config.ini, Bank Main, xmin
-		IniRead, x2, Config.ini, Bank Main, xmax
-		IniRead, y1, Config.ini, Bank Main, ymin
-		IniRead, y2, Config.ini, Bank Main, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("BANK MAIN", "X=" x " Y=" y)
+		LLARS_Sleep("Sleep Walk")
 
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP WALK WAIT", "Sleep completed: " SleepAmount " ms")
-
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		Send, {%hkbank%}
-		Log("BANK PRESET", "Hotkey=" hkbank)
+		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP SHORT WAIT", "Sleep completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Sawmill, xmin
-		IniRead, x2, Config.ini, Sawmill, xmax
-		IniRead, y1, Config.ini, Sawmill, ymin
-		IniRead, y2, Config.ini, Sawmill, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("SAWMILL", "X=" x " Y=" y)
+		LLARS_Click("Sawmill")
+
 	}
 
-	If (firstrun = 0)
-	{
-		++firstrun
-		Log("FIRSTRUN", "firstrun incremented to " firstrun)
+	LLARS_Sleep("Sleep Walk")
 
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP WALK WAIT", "Sleep completed: " SleepAmount " ms")
+	LLARS_PressKey("Space")
 
-		Send, {Space}
-		Log("SPACE", "Sent {Space}")
-
-		IniRead, sa1, Config.ini, Sleep Cut, min
-		IniRead, sa2, Config.ini, Sleep Cut, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_FinalSleep(SleepAmount)
-		Log("SLEEP CUT WAIT", "Sleep completed: " SleepAmount " ms")
-	}
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Cut", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -145,10 +81,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir
