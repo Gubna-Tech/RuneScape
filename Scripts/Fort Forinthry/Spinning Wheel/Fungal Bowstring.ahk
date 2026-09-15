@@ -35,6 +35,7 @@ Run(ctx)
 {
 	global
 
+	LLARS_SetStatus("Moving", "Spinning Wheel - Fungal Only")
 	LLARS_Click("Spinning Wheel - Fungal Only")
 
 	LLARS_Sleep("Sleep Short")
@@ -42,6 +43,7 @@ Run(ctx)
 	LLARS_RandomSleep()
 
 	hkbank := LLARS_ConfigReadHotkey("Bank Preset", "hotkey")
+	LLARS_SetStatus("Spinning", "Fungal Bowstring")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Fungal", true)

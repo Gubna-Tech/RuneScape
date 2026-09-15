@@ -35,6 +35,7 @@ Run(ctx)
 {
 	global
 
+	LLARS_SetStatus("Disassembling", "Invention")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")

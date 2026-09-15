@@ -37,10 +37,12 @@ Run(ctx)
 
 	LLARS_RandomSleep()
 
+	LLARS_SetStatus("Grinding", "Telekinetic Grind")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Grinding", "Item")
 	LLARS_Click("Item")
 
 	LLARS_Sleep("Sleep Grind", true)
