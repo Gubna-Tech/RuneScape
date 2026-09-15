@@ -19,11 +19,11 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
-
-firstrun := 0
 prime := 0
+
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -33,283 +33,127 @@ prime := 0
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	Log("RUN", "Run " count " of " runcount3 " started")
-
-	If firstrun = 0
+	if (ctx.IsFirst)
 	{
-		IniRead, option,Config.ini, Renew, option
-		if option=true
+		option := LLARS_ConfigReadBool("Renew")
+		if (option)
 			if prime=0
-			{
-				++prime
-				IniRead, portables, Config.ini, Renew, portables
-				PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
-				SetTimer, UpdateTime, 1000
-
-				IniRead, x1, Config.ini, Bank, xmin
-				IniRead, x2, Config.ini, Bank, xmax
-				IniRead, y1, Config.ini, Bank, ymin
-				IniRead, y2, Config.ini, Bank, ymax
-				Random, x, %x1%, %x2%
-				Random, y, %y1%, %y2%
-				NaturalClick(x, y)
-				Log("CLICK", "Bank X=" x " Y=" y)
-
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-				IniRead, hk, Config.ini, Renew, bank hotkey
-				send {%hk%}
-				Log("HOTKEY", "Configured Hotkey hotkey sent: " hk)
-
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-				IniRead, hk, Config.ini, Renew, toolbar hotkey
-				send {%hk%}
-				Log("HOTKEY", "Configured Hotkey hotkey sent: " hk)
-
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-				send {1}
-				Log("KEY 1", "Key 1 sent")
-
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-				IniRead, portables, Config.ini, Renew, portables
-				sendraw {%portables%}
-
-				IniRead, sa1, Config.ini, Sleep Brief, min
-				IniRead, sa2, Config.ini, Sleep Brief, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
-
-				send {enter}
-				Log("ENTER", "Enter key sent")
-			}
-
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Bank, xmin
-		IniRead, x2, Config.ini, Bank, xmax
-		IniRead, y1, Config.ini, Bank, ymin
-		IniRead, y2, Config.ini, Bank, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Bank X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		send {%hkbank%}
-		Log("HOTKEY", "Bank Preset hotkey sent: " hkbank)
-
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Crafter, xmin
-		IniRead, x2, Config.ini, Crafter, xmax
-		IniRead, y1, Config.ini, Crafter, ymin
-		IniRead, y2, Config.ini, Crafter, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Crafter X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-		IniRead, item, Config.ini, Item Config, item
-		IniRead, x1, Config.ini, %item%, xmin
-		IniRead, x2, Config.ini, %item%, xmax
-		IniRead, y1, Config.ini, %item%, ymin
-		IniRead, y2, Config.ini, %item%, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "%item% X=" x " Y=" y)
-	}
-	If firstrun = 1
-	{
-		firstrun = 0
-
-		IfWinNotActive, RuneScape
 		{
-			WinActivate, RuneScape
+			++prime
+			portables := LLARS_ConfigReadInteger("Renew", "portables")
+			PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
+			SetTimer, UpdateTime, 1000
+
+			LLARS_Click("Bank")
+
+			LLARS_Sleep("Sleep Short")
+
+			LLARS_PressHotkey("Renew", "bank hotkey")
+
+			LLARS_Sleep("Sleep Short")
+
+			LLARS_PressHotkey("Renew", "toolbar hotkey")
+
+			LLARS_Sleep("Sleep Short")
+
+			LLARS_PressKey("1")
+
+			LLARS_Sleep("Sleep Short")
+
+			portables := LLARS_ConfigReadInteger("Renew", "portables")
+			LLARS_CreatorSendInput("{Raw}{" . portables . "}", "Text Input")
+
+			LLARS_Sleep("Sleep Brief")
+
+			LLARS_PressKey("enter")
 		}
 
-		GuiControl,,Counter, %count%
-		GuiControl,,Counter2, %count2% / %runcount3%
-		GuiControl,,ScriptBlue, %scriptname%
-		GuiControl,,State3, Running
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Bank, xmin
-		IniRead, x2, Config.ini, Bank, xmax
-		IniRead, y1, Config.ini, Bank, ymin
-		IniRead, y2, Config.ini, Bank, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Bank X=" x " Y=" y)
+		LLARS_Click("Bank")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		send {%hkbank%}
-		Log("HOTKEY", "Bank Preset hotkey sent: " hkbank)
+		LLARS_PressHotkey("Bank Preset")
+
+		LLARS_Sleep("Sleep Short")
+
+		LLARS_Click("Crafter")
+
+		LLARS_Sleep("Sleep Short")
+
+		item := LLARS_ConfigRead("Item Config", "item", "")
+		LLARS_Click(item)
+
+	}
+	else
+	{
+		LLARS_Click("Bank")
+
+		LLARS_Sleep("Sleep Short")
+
+		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Crafter, xmin
-		IniRead, x2, Config.ini, Crafter, xmax
-		IniRead, y1, Config.ini, Crafter, ymin
-		IniRead, y2, Config.ini, Crafter, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Crafter X=" x " Y=" y)
+		LLARS_Click("Crafter")
+
 	}
-	If firstrun = 0
+
+	LLARS_Sleep("Sleep Short")
+
+	LLARS_PressKey("space")
+
+	IniRead, sa1, Config.ini, Sleep Craft, min
+	IniRead, sa2, Config.ini, Sleep Craft, max
+	Random, SleepAmount, %sa1%, %sa2%
+	LLARS_RenewOption := LLARS_ConfigReadBool("Renew")
+	LLARS_RenewThisLoop := (LLARS_RenewOption && PortableRemainingTime <= 60000)
+	if (LLARS_RenewThisLoop)
+		LLARS_EstimatedSleep(SleepAmount)
+	else
+		LLARS_FinalSleep(SleepAmount)
+
+	if (LLARS_RenewThisLoop)
 	{
-		++firstrun
+		LLARS_Click("Bank")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		send {space}
-		Log("SPACE", "Space key sent")
+		LLARS_PressHotkey("Renew", "bank hotkey")
 
-		IniRead, sa1, Config.ini, Sleep Craft, min
-		IniRead, sa2, Config.ini, Sleep Craft, max
-		Random, SleepAmount, %sa1%, %sa2%
-		IniRead, LLARS_RenewOption, Config.ini, Renew, option
-		StringLower, LLARS_RenewOption, LLARS_RenewOption
-		LLARS_RenewThisLoop := (LLARS_RenewOption = "true" && PortableRemainingTime <= 60000)
-		if (LLARS_RenewThisLoop)
-			LLARS_EstimatedSleep(SleepAmount)
-		else
-			LLARS_FinalSleep(SleepAmount)
-		Log("SLEEP", "Sleep Craft completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		if (LLARS_RenewThisLoop)
-		{
-				IniRead, x1, Config.ini, Bank, xmin
-				IniRead, x2, Config.ini, Bank, xmax
-				IniRead, y1, Config.ini, Bank, ymin
-				IniRead, y2, Config.ini, Bank, ymax
-				Random, x, %x1%, %x2%
-				Random, y, %y1%, %y2%
-				NaturalClick(x, y)
-				Log("CLICK", "Bank X=" x " Y=" y)
+		LLARS_PressHotkey("Renew", "toolbar hotkey")
 
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-				IniRead, hk, Config.ini, Renew, bank hotkey
-				send {%hk%}
-				Log("HOTKEY", "Bank Preset hotkey sent: " hk)
+		LLARS_PressKey("1")
 
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-				IniRead, hk, Config.ini, Renew, toolbar hotkey
-				send {%hk%}
-				Log("HOTKEY", "Bank Preset hotkey sent: " hk)
+		portables := LLARS_ConfigReadInteger("Renew", "portables")
+		LLARS_CreatorSendInput("{Raw}{" . portables . "}", "Text Input")
 
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Brief")
 
-				send {1}
-				Log("KEY 1", "Key 1 sent")
+		LLARS_PressKey("enter")
 
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		portables := LLARS_ConfigReadInteger("Renew", "portables")
+		PortableRemainingTime := portables * 5 * 60 * 1000
+		SetTimer, UpdateTime, 1000
 
-				IniRead, portables, Config.ini, Renew, portables
-				sendraw {%portables%}
-
-				IniRead, sa1, Config.ini, Sleep Brief, min
-				IniRead, sa2, Config.ini, Sleep Brief, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_EstimatedSleep(SleepAmount)
-				Log("SLEEP", "Sleep Brief completed: " SleepAmount " ms")
-
-				Send {enter}
-				Log("ENTER", "Enter key sent")
-
-				IniRead, portables, Config.ini, Renew, portables
-				PortableRemainingTime := portables * 5 * 60 * 1000
-				SetTimer, UpdateTime, 1000
-
-				IniRead, sa1, Config.ini, Sleep Short, min
-				IniRead, sa2, Config.ini, Sleep Short, max
-				Random, SleepAmount, %sa1%, %sa2%
-				LLARS_FinalSleep(SleepAmount)
-				Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-			}
+		LLARS_Sleep("Sleep Short", true)
 	}
-
-	LLARS_EndLoop()
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -319,10 +163,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 ; ================================================================
 ; |     PORTABLE RENEW TIMER     -     PORTABLE RENEW TIMER       |
 ; ================================================================

@@ -19,11 +19,11 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
-
-firstrun := 0
 prime := 0
+
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -33,105 +33,43 @@ prime := 0
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	Log("RUN", "Run " count " of " runcount3 " started")
-
-	If firstrun = 0
+	if (ctx.IsFirst)
 	{
-		IniRead, x1, Config.ini, Bank Prime Coords, xmin
-		IniRead, x2, Config.ini, Bank Prime Coords, xmax
-		IniRead, y1, Config.ini, Bank Prime Coords, ymin
-		IniRead, y2, Config.ini, Bank Prime Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Bank Prime Coords X=" x " Y=" y)
+		LLARS_Click("Bank Prime Coords")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		send {%hkbank%}
-		Log("HOTKEY", "Bank Preset hotkey sent: " hkbank)
+		LLARS_PressHotkey("Bank Preset")
+
 	}
-	If firstrun = 1
+	else
 	{
-		firstrun = 0
-
-		IfWinNotActive, RuneScape
-		{
-			WinActivate, RuneScape
-		}
-
-		GuiControl,,Counter, %count%
-		GuiControl,,Counter2, %count2% / %runcount3%
-		GuiControl,,ScriptBlue, %scriptname%
-		GuiControl,,State3, Running
-
-		IniRead, hkbank, Config.ini, Bank Preset, hotkey
-		send {%hkbank%}
-		Log("HOTKEY", "Bank Preset hotkey sent: " hkbank)
+		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()
-	}
-	If firstrun = 0
-	{
-		++firstrun
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Range Coords, xmin
-		IniRead, x2, Config.ini, Range Coords, xmax
-		IniRead, y1, Config.ini, Range Coords, ymin
-		IniRead, y2, Config.ini, Range Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Range Coords X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Walk completed: " SleepAmount " ms")
-
-		send {space}
-		Log("SPACE", "Space key sent")
-
-		IniRead, sa1, Config.ini, Sleep Cook, min
-		IniRead, sa2, Config.ini, Sleep Cook, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Cook completed: " SleepAmount " ms")
-
-		IniRead, x1, Config.ini, Bank Main Coords, xmin
-		IniRead, x2, Config.ini, Bank Main Coords, xmax
-		IniRead, y1, Config.ini, Bank Main Coords, ymin
-		IniRead, y2, Config.ini, Bank Main Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Bank Main Coords X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_FinalSleep(SleepAmount)
-		Log("SLEEP", "Sleep Walk completed: " SleepAmount " ms")
 	}
 
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Short")
+
+	LLARS_Click("Range Coords")
+
+	LLARS_Sleep("Sleep Walk")
+
+	LLARS_PressKey("space")
+
+	LLARS_Sleep("Sleep Cook")
+
+	LLARS_Click("Bank Main Coords")
+
+	LLARS_Sleep("Sleep Walk", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -141,10 +79,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

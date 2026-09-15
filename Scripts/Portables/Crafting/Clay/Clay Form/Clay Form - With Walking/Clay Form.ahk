@@ -19,11 +19,11 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
-
-firstrun := 0
 prime := 0
+
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -33,184 +33,68 @@ prime := 0
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	Log("RUN", "Run " count " of " runcount3 " started")
-
-	If firstrun = 0
+	if (ctx.IsFirst)
 	{
-		IniRead, x1, Config.ini, Bank Prime Coords, xmin
-		IniRead, x2, Config.ini, Bank Prime Coords, xmax
-		IniRead, y1, Config.ini, Bank Prime Coords, ymin
-		IniRead, y2, Config.ini, Bank Prime Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Bank Prime Coords X=" x " Y=" y)
+		LLARS_Click("Bank Prime Coords")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, hkbank, Config.ini, Bank Form Preset, hotkey
-		send {%hkbank%}
-		Log("HOTKEY", "Bank Form Preset hotkey sent: " hkbank)
+		LLARS_PressHotkey("Bank Form Preset")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Crafter Coords, xmin
-		IniRead, x2, Config.ini, Crafter Coords, xmax
-		IniRead, y1, Config.ini, Crafter Coords, ymin
-		IniRead, y2, Config.ini, Crafter Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Crafter Coords X=" x " Y=" y)
+		LLARS_Click("Crafter Coords")
 
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Walk completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Walk")
 
-		send {1}
-		Log("KEY 1", "Key 1 sent")
+		LLARS_PressKey("1")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Pottery Menu Coords, xmin
-		IniRead, x2, Config.ini, Pottery Menu Coords, xmax
-		IniRead, y1, Config.ini, Pottery Menu Coords, ymin
-		IniRead, y2, Config.ini, Pottery Menu Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Pottery Menu Coords X=" x " Y=" y)
+		LLARS_Click("Pottery Menu Coords")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Pottery Sub-Menu Coords, xmin
-		IniRead, x2, Config.ini, Pottery Sub-Menu Coords, xmax
-		IniRead, y1, Config.ini, Pottery Sub-Menu Coords, ymin
-		IniRead, y2, Config.ini, Pottery Sub-Menu Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Pottery Sub-Menu Coords X=" x " Y=" y)
+		LLARS_Click("Pottery Sub-Menu Coords")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, item, Config.ini, Item Config, item
-		IniRead, x1, Config.ini, %item%, xmin
-		IniRead, x2, Config.ini, %item%, xmax
-		IniRead, y1, Config.ini, %item%, ymin
-		IniRead, y2, Config.ini, %item%, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "%item% X=" x " Y=" y)
+		item := LLARS_ConfigRead("Item Config", "item", "")
+		LLARS_Click(item)
+
 	}
-	If firstrun = 1
+	else
 	{
-		firstrun = 0
+		LLARS_Click("Bank Main Coords")
 
-		IfWinNotActive, RuneScape
-		{
-			WinActivate, RuneScape
-		}
+		LLARS_Sleep("Sleep Walk")
 
-		GuiControl,,Counter, %count%
-		GuiControl,,Counter2, %count2% / %runcount3%
-		GuiControl,,ScriptBlue, %scriptname%
-		GuiControl,,State3, Running
-
-		IniRead, x1, Config.ini, Bank Main Coords, xmin
-		IniRead, x2, Config.ini, Bank Main Coords, xmax
-		IniRead, y1, Config.ini, Bank Main Coords, ymin
-		IniRead, y2, Config.ini, Bank Main Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Bank Main Coords X=" x " Y=" y)
-
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Walk completed: " SleepAmount " ms")
-
-		IniRead, hkbank, Config.ini, Bank Form Preset, hotkey
-		send {%hkbank%}
-		Log("HOTKEY", "Bank Form Preset hotkey sent: " hkbank)
+		LLARS_PressHotkey("Bank Form Preset")
 
 		LLARS_RandomSleep()
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Crafter Coords, xmin
-		IniRead, x2, Config.ini, Crafter Coords, xmax
-		IniRead, y1, Config.ini, Crafter Coords, ymin
-		IniRead, y2, Config.ini, Crafter Coords, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-		Log("CLICK", "Crafter Coords X=" x " Y=" y)
+		LLARS_Click("Crafter Coords")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
+		LLARS_Sleep("Sleep Short")
 
-		send {1}
-		Log("KEY 1", "Key 1 sent")
-	}
-	If firstrun = 0
-	{
-		++firstrun
+		LLARS_PressKey("1")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		Log("SLEEP", "Sleep Short completed: " SleepAmount " ms")
-
-		send {space}
-		Log("SPACE", "Space key sent")
-
-		IniRead, sa1, Config.ini, Sleep Form, min
-		IniRead, sa2, Config.ini, Sleep Form, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_FinalSleep(SleepAmount)
-		Log("SLEEP", "Sleep Form completed: " SleepAmount " ms")
 	}
 
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Short")
+
+	LLARS_PressKey("space")
+
+	LLARS_Sleep("Sleep Form", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -220,10 +104,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,182 +31,96 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
+	global
 
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
-		IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
-		IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
-		IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
-		IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
+		LLARS_Click("Pedestal - Pedestal")
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, x1, Config.ini, Ritual Type, xmin
-		IniRead, x2, Config.ini, Ritual Type, xmax
-		IniRead, y1, Config.ini, Ritual Type, ymin
-		IniRead, y2, Config.ini, Ritual Type, ymax
+		x1 := LLARS_ConfigRead("Ritual Type", "xmin", "")
+		x2 := LLARS_ConfigRead("Ritual Type", "xmax", "")
+		y1 := LLARS_ConfigRead("Ritual Type", "ymin", "")
+		y2 := LLARS_ConfigRead("Ritual Type", "ymax", "")
 		Random, x, %x1%, %x2%
 		Random, y, %y1%, %y2%
 		Random, Scroll, 5, 10
+		if !LLARS_WaitForRuneScape("MouseMove")
+			return
 		MouseMove, %x%, %y%
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Brief")
 
 		Loop % Scroll
 		{
-			send	{wheeldown}
+			LLARS_PressKey("wheeldown")
 		}
 
-		IniRead, sa1, Config.ini, Sleep Brief, min
-		IniRead, sa2, Config.ini, Sleep Brief, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Brief")
 		NaturalClick(x, y)
 
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		send {space}
+		LLARS_Sleep("Sleep Short")
+		LLARS_PressKey("space")
 
-		IniRead, sa1, Config.ini, Sleep Normal, min
-		IniRead, sa2, Config.ini, Sleep Normal, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Normal")
 
-		IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
-		IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
-		IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
-		IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y, "right")
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Click("Pedestal - Pedestal", "right")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, minx, Config.ini, Offset, minx
-		IniRead, maxx, Config.ini, Offset, maxx
-		IniRead, miny, Config.ini, Offset, miny
-		IniRead, maxy, Config.ini, Offset, maxy
+		minx := LLARS_ConfigReadNumber("Offset", "minx")
+		maxx := LLARS_ConfigReadNumber("Offset", "maxx")
+		miny := LLARS_ConfigReadNumber("Offset", "miny")
+		maxy := LLARS_ConfigReadNumber("Offset", "maxy")
 		MouseGetPos, RightClickX, RightClickY
 		Random, XOffset, %minx%, %maxx%
 		Random, YOffset, %miny%, %maxy%
 		TargetX := RightClickX + XOffset
 		TargetY := RightClickY + YOffset
 		NaturalClick(TargetX, TargetY)
-		IniRead, sa1, Config.ini, Sleep Repair, min
-		IniRead, sa2, Config.ini, Sleep Repair, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Repair")
 
-		IniRead, x1, Config.ini, Platform, xmin
-		IniRead, x2, Config.ini, Platform, xmax
-		IniRead, y1, Config.ini, Platform, ymin
-		IniRead, y2, Config.ini, Platform, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
+		LLARS_Click("Platform")
+
 	}
-	If firstrun = 1
+	else
 	{
-		firstrun=0
+		LLARS_Click("Pedestal - Platform")
 
-		IfWinNotActive, RuneScape
-		{
-			WinActivate, RuneScape
-		}
-
-		GuiControl,,Counter, %count%
-		GuiControl,,Counter2, %count2% / %runcount3%
-		GuiControl,,ScriptBlue, %scriptname%
-		GuiControl,,State3, Running
-
-		IniRead, x1, Config.ini, Pedestal - Platform, xmin
-		IniRead, x2, Config.ini, Pedestal - Platform, xmax
-		IniRead, y1, Config.ini, Pedestal - Platform, ymin
-		IniRead, y2, Config.ini, Pedestal - Platform, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
-
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
-		send {space}
+		LLARS_Sleep("Sleep Walk")
+		LLARS_PressKey("space")
 
 		LLARS_RandomSleep()
 
-		IniRead, sa1, Config.ini, Sleep Normal, min
-		IniRead, sa2, Config.ini, Sleep Normal, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Normal")
 
-		IniRead, x1, Config.ini, Pedestal - Pedestal, xmin
-		IniRead, x2, Config.ini, Pedestal - Pedestal, xmax
-		IniRead, y1, Config.ini, Pedestal - Pedestal, ymin
-		IniRead, y2, Config.ini, Pedestal - Pedestal, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y, "right")
-		IniRead, sa1, Config.ini, Sleep Short, min
-		IniRead, sa2, Config.ini, Sleep Short, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Click("Pedestal - Pedestal", "right")
+		LLARS_Sleep("Sleep Short")
 
-		IniRead, minx, Config.ini, Offset, minx
-		IniRead, maxx, Config.ini, Offset, maxx
-		IniRead, miny, Config.ini, Offset, miny
-		IniRead, maxy, Config.ini, Offset, maxy
+		minx := LLARS_ConfigReadNumber("Offset", "minx")
+		maxx := LLARS_ConfigReadNumber("Offset", "maxx")
+		miny := LLARS_ConfigReadNumber("Offset", "miny")
+		maxy := LLARS_ConfigReadNumber("Offset", "maxy")
 		MouseGetPos, RightClickX, RightClickY
 		Random, XOffset, %minx%, %maxx%
 		Random, YOffset, %miny%, %maxy%
 		TargetX := RightClickX + XOffset
 		TargetY := RightClickY + YOffset
 		NaturalClick(TargetX, TargetY)
-		IniRead, sa1, Config.ini, Sleep Repair, min
-		IniRead, sa2, Config.ini, Sleep Repair, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Repair")
 
-		IniRead, x1, Config.ini, Platform, xmin
-		IniRead, x2, Config.ini, Platform, xmax
-		IniRead, y1, Config.ini, Platform, ymin
-		IniRead, y2, Config.ini, Platform, ymax
-		Random, x, %x1%, %x2%
-		Random, y, %y1%, %y2%
-		NaturalClick(x, y)
+		LLARS_Click("Platform")
+
 	}
-	If firstrun = 0
-	{
-		++firstrun
 
-		IniRead, sa1, Config.ini, Sleep Walk, min
-		IniRead, sa2, Config.ini, Sleep Walk, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_EstimatedSleep(SleepAmount)
+	LLARS_Sleep("Sleep Walk")
 
-		IniRead, sa1, Config.ini, Sleep Ritual, min
-		IniRead, sa2, Config.ini, Sleep Ritual, max
-		Random, SleepAmount, %sa1%, %sa2%
-		LLARS_FinalSleep(SleepAmount)
-	}
-	LLARS_EndLoop()
+	LLARS_Sleep("Sleep Ritual", true)
 }
+
+
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -215,10 +130,7 @@ Loop, %runcount%
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-LLARS_RunComplete()
-
 return
-
 LLARS_FrameworkAvailable()
 {
 	dir := A_ScriptDir

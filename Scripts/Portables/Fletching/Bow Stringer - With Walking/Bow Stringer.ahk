@@ -19,6 +19,8 @@ return
 
 Start:
 
+prime := 0
+
 LLARS_RunCount(Func("Run"))
 
 return
@@ -35,27 +37,44 @@ Run(ctx)
 {
 	global
 
-	LLARS_Click("Pool of Slime")
+	if (ctx.IsFirst)
+	{
+		LLARS_Click("Bank Prime Coords")
 
-	LLARS_Sleep("Sleep Collect")
+		LLARS_Sleep("Sleep Short")
 
-	LLARS_Click("Bucket of Slime")
+		LLARS_PressHotkey("Bank Preset")
 
-	LLARS_Sleep("Sleep Brief")
+		LLARS_Sleep("Sleep Short")
 
-	LLARS_Click("Magic Notepaper")
+		LLARS_RandomSleep()
 
-	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()
+		LLARS_Click("Fletcher Coords")
 
-	IniRead, sa1, Config.ini, Sleep Short, min
-	IniRead, sa2, Config.ini, Sleep Short, max
-	Random, SleepAmount, %sa1%, %sa2%
-	if (LLARS_RandomSleepThisLoop)
-		LLARS_EstimatedSleep(SleepAmount)
+		LLARS_Sleep("Sleep Walk")
+
+	}
 	else
-		LLARS_FinalSleep(SleepAmount)
+	{
+		LLARS_Click("Bank Main Coords")
 
-	LLARS_RandomSleep()
+		LLARS_Sleep("Sleep Walk")
+
+		LLARS_PressHotkey("Bank Preset")
+
+		LLARS_Sleep("Sleep Short")
+
+		LLARS_Click("Fletcher Coords")
+
+		LLARS_Sleep("Sleep Walk")
+
+	}
+
+	LLARS_Sleep("Sleep Short")
+
+	LLARS_PressKey("space")
+
+	LLARS_Sleep("Sleep Fletch", true)
 }
 
 
