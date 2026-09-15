@@ -65,6 +65,8 @@ CheckPixel:
 if !LLARS_RunActive()
 	return
 
+LLARS_SetStatus("Monitoring", "Target Color")
+
 if LLARS_PixelMatches("Pixel Coordinate", "Target Color")
 {
 	; Stop detection while the action is being handled.
@@ -82,6 +84,7 @@ if LLARS_PixelMatches("Pixel Coordinate", "Target Color")
 	if !LLARS_RunActive()
 		return
 
+	LLARS_SetStatus("Working", "Action Location")
 	LLARS_Click("Action Location")
 
 	; Wait until the watched pixel changes away from the target
@@ -98,6 +101,7 @@ if !LLARS_RunActive()
 
 if !LLARS_PixelMatches("Pixel Coordinate", "Target Color")
 {
+	LLARS_SetStatus("Monitoring", "Target Color")
 	SetTimer, ResetCheck, Off
 	SetTimer, CheckPixel, 100
 }

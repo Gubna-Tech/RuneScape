@@ -132,12 +132,14 @@ CheckPixel:
 if !LLARS_RunActive()
 	return
 
+LLARS_SetStatus("Monitoring", "Color Targets")
+
 MatchedTarget := MultiColor_FindTrigger()
 if IsObject(MatchedTarget)
 {
 	; Handle one new target state at a time so script actions never overlap.
 	SetTimer, CheckPixel, Off
-	LLARS_SetStatus("Waiting", MatchedTarget.Color)
+	LLARS_SetStatus("Detected", MatchedTarget.Color)
 
 	; Standard configured delay before the mapped action.
 	LLARS_Sleep("Sleep Timer")
@@ -145,7 +147,7 @@ if IsObject(MatchedTarget)
 	if !LLARS_RunActive()
 		return
 
-	LLARS_SetStatus("Running", MatchedTarget.Action)
+	LLARS_SetStatus("Working", MatchedTarget.Action)
 	LLARS_Click(MatchedTarget.Action)
 
 	if LLARS_RunActive()

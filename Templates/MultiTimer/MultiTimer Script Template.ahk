@@ -80,7 +80,9 @@ TimerOne()
 		return
 
 	; WRITE TIMER ONE ACTION HERE
-	; Example: LLARS_Click("Action Location One")
+	; Example:
+	; LLARS_SetStatus("Working", "Timer One")
+	; LLARS_Click("Action Location One")
 }
 
 
@@ -90,7 +92,9 @@ TimerTwo()
 		return
 
 	; WRITE TIMER TWO ACTION HERE
-	; Example: LLARS_PressHotkey("Action Hotkey")
+	; Example:
+	; LLARS_SetStatus("Working", "Timer Two")
+	; LLARS_PressHotkey("Action Hotkey")
 }
 
 

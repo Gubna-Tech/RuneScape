@@ -85,7 +85,7 @@ ScriptTimer()
 	; ============================================================
 	;
 	; Standard creator API examples:
-	; LLARS_SetStatus("Working")
+	; LLARS_SetStatus("Working", "Timer Action")
 	; LLARS_Click("Example Coordinate")
 	; LLARS_PressHotkey("Example Hotkey")
 	; LLARS_PressKey("Space")

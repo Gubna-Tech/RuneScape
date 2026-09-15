@@ -54,7 +54,7 @@ Run(ctx)
 	; ============================================================
 	
 	; Standard creator API examples:
-	; LLARS_SetStatus("Banking")
+	; LLARS_SetStatus("Banking", "Bank")
 	; LLARS_Click("Example Coordinate")
 	; LLARS_PressHotkey("Example Hotkey")
 	; LLARS_PressKey("Space")  ; purposeful fixed key

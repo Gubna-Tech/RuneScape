@@ -117,8 +117,9 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 
 		; The standardized creator API keeps configured sleep reads in Core.
 		; Literal section names are intentionally required so runtime estimation
-		; remains deterministic and can resolve the exact Config.ini range.
-		if RegExMatch(Line, "i)^(?:[A-Z_][A-Z0-9_]*\s*:?=\s*)?LLARS_Sleep\(\s*""([^""]+)""(?:\s*,\s*(true|false))?(?:\s*,\s*""([^""]+)""\s*)?\)\s*(?:;.*)?$", CreatorSleepMatch)
+		; remains deterministic and can resolve the exact Config.ini range. The final
+		; flag may be a runtime expression because it does not change the sleep range.
+		if RegExMatch(Line, "i)^(?:[A-Z_][A-Z0-9_]*\s*:?=\s*)?LLARS_Sleep\(\s*""([^""]+)""(?:\s*,\s*([^,]+?))?(?:\s*,\s*""([^""]+)""\s*)?\)\s*(?:;.*)?$", CreatorSleepMatch)
 		{
 			CreatorSection := CreatorSleepMatch1
 			CreatorScope := (CreatorSleepMatch3 != "") ? CreatorSleepMatch3 : "script"
