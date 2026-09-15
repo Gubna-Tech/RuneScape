@@ -37,6 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Setting Up", "Pedestal")
 		LLARS_Click("Pedestal - Pedestal")
 
 		LLARS_Sleep("Sleep Short")
@@ -69,6 +70,7 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Normal")
 
+		LLARS_SetStatus("Setting Up", "Pedestal")
 		LLARS_Click("Pedestal - Pedestal", "right")
 
 		LLARS_Sleep("Sleep Short")
@@ -82,19 +84,23 @@ Run(ctx)
 		Random, YOffset, %miny%, %maxy%
 		TargetX := RightClickX + XOffset
 		TargetY := RightClickY + YOffset
+		LLARS_SetStatus("Repairing", "Pedestal")
 		NaturalClick(TargetX, TargetY)
 
 		LLARS_Sleep("Sleep Repair")
 
+		LLARS_SetStatus("Moving", "Platform")
 		LLARS_Click("Platform")
 
 		LLARS_Sleep("Sleep Walk")
 
+		LLARS_SetStatus("Ritual", "Ritual")
 		LLARS_Sleep("Sleep Ritual")
 
 	}
 	else
 	{
+		LLARS_SetStatus("Moving", "Pedestal")
 		LLARS_Click("Pedestal - Platform", "right")
 
 		LLARS_Sleep("Sleep Short")
@@ -114,10 +120,12 @@ Run(ctx)
 
 		LLARS_RandomSleep()
 
+		LLARS_SetStatus("Moving", "Platform")
 		LLARS_Click("Platform")
 
 		LLARS_Sleep("Sleep Walk")
 
+		LLARS_SetStatus("Ritual", "Ritual")
 		LLARS_Sleep("Sleep Ritual", true)
 
 	}

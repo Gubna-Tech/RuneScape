@@ -39,14 +39,17 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Banking", "Bank Prime")
 		LLARS_Click("Bank Prime Coords")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Banking", "Bank Preset")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Moving", "Sawmill")
 		LLARS_Click("Sawmill Coords")
 
 		LLARS_Sleep("Sleep Walk")
@@ -54,22 +57,26 @@ Run(ctx)
 	}
 	else
 	{
+		LLARS_SetStatus("Banking", "Bank Main")
 		LLARS_Click("Bank Main Coords")
 
 		LLARS_Sleep("Sleep Walk")
 
+		LLARS_SetStatus("Banking", "Bank Preset")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Moving", "Sawmill")
 		LLARS_Click("Sawmill Coords")
 
 		LLARS_Sleep("Sleep Walk")
 
 	}
 
+	LLARS_SetStatus("Cutting", "Planks")
 	type := LLARS_ConfigRead("Plank Type", "Type", "")
 	if (type = 1 or type = 2 or type = 3 or type = 4 or type = 5 or type = 6)
 	{

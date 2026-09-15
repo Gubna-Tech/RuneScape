@@ -46,10 +46,12 @@ Run(ctx)
 		PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
 		SetTimer, UpdateTime, 1000
 
+		LLARS_SetStatus("Banking", "Bank")
 		LLARS_Click("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Renewing", "Portable")
 		LLARS_PressHotkey("Renew", "bank hotkey")
 
 		LLARS_Sleep("Sleep Short")
@@ -72,16 +74,19 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Brief")
 
+	LLARS_SetStatus("Banking", "Bank")
 	LLARS_Click("Bank")
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Banking", "Bank Preset")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Using", "Sawmill")
 	LLARS_Click("Sawmill")
 
 	LLARS_Sleep("Sleep Short")
@@ -132,6 +137,7 @@ Run(ctx)
 
 	LLARS_PressKey("1")
 
+	LLARS_SetStatus("Cutting", "Planks")
 	IniRead, sa1, Config.ini, Sleep Normal, min
 	IniRead, sa2, Config.ini, Sleep Normal, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -144,10 +150,12 @@ Run(ctx)
 
 	if (LLARS_RenewThisLoop)
 	{
+		LLARS_SetStatus("Banking", "Bank")
 		LLARS_Click("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Renewing", "Portable")
 		LLARS_PressHotkey("Renew", "bank hotkey")
 
 		LLARS_Sleep("Sleep Short")

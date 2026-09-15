@@ -48,10 +48,12 @@ Run(ctx)
 			PortableRemainingTime :=( portables * 5 * 60 * 1000)+180000
 			SetTimer, UpdateTime, 1000
 
+			LLARS_SetStatus("Banking", "Bank")
 			LLARS_Click("Bank")
 
 			LLARS_Sleep("Sleep Short")
 
+			LLARS_SetStatus("Renewing", "Portable")
 			LLARS_PressHotkey("Renew", "bank hotkey")
 
 			LLARS_Sleep("Sleep Short")
@@ -74,14 +76,17 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Brief")
 
+		LLARS_SetStatus("Banking", "Bank")
 		LLARS_Click("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Banking", "Bank Form Preset")
 		LLARS_PressHotkey("Bank Form Preset")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Using", "Crafter")
 		LLARS_Click("Crafter")
 
 		LLARS_Sleep("Sleep Short")
@@ -104,16 +109,19 @@ Run(ctx)
 	}
 	else
 	{
+		LLARS_SetStatus("Banking", "Bank")
 		LLARS_Click("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Banking", "Bank Form Preset")
 		LLARS_PressHotkey("Bank Form Preset")
 
 		LLARS_RandomSleep()
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Using", "Crafter")
 		LLARS_Click("Crafter")
 
 		LLARS_Sleep("Sleep Short")
@@ -126,6 +134,7 @@ Run(ctx)
 
 	LLARS_PressKey("space")
 
+	LLARS_SetStatus("Forming", "Clay")
 	IniRead, sa1, Config.ini, Sleep Form, min
 	IniRead, sa2, Config.ini, Sleep Form, max
 	Random, SleepAmount, %sa1%, %sa2%
@@ -138,10 +147,12 @@ Run(ctx)
 
 	if (LLARS_RenewThisLoop)
 	{
+		LLARS_SetStatus("Banking", "Bank")
 		LLARS_Click("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Renewing", "Portable")
 		LLARS_PressHotkey("Renew", "bank hotkey")
 
 		LLARS_Sleep("Sleep Short")

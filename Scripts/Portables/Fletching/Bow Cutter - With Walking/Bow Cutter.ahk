@@ -39,14 +39,17 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
+		LLARS_SetStatus("Banking", "Bank Prime")
 		LLARS_Click("Bank Prime Coords")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Banking", "Bank Preset")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Moving", "Fletcher")
 		LLARS_Click("Fletcher Coords")
 
 		LLARS_Sleep("Sleep Walk")
@@ -57,16 +60,19 @@ Run(ctx)
 	}
 	else
 	{
+		LLARS_SetStatus("Banking", "Bank Main")
 		LLARS_Click("Bank Main Coords")
 
 		LLARS_Sleep("Sleep Walk")
 
+		LLARS_SetStatus("Banking", "Bank Preset")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()
 
 		LLARS_Sleep("Sleep Short")
 
+		LLARS_SetStatus("Moving", "Fletcher")
 		LLARS_Click("Fletcher Coords")
 
 		LLARS_Sleep("Sleep Walk")
@@ -74,6 +80,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
+	LLARS_SetStatus("Fletching", "Bow Cutting")
 	LLARS_PressKey("space")
 
 	LLARS_Sleep("Sleep Fletch", true)
