@@ -26,10 +26,14 @@ WM_LBUTTONDOWN() {
 }
 
 ; Restores normal CheckPOS protection after a Ctrl+drag move completes.
-WM_EXITSIZEMOVE() {
-	global LLARS_CHECKPOS_DISABLED
+; Developer Mode also saves its exact position here so the next toggle opens
+; at the last completed drag location even if another close path is used.
+WM_EXITSIZEMOVE(wParam := 0, lParam := 0, msg := 0, hwnd := 0) {
+	global LLARS_CHECKPOS_DISABLED, DeveloperGuiHwnd
 
 	LLARS_CHECKPOS_DISABLED := false
+	if (DeveloperGuiHwnd && hwnd = DeveloperGuiHwnd)
+		LLARS_DeveloperSavePosition(DeveloperGuiHwnd)
 }
 
 ; Provides a Developer Mode keyboard fallback for the configured Exit hotkey.
@@ -110,26 +114,105 @@ CheckPOS(hwnd := "")
 	if (GUIw = "" || GUIh = "")
 		return
 
-	xmin := GUIx
-	xmax := GUIw + GUIx
-	ymin := GUIy
-	ymax := GUIh + GUIy
-	xadj := A_ScreenWidth - GUIw
-	yadj := A_ScreenHeight - GUIh
+	; Clamp against the work area of the monitor nearest this window instead
+	; of the primary monitor. This preserves saved positions on secondary
+	; monitors, including monitors positioned left/above the primary display.
+	hMonitor := DllCall("MonitorFromWindow", "Ptr", hwnd, "UInt", 2, "Ptr")
+	if (hMonitor)
+	{
+		VarSetCapacity(monitorInfo, 40, 0)
+		NumPut(40, monitorInfo, 0, "UInt")
+		if DllCall("GetMonitorInfo", "Ptr", hMonitor, "Ptr", &monitorInfo)
+		{
+			workLeft := NumGet(monitorInfo, 20, "Int")
+			workTop := NumGet(monitorInfo, 24, "Int")
+			workRight := NumGet(monitorInfo, 28, "Int")
+			workBottom := NumGet(monitorInfo, 32, "Int")
+		}
+	}
+
+	if (workRight = "" || workBottom = "")
+	{
+		workLeft := 0
+		workTop := 0
+		workRight := A_ScreenWidth
+		workBottom := A_ScreenHeight
+	}
+
 	X := GUIx
 	Y := GUIy
+	maxX := workRight - GUIw
+	maxY := workBottom - GUIh
+	if (maxX < workLeft)
+		maxX := workLeft
+	if (maxY < workTop)
+		maxY := workTop
 
-	if (xmin < 0)
-		X := 0
-	if (ymin < 0)
-		Y := 0
-	if (xmax > A_ScreenWidth)
-		X := xadj
-	if (ymax > A_ScreenHeight)
-		Y := yadj
+	if (X < workLeft)
+		X := workLeft
+	if (Y < workTop)
+		Y := workTop
+	if (X > maxX)
+		X := maxX
+	if (Y > maxY)
+		Y := maxY
 
 	if (X != GUIx || Y != GUIy)
 		WinMove, ahk_id %hwnd%,, X, Y
+}
+
+; Reads a valid saved Developer Mode top-left position. Blank/corrupt values
+; are ignored so the GUI can safely fall back to its normal centered position.
+LLARS_DeveloperLoadPosition(ByRef x, ByRef y)
+{
+	global LLARS_CONFIG_FILE
+
+	IniRead, x, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix, ERROR
+	IniRead, y, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy, ERROR
+	x := Trim(x)
+	y := Trim(y)
+	if (x = "ERROR" || y = "ERROR")
+		return false
+	if !LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y)
+		return false
+	x := Round(x + 0)
+	y := Round(y + 0)
+	return true
+}
+
+; Saves Developer Mode by HWND only when Windows returned real coordinates.
+; This prevents a failed title lookup from overwriting the last good position.
+LLARS_DeveloperSavePosition(hwnd := 0)
+{
+	global LLARS_CONFIG_FILE, DeveloperGuiHwnd
+
+	if (!hwnd)
+		hwnd := DeveloperGuiHwnd
+	if (!hwnd || !WinExist("ahk_id " . hwnd))
+		return false
+
+	WinGetPos, x, y,,, ahk_id %hwnd%
+	if !LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y)
+		return false
+
+	IniWrite, %x%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
+	IniWrite, %y%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+	return true
+}
+
+; Waits for the primary key of a configured hotkey to be released. This keeps
+; key-repeat from turning one deliberate Developer Mode toggle into two.
+LLARS_WaitForHotkeyRelease(hotkey)
+{
+	hotkey := Trim(hotkey)
+	if (hotkey = "")
+		return
+
+	keyName := RegExReplace(hotkey, "^[\$\*\~<>\^!+#]+")
+	if (keyName = "" || InStr(keyName, " & "))
+		return
+
+	KeyWait, %keyName%
 }
 
 ; Finds existing LLARS AutoHotkey windows and closes them
@@ -342,16 +425,28 @@ LLARS_EnableDeveloperHotkey(lhk5 := "")
 		lhk5 := ""
 	lhk5 := Trim(lhk5)
 
+	; A temporary missing/blank config read never disables the last known
+	; Developer Mode hotkey.
+	if (lhk5 = "")
+		return
+
+	; If the configured Developer Mode key is unchanged, explicitly make sure
+	; its hook is still enabled after any GUI/control/hotkey state transition.
+	if (LLARS_lhk5 = lhk5)
+	{
+		newlhk5 := LLARS_HookHotkey(lhk5)
+		Hotkey, %newlhk5%, DeveloperModeHotkey, On
+		return
+	}
+
 	oldlhk5 := LLARS_HookHotkey(LLARS_lhk5)
 	newlhk5 := LLARS_HookHotkey(lhk5)
 
-	if (LLARS_lhk5 != lhk5 && oldlhk5 != "")
+	if (oldlhk5 != "")
 		Hotkey, %oldlhk5%, DeveloperModeHotkey, Off
 
 	LLARS_lhk5 := lhk5
-
-	if (newlhk5 != "")
-		Hotkey, %newlhk5%, DeveloperModeHotkey, On
+	Hotkey, %newlhk5%, DeveloperModeHotkey, On
 }
 
 ; Checks the shared config for actual hotkey changes. The old implementation
@@ -539,6 +634,8 @@ DisableHotkey()
 	Control, Disable,, Button2, LLARS ahk_class AutoHotkeyGUI
 	Control, Disable,, Button3, LLARS ahk_class AutoHotkeyGUI
 	SetLLARSHOTKEYS("Off")
+	LLARS_EnableExitHotkey()
+	LLARS_EnableDeveloperHotkey()
 }
 
 ; Re-enables the normal LLARS controls and hotkeys after an editor closes.
@@ -552,22 +649,25 @@ EnableHotkey()
 	Control, Enable,, Button3, LLARS ahk_class AutoHotkeyGUI
 	SetLLARSHOTKEYS("On")
 	LLARS_EnableExitHotkey()
+	LLARS_EnableDeveloperHotkey()
 }
 
 ; Disables only the Start control while the timed script is running.
 DisableButton()
 {
-	Control, Disable,, start
+	Control, Disable,, Button1, LLARS ahk_class AutoHotkeyGUI
 	SetLLARSHOTKEYS("Off", true)
 	LLARS_EnableExitHotkey()
+	LLARS_EnableDeveloperHotkey()
 }
 
 ; Re-enables the Start control after the timed run is finished.
 EnableButton()
 {
-	Control, Enable,, start
+	Control, Enable,, Button1, LLARS ahk_class AutoHotkeyGUI
 	SetLLARSHOTKEYS("On", true)
 	LLARS_EnableExitHotkey()
+	LLARS_EnableDeveloperHotkey()
 }
 
 ; Walks upward from the script folder until the LLARS project root is found.
@@ -599,9 +699,10 @@ LLARS_Initialize()
 	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
 	global LLARS_DeveloperKeyboardHook, LLARS_DeveloperKeyboardCallback, LLARS_DeveloperMessageHwnd
 	global LLARS_DeveloperHotkeyMap, LLARS_DeveloperKeyStates, LLARS_DeveloperControlKeyStates
+	global LLARS_RunRuneScapeHwnd
 	global LLARS_DeveloperLightweight
 	global EstimationRunCount
-	global coordcount, frcount, LastClickTime, clickspot, scriptname
+	global coordcount, frcount, LastClickTime, clickspot, scriptname, LLARS_GUIScriptName
 
 	LLARS_SCRIPT_DIR := A_ScriptDir
 	LLARS_ROOT := LLARS_FindRoot()
@@ -622,6 +723,7 @@ LLARS_Initialize()
 	LLARS_CONTROLS_LOCKED := false
 	LLARS_RUNNING := false
 	LLARS_PAUSED := false
+	LLARS_RunRuneScapeHwnd := 0
 	LLARS_CHECKPOS_DISABLED := false
 	LLARS_DeveloperActions := ""
 	LLARS_DeveloperLastHotkey := "None"
@@ -658,6 +760,9 @@ LLARS_Initialize()
 	clickspot := 1
 	SetTimer, CheckLLARSConfig, 1000
 	scriptname := regexreplace(A_scriptname,"\..*","")
+	LLARS_GUIScriptName := RegExReplace(scriptname, "i)\s+Script Template$")
+	if (LLARS_GUIScriptName = "")
+		LLARS_GUIScriptName := scriptname
 	EstimationRunCount := 1000
 	LLARS_CreateMainGUI()
 	OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
@@ -669,6 +774,18 @@ LLARS_Initialize()
 	LLARS_DeveloperRefreshHotkeyMap(true)
 	LLARS_DeveloperInitializeKeyboardHook()
 	return true
+}
+
+; Returns the concise name used in compact LLARS GUI fields. Maintained
+; templates keep their full file name on disk while omitting the trailing
+; "Script Template" text in narrow GUI labels.
+LLARS_DisplayScriptName()
+{
+	global LLARS_GUIScriptName, scriptname
+
+	if (LLARS_GUIScriptName != "")
+		return LLARS_GUIScriptName
+	return scriptname
 }
 
 ; Stores a short in-memory history for the Developer Mode live action panel.
@@ -875,7 +992,12 @@ LLARS_DeveloperKeyPressed(vkCode)
 
 LLARS_DeveloperAction(action, lightweight := true)
 {
-	global LLARS_DeveloperActions
+	global LLARS_DeveloperActions, LLARS_DeveloperLastActions, DeveloperActionsHwnd
+
+	; Keep every Developer Console field separator visually consistent. Producers
+	; that still emit a spaced single pipe are normalized here without changing
+	; ordinary logs, Config.ini syntax, or unspaced pipe characters in values.
+	action := StrReplace(action, " | ", " || ")
 
 	FormatTime, developerActionTime,, HH:mm:ss
 	developerActionTime .= "." . Format("{:03}", A_MSec)
@@ -896,6 +1018,15 @@ LLARS_DeveloperAction(action, lightweight := true)
 			break
 		LLARS_DeveloperActions := SubStr(LLARS_DeveloperActions, developerActionBreak + 1)
 		developerActionCount--
+	}
+
+	; Recent Framework Actions should reflect framework events immediately instead
+	; of waiting for the normal 750 ms Developer Mode dashboard refresh.
+	if (DeveloperActionsHwnd && WinExist("Developer Mode ahk_class AutoHotkeyGUI"))
+	{
+		GuiControl, Dev:, DeveloperActionsText, %LLARS_DeveloperActions%
+		LLARS_DeveloperLastActions := LLARS_DeveloperActions
+		PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
 	}
 }
 
@@ -1128,6 +1259,8 @@ LLARS_StartRun()
 	if (ConfigError())
 		return false
 
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
 	LLARS_DeveloperHotkey("Start")
 	Log("START", "Start button/hotkey activated")
 	InputBox, runcount, Run How Many Times?,,,250,100
@@ -1151,7 +1284,7 @@ LLARS_StartRun()
 
 	if (frcount = 0)
 		LLARS_CreateRunCountGUI()
-	GuiControl,, ScriptBlue, %scriptname%
+	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl,, State3, Running
 	DisableButton()
 	startcheck := 1
@@ -1189,6 +1322,16 @@ LLARS_StartRun()
 	Gui, Show
 	Sleep, 500
 	SetTimer, UpdateEstimatedTime, 250
+	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")
+	{
+		if !LLARS_ActivateRuneScapeAtRunStart()
+		{
+			LLARS_RUNNING := false
+			SetTimer, UpdateEstimatedTime, Off
+			EnableButton()
+			return false
+		}
+	}
 	Log("RUN START", "Starting " runcount3 " runs")
 	return true
 }
@@ -1206,6 +1349,8 @@ LLARS_StartTimerRun()
 	if (ConfigError())
 		return false
 
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
 	LLARS_DeveloperHotkey("Start")
 	Log("START", "Start button/hotkey activated")
 	InputBox, timeToRunMinutes, Set Run Time, Enter how long to run in minutes.`nExample: 1 = 1 minute or 0.5 = 30 seconds.,,270,165
@@ -1232,11 +1377,20 @@ LLARS_StartTimerRun()
 	LLARS_RUN_TYPE := "Timer"
 	LLARS_DeveloperAction("Timed Run Started || " . timeToRunMinutes . " min")
 	LLARS_CreateTimerGUI()
-	GuiControl,, ScriptBlue, %scriptname%
+	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl,, State3, Running
 	GuiControl,, TimerCount, % LLARS_TimerRemainingText(endTime - A_TickCount)
 	DisableButton()
 	SetLLARSHOTKEYS()
+	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")
+	{
+		if !LLARS_ActivateRuneScapeAtRunStart()
+		{
+			LLARS_RUNNING := false
+			EnableButton()
+			return false
+		}
+	}
 	Log("TIMER", "Timer set to " timeToRunMinutes " minutes")
 	return true
 }
@@ -1245,11 +1399,15 @@ LLARS_StartTimerRun()
 LLARS_EndTimerRun()
 {
 	global LLARS_RUNNING, LLARS_RunStartTick, LLARS_DeveloperKeyStates
+	global LLARS_RunRuneScapeHwnd
 
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
 	LLARS_DeveloperAction("Timed Run Completed")
 	LLARS_RUNNING := false
 	LLARS_DeveloperKeyStates := {}
 	LLARS_RunStartTick := 0
+	LLARS_RunRuneScapeHwnd := 0
 	EnableButton()
 	SetLLARSHOTKEYS()
 }
@@ -1268,12 +1426,16 @@ LLARS_TimerRemainingText(time)
 LLARS_ResetRunState()
 {
 	global count2, sleepcount, totalSleepTime, rightclick, clickcount
+	global LLARS_RunRuneScapeHwnd
 	global firstrun, prime, bobprime
 	global LLARS_DeveloperKeyStates
 	global LLARS_RandomSleepPending, LLARS_RandomSleepPendingRun
 	global LLARS_RandomSleepPendingChance, LLARS_RandomSleepPendingRoll
 	global EstRandomSleepAdjustment
 
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
+	LLARS_RunRuneScapeHwnd := 0
 	LLARS_DeveloperKeyStates := {}
 	EstRandomSleepAdjustment := 0
 	LLARS_RandomSleepPending := false
@@ -1316,17 +1478,14 @@ LLARS_BeginLoop()
 	EstLoopStartTick := A_TickCount
 	Log("LOOP START", "Iteration=" A_Index " of " runcount)
 	LLARS_DeveloperAction("Loop Started || " . (count2 + 1) . "/" . runcount3)
-	IfWinNotActive, RuneScape
-	{
-		WinActivate, RuneScape
-		Log("WINDOW ACTIVATION", "RuneScape was not active and was activated")
-	}
+	if IsFunc("LLARS_WaitForRuneScape")
+		LLARS_WaitForRuneScape("RunCount loop start")
 
 	++count
 	++count2
 	GuiControl,, Counter, %count%
 	GuiControl,, Counter2, %count2% / %runcount3%
-	GuiControl,, ScriptBlue, %scriptname%
+	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl,, State3, Running
 	DisableButton()
 }
@@ -1395,7 +1554,7 @@ LLARS_DeveloperTimerAction(time)
 
 	if LLARS_DeveloperTimerInfo(time, timerName, timerMin, timerMax)
 	{
-		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . time)
+		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . time . " ms")
 		LLARS_DeveloperLastSleepName := timerName
 	}
 	else
@@ -1415,6 +1574,8 @@ LLARS_EstimatedSleep(time)
 	; estimate until the script explicitly reaches LLARS_FinalSleep().
 	LLARS_DeveloperTimerAction(time)
 	Sleep, %time%
+	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
+		LLARS_WaitForRuneScape("Estimated sleep complete")
 }
 
 ; Rolls the shared Random Sleep chance and stores the result for this loop.
@@ -1625,12 +1786,14 @@ LLARS_RandomSleep()
 	SetTimer, UpdateCountdown, Off
 	SetTimer, UpdateCountdown, 1000
 	Sleep, %RandomSleepAmount%
+	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
+		LLARS_WaitForRuneScape("Random Sleep complete")
 	SetTimer, UpdateCountdown, Off
 
 	Gui, 1: Font, s10 Bold cBlue
 	GuiControl, 1: Font, State3
 	Gui, 1: Font, s10 Bold cBlack
-	GuiControl, 1:, ScriptBlue, %scriptname%
+	GuiControl, 1:, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl, 1:, State3, Running
 	Gosub, UpdateEstimatedTime
 
@@ -1642,12 +1805,15 @@ LLARS_RandomSleep()
 LLARS_FinalSleep(time)
 {
 	global EstFinalSleepActive, EstFinalSleepEndTick
+	global LLARS_RUNNING
 
 	EstFinalSleepActive := true
 	EstFinalSleepEndTick := A_TickCount + time
 	LLARS_DeveloperTimerAction(time)
 	Gosub, UpdateEstimatedTime
 	Sleep, %time%
+	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
+		LLARS_WaitForRuneScape("Final sleep complete")
 }
 
 ; Records the completed loop time and updates the live runtime estimate.
@@ -1682,7 +1848,7 @@ LLARS_EndLoop()
 LLARS_RunComplete()
 {
 	global scriptname, runcount3, sleepcount, totalSleepTime, StartTime, StartTimeStamp
-	global LLARS_RUNNING
+	global LLARS_RUNNING, LLARS_RunRuneScapeHwnd
 	global EndTimeStamp, EndTime
 	global TotalTimeSeconds, AverageTimeSecondsTotal
 	global TotalTimeHours, TotalTimeMinutes, TotalTimeSecondsDisplay
@@ -1691,12 +1857,14 @@ LLARS_RunComplete()
 	global chance
 	global LLARS_RunStartTick
 
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
 	LLARS_DeveloperAction("Run Completed || " . runcount3 . " runs")
 	Logout()
 	SetTimer, UpdateEstimatedTime, Off
 	GuiControl,, EstLoopRemaining, 0h 0m 0s
 	GuiControl,, EstRunRemaining, 0h 0m 0s
-	GuiControl,, ScriptGreen, %scriptname%
+	GuiControl,, ScriptGreen, % LLARS_DisplayScriptName()
 	GuiControl,, State1, Finished
 	EndTimeStamp := A_Hour ":" A_Min ":" A_Sec
 	EndTime := A_TickCount
@@ -1718,6 +1886,7 @@ LLARS_RunComplete()
 	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 	LLARS_RUNNING := false
 	LLARS_RunStartTick := 0
+	LLARS_RunRuneScapeHwnd := 0
 	EnableButton()
 	SetLLARSHOTKEYS("On")
 }
@@ -2462,7 +2631,7 @@ LLARS_DeveloperAntiAFKAction(Event, Details := "")
 	if (InStr(eventUpper, "TIMER"))
 	{
 		if (rangeText != "" && actualValue != "")
-			LLARS_DeveloperAction("Anti-AFK Timer Set || " . rangeText . " || " . actualValue)
+			LLARS_DeveloperAction("Anti-AFK Timer Set || " . rangeText . " || " . actualValue . " ms")
 		else if (rangeText != "")
 			LLARS_DeveloperAction("Anti-AFK Timer Set || " . rangeText)
 		else if RegExMatch(detailText, "i)(\d+)\s*ms", timerValue)
@@ -2596,7 +2765,7 @@ LLARS_DeveloperLoggedSleepAction(Event, Details := "")
 	}
 
 	if (actualValue != "" && timerMin != "" && timerMax != "")
-		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . actualValue)
+		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . actualValue . " ms")
 	else if (actualValue != "")
 		LLARS_DeveloperAction(timerName . " || " . actualValue . " ms")
 	else
@@ -2634,7 +2803,7 @@ LLARS_DeveloperScriptTimerAction(Details)
 	}
 
 	if (SleepAmount != "" && LLARS_DeveloperTimerInfo(SleepAmount, configuredName, timerMin, timerMax))
-		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . SleepAmount)
+		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . SleepAmount . " ms")
 	else
 		LLARS_DeveloperAction(timerName)
 }
@@ -2741,6 +2910,10 @@ Log(Event, Details := "")
 			LLARS_DeveloperColorConfigAction(Details)
 		else if (Event = "PIXEL DETECTED")
 			LLARS_DeveloperPixelDetectedAction()
+		else if (Event = "KEY TIMING")
+			LLARS_DeveloperAction("KeyPress || " . Details)
+		else if (Event = "CLICK TIMING")
+			LLARS_DeveloperAction("Mouse Timing || " . Details)
 	}
 
 	if !LoggingCheck()
@@ -2919,38 +3092,37 @@ LLARS_FindRuneScapeWindow()
 	return 0
 }
 
-; Activates the RuneScape window NaturalClick will use and returns its HWND.
-; Activation is only done before movement starts. Once movement begins, any
-; later Alt-Tab/focus change causes NaturalClick to stop instead of reactivating.
+; Returns the active RuneScape HWND NaturalClick may use. During an active
+; LLARS run, focus loss is handled by reclaiming the exact run target before
+; mouse movement continues.
 LLARS_ActivateRuneScapeForNaturalClick()
 {
-	runeScapeHwnd := LLARS_FindRuneScapeWindow()
-	if (!runeScapeHwnd)
+	global LLARS_RUNNING
+
+	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
 	{
-		Log("NATURAL CLICK BLOCKED", "RuneScape window was not found")
-		return 0
+		if !LLARS_WaitForRuneScape("NaturalClick")
+			return 0
 	}
 
-	if (WinExist("A") != runeScapeHwnd)
+	runeScapeHwnd := WinExist("A")
+	if !LLARS_IsRuneScapeWindow(runeScapeHwnd)
 	{
-		WinActivate, ahk_id %runeScapeHwnd%
-		WinWaitActive, ahk_id %runeScapeHwnd%,, 1
-	}
-
-	if (WinExist("A") != runeScapeHwnd)
-	{
-		Log("NATURAL CLICK BLOCKED", "RuneScape window could not be activated")
+		Log("NATURAL CLICK BLOCKED", "RuneScape is not the active window")
 		return 0
 	}
 
 	return runeScapeHwnd
 }
 
-; Stops NaturalClick immediately if focus leaves the exact RuneScape client
-; selected when the click began. It never steals focus back during movement.
+; Stops the current NaturalClick attempt if focus leaves the exact RuneScape
+; client selected when the click began. During a run, reclaim that client before
+; returning so the caller can safely retry the intended click.
 LLARS_NaturalClickRuneScapeGuard(reason, runeScapeHwnd := "")
 {
-	activeHwnd := WinExist("A")
+	global LLARS_NaturalClickFocusLost, LLARS_RUNNING
+
+	activeHwnd := DllCall("GetForegroundWindow", "Ptr")
 	if (runeScapeHwnd != "")
 	{
 		if (activeHwnd = runeScapeHwnd)
@@ -2961,47 +3133,450 @@ LLARS_NaturalClickRuneScapeGuard(reason, runeScapeHwnd := "")
 		return true
 	}
 
+	LLARS_NaturalClickFocusLost := true
 	Log("NATURAL CLICK BLOCKED", reason)
+	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
+		LLARS_WaitForRuneScape("NaturalClick")
 	return false
 }
 
 ; Records an actual NaturalClick and includes the matching Config.ini
 ; coordinate section name whenever the target belongs to one.
-LLARS_DeveloperNaturalClick(x, y, button)
+LLARS_DeveloperNaturalClick(x, y, button, clickTarget := "")
 {
-	clickTarget := LLARS_DeveloperClickTarget(x, y)
+	if (clickTarget = "")
+		clickTarget := LLARS_DeveloperClickTarget(x, y)
+
+	button := Trim(button)
+	StringLower, button, button
+	if (button != "right")
+		button := "left"
+
+	details := "NaturalClick || " . button
+	if (clickTarget != "")
+		details .= " || " . clickTarget
+	details .= " || (" . x . ", " . y . ")"
+	LLARS_DeveloperAction(details)
+}
+
+; ================================================================
+; |     HUMAN RANDOMNESS     -     HUMAN RANDOMNESS              |
+; ================================================================
+; Uses Windows' system RNG when available instead of relying on AutoHotkey's
+; process-local pseudo-random stream. AHK Random remains a fallback only.
+LLARS_RandomUInt()
+{
+	VarSetCapacity(randomBytes, 4, 0)
+	status := DllCall("bcrypt\BCryptGenRandom"
+		, "Ptr", 0
+		, "Ptr", &randomBytes
+		, "UInt", 4
+		, "UInt", 0x00000002
+		, "UInt")
+
+	if (status = 0)
+		return NumGet(randomBytes, 0, "UInt")
+
+	Random, fallbackValue, 0, 2147483647
+	return (fallbackValue * 2) + Mod(A_TickCount, 2)
+}
+
+; Returns a high-resolution random value in [0, 1).
+LLARS_RandomUnit()
+{
+	return LLARS_RandomUInt() / 4294967296.0
+}
+
+; Remembers a short history per stream and avoids immediately recycling the
+; exact same integer values when the available range is wide enough.
+LLARS_HumanRememberedInt(value, minimum, maximum, stream := "", avoidRecent := 3)
+{
+	static histories := {}
+
+	minimum := Round(minimum)
+	maximum := Round(maximum)
+	value := Round(value)
+
+	if (maximum < minimum)
+	{
+		swap := minimum
+		minimum := maximum
+		maximum := swap
+	}
+
+	rangeSize := maximum - minimum + 1
+	if (rangeSize <= 1 || avoidRecent <= 0)
+		return value
+
+	; Very small ranges naturally repeat. Forcing alternation there creates a
+	; stronger pattern than allowing an occasional duplicate.
+	if (rangeSize <= 8)
+		return value
+	if (rangeSize <= 20 && avoidRecent > 1)
+		avoidRecent := 1
+	if (avoidRecent >= rangeSize)
+		avoidRecent := rangeSize - 1
+
+	if (stream = "")
+		stream := minimum . ":" . maximum
+
+	if !histories.HasKey(stream)
+		histories[stream] := []
+
+	history := histories[stream]
+	attempts := 0
+	Loop
+	{
+		repeated := false
+		for _, previousValue in history
+		{
+			if (value = previousValue)
+			{
+				repeated := true
+				break
+			}
+		}
+
+		if (!repeated || attempts >= 10)
+			break
+
+		value := minimum + Floor(LLARS_RandomUnit() * rangeSize)
+		attempts++
+	}
+
+	while (history.Length() >= avoidRecent)
+		history.RemoveAt(1)
+
+	history.Push(value)
+	histories[stream] := history
+	return value
+}
+
+; Uniform integer selection backed by the system RNG, with optional recent-value
+; avoidance. This is useful for large ranges such as path speed and noise seeds.
+LLARS_HumanRandomInt(minimum, maximum, stream := "", avoidRecent := 3)
+{
+	minimum := Round(minimum)
+	maximum := Round(maximum)
+
+	if (maximum < minimum)
+	{
+		swap := minimum
+		minimum := maximum
+		maximum := swap
+	}
+
+	rangeSize := maximum - minimum + 1
+	if (rangeSize <= 1)
+		return minimum
+
+	value := minimum + Floor(LLARS_RandomUnit() * rangeSize)
+	return LLARS_HumanRememberedInt(value, minimum, maximum, stream, avoidRecent)
+}
+
+; Human timing is intentionally not uniform. Averaging several independent
+; samples creates a soft center with occasional faster/slower values, which is
+; closer to natural motor timing than repeatedly choosing every millisecond with
+; equal probability.
+LLARS_HumanTiming(minimum, maximum, stream := "", longChance := 0, longMinimum := "", longMaximum := "")
+{
+	minimum := Round(minimum)
+	maximum := Round(maximum)
+
+	if (maximum < minimum)
+	{
+		swap := minimum
+		minimum := maximum
+		maximum := swap
+	}
+
+	if (longChance > 0 && longMinimum != "" && longMaximum != "" && LLARS_RandomUnit() < longChance)
+		return LLARS_HumanRandomInt(longMinimum, longMaximum, stream . ".Long", 4)
+
+	shape := (LLARS_RandomUnit() + LLARS_RandomUnit() + LLARS_RandomUnit() + LLARS_RandomUnit()) / 4.0
+	value := minimum + Round(shape * (maximum - minimum))
+	return LLARS_HumanRememberedInt(value, minimum, maximum, stream, 4)
+}
+
+; Keeps human input timings inside their existing ranges while making neat
+; multiples of five uncommon. A small minority are intentionally preserved so
+; naturally occurring round values are still possible rather than forbidden.
+LLARS_HumanizeTimingEnding(value, minimum, maximum, stream := "")
+{
+	value := Round(value)
+	minimum := Round(minimum)
+	maximum := Round(maximum)
+
+	if (Mod(value, 5) != 0 || LLARS_RandomUnit() < 0.08)
+		return value
+
+	offset := LLARS_HumanRandomInt(1, 4, stream . ".FineEnding", 2)
+	if (LLARS_RandomUnit() < 0.5)
+		offset := -offset
+
+	adjusted := value + offset
+	if (adjusted < minimum || adjusted > maximum)
+		adjusted := value - offset
+
+	if (adjusted < minimum || adjusted > maximum)
+		return value
+
+	return adjusted
+}
+
+; Performs one physical mouse-button press with a varied down/up hold time.
+; NaturalClick verifies the exact target pixel immediately before calling this.
+LLARS_HumanMouseClick(button := "left")
+{
+	button := Trim(button)
+	StringLower, button, button
+
+	holdTime := LLARS_HumanTiming(38, 108, "MouseClick.Hold." . button, 0.045, 118, 176)
+	holdMinimum := (holdTime >= 118) ? 118 : 38
+	holdMaximum := (holdTime >= 118) ? 176 : 108
+	holdTime := LLARS_HumanizeTimingEnding(holdTime, holdMinimum, holdMaximum, "MouseClick.Hold." . button)
 
 	if (button = "right")
-		clickButton := "Right"
+	{
+		Click, Right Down
+		Sleep, %holdTime%
+		Click, Right Up
+	}
 	else
-		clickButton := "Left"
+	{
+		Click, Down
+		Sleep, %holdTime%
+		Click, Up
+	}
 
-	if (clickTarget != "")
-		LLARS_DeveloperAction("NaturalClick || " . clickTarget . " || " . clickButton . " (" . x . ", " . y . ")")
-	else
-		LLARS_DeveloperAction("NaturalClick || " . clickButton . " (" . x . ", " . y . ")")
+	Log("CLICK TIMING", "Hold=" . holdTime . " ms")
+	return true
+}
+
+; Developer coordinate overlays are debugger-only. A visual overlay failure
+; must never stop creator automation or turn a RunCount callback into an error.
+LLARS_DeveloperCoordinateOverlayShowSafe(x, y, section := "", scope := "script")
+{
+	if !IsFunc("LLARS_DeveloperCoordinateOverlay")
+		return false
+
+	try
+		return LLARS_DeveloperCoordinateOverlay(x, y, section, scope)
+	catch error
+		return false
+}
+
+LLARS_DeveloperCoordinateOverlayHideSafe(delay := 0)
+{
+	if !IsFunc("LLARS_DeveloperCoordinateOverlayHide")
+		return false
+
+	try
+	{
+		LLARS_DeveloperCoordinateOverlayHide(delay)
+		return true
+	}
+	catch error
+		return false
 }
 
 ; ================================================================
 ; |     MOUSE     -     MOUSE     -     MOUSE     -     MOUSE    |
 ; ================================================================
 
+; Builds one human movement timing profile. The timing model follows the two-part
+; structure seen in human pointing: most distance is covered during a quicker
+; ballistic reach, while the final portion consumes proportionally more time for
+; visual correction. Longer reaches gain speed, but not enough to make their total
+; movement time collapse toward the short-movement range.
+LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
+{
+	if (distance < 0)
+		distance := 0
+
+	; Human pointing does not use one constant cursor speed. Peak/transport speed
+	; rises with movement amplitude, while total movement time still increases.
+	; The square-root growth keeps long reaches from becoming unnaturally brisk.
+	preferredBallisticSpeed := 600 + (22 * Sqrt(distance))
+
+	; Short corrections can legitimately be very brisk. As distance grows, remove
+	; more of the high-speed tail and bias the random draw toward deliberate reaches.
+	distanceFactor := distance / 1800.0
+	if (distanceFactor < 0)
+		distanceFactor := 0
+	if (distanceFactor > 1)
+		distanceFactor := 1
+	minimumSpeedMultiplier := 0.72
+	maximumSpeedMultiplier := 1.35 - (0.25 * distanceFactor)
+	speedShape := 0.70 + (1.60 * distanceFactor)
+	speedRoll := LLARS_RandomUnit() ** speedShape
+	speedMultiplier := minimumSpeedMultiplier + ((maximumSpeedMultiplier - minimumSpeedMultiplier) * speedRoll)
+	ballisticSpeed := preferredBallisticSpeed * speedMultiplier
+
+	; Mouse-pointing studies show the initial ballistic phase covers roughly 90%+
+	; of the distance while using only around 60% of the total movement time. Vary
+	; both proportions independently so identical-distance calls do not share a pace.
+	ballisticDistanceFraction := 0.89 + (LLARS_RandomUnit() * 0.06)
+	ballisticTimeFraction := 0.55 + (LLARS_RandomUnit() * 0.11)
+	timingJitter := 0.96 + (LLARS_RandomUnit() * 0.08)
+
+	duration := Round((((distance * ballisticDistanceFraction) / ballisticSpeed) * 1000) / ballisticTimeFraction * timingJitter)
+
+	; Preserve the researched distance/speed model, then add a small independent
+	; millisecond-scale variation so real movement times do not cluster around
+	; visually generic values even when the larger movement profile is similar.
+	fineTimingRange := Round(duration * 0.025)
+	if (fineTimingRange < 7)
+		fineTimingRange := 7
+	if (fineTimingRange > 43)
+		fineTimingRange := 43
+	fineTimingJitter := LLARS_HumanRandomInt(-fineTimingRange, fineTimingRange, stream . ".FineTiming", 10)
+	duration += fineTimingJitter
+	if (Mod(duration, 25) = 0)
+	{
+		fineTimingNudge := LLARS_HumanRandomInt(3, 13, stream . ".FineTimingNudge", 6)
+		if (LLARS_RandomUnit() < 0.5)
+			fineTimingNudge := -fineTimingNudge
+		duration += fineTimingNudge
+	}
+
+	if (duration < 55)
+		duration := 55
+	if (duration > 3200)
+		duration := 3200
+
+	; Keep meaningful model bounds available to callers/debuggers without forcing
+	; the selected duration into fixed buckets or rounded-looking timing values.
+	fastestBallisticSpeed := preferredBallisticSpeed * maximumSpeedMultiplier
+	slowestBallisticSpeed := preferredBallisticSpeed * minimumSpeedMultiplier
+	minimumDuration := Round((((distance * 0.89) / fastestBallisticSpeed) * 1000) / 0.66 * 0.96)
+	maximumDuration := Round((((distance * 0.95) / slowestBallisticSpeed) * 1000) / 0.55 * 1.04)
+	if (minimumDuration < 55)
+		minimumDuration := 55
+	if (maximumDuration > 3200)
+		maximumDuration := 3200
+
+	; Preserve the working NaturalClick path density exactly. Timing changes must
+	; not alter the geometric character that already feels natural.
+	stepSpacing := LLARS_HumanRandomInt(5, 9, stream . ".StepSpacing", 4)
+	steps := Round(distance / stepSpacing)
+	if (steps < 12)
+		steps := 12
+	if (steps > 120)
+		steps := 120
+
+	; Preserve the existing per-call acceleration/deceleration variation.
+	timingExponentPercent := LLARS_HumanRandomInt(68, 142, stream . ".TimingCurve", 6)
+	timingExponent := timingExponentPercent / 100.0
+
+	return {duration:duration
+		, minimumDuration:minimumDuration
+		, maximumDuration:maximumDuration
+		, steps:steps
+		, timingExponent:timingExponent}
+}
+
+; NaturalClick controls its own movement cadence. Removing AutoHotkey's hidden
+; per-MouseMove delay prevents that fixed cost from collapsing different distance
+; bands into similar elapsed times. The movement loops use Win32 Sleep while this
+; 1 ms timer period is active so sub-10 ms waits are not rounded into large stalls.
+; The normal 10 ms mouse delay is restored after each natural movement path.
+LLARS_NaturalMovementTimingBegin()
+{
+	Thread, NoTimers, true
+	SetMouseDelay, -1
+	DllCall("winmm\timeBeginPeriod", "UInt", 1)
+}
+
+LLARS_NaturalMovementTimingEnd()
+{
+	DllCall("winmm\timeEndPeriod", "UInt", 1)
+	SetMouseDelay, 10
+	Thread, NoTimers, false
+}
+
 ; ================================================================
 ; |     LLARS MOUSE LIBRARY     -     LLARS MOUSE LIBRARY        |
 ; ================================================================
 ; Moves the mouse to a target using LLARS naturalized movement, then clicks.
-NaturalClick(x, y, button := "left", retryCount := 0, runeScapeHwnd := "")
+NaturalClick(x, y, button := "left", coordinateSection := "", coordinateScope := "script")
 {
-	if (runeScapeHwnd = "")
-	{
-		runeScapeHwnd := LLARS_ActivateRuneScapeForNaturalClick()
-		if (!runeScapeHwnd)
-			return false
-	}
-	else if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick retry", runeScapeHwnd))
-	{
+	global LLARS_NaturalClickFocusLost, LLARS_RUNNING
+
+	LLARS_NaturalClickFocusLost := false
+	DllCall("QueryPerformanceFrequency", "Int64*", naturalClickPerformanceFrequency)
+	DllCall("QueryPerformanceCounter", "Int64*", naturalClickStartCounter)
+	runBound := LLARS_RUNNING ? true : false
+	runeScapeHwnd := LLARS_ActivateRuneScapeForNaturalClick()
+	if (!runeScapeHwnd)
 		return false
+
+	; Never click a displaced cursor. If the cursor is not on the exact requested
+	; pixel during final verification, restart the natural movement from its current
+	; position and keep trying until the target is truly reached or the run ends.
+	Loop
+	{
+		if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+		{
+			LLARS_DeveloperCoordinateOverlayHideSafe()
+			return false
+		}
+
+		; While Developer Mode is open, keep the configured coordinate region
+		; visible as a click-through overlay for the entire NaturalClick. Refresh
+		; it on every retry so it stays visible while the user fights the mouse.
+		LLARS_DeveloperCoordinateOverlayShowSafe(x, y, coordinateSection, coordinateScope)
+
+		result := LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound, coordinateSection)
+		if (result = 1)
+		{
+			; Leave the target visible briefly after the successful physical click so
+			; the developer can see exactly where the action landed.
+			LLARS_DeveloperCoordinateOverlayHideSafe(500)
+			DllCall("QueryPerformanceCounter", "Int64*", naturalClickEndCounter)
+			naturalClickElapsed := Round(((naturalClickEndCounter - naturalClickStartCounter) * 1000.0) / naturalClickPerformanceFrequency)
+			LLARS_DeveloperAction("NaturalClick Timing || " . naturalClickElapsed . " ms")
+			return true
+		}
+		if (result = 0)
+		{
+			LLARS_DeveloperCoordinateOverlayHideSafe()
+			return false
+		}
+
+		if (!DllCall("IsWindow", "Ptr", runeScapeHwnd) || !LLARS_IsRuneScapeWindow(runeScapeHwnd))
+		{
+			LLARS_DeveloperCoordinateOverlayHideSafe()
+			return false
+		}
+
+		if (WinExist("A") != runeScapeHwnd)
+		{
+			if (!LLARS_RUNNING || !IsFunc("LLARS_WaitForRuneScape"))
+			{
+				LLARS_DeveloperCoordinateOverlayHideSafe()
+				return false
+			}
+			if !LLARS_WaitForRuneScape("NaturalClick retry")
+			{
+				LLARS_DeveloperCoordinateOverlayHideSafe()
+				return false
+			}
+		}
+
+		Sleep, 10
 	}
+}
+
+; Performs one complete natural mouse path. A return value of -1 means the
+; target was displaced or focus changed and NaturalClick should try again.
+LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordinateSection := "")
+{
+	if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+		return 0
+
+	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick attempt", runeScapeHwnd))
+		return -1
 
 	MouseGetPos, startX, startY
 	LLARS_DeveloperAction("MouseMove || (" . startX . ", " . startY . ") > (" . x . ", " . y . ")")
@@ -3011,70 +3586,27 @@ NaturalClick(x, y, button := "left", retryCount := 0, runeScapeHwnd := "")
 	if (distance <= 2)
 	{
 		MouseMove, %x%, %y%, 0
-		Random, pause, 50, 120
+		pause := LLARS_HumanTiming(42, 126, "NaturalClick.TargetDwell", 0.035, 135, 215)
 		Sleep, %pause%
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick verification", runeScapeHwnd))
-			return false
+			return -1
 		MouseGetPos, clickX, clickY
 		if (clickX != x || clickY != y)
-		{
-			if (retryCount < 2)
-				return NaturalClick(x, y, button, retryCount + 1, runeScapeHwnd)
-			return false
-		}
+			return -1
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus immediately before NaturalClick", runeScapeHwnd))
-			return false
-		if (button = "right")
-		{
-			Click, Right
-			LLARS_DeveloperNaturalClick(x, y, "right")
-		}
-		else
-		{
-			Click
-			LLARS_DeveloperNaturalClick(x, y, "left")
-		}
+			return -1
+		MouseGetPos, clickX, clickY
+		if (clickX != x || clickY != y)
+			return -1
+		LLARS_HumanMouseClick(button)
+		LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
 		return true
 	}
 
-	; Distance-based mouse speed.
-	; Short movements are more deliberate.
-	; Longer movements naturally become faster.
-	if (distance < 75)
-	{
-		Random, speed, 1400, 2100
-	}
-	else if (distance < 200)
-	{
-		Random, speed, 1800, 2600
-	}
-	else if (distance < 400)
-	{
-		Random, speed, 2200, 3100
-	}
-	else if (distance < 700)
-	{
-		Random, speed, 2500, 3500
-	}
-	else if (distance < 1100)
-	{
-		Random, speed, 2700, 3800
-	}
-	else
-	{
-		Random, speed, 2900, 4100
-	}
-
-	duration := (distance / speed) * 1000
-	if (duration < 180)
-		duration := 180
-	if (duration > 900)
-		duration := 900
-	steps := Round(distance / 6)
-	if (steps < 15)
-		steps := 15
-	if (steps > 100)
-		steps := 100
+	movementProfile := LLARS_NaturalMovementProfile(distance, "NaturalClick")
+	duration := movementProfile.duration
+	steps := movementProfile.steps
+	timingExponent := movementProfile.timingExponent
 	rawSteps := Round(distance / 3)
 	if (rawSteps < 60)
 		rawSteps := 60
@@ -3087,10 +3619,10 @@ NaturalClick(x, y, button := "left", retryCount := 0, runeScapeHwnd := "")
 		curveLimit := 5
 	if (curveLimit > 85)
 		curveLimit := 85
-	Random, curveBase, -100, 100
+	curveBase := LLARS_HumanRandomInt(-100, 100, "NaturalClick.CurveBase", 4)
 	curveBase := curveBase * curveLimit / 100
-	Random, curveVariation1, -25, 25
-	Random, curveVariation2, -25, 25
+	curveVariation1 := LLARS_HumanRandomInt(-25, 25, "NaturalClick.CurveVariation1", 4)
+	curveVariation2 := LLARS_HumanRandomInt(-25, 25, "NaturalClick.CurveVariation2", 4)
 	curveAmount1 := curveBase + (curveLimit * curveVariation1 / 100)
 	curveAmount2 := curveBase + (curveLimit * curveVariation2 / 100)
 	if (curveAmount1 > curveLimit)
@@ -3101,8 +3633,8 @@ NaturalClick(x, y, button := "left", retryCount := 0, runeScapeHwnd := "")
 		curveAmount2 := curveLimit
 	if (curveAmount2 < -curveLimit)
 		curveAmount2 := -curveLimit
-	Random, cp1Percent, 25, 38
-	Random, cp2Percent, 62, 75
+	cp1Percent := LLARS_HumanRandomInt(25, 38, "NaturalClick.ControlPoint1", 3)
+	cp2Percent := LLARS_HumanRandomInt(62, 75, "NaturalClick.ControlPoint2", 3)
 	cp1X := startX + (dx * cp1Percent / 100)
 	cp1Y := startY + (dy * cp1Percent / 100)
 	cp2X := startX + (dx * cp2Percent / 100)
@@ -3111,8 +3643,8 @@ NaturalClick(x, y, button := "left", retryCount := 0, runeScapeHwnd := "")
 	cp1Y += perpY * curveAmount1
 	cp2X += perpX * curveAmount2
 	cp2Y += perpY * curveAmount2
-	Random, seedX, 1, 100000
-	Random, seedY, 1, 100000
+	seedX := LLARS_HumanRandomInt(1, 2147483000, "NaturalClick.NoiseSeedX", 6)
+	seedY := LLARS_HumanRandomInt(1, 2147483000, "NaturalClick.NoiseSeedY", 6)
 	noiseAmount := distance * 0.012
 	if (noiseAmount < 0.75)
 		noiseAmount := 0.75
@@ -3169,13 +3701,26 @@ NaturalClick(x, y, button := "left", retryCount := 0, runeScapeHwnd := "")
 	searchIndex := 2
 	previousX := startX
 	previousY := startY
+	movementResult := 1
+	; Keep framework timers from interrupting the path and let the explicit
+	; movement profile control the real elapsed time without hidden mouse delay.
+	LLARS_NaturalMovementTimingBegin()
 	Loop, %steps%
 	{
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus during NaturalClick movement", runeScapeHwnd))
-			return false
+		{
+			movementResult := -1
+			break
+		}
+		if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+		{
+			movementResult := 0
+			break
+		}
 
 		t := A_Index / steps
-		timingT := t * t * (3 - (2 * t))
+		timingInput := t ** timingExponent
+		timingT := timingInput * timingInput * (3 - (2 * timingInput))
 		targetLength := totalLength * timingT
 		while (searchIndex < lengths.Length() && lengths[searchIndex] < targetLength)
 			searchIndex++
@@ -3214,37 +3759,265 @@ NaturalClick(x, y, button := "left", retryCount := 0, runeScapeHwnd := "")
 		delay := targetElapsed - actualElapsed
 		if (delay < 1)
 			delay := 1
-		if (delay > 20)
-			delay := 20
-		Sleep, %delay%
+		if (delay > 35)
+			delay := 35
+		DllCall("Sleep", "UInt", delay)
+	}
+	if (movementResult != 1)
+	{
+		LLARS_NaturalMovementTimingEnd()
+		return movementResult
 	}
 
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick final position", runeScapeHwnd))
-		return false
+	{
+		LLARS_NaturalMovementTimingEnd()
+		return -1
+	}
 	MouseMove, %x%, %y%, 0
-	Random, pause, 50, 120
+	LLARS_NaturalMovementTimingEnd()
+	pause := LLARS_HumanTiming(42, 126, "NaturalClick.TargetDwell", 0.035, 135, 215)
 	Sleep, %pause%
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick verification", runeScapeHwnd))
-		return false
+		return -1
 	MouseGetPos, clickX, clickY
 	if (clickX != x || clickY != y)
-	{
-		if (retryCount < 2)
-			return NaturalClick(x, y, button, retryCount + 1, runeScapeHwnd)
-		return false
-	}
+		return -1
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus immediately before NaturalClick", runeScapeHwnd))
+		return -1
+	MouseGetPos, clickX, clickY
+	if (clickX != x || clickY != y)
+		return -1
+	LLARS_HumanMouseClick(button)
+	LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
+	return true
+}
+
+; Moves the mouse naturally without clicking for anti-AFK activity. This is a
+; framework-level variant so any LLARS script can use the same natural idle move.
+AntiAFKNaturalClick(x, y)
+{
+	global LLARS_RUNNING
+
+	runBound := LLARS_RUNNING ? true : false
+	runeScapeHwnd := LLARS_ActivateRuneScapeForNaturalClick()
+	if (!runeScapeHwnd)
 		return false
-	if (button = "right")
+
+	MouseGetPos, startX, startY
+	dx := x - startX
+	dy := y - startY
+	distance := Sqrt((dx * dx) + (dy * dy))
+
+	if (distance <= 2)
 	{
-		Click, Right
-		LLARS_DeveloperNaturalClick(x, y, "right")
+		Random, pause, 50, 120
+		Sleep, %pause%
+		if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+			return false
+		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before AntiAFKNaturalClick movement", runeScapeHwnd))
+			return false
+		MouseMove, %x%, %y%, 0
+		return true
 	}
-	else
+
+	movementProfile := LLARS_NaturalMovementProfile(distance, "AntiAFKNaturalClick")
+	duration := movementProfile.duration
+	steps := movementProfile.steps
+	timingExponent := movementProfile.timingExponent
+	rawSteps := Round(distance / 3)
+
+	if (rawSteps < 60)
+		rawSteps := 60
+
+	if (rawSteps > 300)
+		rawSteps := 300
+	perpX := -dy / distance
+	perpY := dx / distance
+	curveLimit := distance * 0.14
+
+	if (curveLimit < 5)
+		curveLimit := 5
+
+	if (curveLimit > 85)
+		curveLimit := 85
+	curveBase := LLARS_HumanRandomInt(-100, 100, "AntiAFKNaturalClick.CurveBase", 4)
+	curveBase := curveBase * curveLimit / 100
+	curveVariation1 := LLARS_HumanRandomInt(-25, 25, "AntiAFKNaturalClick.CurveVariation1", 4)
+	curveVariation2 := LLARS_HumanRandomInt(-25, 25, "AntiAFKNaturalClick.CurveVariation2", 4)
+	curveAmount1 := curveBase + (curveLimit * curveVariation1 / 100)
+	curveAmount2 := curveBase + (curveLimit * curveVariation2 / 100)
+
+	if (curveAmount1 > curveLimit)
+		curveAmount1 := curveLimit
+
+	if (curveAmount1 < -curveLimit)
+		curveAmount1 := -curveLimit
+
+	if (curveAmount2 > curveLimit)
+		curveAmount2 := curveLimit
+
+	if (curveAmount2 < -curveLimit)
+		curveAmount2 := -curveLimit
+	cp1Percent := LLARS_HumanRandomInt(25, 38, "AntiAFKNaturalClick.ControlPoint1", 3)
+	cp2Percent := LLARS_HumanRandomInt(62, 75, "AntiAFKNaturalClick.ControlPoint2", 3)
+	cp1X := startX + (dx * cp1Percent / 100)
+	cp1Y := startY + (dy * cp1Percent / 100)
+	cp2X := startX + (dx * cp2Percent / 100)
+	cp2Y := startY + (dy * cp2Percent / 100)
+	cp1X += perpX * curveAmount1
+	cp1Y += perpY * curveAmount1
+	cp2X += perpX * curveAmount2
+	cp2Y += perpY * curveAmount2
+	seedX := LLARS_HumanRandomInt(1, 2147483000, "AntiAFKNaturalClick.NoiseSeedX", 6)
+	seedY := LLARS_HumanRandomInt(1, 2147483000, "AntiAFKNaturalClick.NoiseSeedY", 6)
+	noiseAmount := distance * 0.012
+
+	if (noiseAmount < 0.75)
+		noiseAmount := 0.75
+
+	if (noiseAmount > 6)
+		noiseAmount := 6
+	points := []
+	lengths := []
+	totalLength := 0
+	previousX := startX
+	previousY := startY
+	points.Push({x:startX, y:startY})
+	lengths.Push(0)
+	previousNoise := 0
+
+	Loop, %rawSteps%
 	{
-		Click
-		LLARS_DeveloperNaturalClick(x, y, "left")
+		t := A_Index / rawSteps
+		ease := t
+		inv := 1 - ease
+		currentX := (inv * inv * inv * startX)
+		currentX += (3 * inv * inv * ease * cp1X)
+		currentX += (3 * inv * ease * ease * cp2X)
+		currentX += (ease * ease * ease * x)
+		currentY := (inv * inv * inv * startY)
+		currentY += (3 * inv * inv * ease * cp1Y)
+		currentY += (3 * inv * ease * ease * cp2Y)
+		currentY += (ease * ease * ease * y)
+		nx := NaturalNoise(seedX, t)
+		ny := NaturalNoise(seedY, t + 13.731)
+		noiseFade := Sin(t * 3.14159265)
+
+		if (t > 0.80)
+		{
+			fade := (1 - t) / 0.20
+
+			if (fade < 0)
+				fade := 0
+			noiseFade *= fade
+		}
+
+		rawNoise := ((nx + ny) * 0.5) * noiseAmount * noiseFade
+		smoothedNoise := (previousNoise * 0.70) + (rawNoise * 0.30)
+		previousNoise := smoothedNoise
+		currentX += perpX * smoothedNoise
+		currentY += perpY * smoothedNoise
+		segmentDX := currentX - previousX
+		segmentDY := currentY - previousY
+		segmentLength := Sqrt((segmentDX * segmentDX) + (segmentDY * segmentDY))
+		totalLength += segmentLength
+		points.Push({x:currentX, y:currentY})
+		lengths.Push(totalLength)
+		previousX := currentX
+		previousY := currentY
 	}
+
+	startTime := A_TickCount
+	searchIndex := 2
+	previousX := startX
+	previousY := startY
+	movementResult := true
+	; Use the same explicit, timer-protected cadence as NaturalClick.
+	LLARS_NaturalMovementTimingBegin()
+
+	Loop, %steps%
+	{
+		if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+		{
+			movementResult := false
+			break
+		}
+		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus during AntiAFKNaturalClick movement", runeScapeHwnd))
+		{
+			movementResult := false
+			break
+		}
+
+		t := A_Index / steps
+		timingInput := t ** timingExponent
+		timingT := timingInput * timingInput * (3 - (2 * timingInput))
+		targetLength := totalLength * timingT
+		while (searchIndex < lengths.Length() && lengths[searchIndex] < targetLength)
+			searchIndex++
+
+		if (searchIndex > lengths.Length())
+			searchIndex := lengths.Length()
+		prevIndex := searchIndex - 1
+
+		if (prevIndex < 1)
+			prevIndex := 1
+		prevLength := lengths[prevIndex]
+		nextLength := lengths[searchIndex]
+		lengthRange := nextLength - prevLength
+
+		if (lengthRange <= 0)
+		{
+			blend := 0
+		}
+		else
+		{
+			blend := (targetLength - prevLength) / lengthRange
+		}
+
+		point1 := points[prevIndex]
+		point2 := points[searchIndex]
+		currentX := point1.x + ((point2.x - point1.x) * blend)
+		currentY := point1.y + ((point2.y - point1.y) * blend)
+		currentX := Round(currentX)
+		currentY := Round(currentY)
+
+		if (currentX != previousX || currentY != previousY)
+		{
+			MouseMove, %currentX%, %currentY%, 0
+			previousX := currentX
+			previousY := currentY
+		}
+
+		targetElapsed := Round(duration * t)
+		actualElapsed := A_TickCount - startTime
+		delay := targetElapsed - actualElapsed
+
+		if (delay < 1)
+			delay := 1
+
+		if (delay > 35)
+			delay := 35
+		DllCall("Sleep", "UInt", delay)
+	}
+
+	if (!movementResult)
+	{
+		LLARS_NaturalMovementTimingEnd()
+		return false
+	}
+	if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+	{
+		LLARS_NaturalMovementTimingEnd()
+		return false
+	}
+	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before AntiAFKNaturalClick final position", runeScapeHwnd))
+	{
+		LLARS_NaturalMovementTimingEnd()
+		return false
+	}
+	MouseMove, %x%, %y%, 0
+	LLARS_NaturalMovementTimingEnd()
 	return true
 }
 

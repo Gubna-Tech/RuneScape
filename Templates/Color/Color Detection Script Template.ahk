@@ -24,11 +24,6 @@ if (!LLARS_StartTimerRun())
 
 SetTimer, Countdown, 1000
 
-IfWinNotActive, RuneScape
-{
-	WinActivate, RuneScape
-}
-
 SetTimer, CheckPixel, 100
 
 return
@@ -67,10 +62,7 @@ Goto, EndMsg
 ; ============================================================
 
 CheckPixel:
-if (!LLARS_RUNNING)
-	return
-
-if !LLARS_IsRuneScapeActive()
+if !LLARS_RunActive()
 	return
 
 if LLARS_PixelMatches("Pixel Coordinate", "Target Color")
@@ -87,7 +79,7 @@ if LLARS_PixelMatches("Pixel Coordinate", "Target Color")
 
 	; A timer may finish while the sleep is running. Do not allow the
 	; interrupted action thread to resume with a late click after completion.
-	if (!LLARS_RUNNING)
+	if !LLARS_RunActive()
 		return
 
 	LLARS_Click("Action Location")
@@ -101,12 +93,7 @@ return
 
 
 ResetCheck:
-if (!LLARS_RUNNING)
-	return
-
-; Inactive RuneScape is not the same thing as the target state changing.
-; Keep waiting until the game is active before evaluating the reset condition.
-if !LLARS_IsRuneScapeActive()
+if !LLARS_RunActive()
 	return
 
 if !LLARS_PixelMatches("Pixel Coordinate", "Target Color")
@@ -133,6 +120,7 @@ minutes := Mod(timeToRunMinutes, 60)
 SetTimer, Countdown, Off
 SetTimer, CheckPixel, Off
 SetTimer, ResetCheck, Off
+LLARS_TimerStopAll()
 LLARS_EndTimerRun()
 Logout()
 

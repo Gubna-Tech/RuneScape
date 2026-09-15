@@ -121,6 +121,8 @@ if (EstCompletedLoops = 0 && EstConfiguredFirstLoopAverage > 0)
 
 else if (EstFollowingCompletedLoops > 0 && EstFollowingAverageLoopTime > 0)
 {
+	; Once real following loops exist, their measured average continuously
+	; improves the prediction for all remaining ordinary loops.
 	EstimatedLoopTime := EstFollowingAverageLoopTime
 }
 
@@ -805,28 +807,157 @@ LLARS_ShowCoordinatePreview(x1, y1, x2, y2)
 	if (height < border * 2)
 		height := border * 2
 
-	; Four click-through GUI strips form an outline without covering the selection.
-	Gui, 14: +AlwaysOnTop -Caption -Border +ToolWindow +E0x20
+	; These are top-level layered + transparent windows. Windows uses the
+	; combination of WS_EX_LAYERED (0x80000) and WS_EX_TRANSPARENT (0x20)
+	; for click-through hit testing. WS_EX_NOACTIVATE (0x08000000) keeps the
+	; visual overlay from taking focus. No message hook or interactive handler
+	; is attached to the overlay.
+
+	Gui, 14: +AlwaysOnTop -Caption -Border +ToolWindow +E0x08080020 +HwndoverlayTopHwnd
 	Gui, 14: Color, Red
 	Gui, 14: Show, NoActivate x%left% y%top% w%width% h%border%, LLARSCoordinatePreviewTop
+	LLARS_MakeCoordinateOverlayLayered(overlayTopHwnd)
+
 	bottomY := top + height - border
-	Gui, 15: +AlwaysOnTop -Caption -Border +ToolWindow +E0x20
+	Gui, 15: +AlwaysOnTop -Caption -Border +ToolWindow +E0x08080020 +HwndoverlayBottomHwnd
 	Gui, 15: Color, Red
 	Gui, 15: Show, NoActivate x%left% y%bottomY% w%width% h%border%, LLARSCoordinatePreviewBottom
-	Gui, 16: +AlwaysOnTop -Caption -Border +ToolWindow +E0x20
+	LLARS_MakeCoordinateOverlayLayered(overlayBottomHwnd)
+
+	Gui, 16: +AlwaysOnTop -Caption -Border +ToolWindow +E0x08080020 +HwndoverlayLeftHwnd
 	Gui, 16: Color, Red
 	Gui, 16: Show, NoActivate x%left% y%top% w%border% h%height%, LLARSCoordinatePreviewLeft
+	LLARS_MakeCoordinateOverlayLayered(overlayLeftHwnd)
+
 	rightX := left + width - border
-	Gui, 17: +AlwaysOnTop -Caption -Border +ToolWindow +E0x20
+	Gui, 17: +AlwaysOnTop -Caption -Border +ToolWindow +E0x08080020 +HwndoverlayRightHwnd
 	Gui, 17: Color, Red
 	Gui, 17: Show, NoActivate x%rightX% y%top% w%border% h%height%, LLARSCoordinatePreviewRight
+	LLARS_MakeCoordinateOverlayLayered(overlayRightHwnd)
 }
+
+; Makes the already-created border strip fully opaque while retaining its
+; layered/click-through window style. This is display-only and never handles
+; mouse input itself.
+LLARS_MakeCoordinateOverlayLayered(hWnd)
+{
+	if (!hWnd)
+		return false
+
+	return DllCall("user32\SetLayeredWindowAttributes"
+		, "Ptr", hWnd
+		, "UInt", 0
+		, "UChar", 255
+		, "UInt", 0x2)
+}
+
+; While Developer Mode is open, shows the Config.ini coordinate region that
+; contains the current NaturalClick target. Rectangle coordinates use their full
+; saved bounds; fixed x/y coordinates use a small visible box around the pixel.
+; The overlay is click-through and never activates or steals RuneScape focus.
+LLARS_DeveloperCoordinateOverlay(x, y, section := "", scope := "script")
+{
+	global LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
+
+	if !WinExist("Developer Mode ahk_class AutoHotkeyGUI")
+		return false
+
+	scope := Trim(scope)
+	StringLower, scope, scope
+	if scope in llars,framework,global
+		configPath := LLARS_CONFIG_FILE
+	else
+		configPath := LLARS_SCRIPT_DIR . "\Config.ini"
+
+	; LLARS_Click() passes the exact configured coordinate section so the
+	; debugger does not have to guess which rectangle produced a randomized
+	; target. Direct/legacy NaturalClick() calls still fall back to matching x/y.
+	if (section = "")
+	{
+		if !IsFunc("LLARS_DeveloperClickTarget")
+			return false
+		section := LLARS_DeveloperClickTarget(x, y)
+	}
+
+	if (section = "" || !FileExist(configPath))
+		return false
+
+	IniRead, xmin, %configPath%, %section%, xmin, ERROR
+	IniRead, xmax, %configPath%, %section%, xmax, ERROR
+	IniRead, ymin, %configPath%, %section%, ymin, ERROR
+	IniRead, ymax, %configPath%, %section%, ymax, ERROR
+
+	if (xmin != "ERROR" && xmax != "ERROR" && ymin != "ERROR" && ymax != "ERROR")
+	{
+		xmin := Trim(xmin)
+		xmax := Trim(xmax)
+		ymin := Trim(ymin)
+		ymax := Trim(ymax)
+		if (xmin != "" && xmax != "" && ymin != "" && ymax != "")
+		{
+			LLARS_ShowCoordinatePreview(xmin, ymin, xmax, ymax)
+			; Keep the target visible for the full NaturalClick. NaturalClick itself
+			; schedules the hide 500 ms after the physical click succeeds.
+			SetTimer, LLARS_HideDeveloperCoordinateOverlay, Off
+			return true
+		}
+	}
+
+	IniRead, fixedX, %configPath%, %section%, x, ERROR
+	IniRead, fixedY, %configPath%, %section%, y, ERROR
+	if (fixedX = "ERROR" || fixedY = "ERROR")
+		return false
+
+	fixedX := Trim(fixedX)
+	fixedY := Trim(fixedY)
+	if (fixedX = "" || fixedY = "")
+		return false
+
+	LLARS_ShowCoordinatePreview(fixedX - 5, fixedY - 5, fixedX + 5, fixedY + 5)
+	; Keep the target visible for the full NaturalClick. NaturalClick itself
+	; schedules the hide 500 ms after the physical click succeeds.
+	SetTimer, LLARS_HideDeveloperCoordinateOverlay, Off
+	return true
+}
+
+; Ends the Developer Mode coordinate overlay. A positive delay keeps it visible
+; for that many milliseconds before hiding; zero hides it immediately.
+LLARS_DeveloperCoordinateOverlayHide(delay := 0)
+{
+	SetTimer, LLARS_HideDeveloperCoordinateOverlay, Off
+	if (delay > 0)
+	{
+		delay := -Abs(Round(delay))
+		SetTimer, LLARS_HideDeveloperCoordinateOverlay, %delay%
+		return
+	}
+
+	LLARS_HideCoordinatePreview()
+}
+
+LLARS_HideDeveloperCoordinateOverlay:
+LLARS_HideCoordinatePreview()
+return
 
 ; Converts RuneScape client coordinates to absolute screen coordinates for
 ; temporary overlays. This does not change the coordinates saved to Config.ini.
 LLARS_ClientToScreen(ByRef x, ByRef y)
 {
-	hWnd := WinExist("RuneScape")
+	global LLARS_RunRuneScapeHwnd
+
+	hWnd := 0
+	if (LLARS_RunRuneScapeHwnd && DllCall("IsWindow", "Ptr", LLARS_RunRuneScapeHwnd))
+		hWnd := LLARS_RunRuneScapeHwnd
+
+	if (!hWnd)
+	{
+		activeHwnd := WinExist("A")
+		if (activeHwnd && IsFunc("LLARS_IsRuneScapeWindow") && LLARS_IsRuneScapeWindow(activeHwnd))
+			hWnd := activeHwnd
+	}
+
+	if (!hWnd)
+		hWnd := WinExist("RuneScape")
 	if (!hWnd)
 		return
 
@@ -909,8 +1040,9 @@ if (selectedSection != " ***** Make a Selection ***** ")
 	GoSub, ColorSelected
 return
 
-; Reads the configured pixel location, captures its current color,
-; and writes that color into the selected Config.ini section.
+; Reads the pixel location mapped to the selected color section, captures its
+; current color, and writes that color into the selected Config.ini section.
+; Older scripts without coordinate= metadata continue using [Pixel Coordinate].
 ColorSelected:
 Gui, 2: Hide
 WinActivate, RuneScape
@@ -918,8 +1050,12 @@ x := ""
 y := ""
 ButtonText := selectedSection
 Sleep, 500
-IniRead, x, Config.ini, Pixel Coordinate, x
-IniRead, y, Config.ini, Pixel Coordinate, y
+IniRead, colorCoordinateSection, Config.ini, %ButtonText%, coordinate, ERROR
+colorCoordinateSection := Trim(colorCoordinateSection)
+if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
+	colorCoordinateSection := "Pixel Coordinate"
+IniRead, x, Config.ini, %colorCoordinateSection%, x
+IniRead, y, Config.ini, %colorCoordinateSection%, y
 PixelGetColor, color, %x%, %y%, RGB
 colorKey := LLARS_GetColorKey("Config.ini", ButtonText)
 IniWrite, %color%, Config.ini, %ButtonText%, %colorKey%
@@ -1172,10 +1308,9 @@ return
 ; Updates the main GUI state and resumes normal script execution.
 ResumeB:
 LLARS_PAUSED := false
-LLARS_DeveloperHotkey("Resume")
 LLARS_DeveloperAction("Script || Resumed")
 Log("RESUME", "Script resumed")
-GuiControl,,ScriptBlue, %scriptname%
+GuiControl,,ScriptBlue, % LLARS_DisplayScriptName()
 GuiControl,,State3, Running
 GuiControl, Dev:, DeveloperRunningText, Running
 Return
@@ -1184,11 +1319,10 @@ Return
 ; alive so Developer Mode can continue refreshing elapsed time and live data.
 PauseB:
 LLARS_PAUSED := true
-LLARS_DeveloperHotkey("Pause")
 LLARS_DeveloperAction("Script || Paused")
 Log("PAUSE", "Script paused")
 GuiControl,,State2, Paused
-GuiControl,,ScriptRed, %scriptname%
+GuiControl,,ScriptRed, % LLARS_DisplayScriptName()
 GuiControl, Dev:, DeveloperRunningText, Paused
 
 Pause, On, 1
@@ -1218,13 +1352,11 @@ WinGetPos, GUIxc, GUIyc,,,LLARS ahk_class AutoHotkeyGUI
 IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
 IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
 
-if WinExist("Developer Mode ahk_class AutoHotkeyGUI")
-{
-	WinGetPos, DeveloperGUIxc, DeveloperGUIyc,,, Developer Mode ahk_class AutoHotkeyGUI
-	IniWrite, %DeveloperGUIxc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
-	IniWrite, %DeveloperGUIyc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
-}
+if (DeveloperGuiHwnd && WinExist("ahk_id " . DeveloperGuiHwnd))
+	LLARS_DeveloperSavePosition(DeveloperGuiHwnd)
 
+if IsFunc("LLARS_TimerStopAll")
+	LLARS_TimerStopAll()
 EndLogSession("Normal Exit")
 ExitApp
 
@@ -1405,7 +1537,15 @@ else
 return
 
 DeveloperModeHotkey:
+	Suspend, Permit
+LLARS_WaitForHotkeyRelease(LLARS_lhk5)
 LLARS_DeveloperHotkey("Developer Mode")
+if (DeveloperGuiHwnd && WinExist("ahk_id " . DeveloperGuiHwnd))
+{
+	Gosub, CloseDeveloperMode
+	return
+}
+DeveloperGuiHwnd := 0
 LLARS_DeveloperUIAction("Developer Mode")
 Gosub, DeveloperModeDashboard
 return
@@ -1436,14 +1576,18 @@ if (LLARS_DeveloperLightweight)
 	return
 }
 
+LLARS_DeveloperDestroyInspectorPanel()
+LLARS_DeveloperDestroyHotkeysPanel()
 Gui Dev: Destroy
-Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound
+Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound +HwndDeveloperGuiHwnd
 
 Gui Dev: Font, s12 Bold cBlack
-Gui Dev: Add, Text, x5 y5 w440 h25 Center, LLARS
+Gui Dev: Add, Text, x5 y4 w550 h22 Center, LLARS
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x5 y29 w440 h18 Center, Developer Mode
-Gui Dev: Add, Text, x90 y49 w270 h2 0x10
+Gui Dev: Add, Text, x5 y25 w550 h17 Center, Developer Mode
+Gui Dev: Font, s11 Norm cGray
+Gui Dev: Add, Text, x5 y43 w550 h18 Center, %scriptname%
+Gui Dev: Add, Text, x130 y63 w300 h2 0x10
 
 if (LLARS_RUNNING)
 {
@@ -1455,7 +1599,6 @@ if (LLARS_RUNNING)
 else
 	developerRunning := "Idle"
 
-developerControls := LLARS_CONTROLS_LOCKED ? "Locked" : "Unlocked"
 developerFinalSleep := EstFinalSleepActive ? "Active" : "Inactive"
 developerRunType := (LLARS_RUN_TYPE != "") ? LLARS_RUN_TYPE : "Not Started"
 
@@ -1473,13 +1616,13 @@ else
 if (developerRunType = "RunCount" && runcount3 != "")
 	developerProgress := count2 . " / " . runcount3
 else if (developerRunType = "Timer" && LLARS_RUNNING)
-	developerProgress := "Timed Run"
+	developerProgress := LLARS_TimerRemainingText(endTime - A_TickCount)
 else
 	developerProgress := "--"
 
 LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor, developerInspectorStatus)
 LLARS_DeveloperCheckPixelReset()
-developerPixelTarget := LLARS_DeveloperPixelTarget()
+developerPixelTargets := LLARS_DeveloperPixelTargets()
 
 developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
@@ -1509,73 +1652,71 @@ if (developerActions = "")
 
 developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
 
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x15 y60 w190 h20 Center, Framework State
-Gui Dev: Add, GroupBox, x20 y83 w180 h164, Current State
+; Compact two-row run summary. Keeping this outside a pane makes the live
+; dashboard easier to scan and leaves the four diagnostic panes more room.
+; Labels stay normal-weight while the live values are bold for a cleaner
+; visual hierarchy without making every bit of summary text heavy.
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Text, x32 y106 w74 h18, Script
-Gui Dev: Add, Text, x32 y126 w74 h18, State
-Gui Dev: Add, Text, x32 y146 w74 h18, Run Type
-Gui Dev: Add, Text, x32 y166 w74 h18, Progress
-Gui Dev: Add, Text, x32 y186 w74 h18, Elapsed
-Gui Dev: Add, Text, x32 y206 w74 h18, Controls
-Gui Dev: Add, Text, x32 y226 w74 h18, Final Sleep
+Gui Dev: Add, Text, x20 y71 w70 h18 Right, State:
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x108 y106 w80 h18 Right vDeveloperScriptText, %scriptname%
-Gui Dev: Add, Text, x108 y126 w80 h18 Right vDeveloperRunningText, %developerRunning%
-Gui Dev: Add, Text, x108 y146 w80 h18 Right vDeveloperRunTypeText, %developerRunType%
-Gui Dev: Add, Text, x108 y166 w80 h18 Right vDeveloperProgressText, %developerProgress%
-Gui Dev: Add, Text, x108 y186 w80 h18 Right vDeveloperElapsedText, %developerElapsed%
-Gui Dev: Add, Text, x108 y206 w80 h18 Right vDeveloperControlsText, %developerControls%
-Gui Dev: Add, Text, x108 y226 w80 h18 Right vDeveloperFinalSleepText, %developerFinalSleep%
-
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x205 y60 w230 h20 Center, Active Hotkeys
-Gui Dev: Add, GroupBox, x210 y83 w220 h164, Hotkey State
+Gui Dev: Add, Text, x94 y71 w96 h18 vDeveloperRunningText, %developerRunning%
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Text, x220 y108 w200 h112 Center vDeveloperHotkeysText, %developerHotkeys%
-
+Gui Dev: Add, Text, x195 y71 w78 h18 Right, Run Type:
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x15 y258 w190 h20 Center, Mouse / Pixel
-Gui Dev: Add, GroupBox, x20 y281 w180 h148, Live Inspector
+Gui Dev: Add, Text, x277 y71 w88 h18 vDeveloperRunTypeText, %developerRunType%
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Text, x32 y306 w74 h18, Game Status
-Gui Dev: Add, Text, x32 y330 w74 h18, RuneScape X
-Gui Dev: Add, Text, x32 y354 w74 h18, RuneScape Y
-Gui Dev: Add, Text, x32 y378 w74 h18, Pixel RGB
-Gui Dev: Add, Text, x32 y402 w74 h18, Pixel Target
+Gui Dev: Add, Text, x370 y71 w74 h18 Right, Progress:
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x108 y306 w80 h18 Right vDeveloperInspectorStatusText, %developerInspectorStatus%
-Gui Dev: Add, Text, x108 y330 w80 h18 Right vDeveloperMouseXText, %developerMouseX%
-Gui Dev: Add, Text, x108 y354 w80 h18 Right vDeveloperMouseYText, %developerMouseY%
-Gui Dev: Add, Text, x108 y378 w80 h18 Right vDeveloperPixelColorText, %developerPixelColor%
-Gui Dev: Add, Text, x108 y402 w80 h18 Right vDeveloperPixelTargetText, %developerPixelTarget%
-
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x205 y258 w230 h20 Center, Configuration Diagnostics
-Gui Dev: Add, GroupBox, x210 y281 w220 h148, Script Config
+Gui Dev: Add, Text, x448 y71 w92 h18 vDeveloperProgressText, %developerProgress%
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Edit, x220 y304 w200 h112 ReadOnly -TabStop +VScroll vDeveloperDiagnosticsText, %developerDiagnostics%
+Gui Dev: Add, Text, x65 y92 w78 h18 Right, Elapsed:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x147 y92 w123 h18 vDeveloperElapsedText, %developerElapsed%
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x290 y92 w88 h18 Right, Final Sleep:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x382 y92 w113 h18 vDeveloperFinalSleepText, %developerFinalSleep%
+Gui Dev: Add, Text, x20 y116 w520 h2 0x10
+
+; Top row: the entire Live Inspector scrolls as one pane, matching the
+; Active Hotkeys pane while keeping normal LLARS label/value formatting.
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x20 y126 w250 h18 Center, Live Inspector
+Gui Dev: Add, GroupBox, x20 y147 w250 h198
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x20 y440 w410 h20 Center, Live Actions
-Gui Dev: Add, GroupBox, x20 y463 w410 h190, Recent Framework Actions
-Gui Dev: Font, s9 Norm cBlack
-Gui Dev: Add, Edit, x30 y486 w390 h154 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+Gui Dev: Add, Text, x290 y126 w250 h18 Center, Active Hotkeys
+Gui Dev: Add, GroupBox, x290 y147 w250 h198
+
+; Full-width diagnostics are easier to read than the previous narrow fourth box.
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x20 y355 w520 h18 Center, Configuration Diagnostics
+Gui Dev: Add, GroupBox, x20 y376 w520 h83
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Edit, x30 y394 w500 h53 ReadOnly -TabStop +VScroll vDeveloperDiagnosticsText, %developerDiagnostics%
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Button, x52 y665 w165 h27 gToggleDeveloperLightweight, Lightweight Mode
-Gui Dev: Add, Button, x233 y665 w165 h27 gCloseDeveloperMode, Close
+Gui Dev: Add, Text, x20 y464 w520 h18 Center, Recent Framework Actions
+Gui Dev: Add, GroupBox, x20 y484 w520 h156
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Edit, x30 y501 w500 h132 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Button, x80 y648 w190 h27 gToggleDeveloperLightweight, Lightweight Mode
+Gui Dev: Add, Button, x290 y648 w190 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
-Gui Dev: Show, Center w450 h702, Developer Mode
-
-; Restores the Developer Mode GUI to its previously saved screen position.
-IniRead, DeveloperGUIx, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
-IniRead, DeveloperGUIy, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
-WinMove, Developer Mode,, %DeveloperGUIx%, %DeveloperGUIy%
+if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
+	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h688, Developer Mode
+else
+	Gui Dev: Show, Center w560 h688, Developer Mode
+LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd)
+LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd)
 
 LLARS_EnableExitHotkey()
+LLARS_EnableDeveloperHotkey()
+LLARS_DeveloperLastHotkeys := developerHotkeys
+LLARS_DeveloperLastInspectorSignature := LLARS_DeveloperInspectorSignature(developerPixelTargets)
 LLARS_DeveloperLastDiagnostics := developerDiagnostics
 LLARS_DeveloperLastActions := developerActions
 PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
@@ -1583,36 +1724,39 @@ SetTimer, LLARS_DeveloperAutoRefresh, 750
 return
 
 DeveloperModeLightweightDashboard:
+LLARS_DeveloperDestroyInspectorPanel()
+LLARS_DeveloperDestroyHotkeysPanel()
 Gui Dev: Destroy
-Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound
+DeveloperGuiHwnd := 0
+Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound +HwndDeveloperGuiHwnd
 
 developerActions := LLARS_DeveloperActions
 if (developerActions = "")
 	developerActions := "No framework actions recorded yet."
 
 Gui Dev: Font, s12 Bold cBlack
-Gui Dev: Add, Text, x5 y5 w440 h25 Center, LLARS
+Gui Dev: Add, Text, x5 y5 w550 h25 Center, LLARS
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x5 y29 w440 h18 Center, Developer Mode - Lightweight
-Gui Dev: Add, Text, x90 y49 w270 h2 0x10
-Gui Dev: Font, s9 Norm cGray
-Gui Dev: Add, Text, x15 y58 w420 h18 Center, %scriptname% - Same action log as Full Mode
+Gui Dev: Add, Text, x5 y29 w550 h18 Center, Developer Mode - Lightweight
+Gui Dev: Font, s11 Norm cGray
+Gui Dev: Add, Text, x5 y48 w550 h20 Center, %scriptname%
+Gui Dev: Add, Text, x130 y69 w300 h2 0x10
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, GroupBox, x20 y82 w410 h218, Recent Framework Actions
-Gui Dev: Font, s9 Norm cBlack
-Gui Dev: Add, Edit, x30 y104 w390 h184 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+Gui Dev: Add, GroupBox, x20 y82 w520 h218, Recent Framework Actions
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Edit, x30 y104 w500 h184 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Button, x52 y312 w165 h27 gToggleDeveloperLightweight, Full Mode
-Gui Dev: Add, Button, x233 y312 w165 h27 gCloseDeveloperMode, Close
+Gui Dev: Add, Button, x80 y312 w190 h27 gToggleDeveloperLightweight, Full Mode
+Gui Dev: Add, Button, x290 y312 w190 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
-Gui Dev: Show, Center w450 h350, Developer Mode
-
-IniRead, DeveloperGUIx, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
-IniRead, DeveloperGUIy, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
-WinMove, Developer Mode,, %DeveloperGUIx%, %DeveloperGUIy%
+if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
+	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h350, Developer Mode
+else
+	Gui Dev: Show, Center w560 h350, Developer Mode
 
 LLARS_EnableExitHotkey()
+LLARS_EnableDeveloperHotkey()
 LLARS_DeveloperLastActions := developerActions
 PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
 SetTimer, LLARS_DeveloperAutoRefresh, 750
@@ -1620,12 +1764,7 @@ return
 
 ToggleDeveloperLightweight:
 SetTimer, LLARS_DeveloperAutoRefresh, Off
-WinGetPos, DeveloperGUIxc, DeveloperGUIyc,,, Developer Mode
-if (DeveloperGUIxc != "" && DeveloperGUIyc != "")
-{
-	IniWrite, %DeveloperGUIxc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
-	IniWrite, %DeveloperGUIyc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
-}
+LLARS_DeveloperSavePosition(DeveloperGuiHwnd)
 LLARS_DeveloperLightweight := !LLARS_DeveloperLightweight
 Gosub, DeveloperModeDashboard
 return
@@ -1664,7 +1803,6 @@ if (LLARS_RUNNING)
 else
 	developerRunning := "Idle"
 
-developerControls := LLARS_CONTROLS_LOCKED ? "Locked" : "Unlocked"
 developerFinalSleep := EstFinalSleepActive ? "Active" : "Inactive"
 developerRunType := (LLARS_RUN_TYPE != "") ? LLARS_RUN_TYPE : "Not Started"
 
@@ -1682,12 +1820,12 @@ else
 if (developerRunType = "RunCount" && runcount3 != "")
 	developerProgress := count2 . " / " . runcount3
 else if (developerRunType = "Timer" && LLARS_RUNNING)
-	developerProgress := "Timed Run"
+	developerProgress := LLARS_TimerRemainingText(endTime - A_TickCount)
 else
 	developerProgress := "--"
 
 LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor, developerInspectorStatus)
-developerPixelTarget := LLARS_DeveloperPixelTarget()
+developerPixelTargets := LLARS_DeveloperPixelTargets()
 
 developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
@@ -1714,19 +1852,28 @@ if (developerActions = "")
 
 developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
 
-GuiControl, Dev:, DeveloperScriptText, %scriptname%
 GuiControl, Dev:, DeveloperRunningText, %developerRunning%
 GuiControl, Dev:, DeveloperRunTypeText, %developerRunType%
 GuiControl, Dev:, DeveloperProgressText, %developerProgress%
 GuiControl, Dev:, DeveloperElapsedText, %developerElapsed%
-GuiControl, Dev:, DeveloperControlsText, %developerControls%
 GuiControl, Dev:, DeveloperFinalSleepText, %developerFinalSleep%
-GuiControl, Dev:, DeveloperInspectorStatusText, %developerInspectorStatus%
-GuiControl, Dev:, DeveloperMouseXText, %developerMouseX%
-GuiControl, Dev:, DeveloperMouseYText, %developerMouseY%
-GuiControl, Dev:, DeveloperPixelColorText, %developerPixelColor%
-GuiControl, Dev:, DeveloperPixelTargetText, %developerPixelTarget%
-GuiControl, Dev:, DeveloperHotkeysText, %developerHotkeys%
+
+developerInspectorSignature := LLARS_DeveloperInspectorSignature(developerPixelTargets)
+if (developerInspectorSignature != LLARS_DeveloperLastInspectorSignature)
+{
+	LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd, true)
+	LLARS_DeveloperLastInspectorSignature := developerInspectorSignature
+}
+else
+	LLARS_DeveloperRefreshInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets)
+
+; Active Hotkeys uses the same scrollable child-pane method as Live Inspector.
+; Rebuild only when its contents change and preserve the user's scroll position.
+if (developerHotkeys != LLARS_DeveloperLastHotkeys)
+{
+	LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd, true)
+	LLARS_DeveloperLastHotkeys := developerHotkeys
+}
 
 if (developerActions != LLARS_DeveloperLastActions)
 {
@@ -1746,31 +1893,39 @@ return
 ; main LLARS GUI remain open exactly as they were.
 CloseDeveloperMode:
 SetTimer, LLARS_DeveloperAutoRefresh, Off
-WinGetPos, DeveloperGUIxc, DeveloperGUIyc,,, Developer Mode
-IniWrite, %DeveloperGUIxc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
-IniWrite, %DeveloperGUIyc%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+LLARS_DeveloperSavePosition(DeveloperGuiHwnd)
 LLARS_DeveloperUIAction("Developer Mode", "Closed")
+LLARS_DeveloperDestroyInspectorPanel()
+LLARS_DeveloperDestroyHotkeysPanel()
 Gui Dev: Destroy
+DeveloperGuiHwnd := 0
 Gui 1: Default
 Gui 1: Show
 return
 
-; Builds a concise list of active typed Config.ini problems for Developer Mode.
-; Disabled optional sections and dependency-disabled sections are ignored in
-; the same way as the normal Configuration Status panel.
-LLARS_DeveloperPixelTarget()
+; Builds Developer Mode pixel-target data from active typed Config.ini color
+; sections. Each target keeps its coordinate, live RGB, and configured RGB.
+LLARS_DeveloperPixelTargets()
 {
 	global LLARS_SCRIPT_DIR
 
+	targets := []
 	ConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
 	if !FileExist(ConfigPath)
-		return "Non-Color"
+	{
+		targets.Push({Message: "Config.ini not found"})
+		return targets
+	}
 
 	IniRead, sections, %ConfigPath%
 	if (sections = "ERROR")
-		return "Non-Color"
+	{
+		targets.Push({Message: "Unable to read Config.ini"})
+		return targets
+	}
 
-	colorSectionFound := false
+	pointSections := []
+	colorSections := []
 
 	Loop, Parse, sections, `n, `r
 	{
@@ -1778,44 +1933,681 @@ LLARS_DeveloperPixelTarget()
 		if (section = "")
 			continue
 
-		if (GetConfigType(ConfigPath, section) != "color")
+		if !LLARS_DeveloperConfigSectionActive(ConfigPath, section)
 			continue
 
-		colorSectionFound := true
-
-		IniRead, option, %ConfigPath%, %section%, option, true
-		option := Trim(option)
-		StringLower, optionLower, option
-		if (optionLower = "false")
-			continue
-
-		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
-		if (depends != "ERROR" && Trim(depends) != "")
+		configType := GetConfigType(ConfigPath, section)
+		if (configType = "coordinate")
 		{
-			depends := Trim(depends)
-			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
-			dependsOption := Trim(dependsOption)
-			StringLower, dependsOptionLower, dependsOption
-			if (dependsOptionLower = "false")
-				continue
+			IniRead, x, %ConfigPath%, %section%, x, ERROR
+			IniRead, y, %ConfigPath%, %section%, y, ERROR
+			if (x != "ERROR" || y != "ERROR")
+				pointSections.Push({Name: section, X: Trim(x), Y: Trim(y)})
+			continue
 		}
 
-		colorKey := LLARS_GetColorKey(ConfigPath, section)
-		if (colorKey = "")
-			continue
-
-		IniRead, targetColor, %ConfigPath%, %section%, %colorKey%, ERROR
-		targetColor := Trim(targetColor)
-		if (targetColor = "ERROR" || targetColor = "")
-			return "Not Set"
-
-		return targetColor
+		if (configType = "color")
+			colorSections.Push(section)
 	}
 
-	if (colorSectionFound)
-		return "Not Set"
+	if (colorSections.Length() = 0)
+	{
+		targets.Push({Message: "No configured color targets."})
+		return targets
+	}
 
-	return "Non-Color"
+	sharedPoint := ""
+	if (pointSections.Length() = 1)
+		sharedPoint := pointSections[1]
+	else
+	{
+		for _, pointInfo in pointSections
+		{
+			if (pointInfo.Name = "Pixel Coordinate")
+			{
+				sharedPoint := pointInfo
+				break
+			}
+		}
+	}
+
+	pixelCache := {}
+	for colorIndex, colorSection in colorSections
+	{
+		pointInfo := LLARS_DeveloperPixelPointForColor(ConfigPath, colorSection, pointSections, sharedPoint, colorIndex)
+		coordinateText := "Not Set"
+		actualColor := "--"
+
+		if IsObject(pointInfo)
+		{
+			x := pointInfo.X
+			y := pointInfo.Y
+			if (LLARS_IsNumericConfigValue(x) && LLARS_IsNumericConfigValue(y))
+			{
+				x := Round(x + 0)
+				y := Round(y + 0)
+				coordinateText := "x" . x . " || y" . y
+				cacheKey := x . "|" . y
+				if (pixelCache.HasKey(cacheKey))
+					actualColor := pixelCache[cacheKey]
+				else
+				{
+					actualColor := LLARS_DeveloperPixelColorAt(x, y)
+					pixelCache[cacheKey] := actualColor
+				}
+			}
+		}
+
+		colorKey := LLARS_GetColorKey(ConfigPath, colorSection)
+		IniRead, targetColor, %ConfigPath%, %colorSection%, %colorKey%, ERROR
+		targetColor := Trim(targetColor)
+		if (targetColor = "ERROR" || !RegExMatch(targetColor, "i)^0x[0-9A-F]{6}$"))
+			targetColor := "Not Set"
+		else
+			StringUpper, targetColor, targetColor
+
+		targets.Push({Name: colorSection
+			, Coordinates: coordinateText
+			, ActualColor: actualColor
+			, TargetColor: targetColor})
+	}
+
+	return targets
+}
+
+; Creates one scrollable Live Inspector pane. The top mouse information and all
+; configured pixel targets use the same left label / bold right value layout.
+LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor, targets, parentHwnd, preserveScroll := false)
+{
+	static inspectorMessagesRegistered := false
+	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
+	global DeveloperInspectorScrollPos, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
+	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd
+	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
+
+	preservedScroll := preserveScroll ? LLARS_DeveloperGetInspectorScrollPos() : 0
+	LLARS_DeveloperDestroyInspectorPanel(false)
+
+	DeveloperInspectorViewHeight := 166
+	DeveloperInspectorScrollPos := 0
+	DeveloperInspectorActualHwnds := []
+	DeveloperInspectorTargetHwnds := []
+
+	Gui DevInspector: +Parent%parentHwnd% -Caption -Border +ToolWindow +HwndDeveloperInspectorHwnd +0x200000
+	Gui DevInspector: Margin, 0, 0
+
+	rowY := 3
+	LLARS_DeveloperAddInspectorRow("Game Status", inspectorStatus, rowY, DeveloperInspectorStatusHwnd)
+	rowY += 21
+	LLARS_DeveloperAddInspectorRow("Mouse POS X", mouseX, rowY, DeveloperInspectorMouseXHwnd)
+	rowY += 21
+	LLARS_DeveloperAddInspectorRow("Mouse POS Y", mouseY, rowY, DeveloperInspectorMouseYHwnd)
+	rowY += 21
+	LLARS_DeveloperAddInspectorRow("Mouse RGB", mouseColor, rowY, DeveloperInspectorMouseColorHwnd)
+	rowY += 29
+
+	if (!IsObject(targets) || targets.Length() = 0)
+		targets := [{Message: "No configured color targets."}]
+
+	if (targets[1].HasKey("Message"))
+	{
+		messageText := targets[1].Message
+		Gui DevInspector: Font, s10 Norm cBlack
+		Gui DevInspector: Add, Text, x5 y%rowY% w195 h36, %messageText%
+		rowY += 40
+	}
+	else
+	{
+		for targetIndex, targetInfo in targets
+		{
+			sectionName := targetInfo.Name
+			coordinates := targetInfo.Coordinates
+			actualColor := targetInfo.ActualColor
+			targetColor := targetInfo.TargetColor
+
+			Gui DevInspector: Font, s10 Norm cBlack
+			Gui DevInspector: Add, Text, x5 y%rowY% w108 h18 -Wrap, %sectionName%
+			; Keep coordinates bold like the other inspector values. A vertical
+			; separator avoids any ambiguity from compact punctuation rendering.
+			Gui DevInspector: Font, s10 Bold cBlack
+			Gui DevInspector: Add, Text, x116 y%rowY% w96 h20 Right -Wrap, %coordinates%
+			rowY += 23
+
+			actualHwnd := ""
+			LLARS_DeveloperAddInspectorRow("Actual RGB", actualColor, rowY, actualHwnd)
+			DeveloperInspectorActualHwnds.Push(actualHwnd)
+			rowY += 21
+
+			targetHwnd := ""
+			LLARS_DeveloperAddInspectorRow("Target RGB", targetColor, rowY, targetHwnd)
+			DeveloperInspectorTargetHwnds.Push(targetHwnd)
+			rowY += 29
+		}
+	}
+
+	DeveloperInspectorContentHeight := Max(rowY, DeveloperInspectorViewHeight)
+
+	; Show the child GUI hidden first, then position it with SetWindowPos.
+	; For WS_CHILD windows SetWindowPos uses parent-client coordinates, which
+	; keeps the inspector inside the Live Inspector group regardless of where
+	; the Developer Mode window itself is positioned on screen.
+	Gui DevInspector: Show, Hide w230 h%DeveloperInspectorViewHeight%
+	DllCall("SetWindowPos", "Ptr", DeveloperInspectorHwnd, "Ptr", 0
+		, "Int", 30, "Int", 166, "Int", 230, "Int", DeveloperInspectorViewHeight
+		, "UInt", 0x0040)
+	DllCall("RedrawWindow", "Ptr", DeveloperInspectorHwnd, "Ptr", 0, "Ptr", 0, "UInt", 0x0085)
+	LLARS_DeveloperConfigureInspectorScroll()
+	if (preservedScroll > 0)
+		LLARS_DeveloperSetInspectorScroll(preservedScroll)
+
+	if (!inspectorMessagesRegistered)
+	{
+		OnMessage(0x115, "LLARS_DeveloperPaneVScroll")
+		OnMessage(0x20A, "LLARS_DeveloperPaneMouseWheel")
+		inspectorMessagesRegistered := true
+	}
+}
+
+LLARS_DeveloperAddInspectorRow(labelText, valueText, rowY, ByRef valueHwnd)
+{
+	Gui DevInspector: Font, s10 Norm cBlack
+	Gui DevInspector: Add, Text, x5 y%rowY% w105 h18 -Wrap, %labelText%
+	Gui DevInspector: Font, s10 Bold cBlack
+	Gui DevInspector: Add, Text, x113 y%rowY% w88 h18 Right -Wrap hwndDeveloperInspectorValueHwnd, %valueText%
+	valueHwnd := DeveloperInspectorValueHwnd
+}
+
+LLARS_DeveloperRefreshInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor, targets)
+{
+	global DeveloperInspectorHwnd, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
+	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd
+	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
+
+	if (!DeveloperInspectorHwnd)
+		return
+
+	LLARS_DeveloperSetInspectorText(DeveloperInspectorStatusHwnd, inspectorStatus)
+	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseXHwnd, mouseX)
+	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseYHwnd, mouseY)
+	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseColorHwnd, mouseColor)
+
+	if (!IsObject(targets) || targets.Length() = 0 || targets[1].HasKey("Message"))
+		return
+
+	for targetIndex, targetInfo in targets
+	{
+		actualHwnd := DeveloperInspectorActualHwnds[targetIndex]
+		targetHwnd := DeveloperInspectorTargetHwnds[targetIndex]
+		LLARS_DeveloperSetInspectorText(actualHwnd, targetInfo.ActualColor)
+		LLARS_DeveloperSetInspectorText(targetHwnd, targetInfo.TargetColor)
+	}
+}
+
+LLARS_DeveloperSetInspectorText(controlHwnd, valueText)
+{
+	if (controlHwnd)
+		ControlSetText,, %valueText%, ahk_id %controlHwnd%
+}
+
+LLARS_DeveloperCreateHotkeysPanel(hotkeysText, parentHwnd, preserveScroll := false)
+{
+	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight, DeveloperHotkeysViewHeight
+	global DeveloperHotkeysScrollPos
+
+	preservedScroll := preserveScroll ? LLARS_DeveloperGetHotkeysScrollPos() : 0
+	LLARS_DeveloperDestroyHotkeysPanel(false)
+
+	DeveloperHotkeysViewHeight := 166
+	DeveloperHotkeysScrollPos := 0
+
+	Gui DevHotkeys: +Parent%parentHwnd% -Caption -Border +ToolWindow +HwndDeveloperHotkeysHwnd +0x200000
+	Gui DevHotkeys: Margin, 0, 0
+
+	rowY := 3
+	if (Trim(hotkeysText, " `t`r`n") = "")
+		hotkeysText := "No active hotkeys"
+
+	Loop, Parse, hotkeysText, `n, `r
+	{
+		lineText := A_LoopField
+		if (Trim(lineText) = "")
+		{
+			rowY += 9
+			continue
+		}
+
+		separatorPos := InStr(lineText, ":")
+		if (separatorPos > 0)
+		{
+			labelText := Trim(SubStr(lineText, 1, separatorPos - 1))
+			valueText := Trim(SubStr(lineText, separatorPos + 1))
+			LLARS_DeveloperAddHotkeyRow(labelText, valueText, rowY)
+		}
+		else
+		{
+			Gui DevHotkeys: Font, s10 Norm cBlack
+			Gui DevHotkeys: Add, Text, x5 y%rowY% w196 h18 -Wrap, %lineText%
+		}
+		rowY += 21
+	}
+
+	DeveloperHotkeysContentHeight := Max(rowY, DeveloperHotkeysViewHeight)
+	Gui DevHotkeys: Show, Hide w230 h%DeveloperHotkeysViewHeight%
+	DllCall("SetWindowPos", "Ptr", DeveloperHotkeysHwnd, "Ptr", 0
+		, "Int", 300, "Int", 166, "Int", 230, "Int", DeveloperHotkeysViewHeight
+		, "UInt", 0x0040)
+	DllCall("RedrawWindow", "Ptr", DeveloperHotkeysHwnd, "Ptr", 0, "Ptr", 0, "UInt", 0x0085)
+	LLARS_DeveloperConfigureHotkeysScroll()
+	if (preservedScroll > 0)
+		LLARS_DeveloperSetHotkeysScroll(preservedScroll)
+}
+
+LLARS_DeveloperAddHotkeyRow(labelText, valueText, rowY)
+{
+	Gui DevHotkeys: Font, s10 Norm cBlack
+	Gui DevHotkeys: Add, Text, x5 y%rowY% w118 h18 -Wrap, %labelText%
+	Gui DevHotkeys: Font, s10 Bold cBlack
+	Gui DevHotkeys: Add, Text, x126 y%rowY% w87 h18 Right -Wrap, %valueText%
+}
+
+LLARS_DeveloperConfigureHotkeysScroll()
+{
+	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight
+	global DeveloperHotkeysViewHeight, DeveloperHotkeysScrollPos
+
+	if (!DeveloperHotkeysHwnd)
+		return
+
+	maxPos := Max(0, DeveloperHotkeysContentHeight - DeveloperHotkeysViewHeight)
+	DeveloperHotkeysScrollPos := Max(0, Min(maxPos, DeveloperHotkeysScrollPos + 0))
+
+	VarSetCapacity(scrollInfo, 28, 0)
+	NumPut(28, scrollInfo, 0, "UInt")
+	NumPut(0x17, scrollInfo, 4, "UInt")
+	NumPut(0, scrollInfo, 8, "Int")
+	NumPut(Max(0, DeveloperHotkeysContentHeight - 1), scrollInfo, 12, "Int")
+	NumPut(DeveloperHotkeysViewHeight, scrollInfo, 16, "UInt")
+	NumPut(DeveloperHotkeysScrollPos, scrollInfo, 20, "Int")
+	DllCall("SetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
+	DllCall("ShowScrollBar", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Int", maxPos > 0)
+}
+
+LLARS_DeveloperGetHotkeysScrollPos()
+{
+	global DeveloperHotkeysHwnd, DeveloperHotkeysScrollPos
+
+	if (!DeveloperHotkeysHwnd)
+		return DeveloperHotkeysScrollPos + 0
+
+	VarSetCapacity(scrollInfo, 28, 0)
+	NumPut(28, scrollInfo, 0, "UInt")
+	NumPut(0x4, scrollInfo, 4, "UInt")
+	if DllCall("GetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo)
+		return NumGet(scrollInfo, 20, "Int")
+	return DeveloperHotkeysScrollPos + 0
+}
+
+LLARS_DeveloperSetHotkeysScroll(newPos)
+{
+	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight
+	global DeveloperHotkeysViewHeight, DeveloperHotkeysScrollPos
+
+	if (!DeveloperHotkeysHwnd)
+		return
+
+	maxPos := Max(0, DeveloperHotkeysContentHeight - DeveloperHotkeysViewHeight)
+	newPos := Max(0, Min(maxPos, Round(newPos)))
+	oldPos := DeveloperHotkeysScrollPos + 0
+	if (newPos = oldPos)
+		return
+
+	DeveloperHotkeysScrollPos := newPos
+	DllCall("ScrollWindowEx", "Ptr", DeveloperHotkeysHwnd, "Int", 0, "Int", oldPos - newPos
+		, "Ptr", 0, "Ptr", 0, "Ptr", 0, "Ptr", 0, "UInt", 0x0007)
+
+	VarSetCapacity(scrollInfo, 28, 0)
+	NumPut(28, scrollInfo, 0, "UInt")
+	NumPut(0x4, scrollInfo, 4, "UInt")
+	NumPut(newPos, scrollInfo, 20, "Int")
+	DllCall("SetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
+	DllCall("UpdateWindow", "Ptr", DeveloperHotkeysHwnd)
+}
+
+LLARS_DeveloperDestroyHotkeysPanel(resetScroll := true)
+{
+	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight
+	global DeveloperHotkeysViewHeight, DeveloperHotkeysScrollPos
+
+	Gui DevHotkeys: Destroy
+	DeveloperHotkeysHwnd := ""
+	DeveloperHotkeysContentHeight := 0
+	DeveloperHotkeysViewHeight := 0
+	if (resetScroll)
+		DeveloperHotkeysScrollPos := 0
+}
+
+LLARS_DeveloperInspectorSignature(targets)
+{
+	if (!IsObject(targets) || targets.Length() = 0)
+		return ""
+
+	if (targets[1].HasKey("Message"))
+		return "MESSAGE|" . targets[1].Message
+
+	signature := ""
+	for targetIndex, targetInfo in targets
+		signature .= targetInfo.Name . "|" . targetInfo.Coordinates . "`n"
+	return signature
+}
+
+LLARS_DeveloperConfigureInspectorScroll()
+{
+	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight
+	global DeveloperInspectorViewHeight, DeveloperInspectorScrollPos
+
+	if (!DeveloperInspectorHwnd)
+		return
+
+	maxPos := Max(0, DeveloperInspectorContentHeight - DeveloperInspectorViewHeight)
+	DeveloperInspectorScrollPos := Max(0, Min(maxPos, DeveloperInspectorScrollPos + 0))
+
+	VarSetCapacity(scrollInfo, 28, 0)
+	NumPut(28, scrollInfo, 0, "UInt")
+	NumPut(0x17, scrollInfo, 4, "UInt")
+	NumPut(0, scrollInfo, 8, "Int")
+	NumPut(Max(0, DeveloperInspectorContentHeight - 1), scrollInfo, 12, "Int")
+	NumPut(DeveloperInspectorViewHeight, scrollInfo, 16, "UInt")
+	NumPut(DeveloperInspectorScrollPos, scrollInfo, 20, "Int")
+	DllCall("SetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
+	DllCall("ShowScrollBar", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Int", maxPos > 0)
+}
+
+LLARS_DeveloperGetInspectorScrollPos()
+{
+	global DeveloperInspectorHwnd, DeveloperInspectorScrollPos
+
+	if (!DeveloperInspectorHwnd)
+		return DeveloperInspectorScrollPos + 0
+
+	VarSetCapacity(scrollInfo, 28, 0)
+	NumPut(28, scrollInfo, 0, "UInt")
+	NumPut(0x4, scrollInfo, 4, "UInt")
+	if DllCall("GetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo)
+		return NumGet(scrollInfo, 20, "Int")
+	return DeveloperInspectorScrollPos + 0
+}
+
+LLARS_DeveloperSetInspectorScroll(newPos)
+{
+	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight
+	global DeveloperInspectorViewHeight, DeveloperInspectorScrollPos
+
+	if (!DeveloperInspectorHwnd)
+		return
+
+	maxPos := Max(0, DeveloperInspectorContentHeight - DeveloperInspectorViewHeight)
+	newPos := Max(0, Min(maxPos, Round(newPos)))
+	oldPos := DeveloperInspectorScrollPos + 0
+	if (newPos = oldPos)
+		return
+
+	DeveloperInspectorScrollPos := newPos
+	DllCall("ScrollWindowEx", "Ptr", DeveloperInspectorHwnd, "Int", 0, "Int", oldPos - newPos
+		, "Ptr", 0, "Ptr", 0, "Ptr", 0, "Ptr", 0, "UInt", 0x0007)
+
+	VarSetCapacity(scrollInfo, 28, 0)
+	NumPut(28, scrollInfo, 0, "UInt")
+	NumPut(0x4, scrollInfo, 4, "UInt")
+	NumPut(newPos, scrollInfo, 20, "Int")
+	DllCall("SetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
+	DllCall("UpdateWindow", "Ptr", DeveloperInspectorHwnd)
+}
+
+LLARS_DeveloperPaneVScroll(wParam, lParam, msg, hWnd)
+{
+	global DeveloperInspectorHwnd, DeveloperHotkeysHwnd
+
+	if (hWnd = DeveloperInspectorHwnd)
+		return LLARS_DeveloperInspectorVScroll(wParam, lParam, msg, hWnd)
+	if (hWnd = DeveloperHotkeysHwnd)
+		return LLARS_DeveloperHotkeysVScroll(wParam, lParam, msg, hWnd)
+}
+
+LLARS_DeveloperHotkeysVScroll(wParam, lParam, msg, hWnd)
+{
+	global DeveloperHotkeysHwnd, DeveloperHotkeysScrollPos
+	global DeveloperHotkeysContentHeight, DeveloperHotkeysViewHeight
+
+	if (!DeveloperHotkeysHwnd || hWnd != DeveloperHotkeysHwnd)
+		return
+
+	scrollCode := wParam & 0xFFFF
+	newPos := DeveloperHotkeysScrollPos + 0
+	pageAmount := Max(42, DeveloperHotkeysViewHeight - 21)
+	maxPos := Max(0, DeveloperHotkeysContentHeight - DeveloperHotkeysViewHeight)
+
+	if (scrollCode = 0)
+		newPos -= 21
+	else if (scrollCode = 1)
+		newPos += 21
+	else if (scrollCode = 2)
+		newPos -= pageAmount
+	else if (scrollCode = 3)
+		newPos += pageAmount
+	else if (scrollCode = 4 || scrollCode = 5)
+	{
+		VarSetCapacity(scrollInfo, 28, 0)
+		NumPut(28, scrollInfo, 0, "UInt")
+		NumPut(0x10, scrollInfo, 4, "UInt")
+		if DllCall("GetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo)
+			newPos := NumGet(scrollInfo, 24, "Int")
+	}
+	else if (scrollCode = 6)
+		newPos := 0
+	else if (scrollCode = 7)
+		newPos := maxPos
+	else
+		return 0
+
+	LLARS_DeveloperSetHotkeysScroll(newPos)
+	return 0
+}
+
+LLARS_DeveloperPaneMouseWheel(wParam, lParam, msg, hWnd)
+{
+	global DeveloperInspectorHwnd, DeveloperHotkeysHwnd
+	global DeveloperInspectorScrollPos, DeveloperHotkeysScrollPos
+
+	MouseGetPos,,, hoveredWindow, hoveredControl, 2
+
+	isOverInspector := (hoveredWindow = DeveloperInspectorHwnd || hoveredControl = DeveloperInspectorHwnd)
+	if (!isOverInspector && hoveredControl != "" && DeveloperInspectorHwnd)
+		isOverInspector := DllCall("IsChild", "Ptr", DeveloperInspectorHwnd, "Ptr", hoveredControl)
+
+	isOverHotkeys := (hoveredWindow = DeveloperHotkeysHwnd || hoveredControl = DeveloperHotkeysHwnd)
+	if (!isOverHotkeys && hoveredControl != "" && DeveloperHotkeysHwnd)
+		isOverHotkeys := DllCall("IsChild", "Ptr", DeveloperHotkeysHwnd, "Ptr", hoveredControl)
+
+	if (!isOverInspector && !isOverHotkeys)
+		return
+
+	wheelDelta := (wParam >> 16) & 0xFFFF
+	if (wheelDelta > 32767)
+		wheelDelta -= 65536
+	if (wheelDelta = 0)
+		return 0
+
+	if (isOverInspector)
+		LLARS_DeveloperSetInspectorScroll(DeveloperInspectorScrollPos - ((wheelDelta / 120) * 42))
+	else
+		LLARS_DeveloperSetHotkeysScroll(DeveloperHotkeysScrollPos - ((wheelDelta / 120) * 42))
+	return 0
+}
+
+LLARS_DeveloperInspectorVScroll(wParam, lParam, msg, hWnd)
+{
+	global DeveloperInspectorHwnd, DeveloperInspectorScrollPos
+	global DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
+
+	if (!DeveloperInspectorHwnd || hWnd != DeveloperInspectorHwnd)
+		return
+
+	scrollCode := wParam & 0xFFFF
+	newPos := DeveloperInspectorScrollPos + 0
+	pageAmount := Max(42, DeveloperInspectorViewHeight - 21)
+	maxPos := Max(0, DeveloperInspectorContentHeight - DeveloperInspectorViewHeight)
+
+	if (scrollCode = 0)
+		newPos -= 21
+	else if (scrollCode = 1)
+		newPos += 21
+	else if (scrollCode = 2)
+		newPos -= pageAmount
+	else if (scrollCode = 3)
+		newPos += pageAmount
+	else if (scrollCode = 4 || scrollCode = 5)
+	{
+		VarSetCapacity(scrollInfo, 28, 0)
+		NumPut(28, scrollInfo, 0, "UInt")
+		NumPut(0x10, scrollInfo, 4, "UInt")
+		if DllCall("GetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo)
+			newPos := NumGet(scrollInfo, 24, "Int")
+	}
+	else if (scrollCode = 6)
+		newPos := 0
+	else if (scrollCode = 7)
+		newPos := maxPos
+	else
+		return 0
+
+	LLARS_DeveloperSetInspectorScroll(newPos)
+	return 0
+}
+
+LLARS_DeveloperInspectorMouseWheel(wParam, lParam, msg, hWnd)
+{
+	global DeveloperInspectorHwnd, DeveloperInspectorScrollPos
+
+	if (!DeveloperInspectorHwnd)
+		return
+
+	MouseGetPos,,, hoveredWindow, hoveredControl, 2
+	isOverInspector := (hoveredWindow = DeveloperInspectorHwnd || hoveredControl = DeveloperInspectorHwnd)
+	if (!isOverInspector && hoveredControl != "")
+		isOverInspector := DllCall("IsChild", "Ptr", DeveloperInspectorHwnd, "Ptr", hoveredControl)
+	if (!isOverInspector)
+		return
+
+	wheelDelta := (wParam >> 16) & 0xFFFF
+	if (wheelDelta > 32767)
+		wheelDelta -= 65536
+	if (wheelDelta = 0)
+		return 0
+
+	LLARS_DeveloperSetInspectorScroll(DeveloperInspectorScrollPos - ((wheelDelta / 120) * 42))
+	return 0
+}
+
+LLARS_DeveloperDestroyInspectorPanel(resetScroll := true)
+{
+	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
+	global DeveloperInspectorScrollPos, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
+	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd
+	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
+
+	Gui DevInspector: Destroy
+	DeveloperInspectorHwnd := ""
+	DeveloperInspectorContentHeight := 0
+	DeveloperInspectorViewHeight := 0
+	DeveloperInspectorStatusHwnd := ""
+	DeveloperInspectorMouseXHwnd := ""
+	DeveloperInspectorMouseYHwnd := ""
+	DeveloperInspectorMouseColorHwnd := ""
+	DeveloperInspectorActualHwnds := []
+	DeveloperInspectorTargetHwnds := []
+	if (resetScroll)
+		DeveloperInspectorScrollPos := 0
+}
+
+LLARS_DeveloperConfigSectionActive(ConfigPath, section)
+{
+	IniRead, option, %ConfigPath%, %section%, option, true
+	option := Trim(option)
+	StringLower, optionLower, option
+	if (optionLower = "false")
+		return false
+
+	IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+	if (depends != "ERROR" && Trim(depends) != "")
+	{
+		depends := Trim(depends)
+		IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+		dependsOption := Trim(dependsOption)
+		StringLower, dependsOptionLower, dependsOption
+		if (dependsOptionLower = "false")
+			return false
+	}
+
+	return true
+}
+
+LLARS_DeveloperPixelPointForColor(ConfigPath, colorSection, pointSections, sharedPoint, colorIndex)
+{
+	; MultiColor templates can explicitly map each color section to the exact
+	; coordinate section it belongs to. Prefer that metadata before any naming
+	; fallback so several colors can share each of several monitored pixels.
+	IniRead, mappedCoordinate, %ConfigPath%, %colorSection%, coordinate, ERROR
+	mappedCoordinate := Trim(mappedCoordinate)
+	if (mappedCoordinate != "" && mappedCoordinate != "ERROR")
+	{
+		for _, pointInfo in pointSections
+		{
+			if (pointInfo.Name = mappedCoordinate)
+				return pointInfo
+		}
+	}
+
+	if IsObject(sharedPoint)
+		return sharedPoint
+
+	colorToken := LLARS_DeveloperPixelSectionToken(colorSection)
+	if (colorToken != "")
+	{
+		for _, pointInfo in pointSections
+		{
+			if (LLARS_DeveloperPixelSectionToken(pointInfo.Name) = colorToken)
+				return pointInfo
+		}
+	}
+
+	if (pointSections.Length() >= colorIndex)
+		return pointSections[colorIndex]
+
+	return ""
+}
+
+LLARS_DeveloperPixelSectionToken(section)
+{
+	token := Trim(section)
+	StringLower, token, token
+	token := RegExReplace(token, "i)\b(target|pixel|color|coordinate|coordinates)\b", "")
+	token := RegExReplace(token, "[^a-z0-9]+", "")
+	return token
+}
+
+LLARS_DeveloperPixelColorAt(x, y)
+{
+	if !WinActive("RuneScape")
+		return "--"
+
+	x := Round(x + 0)
+	y := Round(y + 0)
+	PixelGetColor, developerColor, %x%, %y%, RGB
+	if (developerColor = "")
+		return "--"
+
+	StringUpper, developerColor, developerColor
+	return developerColor
 }
 
 LLARS_DeveloperHotkeyDisplay(hotkey)

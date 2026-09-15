@@ -19,16 +19,16 @@ return
 
 Start:
 
+if (!MultiColor_Setup())
+{
+	MsgBox, 48, LLARS Multi Color, No valid color mappings were found in Config.ini.`n`nEach type=color section needs both a coordinate= section name and an action= section name.
+	return
+}
+
 if (!LLARS_StartTimerRun())
 	return
 
-MultiColor_Setup()
 SetTimer, Countdown, 1000
-
-IfWinNotActive, RuneScape
-{
-	WinActivate, RuneScape
-}
 
 SetTimer, CheckPixel, 100
 
@@ -65,113 +65,131 @@ Goto, EndMsg
 
 
 ; ================================================================
-; |     MULTI COLOR / MULTI LOCATION LOGIC                      |
+; |     MULTI PIXEL / MULTI COLOR LOGIC                           |
 ; ================================================================
-; The watched pixel may match any color section listed below.
-; Each completed trigger clicks the next location in sequence.
-; Add/remove section names here when expanding the template.
+; Every type=color section in Config.ini can declare:
+;     coordinate=Pixel Coordinate Section Name
+;     action=Action Location Section Name
+;
+; This lets one pixel watch several colors, several pixels watch their own
+; colors, and each detected color trigger the action that belongs to it.
+; Add more coordinate/color/action sections in Config.ini as needed; this
+; template discovers the mappings automatically.
 
 MultiColor_Setup()
 {
-	global MultiColorColorSections, MultiColorLocationSections
-	global MultiColorLocationIndex
+	global MultiColorGroups
 
-	MultiColorColorSections := ["Target Color One", "Target Color Two"]
-	MultiColorLocationSections := ["Action Location One", "Action Location Two"]
-	MultiColorLocationIndex := 1
+	MultiColorGroups := []
+	groupIndexByCoordinate := {}
+
+	IniRead, sectionList, Config.ini
+	if (sectionList = "ERROR")
+		return false
+
+	Loop, Parse, sectionList, `n, `r
+	{
+		section := Trim(A_LoopField)
+		if (section = "")
+			continue
+
+		IniRead, sectionType, Config.ini, %section%, type, ERROR
+		sectionType := Trim(sectionType)
+		StringLower, sectionType, sectionType
+		if (sectionType != "color")
+			continue
+
+		IniRead, coordinateSection, Config.ini, %section%, coordinate, ERROR
+		IniRead, actionSection, Config.ini, %section%, action, ERROR
+		coordinateSection := Trim(coordinateSection)
+		actionSection := Trim(actionSection)
+
+		if (coordinateSection = "" || coordinateSection = "ERROR")
+			continue
+		if (actionSection = "" || actionSection = "ERROR")
+			continue
+
+		if !groupIndexByCoordinate.HasKey(coordinateSection)
+		{
+			MultiColorGroups.Push({Coordinate: coordinateSection
+				, Colors: []
+				, Actions: {}
+				, LastMatch: ""})
+			groupIndexByCoordinate[coordinateSection] := MultiColorGroups.Length()
+		}
+
+		groupIndex := groupIndexByCoordinate[coordinateSection]
+		groupInfo := MultiColorGroups[groupIndex]
+		groupInfo.Colors.Push(section)
+		groupInfo.Actions[section] := actionSection
+	}
+
+	return (MultiColorGroups.Length() > 0)
 }
 
 
 CheckPixel:
-if (!LLARS_RUNNING)
+if !LLARS_RunActive()
 	return
 
-; Pixel coordinates are client-relative. Do not inspect another app if
-; the user has switched away from RuneScape.
-if !LLARS_IsRuneScapeActive()
-	return
-
-MatchedColorSection := MultiColor_FindMatchedColor()
-if (MatchedColorSection != "")
+MatchedTarget := MultiColor_FindTrigger()
+if IsObject(MatchedTarget)
 {
-	; Stop detection while this trigger is handled.
+	; Handle one new target state at a time so script actions never overlap.
 	SetTimer, CheckPixel, Off
-	LLARS_SetStatus("Waiting", MatchedColorSection)
+	LLARS_SetStatus("Waiting", MatchedTarget.Color)
 
-	; Standard configured delay before the action.
+	; Standard configured delay before the mapped action.
 	LLARS_Sleep("Sleep Timer")
 
-	if (!LLARS_RUNNING)
+	if !LLARS_RunActive()
 		return
 
-	; Eternal Tree style location switching: click the current location,
-	; then advance so the next trigger uses the next configured location.
-	MultiColor_ClickNextLocation()
+	LLARS_SetStatus("Running", MatchedTarget.Action)
+	LLARS_Click(MatchedTarget.Action)
 
-	; Do not permit another trigger until the watched pixel leaves every
-	; configured target color.
-	SetTimer, ResetCheck, 100
+	if LLARS_RunActive()
+		SetTimer, CheckPixel, 100
 }
 
 return
 
 
-ResetCheck:
-if (!LLARS_RUNNING)
-	return
-
-if !LLARS_IsRuneScapeActive()
-	return
-
-if (MultiColor_FindMatchedColor() = "")
+MultiColor_FindTrigger()
 {
-	SetTimer, ResetCheck, Off
-	SetTimer, CheckPixel, 100
-	LLARS_SetStatus("Running")
-}
+	global MultiColorGroups
 
-return
+	if !IsObject(MultiColorGroups)
+		return ""
 
-
-MultiColor_FindMatchedColor()
-{
-	global MultiColorColorSections
-
-	for index, colorSection in MultiColorColorSections
+	for groupIndex, groupInfo in MultiColorGroups
 	{
-		if LLARS_PixelMatches("Pixel Coordinate", colorSection)
-			return colorSection
+		matchedColor := LLARS_PixelMatchesAny(groupInfo.Coordinate, groupInfo.Colors)
+
+		; Leaving all configured target colors rearms this coordinate.
+		if (matchedColor = "")
+		{
+			groupInfo.LastMatch := ""
+			continue
+		}
+
+		; Do not repeatedly fire while the same target color stays visible.
+		if (groupInfo.LastMatch = matchedColor)
+			continue
+
+		; A direct change from one configured color to another is a new state
+		; and may intentionally trigger a different mapped action.
+		groupInfo.LastMatch := matchedColor
+		actionSection := groupInfo.Actions[matchedColor]
+		if (actionSection = "")
+			continue
+
+		return {Coordinate: groupInfo.Coordinate
+			, Color: matchedColor
+			, Action: actionSection}
 	}
 
 	return ""
-}
-
-
-MultiColor_ClickNextLocation()
-{
-	global MultiColorLocationSections, MultiColorLocationIndex
-
-	if !IsObject(MultiColorLocationSections)
-		return false
-
-	locationCount := MultiColorLocationSections.Length()
-	if (locationCount < 1)
-		return false
-
-	if (MultiColorLocationIndex < 1 || MultiColorLocationIndex > locationCount)
-		MultiColorLocationIndex := 1
-
-	locationSection := MultiColorLocationSections[MultiColorLocationIndex]
-	LLARS_SetStatus("Running", locationSection)
-
-	if !LLARS_Click(locationSection)
-		return false
-
-	MultiColorLocationIndex++
-	if (MultiColorLocationIndex > locationCount)
-		MultiColorLocationIndex := 1
-
-	return true
 }
 
 ; ================================================================
@@ -189,7 +207,7 @@ minutes := Mod(timeToRunMinutes, 60)
 
 SetTimer, Countdown, Off
 SetTimer, CheckPixel, Off
-SetTimer, ResetCheck, Off
+LLARS_TimerStopAll()
 LLARS_EndTimerRun()
 Logout()
 

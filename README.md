@@ -51,7 +51,7 @@
 
 LLARS is a free and open-source AutoHotkey framework and script-building toolkit designed for **RuneScape 3 Evolution of Combat (EoC)**.
 
-It provides a shared framework, reusable functions, configuration system, GUI tools, and supporting libraries for creating and running LLARS-compatible scripts.
+It provides a shared framework, Creator API, reusable functions, configuration system, GUI tools, and supporting libraries for creating and running LLARS-compatible scripts.
 
 LLARS is designed for both:
 
@@ -115,14 +115,20 @@ The Setup Guide is written for **first-time users** and provides the information
 
 ### Script Creator Documentation
 
-LLARS is built around a shared framework used by the scripts in this repository.
+LLARS is built around a shared framework and Creator API used by the scripts in this repository.
 
 Script creators who want to create or update LLARS-compatible scripts should read:
 
 - **[LLARS - Script Creator & Framework Guide](Documentation/LLARS%20-%20Script%20Creator%20%26%20Framework%20Guide.pdf)**
 - **[LLARS - Script Creator Library](Documentation/LLARS%20-%20Script%20Creator%20Library.pdf)**
 
-These resources cover the LLARS framework, reusable components, and tools available for developing LLARS-compatible scripts.
+These are the recommended resources for new and maintained LLARS scripts. They cover the current Creator API, framework behavior, reusable components, templates, and copy/paste patterns used throughout the project.
+
+For creators who intentionally want to use more traditional AutoHotkey v1 methods or maintain older LLARS-style code, the project also includes:
+
+- **[LLARS - Legacy Script Creator Guide](Documentation/LLARS%20-%20Legacy%20Script%20Creator%20Guide.pdf)**
+
+The Legacy Script Creator Guide covers lower-level and traditional AutoHotkey patterns separately so the current Creator API documentation can stay focused on the framework used by new LLARS scripts.
 
 ### Config.ini Instructions
 

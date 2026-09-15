@@ -223,7 +223,7 @@ Generator_GetTemplate(choice, ByRef sourceFolder, ByRef sourceScript, ByRef desc
 	{
 		sourceFolder := "MultiColor"
 		sourceScript := "Multi Color Detection Script Template.ahk"
-		description := "Multi Color: match several colors and rotate between click locations."
+		description := "Multi Color: watch several pixels and map each target color to its own action."
 	}
 	else
 	{

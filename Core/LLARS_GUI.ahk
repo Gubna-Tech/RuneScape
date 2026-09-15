@@ -12,13 +12,14 @@ LLARS_CreateMainGUI()
 	global Counter, State3, State2, ScriptBlue, ScriptRed
 	global ConfigStatusHotkeys, ConfigStatusCoordinates, ConfigStatusColors
 	global ConfigStatusHotkeysLabel, ConfigStatusCoordinatesLabel, ConfigStatusColorsLabel
+	displayScriptName := LLARS_DisplayScriptName()
 
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
 	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %scriptname%
+	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %displayScriptName%
 	Gui, Add, Text, x5 y49 w270 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x10 y57 w125 h25 gStart , Start
@@ -41,7 +42,7 @@ LLARS_CreateMainGUI()
 	Gui, Add, Text, x10 y176 w165 h20 cBlack vScriptRed
 	GuiControl,,State2, ** OFF **
 	Gui, Font, s10 Bold cBlack
-	Gui, Add, Text, x10 y176 w165 h20, %scriptname%
+	Gui, Add, Text, x10 y176 w165 h20, %displayScriptName%
 	Gui, Add, Text, x5 y200 w270 h2 0x10
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y207 w260 h20 Center, Configuration Status
@@ -88,6 +89,7 @@ LLARS_CreateRunCountGUI()
 {
 	global scriptname, value, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR
 	global Counter, Counter2, EstLoopRemaining, EstRunRemaining, State1, State3, State2, ScriptGreen, ScriptBlue, ScriptRed
+	displayScriptName := LLARS_DisplayScriptName()
 
 	LLARS_RUNNING := true
 	SetLLARSHOTKEYS()
@@ -97,7 +99,7 @@ LLARS_CreateRunCountGUI()
 	Gui, Font, s12 Bold
 	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %scriptname%
+	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %displayScriptName%
 	Gui, Add, Text, x5 y49 w270 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x10 y57 w125 h25 gStart, Start
@@ -157,6 +159,7 @@ LLARS_CreateTimerGUI()
 {
 	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR
 	global TimerCount, State3, State2, ScriptBlue, ScriptRed
+	displayScriptName := LLARS_DisplayScriptName()
 
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
 	WinGetPos, X, Y,,, LLARS
@@ -165,7 +168,7 @@ LLARS_CreateTimerGUI()
 	Gui, Font, s12 Bold
 	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %scriptname%
+	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %displayScriptName%
 	Gui, Add, Text, x5 y49 w270 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x10 y57 w125 h25 gStart, Start

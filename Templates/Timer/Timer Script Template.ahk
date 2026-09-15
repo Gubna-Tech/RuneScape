@@ -23,13 +23,7 @@ if (!LLARS_StartTimerRun())
 	return
 
 SetTimer, Countdown, 1000
-
-IfWinNotActive, RuneScape
-{
-	WinActivate, RuneScape
-}
-
-Gosub, TimerSetup
+TimerSetup()
 
 return
 
@@ -62,39 +56,44 @@ Goto, EndMsg
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-TimerSetup:
+TimerSetup()
+{
+	global ScriptTimerID
 
-; ============================================================
-; |     ONE-TIME STARTUP CODE GOES HERE                      |
-; ============================================================
-;
-; This runs once immediately after the user enters the total
-; amount of time the script should run.
-;
-; Example:
-; SetTimer, ScriptTimer, 1000
+	; ============================================================
+	; |     ONE-TIME STARTUP / TIMER SCHEDULING GOES HERE       |
+	; ============================================================
+	;
+	; Managed callback timers read their configured min/max range,
+	; randomize a fresh interval every cycle, reclaim RuneScape when
+	; the callback is due, and are cleaned up automatically by LLARS.
+	;
+	; The example [Script Timer] section is disabled by default.
+	ScriptTimerID := LLARS_TimerRepeat("Script Timer", Func("ScriptTimer"))
 
-return
+	; WRITE OTHER ONE-TIME STARTUP CODE HERE
+}
 
 
-ScriptTimer:
-if (!LLARS_RUNNING)
-	return
+ScriptTimer()
+{
+	if !LLARS_RunActive()
+		return
 
-; ============================================================
-; |     REPEATING TIMER CODE GOES HERE                       |
-; ============================================================
-;
-; If this label is enabled with SetTimer, put the repeating
-; script action here.
-;
-; Standard creator API examples:
-; LLARS_SetStatus("Working")
-; LLARS_Click("Example Coordinate")
-; LLARS_Sleep("Sleep Short")
-; LLARS_RandomSleep()
-
-return
+	; ============================================================
+	; |     REPEATING TIMER CODE GOES HERE                       |
+	; ============================================================
+	;
+	; Standard creator API examples:
+	; LLARS_SetStatus("Working")
+	; LLARS_Click("Example Coordinate")
+	; LLARS_PressHotkey("Example Hotkey")
+	; LLARS_PressKey("Space")
+	; LLARS_Sleep("Sleep Short")
+	; LLARS_RandomSleep()
+	;
+	; WRITE TIMER ACTION HERE
+}
 
 ; ================================================================
 ; SCRIPT_EDIT_END_4C4C415253
@@ -110,7 +109,7 @@ hours := Floor(timeToRunMinutes / 60)
 minutes := Mod(timeToRunMinutes, 60)
 
 SetTimer, Countdown, Off
-SetTimer, ScriptTimer, Off
+LLARS_TimerStopAll()
 LLARS_EndTimerRun()
 Logout()
 

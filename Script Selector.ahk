@@ -47,7 +47,7 @@ CloseOtherLLARS()
 ; ===================================================================
 
 ; List of available scripts.
-scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthrope|Candle Crafter|Herb Cleaner - Skillcape|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|Archaeology - Excavate|Croesus Front|Eternal Tree|Waterfall Fishing"
+scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthorpe|Candle Crafter|Herb Cleaner - Skillcape|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|Archaeology - Excavate|Croesus Front|Eternal Tree|Waterfall Fishing"
 
 ; Calculates the total number of scripts.
 ScriptTotal := StrSplit(scriptArray, "|").Length()
@@ -657,15 +657,15 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
-		Case "Agility - Burthrope":
+		Case "Agility - Burthorpe":
 		script := "Burthorpe"
-		scriptinfo := "Runs laps of the Burthrope agility course. Can be tricky to configure coordinates due to large amounts of walking."
+		scriptinfo := "Runs laps of the Burthorpe agility course. Can be tricky to configure coordinates due to large amounts of walking."
 		GuiReset()
 		SetSetupDifficulty("Hard")
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Burthrope
+		Gui Info: Add, Text, center x5 w480, Agility - Burthorpe
 		Gui Info: Font, s13 normal bold cRed
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
@@ -785,7 +785,7 @@ if A_GuiEvent = Normal
 		
 		Case "Cooking - Burthorpe":
 		script := "Cooking"
-		scriptinfo := "Walks between the Range and main bank in Burthrope to cook an inventory of food. Portables and Fort cooking are recommended over this script."
+		scriptinfo := "Walks between the Range and main bank in Burthorpe to cook an inventory of food. Portables and Fort cooking are recommended over this script."
 		GuiReset()
 		SetSetupDifficulty("Hard")
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -2020,7 +2020,7 @@ Switch selectedScript
 		scriptFile := "Bow Stringer.ahk"
 
 	Case "Bow Stringer - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Fletching\Bow Stringer - WIth Walking"
+		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Fletching\Bow Stringer - With Walking"
 		scriptFile := "Bow Stringer.ahk"
 
 	Case "Bow Stringer - Portables - Non-Walking":
@@ -2031,7 +2031,7 @@ Switch selectedScript
 		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Limestone Brick"
 		scriptFile := "Brick Maker.ahk"
 
-	Case "Agility - Burthrope":
+	Case "Agility - Burthorpe":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Burthorpe"
 		scriptFile := "Burthorpe.ahk"
 
@@ -2109,7 +2109,7 @@ Switch selectedScript
 
 	Case "Glassblowing":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Glassblowing"
-		scriptFile := "Glassblowinng.ahk"
+		scriptFile := "Glassblowing.ahk"
 
 	Case "Agility - Gnome - Advanced":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Gnome\Advanced"

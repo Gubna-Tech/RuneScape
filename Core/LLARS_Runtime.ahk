@@ -2,7 +2,9 @@
 ; |     LLARS RUNTIME LIBRARY     -     LLARS RUNTIME LIBRARY    |
 ; ================================================================
 
-; Calculates the configured average loop time used for RunCount estimates.
+; Calculates the pre-run RunCount estimate. New scripts are modeled from the
+; standardized timing API (LLARS_Sleep / LLARS_RandomSleep) plus ctx.IsFirst;
+; legacy IniRead/Sleep patterns remain supported only during migration.
 CalculateScriptRuntime()
 {
 	global EstConfiguredLoopMin
@@ -116,7 +118,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		; The standardized creator API keeps configured sleep reads in Core.
 		; Literal section names are intentionally required so runtime estimation
 		; remains deterministic and can resolve the exact Config.ini range.
-		if RegExMatch(Line, "i)^LLARS_Sleep\(\s*""([^""]+)""(?:\s*,\s*(true|false))?(?:\s*,\s*""([^""]+)""\s*)?\)\s*(?:;.*)?$", CreatorSleepMatch)
+		if RegExMatch(Line, "i)^(?:[A-Z_][A-Z0-9_]*\s*:?=\s*)?LLARS_Sleep\(\s*""([^""]+)""(?:\s*,\s*(true|false))?(?:\s*,\s*""([^""]+)""\s*)?\)\s*(?:;.*)?$", CreatorSleepMatch)
 		{
 			CreatorSection := CreatorSleepMatch1
 			CreatorScope := (CreatorSleepMatch3 != "") ? CreatorSleepMatch3 : "script"
@@ -141,7 +143,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 
 		; The shared Random Sleep helper keeps its configuration reads in Core,
 		; so add its configured timer when the script calls LLARS_RandomSleep().
-		if RegExMatch(Line, "i)^LLARS_RandomSleep\(\s*\)\s*(?:;.*)?$")
+		if RegExMatch(Line, "i)^(?:[A-Z_][A-Z0-9_]*\s*:?=\s*)?LLARS_RandomSleep\(\s*\)\s*(?:;.*)?$")
 		{
 			IniRead, RandomSleepMin, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
 			IniRead, RandomSleepMax, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
@@ -225,18 +227,48 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		return false
 
 	; Locate config option blocks so disabled script features do not
-	; contribute timers to the configured runtime estimate.
+	; contribute timers to the configured runtime estimate. Both the legacy
+	; IniRead pattern and the creator-facing LLARS_ConfigReadBool() pattern are
+	; supported so new scripts estimate from the same options they execute.
 	OptionBlocks := []
 	Loop, % LineCount
 	{
 		Index := A_Index
 		Line := Trim(Lines[Index])
-		if (!RegExMatch(Line, "i)^IniRead\s*,\s*(\w+)\s*,\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^,]+)(?:\s*,.*)?$", OptionMatch))
+		OptionSource := ""
+		OptionConfigFile := ""
+		OptionSection := ""
+		OptionKey := "option"
+		OptionDefault := false
+		OptionScope := "script"
+
+		if RegExMatch(Line, "i)^(\w+)\s*:?=\s*LLARS_ConfigReadBool\(\s*""([^""]+)""(?:\s*,\s*""([^""]+)"")?(?:\s*,\s*(true|false))?(?:\s*,\s*""([^""]+)"")?\s*\)\s*$", CreatorOptionMatch)
+		{
+			OptionSource := "creator"
+			OptionVariable := Trim(CreatorOptionMatch1)
+			OptionSection := Trim(CreatorOptionMatch2)
+			if (CreatorOptionMatch3 != "")
+				OptionKey := Trim(CreatorOptionMatch3)
+			if (CreatorOptionMatch4 != "")
+			{
+				OptionDefaultText := CreatorOptionMatch4
+				StringLower, OptionDefaultText, OptionDefaultText
+				OptionDefault := (OptionDefaultText = "true")
+			}
+			if (CreatorOptionMatch5 != "")
+				OptionScope := Trim(CreatorOptionMatch5)
+		}
+		else if RegExMatch(Line, "i)^IniRead\s*,\s*(\w+)\s*,\s*([^,]+)\s*,\s*([^,]+)\s*,\s*([^,]+)(?:\s*,.*)?$", OptionMatch)
+		{
+			OptionSource := "legacy"
+			OptionVariable := Trim(OptionMatch1)
+			OptionConfigFile := Trim(OptionMatch2)
+			OptionSection := Trim(OptionMatch3)
+			OptionKey := Trim(OptionMatch4)
+		}
+		else
 			continue
-		OptionVariable := Trim(OptionMatch1)
-		OptionConfigFile := Trim(OptionMatch2)
-		OptionSection := Trim(OptionMatch3)
-		OptionKey := Trim(OptionMatch4)
+
 		IfIndex := 0
 		Loop, 6
 		{
@@ -244,7 +276,15 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 			if (CheckIndex > LineCount)
 				break
 			CheckLine := Trim(Lines[CheckIndex])
-			if (RegExMatch(CheckLine, "i)^if\s*(?:\(\s*)?" . OptionVariable . "\s*=\s*(?:""true""|true)\s*(?:\)\s*)?$"))
+			if (OptionSource = "creator")
+			{
+				if (RegExMatch(CheckLine, "i)^if\s*(?:\(\s*)?" . OptionVariable . "\s*(?:\)\s*)?$"))
+				{
+					IfIndex := CheckIndex
+					break
+				}
+			}
+			else if (RegExMatch(CheckLine, "i)^if\s*(?:\(\s*)?" . OptionVariable . "\s*=\s*(?:""true""|true)\s*(?:\)\s*)?$"))
 			{
 				IfIndex := CheckIndex
 				break
@@ -284,17 +324,25 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 				break
 		}
 
-		IniRead, OptionValue, %OptionConfigFile%, %OptionSection%, %OptionKey%, false
-		StringLower, OptionValue, OptionValue
+		if (OptionSource = "creator")
+			OptionEnabled := LLARS_ConfigReadBool(OptionSection, OptionKey, OptionDefault, OptionScope)
+		else
+		{
+			IniRead, OptionValue, %OptionConfigFile%, %OptionSection%, %OptionKey%, false
+			StringLower, OptionValue, OptionValue
+			OptionEnabled := (OptionValue = "true")
+		}
+
 		OptionBlock := {}
 		OptionBlock.Start := IfIndex
 		OptionBlock.End := EndIndex
-		OptionBlock.Enabled := (OptionValue = "true")
+		OptionBlock.Enabled := OptionEnabled
 		OptionBlocks.Push(OptionBlock)
 	}
 
-	; Locate top-level firstrun branches and calculate whether each branch
-	; executes on the first loop and on following loops.
+	; Locate first-loop branches. Legacy scripts may use firstrun while the new
+	; callback lifecycle uses ctx.IsFirst. Both are reduced to the same internal
+	; FirstEnabled/FollowingEnabled branch model for the 1000-run estimate.
 	BranchBlocks := []
 	Depth := 0
 	FirstPathState := 0
@@ -365,6 +413,49 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 				}
 
 				BranchBlocks.Push(Branch)
+			}
+		}
+
+		Depth += StrLen(Line) - StrLen(StrReplace(Line, "{", ""))
+		Depth -= StrLen(Line) - StrLen(StrReplace(Line, "}", ""))
+	}
+
+	; New callback API: recognize top-level if (ctx.IsFirst) / if (!ctx.IsFirst)
+	; blocks, including their optional else blocks. This is deliberately limited
+	; to lifecycle metadata and public timing calls rather than arbitrary script
+	; semantics. The maintained callback/template structure is the estimator contract.
+	Depth := 0
+	Loop, % LineCount
+	{
+		Index := A_Index
+		Line := Trim(Lines[Index])
+		if (Depth >= 1 && RegExMatch(Line, "i)^if\s*(?:\(\s*)?(!\s*)?ctx\.IsFirst\s*(?:\)\s*)?(?:\{\s*)?$", ContextBranchMatch))
+		{
+			Negated := (Trim(ContextBranchMatch1) != "")
+			if LLARS_RuntimeFindBlock(Lines, Index, OpenIndex, EndIndex)
+			{
+				Branch := {}
+				Branch.Start := Index
+				Branch.End := EndIndex
+				Branch.FirstEnabled := !Negated
+				Branch.FollowingEnabled := Negated
+				BranchBlocks.Push(Branch)
+
+				ElseIndex := EndIndex + 1
+				while (ElseIndex <= LineCount && Trim(Lines[ElseIndex]) = "")
+					ElseIndex++
+				if (ElseIndex <= LineCount && RegExMatch(Trim(Lines[ElseIndex]), "i)^else\b"))
+				{
+					if LLARS_RuntimeFindBlock(Lines, ElseIndex, ElseOpenIndex, ElseEndIndex)
+					{
+						ElseBranch := {}
+						ElseBranch.Start := ElseIndex
+						ElseBranch.End := ElseEndIndex
+						ElseBranch.FirstEnabled := Negated
+						ElseBranch.FollowingEnabled := !Negated
+						BranchBlocks.Push(ElseBranch)
+					}
+				}
 			}
 		}
 
@@ -476,6 +567,39 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 	return true
 }
 
+; Finds the brace-delimited block attached to a top-level if/else statement.
+; Returns the opening and closing line indexes within the parser's Lines array.
+LLARS_RuntimeFindBlock(Lines, StatementIndex, ByRef OpenIndex, ByRef EndIndex)
+{
+	LineCount := Lines.Length()
+	OpenIndex := StatementIndex
+	if !InStr(Trim(Lines[OpenIndex]), "{")
+	{
+		++OpenIndex
+		while (OpenIndex <= LineCount && Trim(Lines[OpenIndex]) = "")
+			++OpenIndex
+	}
+
+	if (OpenIndex > LineCount || !InStr(Trim(Lines[OpenIndex]), "{"))
+		return false
+
+	BlockDepth := 0
+	EndIndex := OpenIndex
+	Loop
+	{
+		BlockLine := Lines[EndIndex]
+		BlockDepth += StrLen(BlockLine) - StrLen(StrReplace(BlockLine, "{", ""))
+		BlockDepth -= StrLen(BlockLine) - StrLen(StrReplace(BlockLine, "}", ""))
+		if (BlockDepth <= 0)
+			break
+		++EndIndex
+		if (EndIndex > LineCount)
+			return false
+	}
+
+	return true
+}
+
 ; Performs an optional logout after the timed run completes. The logout
 ; process uses Escape, a randomized delay, and a random point inside
 ; the configured logout rectangle from LLARS Config.ini.
@@ -484,27 +608,30 @@ Logout(){
 	if !LLARS_ConfigEnabled("Logout", false, "shared")
 		return false
 
-	runeScapeHwnd := LLARS_FindRuneScapeWindow()
-	if (!runeScapeHwnd)
+	; Logout is still part of the active LLARS run. Reclaim and verify the exact
+	; RuneScape client before sending Escape rather than risking another window.
+	if IsFunc("LLARS_WaitForRuneScape")
 	{
-		Log("LOGOUT BLOCKED", "RuneScape window was not found")
-		return false
+		if !LLARS_WaitForRuneScape("Logout")
+			return false
 	}
-
-	if (WinExist("A") != runeScapeHwnd)
+	else if !LLARS_IsRuneScapeActive()
 	{
-		WinActivate, ahk_id %runeScapeHwnd%
-		WinWaitActive, ahk_id %runeScapeHwnd%,, 1
-	}
-
-	if (WinExist("A") != runeScapeHwnd)
-	{
-		Log("LOGOUT BLOCKED", "RuneScape could not be activated")
+		Log("LOGOUT BLOCKED", "RuneScape is not the active window")
 		return false
 	}
 
 	Log("LOGOUT", "Logout initiated")
-	Send, {Esc}
+	; The master LLARS library always loads the Creator API before Runtime.
+	; Refuse to send anything if that guarded input path is unavailable rather
+	; than falling back to a raw Send that could reach the wrong application.
+	if !IsFunc("LLARS_CreatorSendInput")
+	{
+		Log("LOGOUT BLOCKED", "Guarded keyboard input is unavailable")
+		return false
+	}
+	if !LLARS_CreatorSendInput("{Esc}", "Logout Escape")
+		return false
 
 	; Logout owns its short menu delay. It must not depend on a script-specific
 	; [Sleep Short] section because Logout is a shared framework feature.

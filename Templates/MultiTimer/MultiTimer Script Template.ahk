@@ -23,13 +23,7 @@ if (!LLARS_StartTimerRun())
 	return
 
 SetTimer, Countdown, 1000
-
-IfWinNotActive, RuneScape
-{
-	WinActivate, RuneScape
-}
-
-Gosub, MultiTimerSetup
+MultiTimerSetup()
 
 return
 
@@ -62,63 +56,48 @@ Goto, EndMsg
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-MultiTimerSetup:
+MultiTimerSetup()
+{
+	global TimerOneID, TimerTwoID
 
-; ============================================================
-; |     ENABLE / SCHEDULE EACH TIMER HERE                   |
-; ============================================================
-;
-; Duplicate this pattern for every independent timer your
-; script needs.
+	; ============================================================
+	; |     ENABLE / SCHEDULE EACH TIMER HERE                   |
+	; ============================================================
+	;
+	; LLARS_TimerRepeat() uses the configured option/min/max values,
+	; randomizes a fresh interval after every callback, reclaims the
+	; selected RuneScape client when the callback is due, and keeps
+	; the timer tracked for automatic cleanup.
 
-TimerOneInterval := LLARS_TimerInterval("Timer One")
-if (TimerOneInterval > 0)
-	SetTimer, TimerOne, %TimerOneInterval%
-
-TimerTwoInterval := LLARS_TimerInterval("Timer Two")
-if (TimerTwoInterval > 0)
-	SetTimer, TimerTwo, %TimerTwoInterval%
-
-return
+	TimerOneID := LLARS_TimerRepeat("Timer One", Func("TimerOne"))
+	TimerTwoID := LLARS_TimerRepeat("Timer Two", Func("TimerTwo"))
+}
 
 
-TimerOne:
-if (!LLARS_RUNNING)
-	return
+TimerOne()
+{
+	if !LLARS_RunActive()
+		return
 
-; WRITE TIMER ONE ACTION HERE
-
-; Reschedule this timer using its configured random range.
-TimerOneInterval := LLARS_TimerInterval("Timer One")
-if (TimerOneInterval > 0)
-	SetTimer, TimerOne, %TimerOneInterval%
-else
-	SetTimer, TimerOne, Off
-
-return
+	; WRITE TIMER ONE ACTION HERE
+	; Example: LLARS_Click("Action Location One")
+}
 
 
-TimerTwo:
-if (!LLARS_RUNNING)
-	return
+TimerTwo()
+{
+	if !LLARS_RunActive()
+		return
 
-; WRITE TIMER TWO ACTION HERE
-
-; Reschedule this timer using its configured random range.
-TimerTwoInterval := LLARS_TimerInterval("Timer Two")
-if (TimerTwoInterval > 0)
-	SetTimer, TimerTwo, %TimerTwoInterval%
-else
-	SetTimer, TimerTwo, Off
-
-return
+	; WRITE TIMER TWO ACTION HERE
+	; Example: LLARS_PressHotkey("Action Hotkey")
+}
 
 
 MultiTimer_StopTimers()
 {
 	SetTimer, Countdown, Off
-	SetTimer, TimerOne, Off
-	SetTimer, TimerTwo, Off
+	LLARS_TimerStopAll()
 }
 
 ; ================================================================

@@ -1,27 +1,45 @@
 # Config Backup and Restore
 
-Updates to the project can sometimes be inconvenient, especially with the frequent small changes that are pushed. To make it easier for you to manage and safeguard your configuration files, I have provided two batch files: Config Backup.bat and Config Restore.bat.
+Project updates can sometimes replace or reset script configuration files. To make it easier to preserve your script-specific settings, LLARS includes two batch files: `Config Backup.bat` and `Config Restore.bat`.
+
+These tools are intentionally limited to the individual `Config.ini` files inside the `Scripts` folder.
+
+> **Important:** The root `LLARS Config.ini` is not backed up, restored, overwritten, or otherwise changed by these tools.
 
 ## Config Backup
 
-Running the Config Backup.bat file will create a backup of all the Config.ini and LLARS Config.ini files. These files will be copied to a folder named "Config Backup." This way, when you clone this repository or update the project, you won't have to worry about losing your customized configurations.
+Running `Config Backup.bat` creates or updates backup copies of every script-local `Config.ini` found under the `Scripts` folder.
 
-To create a backup of your config files:
+The original script folder structure is preserved inside:
 
-1. Run the `Config Backup.bat` file.
-2. The script will automatically copy all the Config.ini and LLARS Config.ini files to the "Config Backup" folder.
+`Config Backup\Scripts\`
+
+If a backed-up `Config.ini` already exists, the backup is overwritten with the current script configuration.
+
+To back up your script configuration files:
+
+1. Run `Config Backup.bat`.
+2. LLARS scans the `Scripts` folder for files named `Config.ini`.
+3. Each script `Config.ini` is copied to the matching location under `Config Backup\Scripts\`.
+
+The root `LLARS Config.ini` is intentionally excluded from this process.
 
 ## Config Restore
 
-In case you need to restore your backed-up config files, the `Config Restore.bat` file comes to your rescue. This file simplifies the process of restoring your previously saved configurations.
+Running `Config Restore.bat` restores the backed-up script-local `Config.ini` files from `Config Backup\Scripts\` to their matching script folders under `Scripts`.
 
-To restore your backed-up config files:
+To restore your script configuration files:
 
-1. Run the `Config Restore.bat` file.
-2. The script will automatically restore the previously backed-up Config.ini and LLARS Config.ini files to their original locations.
+1. Run `Config Restore.bat`.
+2. LLARS scans the backup for files named `Config.ini`.
+3. Each backed-up `Config.ini` is copied back to its matching existing script folder.
 
-With the Config Backup and Restore batch files, you can conveniently backup and restore your configuration files, ensuring that your settings are preserved and ready to use.
+The restore process only restores script `Config.ini` files. It does not restore or modify the root `LLARS Config.ini`.
 
-Please note that it is always recommended to keep backups of your config files, especially before making significant changes or updating the project. This precaution helps safeguard your customizations and ensures a smooth transition during updates.
+## LLARS Config.ini
 
-Happy scripting!
+`LLARS Config.ini` contains shared framework-wide settings and is separate from the individual script configuration backups.
+
+If you want to keep a personal backup of `LLARS Config.ini`, copy that file separately. The provided Config Backup and Config Restore batch files intentionally leave it alone.
+
+Before updating the project or making major configuration changes, running `Config Backup.bat` is recommended so your script-specific settings can be restored afterward.

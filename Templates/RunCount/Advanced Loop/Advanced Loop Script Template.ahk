@@ -19,8 +19,9 @@ return
 
 Start:
 
-if (!LLARS_StartRun())
-	return
+LLARS_RunCount(Func("Run"))
+
+return
 
 ; =========================================================================
 ; |     >>> BEGIN SCRIPT EDITING <<<     >>> BEGIN SCRIPT EDITING <<<     |
@@ -30,22 +31,18 @@ if (!LLARS_StartRun())
 ; SCRIPT_EDIT_BEGIN_4C4C415253
 ; ================================================================
 
-Loop, %runcount%
+Run(ctx)
 {
-	LLARS_BeginLoop()
-
 	; ============================================================
-	; |     FIRST-RUN / FIRSTRUN CODE GOES HERE                 |
+	; |     FIRST-RUN / SUBSEQUENT-RUN CODE GOES HERE           |
 	; ============================================================
 	;
-	; Use this when the first loop needs different coordinates,
-	; a different obstacle, priming action, setup action, etc.
+	; LLARS owns the run counter and first-run bookkeeping.
+	; Use ctx.IsFirst when loop 1 needs different behavior.
 	;
-	if (firstrun = 0)
+	if (ctx.IsFirst)
 	{
 		; WRITE FIRST-RUN CODE HERE
-		
-		firstrun := 1
 	}
 	else
 	{
@@ -59,13 +56,14 @@ Loop, %runcount%
 	; Standard creator API examples:
 	; LLARS_SetStatus("Banking")
 	; LLARS_Click("Example Coordinate")
+	; LLARS_PressHotkey("Example Hotkey")
+	; LLARS_PressKey("Space")  ; purposeful fixed key
 	; LLARS_Sleep("Sleep Short")
-	; LLARS_Sleep("Sleep Short", true)  ; final deterministic sleep in a RunCount loop
+	; LLARS_Sleep("Sleep Short", true)  ; use true only for the true final wait
 	; LLARS_RandomSleep()
 	;
+	; ctx.IsLast is available when the final repetition needs special behavior.
 	; WRITE NORMAL SCRIPT CODE HERE
-	
-	LLARS_EndLoop()
 }
 
 ; ================================================================
@@ -75,8 +73,6 @@ Loop, %runcount%
 ; ==================================================================
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
-
-LLARS_RunComplete()
 
 return
 
