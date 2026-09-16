@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Fallen Palm Tree prime")
+		LLARS_SetStatus("Agility", "Fallen Palm Tree")
 		LLARS_Click("Fallen Palm Tree prime")
 
 		LLARS_Sleep("Sleep Fallen Palm Tree prime")
@@ -45,7 +45,7 @@ Run(ctx)
 	}
 	else
 	{
-		LLARS_SetStatus("Agility", "Fallen Palm Tree Main")
+		LLARS_SetStatus("Agility", "Fallen Palm Tree")
 		LLARS_Click("Fallen Palm Tree Main")
 
 		LLARS_Sleep("Sleep Fallen Palm Tree Main")

@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Log Balance Prime")
+		LLARS_SetStatus("Agility", "Log Balance")
 		LLARS_Click("Log Balance Prime")
 
 		LLARS_Sleep("Sleep Log")
@@ -47,7 +47,7 @@ Run(ctx)
 	{
 		LLARS_Sleep("Sleep Brief")
 
-		LLARS_SetStatus("Agility", "Log Balance Main")
+		LLARS_SetStatus("Agility", "Log Balance")
 		LLARS_Click("Log Balance Main")
 
 		LLARS_Sleep("Sleep Loop")

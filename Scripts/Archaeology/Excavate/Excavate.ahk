@@ -63,7 +63,7 @@ CheckPixel:
 if (!LLARS_RUNNING)
     return
 
-LLARS_SetStatus("Monitoring", "Excavate")
+LLARS_SetStatus("Monitoring", "Excavation")
 
 if LLARS_PixelMatches("Pixel Coordinate", "Red")
 {
@@ -79,7 +79,7 @@ if LLARS_PixelMatches("Pixel Coordinate", "Red")
     else
         TimeSinceAction := A_TickCount - LastActionTime " ms since previous action"
 
-    LLARS_SetStatus("Excavating", "Excavate")
+    LLARS_SetStatus("Excavating", "Excavation")
     LLARS_PressKey("Space")
     LastActionTime := A_TickCount
     Log("KEY", "Space | " TimeSinceAction)

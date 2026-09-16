@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Trellis Prime")
+		LLARS_SetStatus("Agility", "Trellis")
 		LLARS_Click("Trellis Prime")
 
 		LLARS_Sleep("Sleep Climb 1")
@@ -45,7 +45,7 @@ Run(ctx)
 	}
 	else
 	{
-		LLARS_SetStatus("Agility", "Trellis Main")
+		LLARS_SetStatus("Agility", "Trellis")
 		LLARS_Click("Trellis Main")
 
 		LLARS_Sleep("Sleep Climb 2")

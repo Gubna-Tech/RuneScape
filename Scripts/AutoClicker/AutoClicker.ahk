@@ -26,7 +26,7 @@ if (!LLARS_StartTimerRun())
 SetTimer, Countdown, 1000
 
 LastClickTime := 0
-LLARS_SetStatus("Clicking", "Click")
+LLARS_SetStatus("Clicking", "Target")
 LLARS_Click("Click")
 LastClickTime := A_TickCount
 AutoClickerTimerID := LLARS_TimerOnce("Timer", Func("RandomClick"))
@@ -75,7 +75,7 @@ RandomClick()
     if !LLARS_RunActive()
         return
 
-    LLARS_SetStatus("Clicking", "Click")
+    LLARS_SetStatus("Clicking", "Target")
     DisableButton()
 
     LLARS_Click("Click")

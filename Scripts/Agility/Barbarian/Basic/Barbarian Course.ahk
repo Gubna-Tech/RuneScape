@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Rope swing prime")
+		LLARS_SetStatus("Agility", "Rope Swing")
 		LLARS_Click("Rope swing prime")
 
 		LLARS_Sleep("Sleep Rope swing prime")
@@ -47,24 +47,24 @@ Run(ctx)
 	{
 		; Make sure RuneScape is active before continuing.
 
-		LLARS_SetStatus("Agility", "Rope swing Main")
+		LLARS_SetStatus("Agility", "Rope Swing")
 		LLARS_Click("Rope swing Main")
 
 		LLARS_Sleep("Sleep Rope swing Main")
 
 	}
 
-	LLARS_SetStatus("Agility", "Log balance")
+	LLARS_SetStatus("Agility", "Log Balance")
 	LLARS_Click("Log balance")
 
 	LLARS_Sleep("Sleep Log balance")
 
-	LLARS_SetStatus("Agility", "Obstacle net")
+	LLARS_SetStatus("Agility", "Obstacle Net")
 	LLARS_Click("Obstacle net")
 
 	LLARS_Sleep("Sleep Obstacle net")
 
-	LLARS_SetStatus("Agility", "Balancing ledge")
+	LLARS_SetStatus("Agility", "Balancing Ledge")
 	LLARS_Click("Balancing ledge")
 
 	LLARS_Sleep("Sleep Balancing ledge")

@@ -79,7 +79,7 @@ if LLARS_PixelMatches("Pixel Coordinate", "Red")
     else
         TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
 
-    LLARS_SetStatus("Reacting", "Guard Location")
+    LLARS_SetStatus("Reacting", "Croesus Front")
     LLARS_Click("Guard Location")
     LastClickTime := A_TickCount
     Log("CLICK", "Guard Location | " TimeSinceClick)

@@ -35,20 +35,20 @@ Run(ctx)
 {
 	global
 
-	LLARS_SetStatus("Banking", "Bank")
+	LLARS_SetStatus("Banking", "Amulets")
 	LLARS_Click("Bank Coords")
 
 	; Short randomized delay after banking.
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Amulets")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Stringing", "Amulet")
+	LLARS_SetStatus("Stringing", "Amulets")
 	LLARS_Click("Amulet")
 
 	LLARS_Sleep("Sleep Short")

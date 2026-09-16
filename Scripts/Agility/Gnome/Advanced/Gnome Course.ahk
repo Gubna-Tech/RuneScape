@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Log balance prime")
+		LLARS_SetStatus("Agility", "Log Balance")
 		LLARS_Click("Log balance prime")
 
 		LLARS_Sleep("Sleep Log balance prime")
@@ -47,19 +47,19 @@ Run(ctx)
 	{
 		LLARS_Sleep("Sleep Brief")
 
-		LLARS_SetStatus("Agility", "Log balance Main")
+		LLARS_SetStatus("Agility", "Log Balance")
 		LLARS_Click("Log balance Main")
 
 		LLARS_Sleep("Sleep Log balance Main")
 
 	}
 
-	LLARS_SetStatus("Agility", "Obstacle net")
+	LLARS_SetStatus("Agility", "Obstacle Net")
 	LLARS_Click("Obstacle net")
 
 	LLARS_Sleep("Sleep Obstacle net")
 
-	LLARS_SetStatus("Agility", "Tree branch")
+	LLARS_SetStatus("Agility", "Tree Branch")
 	LLARS_Click("Tree branch")
 
 	LLARS_Sleep("Sleep Tree branch")

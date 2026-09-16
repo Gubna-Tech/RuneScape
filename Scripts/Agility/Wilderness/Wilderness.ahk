@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Obstacle Pipe Prime")
+		LLARS_SetStatus("Agility", "Obstacle Pipe")
 		LLARS_Click("Obstacle Pipe Prime")
 
 		LLARS_Sleep("Sleep Obstacle Pipe Prime")
@@ -47,14 +47,14 @@ Run(ctx)
 	{
 		LLARS_Sleep("Sleep Brief")
 
-		LLARS_SetStatus("Agility", "Obstacle Pipe Main")
+		LLARS_SetStatus("Agility", "Obstacle Pipe")
 		LLARS_Click("Obstacle Pipe Main")
 
 		LLARS_Sleep("Sleep Obstacle Pipe Main")
 
 	}
 
-	LLARS_SetStatus("Agility", "Ropeswing")
+	LLARS_SetStatus("Agility", "Rope Swing")
 	LLARS_Click("Ropeswing")
 
 	LLARS_Sleep("Sleep Ropeswing")

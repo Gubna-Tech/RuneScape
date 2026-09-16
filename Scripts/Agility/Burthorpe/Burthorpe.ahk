@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Log Beam Prime")
+		LLARS_SetStatus("Agility", "Log Beam")
 		LLARS_Click("Log Beam Prime")
 
 		LLARS_Sleep("Sleep Log Beam Prime")
@@ -45,7 +45,7 @@ Run(ctx)
 	}
 	else
 	{
-		LLARS_SetStatus("Agility", "Log Beam Main")
+		LLARS_SetStatus("Agility", "Log Beam")
 		LLARS_Click("Log Beam Main")
 
 		LLARS_Sleep("Sleep Log Beam Main")
@@ -62,17 +62,17 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Balancing Ledge")
 
-	LLARS_SetStatus("Agility", "Obstacle low wall")
+	LLARS_SetStatus("Agility", "Low Wall")
 	LLARS_Click("Obstacle low wall")
 
 	LLARS_Sleep("Sleep Obstacle low wall")
 
-	LLARS_SetStatus("Agility", "Rope swing")
+	LLARS_SetStatus("Agility", "Rope Swing")
 	LLARS_Click("Rope swing")
 
 	LLARS_Sleep("Sleep Rope swing")
 
-	LLARS_SetStatus("Agility", "Monkey bars")
+	LLARS_SetStatus("Agility", "Monkey Bars")
 	LLARS_Click("Monkey bars")
 
 	LLARS_Sleep("Sleep Monkey bars")
