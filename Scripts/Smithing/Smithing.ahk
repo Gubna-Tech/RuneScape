@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Using", "Anvil")
+		LLARS_SetStatus("Opening", "Anvil")
 		LLARS_Click("Anvil Coords")
 
 		LLARS_Sleep("Sleep Normal")
@@ -88,7 +88,7 @@ Run(ctx)
 	}
 	else
 	{
-		LLARS_SetStatus("Using", "Anvil")
+		LLARS_SetStatus("Opening", "Anvil")
 		LLARS_Click("Anvil Coords")
 
 	}
@@ -97,7 +97,7 @@ Run(ctx)
 
 	LLARS_RandomSleep()
 
-	LLARS_SetStatus("Smithing", "Smithing")
+	LLARS_SetStatus("Smithing", "Item")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Smith", true)

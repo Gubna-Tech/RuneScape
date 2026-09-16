@@ -44,7 +44,7 @@ Run(ctx)
 		If (ctx.IsFirst)
 		{
 
-			LLARS_SetStatus("Banking", "Bank")
+			LLARS_SetStatus("Banking", "Prayer")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
@@ -72,7 +72,7 @@ Run(ctx)
 		If (ctx.IsFirst)
 		{
 
-			LLARS_SetStatus("Banking", "Bank")
+			LLARS_SetStatus("Banking", "Prayer")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
@@ -99,12 +99,12 @@ Run(ctx)
 	{
 	}
 
-	LLARS_SetStatus("Banking", "Bank")
+	LLARS_SetStatus("Banking", "Prayer")
 	LLARS_Click("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Prayer")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_Sleep("Sleep Short")
@@ -112,7 +112,7 @@ Run(ctx)
 	LLARS_RandomSleep()
 
 	hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
-	LLARS_SetStatus("Praying", "Prayer")
+	LLARS_SetStatus("Praying", "Bones / Ashes")
 	LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
 	LLARS_Sleep("Sleep Prayer")
@@ -131,7 +131,7 @@ Run(ctx)
 		LLARS_Sleep("Sleep Short")
 
 		hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
-		LLARS_SetStatus("Praying", "Prayer")
+		LLARS_SetStatus("Praying", "Bones / Ashes")
 		LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
 		LLARS_Sleep("Sleep Prayer Extra")
@@ -149,7 +149,7 @@ Run(ctx)
 	{
 		If (bobtime <= 60000)
 		{
-			LLARS_SetStatus("Banking", "Bank")
+			LLARS_SetStatus("Banking", "Prayer")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
@@ -181,7 +181,7 @@ Run(ctx)
 	{
 		If (powdertime <= 60000)
 		{
-			LLARS_SetStatus("Banking", "Bank")
+			LLARS_SetStatus("Banking", "Prayer")
 			LLARS_Click("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")

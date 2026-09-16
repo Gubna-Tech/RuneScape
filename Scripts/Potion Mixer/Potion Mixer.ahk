@@ -35,12 +35,12 @@ Run(ctx)
 {
 	global
 
-	LLARS_SetStatus("Banking", "Bank")
+	LLARS_SetStatus("Banking", "Potions")
 	LLARS_Click("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Potions")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
