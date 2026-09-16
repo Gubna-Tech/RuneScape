@@ -39,18 +39,18 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Banking", "Bank Prime")
+		LLARS_SetStatus("Banking", "Gems")
 		LLARS_Click("Bank Prime Coords")
 
 		LLARS_Sleep("Sleep Short")
 
-		LLARS_SetStatus("Banking", "Bank Preset")
+		LLARS_SetStatus("Loading Preset", "Gems")
 		LLARS_PressHotkey("Bank Preset")
 
 	}
 	else
 	{
-		LLARS_SetStatus("Banking", "Bank Preset")
+		LLARS_SetStatus("Loading Preset", "Gems")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()
@@ -59,7 +59,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Moving", "Crafter")
+	LLARS_SetStatus("Moving", "Portable Crafter")
 	LLARS_Click("Crafter Coords")
 
 	LLARS_Sleep("Sleep Walk")
@@ -69,7 +69,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Craft")
 
-	LLARS_SetStatus("Banking", "Bank Main")
+	LLARS_SetStatus("Banking", "Gems")
 	LLARS_Click("Bank Main Coords")
 
 	LLARS_Sleep("Sleep Walk", true)

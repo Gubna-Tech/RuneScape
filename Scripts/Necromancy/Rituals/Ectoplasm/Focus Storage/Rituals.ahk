@@ -94,7 +94,7 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Walk")
 
-		LLARS_SetStatus("Ritual", "Ritual")
+		LLARS_SetStatus("Performing", "Ritual")
 		LLARS_Sleep("Sleep Ritual")
 
 	}
@@ -125,7 +125,7 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Walk")
 
-		LLARS_SetStatus("Ritual", "Ritual")
+		LLARS_SetStatus("Performing", "Ritual")
 		LLARS_Sleep("Sleep Ritual", true)
 
 	}
