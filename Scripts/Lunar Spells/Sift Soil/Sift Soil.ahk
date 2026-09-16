@@ -35,24 +35,24 @@ Run(ctx)
 {
 	global
 
-	LLARS_SetStatus("Banking", "Bank")
+	LLARS_SetStatus("Banking", "Soil")
 	LLARS_Click("Bank Coords")
 
 	LLARS_RandomSleep()
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Soil")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Casting", "Sift Soil")
+	LLARS_SetStatus("Casting", "Soil")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Sifting", "Sift Soil")
+	LLARS_SetStatus("Sifting", "Soil")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Sift", true)

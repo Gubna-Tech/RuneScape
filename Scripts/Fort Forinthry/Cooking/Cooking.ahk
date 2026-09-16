@@ -35,12 +35,12 @@ Run(ctx)
 {
 	global
 
-	LLARS_SetStatus("Banking", "Bank Chest")
+	LLARS_SetStatus("Banking", "Food")
 	LLARS_Click("Bank Chest")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Food")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
@@ -52,7 +52,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Cooking", "Cooking")
+	LLARS_SetStatus("Cooking", "Food")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Cook", true)

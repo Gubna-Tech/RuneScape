@@ -37,12 +37,12 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Banking", "Bank Prime")
+		LLARS_SetStatus("Banking", "Planks")
 		LLARS_Click("Bank Prime")
 
 		LLARS_Sleep("Sleep Short")
 
-		LLARS_SetStatus("Banking", "Bank Preset")
+		LLARS_SetStatus("Loading Preset", "Planks")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_Sleep("Sleep Short")
@@ -53,12 +53,12 @@ Run(ctx)
 	}
 	else
 	{
-		LLARS_SetStatus("Banking", "Bank Main")
+		LLARS_SetStatus("Banking", "Planks")
 		LLARS_Click("Bank Main")
 
 		LLARS_Sleep("Sleep Walk")
 
-		LLARS_SetStatus("Banking", "Bank Preset")
+		LLARS_SetStatus("Loading Preset", "Planks")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()
@@ -72,7 +72,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Walk")
 
-	LLARS_SetStatus("Cutting", "Plank")
+	LLARS_SetStatus("Cutting", "Planks")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Cut", true)

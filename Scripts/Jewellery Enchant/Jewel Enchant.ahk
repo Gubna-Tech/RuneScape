@@ -35,12 +35,12 @@ Run(ctx)
 {
 	global
 
-	LLARS_SetStatus("Banking", "Bank")
+	LLARS_SetStatus("Banking", "Jewellery")
 	LLARS_Click("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Jewellery")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
@@ -52,7 +52,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Using", "Jewellery")
+	LLARS_SetStatus("Selecting", "Jewellery")
 	LLARS_Click("Jewellery Coords")
 
 	LLARS_Sleep("Sleep Short")

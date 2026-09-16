@@ -35,12 +35,12 @@ Run(ctx)
 {
 	global
 
-	LLARS_SetStatus("Banking", "Bank")
+	LLARS_SetStatus("Banking", "Incense")
 	LLARS_Click("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Incense")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_RandomSleep()
@@ -52,7 +52,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Adding", "Incense")
+	LLARS_SetStatus("Adding Herbs", "Incense")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Add", true)

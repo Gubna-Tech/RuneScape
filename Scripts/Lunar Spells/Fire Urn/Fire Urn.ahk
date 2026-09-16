@@ -35,24 +35,24 @@ Run(ctx)
 {
 	global
 
-	LLARS_SetStatus("Banking", "Bank")
+	LLARS_SetStatus("Banking", "Urns")
 	LLARS_Click("Bank Coords")
 
 	LLARS_RandomSleep()
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Banking", "Bank Preset")
+	LLARS_SetStatus("Loading Preset", "Urns")
 	LLARS_PressHotkey("Bank Preset")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Casting", "Fire Urn")
+	LLARS_SetStatus("Casting", "Urns")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Firing", "Fire Urn")
+	LLARS_SetStatus("Firing", "Urns")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Fire", true)

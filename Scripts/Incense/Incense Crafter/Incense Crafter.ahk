@@ -37,12 +37,12 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Banking", "Bank")
+		LLARS_SetStatus("Banking", "Incense")
 		LLARS_Click("Bank Coords")
 
 		LLARS_Sleep("Sleep Short")
 
-		LLARS_SetStatus("Banking", "Bank Preset")
+		LLARS_SetStatus("Loading Preset", "Incense")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_Sleep("Sleep Short")
@@ -59,12 +59,12 @@ Run(ctx)
 	}
 	else
 	{
-		LLARS_SetStatus("Banking", "Bank")
+		LLARS_SetStatus("Banking", "Incense")
 		LLARS_Click("Bank Coords")
 
 		LLARS_Sleep("Sleep Short")
 
-		LLARS_SetStatus("Banking", "Bank Preset")
+		LLARS_SetStatus("Loading Preset", "Incense")
 		LLARS_PressHotkey("Bank Preset")
 
 		LLARS_RandomSleep()

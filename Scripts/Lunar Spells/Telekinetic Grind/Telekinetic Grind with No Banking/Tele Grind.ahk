@@ -37,7 +37,7 @@ Run(ctx)
 
 	LLARS_RandomSleep()
 
-	LLARS_SetStatus("Grinding", "Telekinetic Grind")
+	LLARS_SetStatus("Casting", "Telekinetic Grind")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")
