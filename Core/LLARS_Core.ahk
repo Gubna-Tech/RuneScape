@@ -3307,7 +3307,7 @@ LLARS_HumanizeTimingEnding(value, minimum, maximum, stream := "")
 	minimum := Round(minimum)
 	maximum := Round(maximum)
 
-	if (Mod(value, 5) != 0 || LLARS_RandomUnit() < 0.08)
+	if (Mod(value, 5) != 0 || LLARS_RandomUnit() < 0.01)
 		return value
 
 	offset := LLARS_HumanRandomInt(1, 4, stream . ".FineEnding", 2)
@@ -3407,8 +3407,8 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 	if (distanceFactor > 1)
 		distanceFactor := 1
 	minimumSpeedMultiplier := 0.72
-	maximumSpeedMultiplier := 1.35 - (0.25 * distanceFactor)
-	speedShape := 0.70 + (1.60 * distanceFactor)
+	maximumSpeedMultiplier := 1.24 - (0.30 * distanceFactor)
+	speedShape := 0.82 + (1.75 * distanceFactor)
 	speedRoll := LLARS_RandomUnit() ** speedShape
 	speedMultiplier := minimumSpeedMultiplier + ((maximumSpeedMultiplier - minimumSpeedMultiplier) * speedRoll)
 	ballisticSpeed := preferredBallisticSpeed * speedMultiplier
@@ -3422,6 +3422,19 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 
 	duration := Round((((distance * ballisticDistanceFraction) / ballisticSpeed) * 1000) / ballisticTimeFraction * timingJitter)
 
+	; Give short movements a small global slowdown, then progressively slow every
+	; medium/long movement as distance grows. Applying the adjustment to the whole
+	; timing profile prevents a random speed roll from making a longer reach fall
+	; back into the overly-fast range while preserving the existing variation.
+	distanceSlowdownFactor := (distance - 300) / 1500.0
+	if (distanceSlowdownFactor < 0)
+		distanceSlowdownFactor := 0
+	if (distanceSlowdownFactor > 1)
+		distanceSlowdownFactor := 1
+	distanceSlowdownStrength := (0.62 * distanceSlowdownFactor) + (0.64 * (distanceSlowdownFactor ** 1.5))
+	distanceSlowdownMultiplier := 1.12 + distanceSlowdownStrength
+	duration := Round(duration * distanceSlowdownMultiplier)
+
 	; Preserve the researched distance/speed model, then add a small independent
 	; millisecond-scale variation so real movement times do not cluster around
 	; visually generic values even when the larger movement profile is similar.
@@ -3432,18 +3445,12 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 		fineTimingRange := 43
 	fineTimingJitter := LLARS_HumanRandomInt(-fineTimingRange, fineTimingRange, stream . ".FineTiming", 10)
 	duration += fineTimingJitter
-	if (Mod(duration, 25) = 0)
-	{
-		fineTimingNudge := LLARS_HumanRandomInt(3, 13, stream . ".FineTimingNudge", 6)
-		if (LLARS_RandomUnit() < 0.5)
-			fineTimingNudge := -fineTimingNudge
-		duration += fineTimingNudge
-	}
 
 	if (duration < 55)
 		duration := 55
-	if (duration > 3200)
-		duration := 3200
+	if (duration > 6500)
+		duration := 6500
+	duration := LLARS_HumanizeTimingEnding(duration, 55, 6500, stream . ".Movement")
 
 	; Keep meaningful model bounds available to callers/debuggers without forcing
 	; the selected duration into fixed buckets or rounded-looking timing values.
@@ -3451,19 +3458,25 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 	slowestBallisticSpeed := preferredBallisticSpeed * minimumSpeedMultiplier
 	minimumDuration := Round((((distance * 0.89) / fastestBallisticSpeed) * 1000) / 0.66 * 0.96)
 	maximumDuration := Round((((distance * 0.95) / slowestBallisticSpeed) * 1000) / 0.55 * 1.04)
+	minimumDuration := Round(minimumDuration * distanceSlowdownMultiplier)
+	maximumDuration := Round(maximumDuration * distanceSlowdownMultiplier)
 	if (minimumDuration < 55)
 		minimumDuration := 55
-	if (maximumDuration > 3200)
-		maximumDuration := 3200
+	if (maximumDuration > 6500)
+		maximumDuration := 6500
 
-	; Preserve the working NaturalClick path density exactly. Timing changes must
-	; not alter the geometric character that already feels natural.
+	; Preserve the working NaturalClick path geometry, but add timing samples when
+	; a slower medium/long movement would otherwise leave too much time between
+	; cursor updates. This keeps the deliberately slower travel visually smooth.
 	stepSpacing := LLARS_HumanRandomInt(5, 9, stream . ".StepSpacing", 4)
 	steps := Round(distance / stepSpacing)
 	if (steps < 12)
 		steps := 12
-	if (steps > 120)
-		steps := 120
+	minimumTimingSteps := Round(duration / 12)
+	if (steps < minimumTimingSteps)
+		steps := minimumTimingSteps
+	if (steps > 520)
+		steps := 520
 
 	; Preserve the existing per-call acceleration/deceleration variation.
 	timingExponentPercent := LLARS_HumanRandomInt(68, 142, stream . ".TimingCurve", 6)
@@ -3697,6 +3710,8 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		previousY := currentY
 	}
 
+	DllCall("QueryPerformanceFrequency", "Int64*", movementPerformanceFrequency)
+	DllCall("QueryPerformanceCounter", "Int64*", movementStartCounter)
 	startTime := A_TickCount
 	searchIndex := 2
 	previousX := startX
@@ -3763,10 +3778,23 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 			delay := 35
 		DllCall("Sleep", "UInt", delay)
 	}
+
 	if (movementResult != 1)
 	{
 		LLARS_NaturalMovementTimingEnd()
 		return movementResult
+	}
+
+	; Scheduler overhead can move the real completion time a few milliseconds away
+	; from the selected duration. While the 1 ms timer period is still active, make
+	; actual movement endings of 0/5 uncommon as well instead of only correcting the
+	; planned profile duration.
+	DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
+	actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
+	if (Mod(actualMovementElapsed, 5) = 0 && LLARS_RandomUnit() >= 0.01)
+	{
+		fineMovementDelay := LLARS_HumanRandomInt(1, 4, "NaturalClick.ActualMovementEnding", 2)
+		DllCall("Sleep", "UInt", fineMovementDelay)
 	}
 
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick final position", runeScapeHwnd))

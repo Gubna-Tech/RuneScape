@@ -17,45 +17,45 @@ LLARS_CreateMainGUI()
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
-	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
+	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %displayScriptName%
-	Gui, Add, Text, x5 y49 w270 h2 0x10
+	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
+	Gui, Add, Text, x5 y49 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Button, x10 y57 w125 h25 gStart , Start
-	Gui, Add, Button, x145 y57 w125 h25 gInfo, Information
-	Gui, Add, Button, x10 y86 w260 h25 gCombo, Configuration
-	Gui, Add, Button, x10 y115 w260 h25 gResetConfig, Reset Config
-	Gui, Add, Text, x5 y146 w270 h2 0x10
+	Gui, Add, Button, x10 y57 w145 h25 gStart , Start
+	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
+	Gui, Add, Button, x10 y86 w295 h25 gCombo, Configuration
+	Gui, Add, Button, x10 y115 w295 h25 gResetConfig, Reset Config
+	Gui, Add, Text, x5 y146 w305 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y152 w165 h20, Run Count
 	Gui, Font, s10 cRed
-	Gui, Add, Text, x170 y152 w115 h20 Center vCounter
+	Gui, Add, Text, x180 y152 w125 h20 Center vCounter
 	GuiControl,,Counter, ** NOT SET **
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y176 w165 h20, Status
 	Gui, Font, s10 Bold cBlue
-	Gui, Add, Text, x175 y176 w95 h20 Center vState3
+	Gui, Add, Text, x180 y176 w125 h20 Center vState3
 	Gui, Add, Text, x10 y176 w165 h20 cBlack vScriptBlue
 	Gui, Font, s10 Bold cRed
-	Gui, Add, Text, x175 y176 w95 h20 Center vState2
+	Gui, Add, Text, x180 y176 w125 h20 Center vState2
 	Gui, Add, Text, x10 y176 w165 h20 cBlack vScriptRed
 	GuiControl,,State2, ** OFF **
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y176 w165 h20, %displayScriptName%
-	Gui, Add, Text, x5 y200 w270 h2 0x10
+	Gui, Add, Text, x5 y200 w305 h2 0x10
 	Gui, Font, s10 Bold cBlack
-	Gui, Add, Text, x10 y207 w260 h20 Center, Configuration Status
+	Gui, Add, Text, x10 y207 w295 h20 Center, Configuration Status
 	Gui, Font, s10 Bold cBlack
-	Gui, Add, Text, x15 y230 w130 h18 vConfigStatusHotkeysLabel, Hotkeys
-	Gui, Add, Text, x145 y230 w125 h18 Center vConfigStatusHotkeys, Checking...
-	Gui, Add, Text, x15 y250 w130 h18 vConfigStatusCoordinatesLabel, Coordinates
-	Gui, Add, Text, x145 y250 w125 h18 Center vConfigStatusCoordinates, Checking...
-	Gui, Add, Text, x15 y270 w130 h18 vConfigStatusColorsLabel, Colors
-	Gui, Add, Text, x145 y270 w125 h18 Center vConfigStatusColors, Checking...
-	Gui, Add, Text, x5 y293 w270 h2 0x10
+	Gui, Add, Text, x15 y230 w140 h18 vConfigStatusHotkeysLabel, Hotkeys
+	Gui, Add, Text, x160 y230 w145 h18 Center vConfigStatusHotkeys, Checking...
+	Gui, Add, Text, x15 y250 w140 h18 vConfigStatusCoordinatesLabel, Coordinates
+	Gui, Add, Text, x160 y250 w145 h18 Center vConfigStatusCoordinates, Checking...
+	Gui, Add, Text, x15 y270 w140 h18 vConfigStatusColorsLabel, Colors
+	Gui, Add, Text, x160 y270 w145 h18 Center vConfigStatusColors, Checking...
+	Gui, Add, Text, x5 y293 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Button, x55 y301 w170 h29 gExitb , Exit LLARS
+	Gui, Add, Button, x73 y301 w170 h29 gExitb , Exit LLARS
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
@@ -63,7 +63,7 @@ LLARS_CreateMainGUI()
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	LLARS_UpdateConfigStatus()
-	Gui, Show,w290 h337, LLARS
+	Gui, Show,w315 h337, LLARS
 
 	; Restores the main LLARS GUI to its previously saved screen position.
 	IniRead, x, %LLARS_CONFIG_FILE%, GUI POS, guix
@@ -97,54 +97,54 @@ LLARS_CreateRunCountGUI()
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
-	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
+	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %displayScriptName%
-	Gui, Add, Text, x5 y49 w270 h2 0x10
+	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
+	Gui, Add, Text, x5 y49 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Button, x10 y57 w125 h25 gStart, Start
-	Gui, Add, Button, x145 y57 w125 h25 gInfo, Information
-	Gui, Add, Button, x10 y86 w125 h25 gPauseb, Pause
-	Gui, Add, Button, x145 y86 w125 h25 gResumeb, Resume
-	Gui, Add, Text, x5 y114 w270 h2 0x10
+	Gui, Add, Button, x10 y57 w145 h25 gStart, Start
+	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
+	Gui, Add, Button, x10 y86 w145 h25 gPauseb, Pause
+	Gui, Add, Button, x160 y86 w145 h25 gResumeb, Resume
+	Gui, Add, Text, x5 y114 w305 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y120 w165 h20, Run Count
 	Gui, Font, s10
-	Gui, Add, Text, x175 y120 w95 h20 Center vCounter2
+	Gui, Add, Text, x180 y120 w125 h20 Center vCounter2
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y141 w165 h20, Total Run Count
 	Gui, Font, s10
-	Gui, Add, Text, x175 y141 w95 h20 Center vCounter
+	Gui, Add, Text, x180 y141 w125 h20 Center vCounter
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y162 w165 h20, Est. Loop Remaining
 	Gui, Font, s10
-	Gui, Add, Text, x175 y162 w95 h20 Center vEstLoopRemaining
+	Gui, Add, Text, x180 y162 w125 h20 Center vEstLoopRemaining
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y183 w165 h20, Est. Run Remaining
 	Gui, Font, s10
-	Gui, Add, Text, x175 y183 w95 h20 Center vEstRunRemaining
-	Gui, Add, Text, x5 y205 w270 h2 0x10
+	Gui, Add, Text, x180 y183 w125 h20 Center vEstRunRemaining
+	Gui, Add, Text, x5 y205 w305 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y211 w165 h20, Status
 	Gui, Font, s10 Bold cGreen
-	Gui, Add, Text, x175 y211 w95 h20 Center vState1
+	Gui, Add, Text, x180 y211 w125 h20 Center vState1
 	Gui, Add, Text, x10 y211 w165 h20 cBlack vScriptGreen
 	Gui, Font, s10 Bold cBlue
-	Gui, Add, Text, x175 y211 w95 h20 Center vState3
+	Gui, Add, Text, x180 y211 w125 h20 Center vState3
 	Gui, Add, Text, x10 y211 w165 h20 cBlack vScriptBlue
 	Gui, Font, s10 Bold cRed
-	Gui, Add, Text, x175 y211 w95 h20 Center vState2
+	Gui, Add, Text, x180 y211 w125 h20 Center vState2
 	Gui, Add, Text, x10 y211 w165 h20 cBlack vScriptRed
 	GuiControl,, State2, ** OFF **
 	Gui, Font, s10 Bold
-	Gui, Add, Button, x55 y239 w170 h29 gExitb, Exit LLARS
+	Gui, Add, Button, x73 y239 w170 h29 gExitb, Exit LLARS
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
 	{
 	Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
-	Gui, Show, w290 h275, LLARS
+	Gui, Show, w315 h275, LLARS
 	WinMove, LLARS,, X, Y
 	count = 0
 	++frcount
@@ -166,39 +166,39 @@ LLARS_CreateTimerGUI()
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
-	Gui, Add, Text, x5 y5 w270 h25 Center, LLARS
+	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x5 y29 w270 h18 Center cGray, %displayScriptName%
-	Gui, Add, Text, x5 y49 w270 h2 0x10
+	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
+	Gui, Add, Text, x5 y49 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Button, x10 y57 w125 h25 gStart, Start
-	Gui, Add, Button, x145 y57 w125 h25 gInfo, Information
-	Gui, Add, Button, x10 y86 w125 h25 gPauseb, Pause
-	Gui, Add, Button, x145 y86 w125 h25 gResumeb, Resume
-	Gui, Add, Text, x5 y114 w270 h2 0x10
+	Gui, Add, Button, x10 y57 w145 h25 gStart, Start
+	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
+	Gui, Add, Button, x10 y86 w145 h25 gPauseb, Pause
+	Gui, Add, Button, x160 y86 w145 h25 gResumeb, Resume
+	Gui, Add, Text, x5 y114 w305 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y120 w165 h20, Time Remaining
 	Gui, Font, s10
-	Gui, Add, Text, x175 y120 w95 h20 Center vTimerCount
-	Gui, Add, Text, x5 y142 w270 h2 0x10
+	Gui, Add, Text, x180 y120 w125 h20 Center vTimerCount
+	Gui, Add, Text, x5 y142 w305 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Text, x10 y148 w165 h20, Status
 	Gui, Font, s10 Bold cBlue
-	Gui, Add, Text, x175 y148 w95 h20 Center vState3
+	Gui, Add, Text, x180 y148 w125 h20 Center vState3
 	Gui, Add, Text, x10 y148 w165 h20 cBlack vScriptBlue
 	Gui, Font, s10 Bold cRed
-	Gui, Add, Text, x175 y148 w95 h20 Center vState2
+	Gui, Add, Text, x180 y148 w125 h20 Center vState2
 	Gui, Add, Text, x10 y148 w165 h20 cBlack vScriptRed
 	GuiControl,, State2, ** OFF **
 	Gui, Font, s10 Bold
-	Gui, Add, Button, x55 y176 w170 h29 gExitb, Exit LLARS
+	Gui, Add, Button, x73 y176 w170 h29 gExitb, Exit LLARS
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
-	Gui, Show, w290 h212, LLARS
+	Gui, Show, w315 h212, LLARS
 	WinMove, LLARS,, X, Y
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
 	{
