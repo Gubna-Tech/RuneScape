@@ -32,11 +32,15 @@ EternalTreeAcquireMatcher := ""
 EternalTreeTrackMatcher := ""
 EternalTreeClickTick := 0
 EternalTreeTrackingEstablished := false
+EternalTreeMovementTracked := false
 EternalTreeAbsentChecks := 0
 EternalTreePresentChecks := 0
 EternalTreePresentEvidenceTick := 0
 EternalTreeAbsentStartTick := 0
 EternalTreeLastTrackState := ""
+EternalTreeSignature := ""
+EternalTreeSignatureAbsentChecks := 0
+EternalTreeSignatureAbsentStartTick := 0
 EternalTreeCutCount := 0
 EternalTreeSearchLogged := false
 
@@ -129,11 +133,15 @@ if (EternalTreeState = "Find Tree")
 			EternalTreeTargetScore := targetScore
 			EternalTreeClickTick := A_TickCount
 			EternalTreeTrackingEstablished := false
+			EternalTreeMovementTracked := false
 			EternalTreeAbsentChecks := 0
 			EternalTreePresentChecks := 0
 			EternalTreePresentEvidenceTick := 0
 			EternalTreeAbsentStartTick := 0
 			EternalTreeLastTrackState := ""
+			EternalTreeSignature := ""
+			EternalTreeSignatureAbsentChecks := 0
+			EternalTreeSignatureAbsentStartTick := 0
 			EternalTreeCutCount++
 			EternalTreeSearchLogged := false
 			EternalTreeState := "Wait Tree Gone"
@@ -145,31 +153,71 @@ else if (EternalTreeState = "Wait Tree Gone")
 {
 	LLARS_SetStatus("Cutting", "Eternal Tree")
 
-	; Let the character finish moving before the clicked tree is reacquired at its new screen position.
-	if ((A_TickCount - EternalTreeClickTick) >= 2500)
+	; Follow the clicked tree while the character/camera moves. Absence is ignored
+	; during this grace period, so movement cannot be mistaken for depletion.
+	if ((A_TickCount - EternalTreeClickTick) < 2500)
+	{
+		movementTrackingScore := 0
+		movementCameraMotion := 0
+		movementTrackState := LLARS_ColorTrackRuneScapeTarget(EternalTreeTargetX, EternalTreeTargetY, EternalTreeTrackMatcher, movementTrackingScore, movementCameraMotion, "Eternal Tree Movement", 170, 96, 4, 60, 30, 30, 2000, 100.0, 40, true)
+		if (movementTrackState > 0)
+		{
+			EternalTreeTargetScore := movementTrackingScore
+			EternalTreeMovementTracked := true
+		}
+	}
+	else
 	{
 		if (!EternalTreeTrackingEstablished)
 		{
-			reacquiredX := ""
-			reacquiredY := ""
-			reacquiredScore := 0
-			reacquiredDensity := 0
-			reacquired := false
+			oldX := EternalTreeTargetX
+			oldY := EternalTreeTargetY
 
-			if (EternalTreeColorMode = "Normal")
-				reacquired := LLARS_ColorFindRuneScapeLargeCluster(EternalTreeAcquireMatcher, reacquiredX, reacquiredY, reacquiredScore, reacquiredDensity, 220, 4, 48, 30, 8, 2, 32, 4)
-			else if (EternalTreeColorMode = "High Contrast")
-				reacquired := LLARS_ColorFindRuneScapeLargeCluster(EternalTreeAcquireMatcher, reacquiredX, reacquiredY, reacquiredScore, reacquiredDensity, 260, 4, 48, 30, 8, 2, 32, 4)
-
-			if (reacquired)
+			if (EternalTreeMovementTracked)
 			{
-				oldX := EternalTreeTargetX
-				oldY := EternalTreeTargetY
-				EternalTreeTargetX := reacquiredX
-				EternalTreeTargetY := reacquiredY
-				EternalTreeTargetScore := reacquiredScore
+				; One final generous local follow keeps identity tied to the clicked tree.
+				finalMovementScore := 0
+				finalMovementCameraMotion := 0
+				finalMovementState := LLARS_ColorTrackRuneScapeTarget(EternalTreeTargetX, EternalTreeTargetY, EternalTreeTrackMatcher, finalMovementScore, finalMovementCameraMotion, "Eternal Tree Movement", 170, 96, 4, 60, 30, 30, 2000, 100.0, 40, true)
+				if (finalMovementState > 0)
+					EternalTreeTargetScore := finalMovementScore
+
 				EternalTreeTrackingEstablished := true
-				LLARS_DeveloperAction("Eternal Tree || Tracking established after movement || (" . oldX . ", " . oldY . ") > (" . EternalTreeTargetX . ", " . EternalTreeTargetY . ")")
+				LLARS_DeveloperAction("Eternal Tree || Tracking established after movement || Followed clicked tree || (" . oldX . ", " . oldY . ") > (" . EternalTreeTargetX . ", " . EternalTreeTargetY . ")")
+			}
+			else
+			{
+				reacquiredX := ""
+				reacquiredY := ""
+				reacquiredScore := 0
+				reacquiredDensity := 0
+				reacquired := false
+
+				; Fallback only when the clicked tree could not be followed during movement.
+				if (EternalTreeColorMode = "Normal")
+					reacquired := LLARS_ColorFindRuneScapeLargeCluster(EternalTreeAcquireMatcher, reacquiredX, reacquiredY, reacquiredScore, reacquiredDensity, 220, 4, 48, 30, 8, 2, 32, 4)
+				else if (EternalTreeColorMode = "High Contrast")
+					reacquired := LLARS_ColorFindRuneScapeLargeCluster(EternalTreeAcquireMatcher, reacquiredX, reacquiredY, reacquiredScore, reacquiredDensity, 260, 4, 48, 30, 8, 2, 32, 4)
+
+				if (reacquired)
+				{
+					EternalTreeTargetX := reacquiredX
+					EternalTreeTargetY := reacquiredY
+					EternalTreeTargetScore := reacquiredScore
+					EternalTreeTrackingEstablished := true
+					LLARS_DeveloperAction("Eternal Tree || Tracking established after movement || Global fallback || (" . oldX . ", " . oldY . ") > (" . EternalTreeTargetX . ", " . EternalTreeTargetY . ")")
+				}
+			}
+
+			if (EternalTreeTrackingEstablished)
+			{
+				EternalTreeSignature := LLARS_ColorBuildRuneScapeComponentSignature(EternalTreeAcquireMatcher, EternalTreeTargetX, EternalTreeTargetY, 78, 18, 2, 20, 18, 18, 3)
+				EternalTreeSignatureAbsentChecks := 0
+				EternalTreeSignatureAbsentStartTick := 0
+				if IsObject(EternalTreeSignature)
+					LLARS_DeveloperAction("Eternal Tree || Canopy signature established || Points=" . EternalTreeSignature.PointCount)
+				else
+					LLARS_DeveloperAction("Eternal Tree || Canopy signature unavailable || Connected tracking only")
 			}
 		}
 
@@ -185,6 +233,38 @@ else if (EternalTreeState = "Wait Tree Gone")
 		trackState := LLARS_ColorTrackRuneScapeTarget(EternalTreeTargetX, EternalTreeTargetY, EternalTreeTrackMatcher, trackingScore, cameraMotion, "Eternal Tree", 118, 34, 4, 78, 38, 38, 2000, 18.0, 110, true)
 
 		confirmGone := false
+		signatureState := -1
+		signatureRatio := 0.0
+		signaturePoints := 0
+		if (trackState != -1 && IsObject(EternalTreeSignature))
+			signatureState := LLARS_ColorTrackRuneScapeSignature(EternalTreeSignature, EternalTreeAcquireMatcher, signatureRatio, signaturePoints, "Eternal Tree Signature", 18, 2, 3, 0.34, 3, 2000, true, 0.25)
+
+		if (signatureState > 0)
+		{
+			if (EternalTreeSignatureAbsentChecks > 0)
+				LLARS_DeveloperAction("Eternal Tree || Canopy signature seen again || Absence canceled")
+			EternalTreeSignatureAbsentChecks := 0
+			EternalTreeSignatureAbsentStartTick := 0
+		}
+		else if (signatureState = 0)
+		{
+			if (EternalTreeSignatureAbsentChecks = 0)
+				EternalTreeSignatureAbsentStartTick := A_TickCount
+			EternalTreeSignatureAbsentChecks++
+			if (EternalTreeSignatureAbsentChecks = 1)
+				LLARS_DeveloperAction("Eternal Tree || Canopy signature absent || Confirming")
+
+			; The broad tracker can occasionally attach to leftover tree-like colors after
+			; the canopy disappears. A sustained loss of the original canopy pattern is
+			; therefore accepted as depletion even if those residual colors remain.
+			if (EternalTreeSignatureAbsentChecks >= 6
+				&& EternalTreeSignatureAbsentStartTick
+				&& (A_TickCount - EternalTreeSignatureAbsentStartTick) >= 1250)
+			{
+				LLARS_DeveloperAction("Eternal Tree || Canopy signature absence confirmed || Ratio=" . Round(signatureRatio, 2) . " || Points=" . signaturePoints)
+				confirmGone := true
+			}
+		}
 		if (trackState > 0)
 		{
 			EternalTreeTargetScore := trackingScore
@@ -261,11 +341,15 @@ else if (EternalTreeState = "Wait Tree Gone")
 			EternalTreeTrackMatcher := ""
 			EternalTreeClickTick := 0
 			EternalTreeTrackingEstablished := false
+			EternalTreeMovementTracked := false
 			EternalTreeAbsentChecks := 0
 			EternalTreePresentChecks := 0
 			EternalTreePresentEvidenceTick := 0
 			EternalTreeAbsentStartTick := 0
 			EternalTreeLastTrackState := ""
+			EternalTreeSignature := ""
+			EternalTreeSignatureAbsentChecks := 0
+			EternalTreeSignatureAbsentStartTick := 0
 			EternalTreeState := "Find Tree"
 		}
 		else
