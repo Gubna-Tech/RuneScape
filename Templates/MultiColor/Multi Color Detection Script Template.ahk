@@ -52,7 +52,6 @@ GuiControl,, State3, Done
 
 SetTimer, Countdown, Off
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; =========================================================================
@@ -71,10 +70,7 @@ Goto, EndMsg
 ;     coordinate=Pixel Coordinate Section Name
 ;     action=Action Location Section Name
 ;
-; This lets one pixel watch several colors, several pixels watch their own
-; colors, and each detected color trigger the action that belongs to it.
-; Add more coordinate/color/action sections in Config.ini as needed; this
-; template discovers the mappings automatically.
+; This lets one pixel watch several colors, several pixels watch their own colors, and each detected color trigger the action that belongs to it.
 
 MultiColor_Setup()
 {
@@ -179,8 +175,7 @@ MultiColor_FindTrigger()
 		if (groupInfo.LastMatch = matchedColor)
 			continue
 
-		; A direct change from one configured color to another is a new state
-		; and may intentionally trigger a different mapped action.
+		; A direct change from one configured color to another is a new state and may intentionally trigger a different mapped action.
 		groupInfo.LastMatch := matchedColor
 		actionSection := groupInfo.Actions[matchedColor]
 		if (actionSection = "")
@@ -216,7 +211,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m

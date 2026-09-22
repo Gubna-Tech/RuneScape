@@ -45,7 +45,6 @@ GuiControl,, State3, Done
 
 MultiTimer_StopTimers()
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; =========================================================================
@@ -65,9 +64,7 @@ MultiTimerSetup()
 	; ============================================================
 	;
 	; LLARS_TimerRepeat() uses the configured option/min/max values,
-	; randomizes a fresh interval after every callback, reclaims the
-	; selected RuneScape client when the callback is due, and keeps
-	; the timer tracked for automatic cleanup.
+	; randomizes a fresh interval after every callback, reclaims the selected RuneScape client when the callback is due, and keeps the timer tracked for automatic cleanup.
 
 	TimerOneID := LLARS_TimerRepeat("Timer One", Func("TimerOne"))
 	TimerTwoID := LLARS_TimerRepeat("Timer Two", Func("TimerTwo"))
@@ -79,8 +76,7 @@ TimerOne()
 	if !LLARS_RunActive()
 		return
 
-	; WRITE TIMER ONE ACTION HERE
-	; Example:
+	; WRITE TIMER ONE ACTION HERE Example:
 	; LLARS_SetStatus("Working", "Timer One")
 	; LLARS_Click("Action Location One")
 }
@@ -91,8 +87,7 @@ TimerTwo()
 	if !LLARS_RunActive()
 		return
 
-	; WRITE TIMER TWO ACTION HERE
-	; Example:
+	; WRITE TIMER TWO ACTION HERE Example:
 	; LLARS_SetStatus("Working", "Timer Two")
 	; LLARS_PressHotkey("Action Hotkey")
 }
@@ -124,7 +119,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m

@@ -27,8 +27,7 @@ CalculateScriptRuntime()
 	; Read only the section of this script marked for LLARS editing.
 	FileRead, ScriptContents, %A_ScriptFullPath%
 
-	; Build the marker text in pieces so FileRead does not find the
-	; marker strings inside this function itself.
+	; Build the marker text in pieces so FileRead does not find the marker strings inside this function itself.
 	BeginMarker := "SCRIPT_EDIT_" . "BEGIN_4C4C415253"
 	EndMarker := "SCRIPT_EDIT_" . "END_4C4C415253"
 	StartPos := InStr(ScriptContents, "; " . BeginMarker)
@@ -65,8 +64,7 @@ CalculateScriptRuntime()
 	if (FirstLoopAverage <= 0 || FollowingLoopAverage <= 0)
 		return false
 
-	; Use the fixed estimation count only to stabilize the mathematical
-	; average. It never changes the user's actual runcount.
+	; Use the fixed estimation count only to stabilize the mathematical average.
 	if (EstimationRunCount <= 1)
 	{
 		EstConfiguredLoopAverage := FirstLoopAverage
@@ -102,9 +100,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 	FirstFinalSleepID := 0
 	FollowingFinalSleepID := 0
 
-	; Split the editable script into lines so timer occurrences can be
-	; matched to their actual branch instead of counting every timer in
-	; the file as though it runs on every loop.
+	; Split the editable script into lines so timer occurrences can be matched to their actual branch instead of counting every timer in the file as though it runs on every loop.
 	Lines := []
 	Loop, Parse, ScriptSection, `n, `r
 		Lines.Push(A_LoopField)
@@ -116,9 +112,6 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		Line := Trim(Lines[Index])
 
 		; The standardized creator API keeps configured sleep reads in Core.
-		; Literal section names are intentionally required so runtime estimation
-		; remains deterministic and can resolve the exact Config.ini range. The final
-		; flag may be a runtime expression because it does not change the sleep range.
 		if RegExMatch(Line, "i)^(?:[A-Z_][A-Z0-9_]*\s*:?=\s*)?LLARS_Sleep\(\s*""([^""]+)""(?:\s*,\s*([^,]+?))?(?:\s*,\s*""([^""]+)""\s*)?\)\s*(?:;.*)?$", CreatorSleepMatch)
 		{
 			CreatorSection := CreatorSleepMatch1
@@ -227,8 +220,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 	if (TimerEntries.Length() = 0)
 		return false
 
-	; Locate config option blocks so disabled script features do not
-	; contribute timers to the configured runtime estimate. Both the legacy
+	; Locate config option blocks so disabled script features do not contribute timers to the configured runtime estimate.
 	; IniRead pattern and the creator-facing LLARS_ConfigReadBool() pattern are
 	; supported so new scripts estimate from the same options they execute.
 	OptionBlocks := []
@@ -421,10 +413,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		Depth -= StrLen(Line) - StrLen(StrReplace(Line, "}", ""))
 	}
 
-	; New callback API: recognize top-level if (ctx.IsFirst) / if (!ctx.IsFirst)
-	; blocks, including their optional else blocks. This is deliberately limited
-	; to lifecycle metadata and public timing calls rather than arbitrary script
-	; semantics. The maintained callback/template structure is the estimator contract.
+	; New callback API: recognize top-level if (ctx.IsFirst) / if (!ctx.IsFirst) blocks, including their optional else blocks.
 	Depth := 0
 	Loop, % LineCount
 	{
@@ -569,7 +558,6 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 }
 
 ; Finds the brace-delimited block attached to a top-level if/else statement.
-; Returns the opening and closing line indexes within the parser's Lines array.
 LLARS_RuntimeFindBlock(Lines, StatementIndex, ByRef OpenIndex, ByRef EndIndex)
 {
 	LineCount := Lines.Length()
@@ -601,16 +589,12 @@ LLARS_RuntimeFindBlock(Lines, StatementIndex, ByRef OpenIndex, ByRef EndIndex)
 	return true
 }
 
-; Performs an optional logout after the timed run completes. The logout
-; process uses Escape, a randomized delay, and a random point inside
-; the configured logout rectangle from LLARS Config.ini.
-; Performs the shared end-of-run logout action when Logout is enabled.
+; Performs an optional logout after the timed run completes.
 Logout(){
 	if !LLARS_ConfigEnabled("Logout", false, "shared")
 		return false
 
-	; Logout is still part of the active LLARS run. Reclaim and verify the exact
-	; RuneScape client before sending Escape rather than risking another window.
+	; Logout is still part of the active LLARS run.
 	if IsFunc("LLARS_WaitForRuneScape")
 	{
 		if !LLARS_WaitForRuneScape("Logout")
@@ -618,17 +602,12 @@ Logout(){
 	}
 	else if !LLARS_IsRuneScapeActive()
 	{
-		Log("LOGOUT BLOCKED", "RuneScape is not the active window")
 		return false
 	}
 
-	Log("LOGOUT", "Logout initiated")
 	; The master LLARS library always loads the Creator API before Runtime.
-	; Refuse to send anything if that guarded input path is unavailable rather
-	; than falling back to a raw Send that could reach the wrong application.
 	if !IsFunc("LLARS_CreatorSendInput")
 	{
-		Log("LOGOUT BLOCKED", "Guarded keyboard input is unavailable")
 		return false
 	}
 	if !LLARS_CreatorSendInput("{Esc}", "Logout Escape")
@@ -637,22 +616,17 @@ Logout(){
 	; Logout owns its short menu delay. It must not depend on a script-specific
 	; [Sleep Short] section because Logout is a shared framework feature.
 	Random, SleepAmount, 1000, 3500
-	Log("LOGOUT WAIT", "Random sleep before logout click: " SleepAmount " ms")
 	Sleep, %SleepAmount%
 
 	if !LLARS_ConfigReadPoint("Logout", x, y, "shared")
 	{
-		Log("LOGOUT BLOCKED", "Logout coordinates are invalid or missing")
 		return false
 	}
 
-	Log("LOGOUT CLICK", "Logout coordinates X=" x " Y=" y)
 	if !NaturalClick(x, y)
 	{
-		Log("LOGOUT BLOCKED", "NaturalClick did not complete the logout click")
 		return false
 	}
 
-	Log("LOGOUT", "Logout click completed")
 	return true
 }

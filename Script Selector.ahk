@@ -47,7 +47,7 @@ CloseOtherLLARS()
 ; ===================================================================
 
 ; List of available scripts.
-scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthorpe|Candle Crafter|Herb Cleaner - Skillcape|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|Archaeology - Excavate|Croesus Front|Eternal Tree|Waterfall Fishing"
+scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthorpe|Candle Crafter|Herb Cleaner - Skillcape|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|Archaeology - Excavate|Croesus Front|Eternal Tree|Waterfall Fishing|Divination|Macro Creator"
 
 ; Calculates the total number of scripts.
 ScriptTotal := StrSplit(scriptArray, "|").Length()
@@ -1898,6 +1898,20 @@ Case "Fire + Form - Portables":
 		Gui Info: -caption
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
+		GuiReset()
+		SetSetupDifficulty("Hard")
+		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+		Gui Info: Color, White
+		Gui Info: Font, s14 bold underline cBlue
+		Gui Info: Add, Text, center x5 w480, %Script%
+		Gui Info: Font, s13 normal bold cRed
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
+		Gui Info: Font, S12 cBlack
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
+		Gui Info: +ToolWindow
+		Gui Info: -caption
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
+		GuiBalance()
 
 		Case "Waterfall Fishing":
 		script := "Waterfall Fishing"
@@ -1917,6 +1931,42 @@ Case "Fire + Form - Portables":
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 
+		Case "Divination":
+		script := "Divination"
+		scriptinfo := "Finds yellow Divination resources with enriched priority, tracks depletion, and deposits when the inventory is full."
+		GuiReset()
+		SetSetupDifficulty("Hard")
+		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+		Gui Info: Color, White
+		Gui Info: Font, s14 bold underline cBlue
+		Gui Info: Add, Text, center x5 w480, %Script%
+		Gui Info: Font, s13 normal bold cRed
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
+		Gui Info: Font, S12 cBlack
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
+		Gui Info: +ToolWindow
+		Gui Info: -caption
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
+		GuiBalance()
+
+		Case "Macro Creator":
+		script := "Macro Creator"
+		scriptinfo := "Records physical input performed in RuneScape and generates a new LLARS macro using the Creator API."
+		GuiReset()
+		SetSetupDifficulty("Easy")
+		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+		Gui Info: Color, White
+		Gui Info: Font, s14 bold underline cBlue
+		Gui Info: Add, Text, center x5 w480, %Script%
+		Gui Info: Font, s13 normal bold cGreen
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
+		Gui Info: Font, S12 cBlack
+		Gui Info: Add, Text, center x5 w480, %scriptinfo%
+		Gui Info: +ToolWindow
+		Gui Info: -caption
+		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
+		GuiBalance()
+
 	}
 	return
 }
@@ -1926,8 +1976,6 @@ Case "Fire + Form - Portables":
 ; =================================================================
 
 ; Existing selector entries now resolve from the single LLARS Scripts root.
-; Automatic script discovery can replace this mapping in a later pass without
-; changing the validation or launch helpers below.
 Select:
 GuiControlGet, selectedScript, , ScriptListBox
 
@@ -2311,6 +2359,14 @@ Switch selectedScript
 	Case "Waterfall Fishing":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Waterfall Fishing"
 		scriptFile := "Waterfall Fishing.ahk"
+
+	Case "Divination":
+		scriptDir := LLARS_SCRIPTS_DIR . "\Divination"
+		scriptFile := "Divination - High Contrast.ahk"
+
+	Case "Macro Creator":
+		scriptDir := LLARS_SCRIPTS_DIR . "\Macro Creator"
+		scriptFile := "Macro Creator.ahk"
 	Default:
 		MsgBox, 48, Script Missing, No launch location is configured for:`n%selectedScript%
 		return
@@ -2321,12 +2377,11 @@ if !LaunchSelectedScript(scriptDir, scriptFile)
 Goto, exit
 return
 
-; Validates the selected script and its local configuration before launch.
+; Validates the selected script before launch.
 ValidateSelectedScript(ScriptDirectory, ScriptFile, ByRef FullDiskPath, ByRef DisplayPath)
 {
 	ScriptDirectory := RTrim(ScriptDirectory, "\")
 	FullDiskPath := ScriptDirectory . "\" . ScriptFile
-	ConfigPath := ScriptDirectory . "\Config.ini"
 
 	RootPrefix := RTrim(A_ScriptDir, "\") . "\"
 	StringLower, LowerFullDiskPath, FullDiskPath
@@ -2342,14 +2397,6 @@ ValidateSelectedScript(ScriptDirectory, ScriptFile, ByRef FullDiskPath, ByRef Di
 		Gui, Hide
 		MsgBox, 48, Script Missing
 			, The selected script could not be found.`n`nExpected Location:`nLLARS\%DisplayPath%
-		return false
-	}
-
-	if !FileExist(ConfigPath)
-	{
-		Gui, Hide
-		MsgBox, 48, Config Missing
-			, The selected script is missing its Config.ini.`n`nScript:`nLLARS\%DisplayPath%
 		return false
 	}
 

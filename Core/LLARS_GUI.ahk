@@ -8,7 +8,7 @@
 ; Creates the main LLARS control window.
 LLARS_CreateMainGUI()
 {
-	global value, scriptname, LLARS_ROOT, LLARS_SCRIPT_DIR
+	global value, scriptname, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
 	global Counter, State3, State2, ScriptBlue, ScriptRed
 	global ConfigStatusHotkeys, ConfigStatusCoordinates, ConfigStatusColors
 	global ConfigStatusHotkeysLabel, ConfigStatusCoordinatesLabel, ConfigStatusColorsLabel
@@ -33,26 +33,26 @@ LLARS_CreateMainGUI()
 	Gui, Add, Text, x180 y152 w125 h20 Center vCounter
 	GuiControl,,Counter, ** NOT SET **
 	Gui, Font, s10 Bold cBlack
-	Gui, Add, Text, x10 y176 w165 h20, Status
+	Gui, Add, Text, x10 y176 w145 h20, Status
 	Gui, Font, s10 Bold cBlue
-	Gui, Add, Text, x180 y176 w125 h20 Center vState3
-	Gui, Add, Text, x10 y176 w165 h20 cBlack vScriptBlue
+	Gui, Add, Text, x160 y176 w145 h20 Center vState3
+	Gui, Add, Text, x10 y176 w145 h20 cBlack vScriptBlue
 	Gui, Font, s10 Bold cRed
-	Gui, Add, Text, x180 y176 w125 h20 Center vState2
-	Gui, Add, Text, x10 y176 w165 h20 cBlack vScriptRed
+	Gui, Add, Text, x160 y176 w145 h20 Center vState2
+	Gui, Add, Text, x10 y176 w145 h20 cBlack vScriptRed
 	GuiControl,,State2, ** OFF **
 	Gui, Font, s10 Bold cBlack
-	Gui, Add, Text, x10 y176 w165 h20, %displayScriptName%
+	Gui, Add, Text, x10 y176 w145 h20, %displayScriptName%
 	Gui, Add, Text, x5 y200 w305 h2 0x10
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y207 w295 h20 Center, Configuration Status
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x15 y230 w140 h18 vConfigStatusHotkeysLabel, Hotkeys
-	Gui, Add, Text, x160 y230 w145 h18 Center vConfigStatusHotkeys, Checking...
+	Gui, Add, Text, x160 y230 w145 h18 Center vConfigStatusHotkeys, Checking
 	Gui, Add, Text, x15 y250 w140 h18 vConfigStatusCoordinatesLabel, Coordinates
-	Gui, Add, Text, x160 y250 w145 h18 Center vConfigStatusCoordinates, Checking...
+	Gui, Add, Text, x160 y250 w145 h18 Center vConfigStatusCoordinates, Checking
 	Gui, Add, Text, x15 y270 w140 h18 vConfigStatusColorsLabel, Colors
-	Gui, Add, Text, x160 y270 w145 h18 Center vConfigStatusColors, Checking...
+	Gui, Add, Text, x160 y270 w145 h18 Center vConfigStatusColors, Checking
 	Gui, Add, Text, x5 y293 w305 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x73 y301 w170 h29 gExitb , Exit LLARS
@@ -63,12 +63,11 @@ LLARS_CreateMainGUI()
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	LLARS_UpdateConfigStatus()
-	Gui, Show,w315 h337, LLARS
-
-	; Restores the main LLARS GUI to its previously saved screen position.
-	IniRead, x, %LLARS_CONFIG_FILE%, GUI POS, guix
-	IniRead, y, %LLARS_CONFIG_FILE%, GUI POS, guiy
-	WinMove, LLARS,, %X%, %y%
+	if LLARS_MainLoadPosition(x, y)
+		Gui, Show, x%x% y%y% w315 h337, LLARS
+	else
+		Gui, Show, w315 h337, LLARS
+	CheckPOS(LLARSMainGuiHwnd)
 
 	; Loads the custom LLARS icon into the main GUI when available.
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
@@ -87,13 +86,15 @@ LLARS_CreateMainGUI()
 ; Creates the LLARS running window for scripts controlled by a run count.
 LLARS_CreateRunCountGUI()
 {
-	global scriptname, value, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR
+	global scriptname, value, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
 	global Counter, Counter2, EstLoopRemaining, EstRunRemaining, State1, State3, State2, ScriptGreen, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
 
 	LLARS_RUNNING := true
 	SetLLARSHOTKEYS()
-	WinGetPos, X, Y,,, LLARS
+	hasMainPosition := LLARS_MainGetPosition(X, Y)
+	if (!hasMainPosition)
+		hasMainPosition := LLARS_MainLoadPosition(X, Y)
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
@@ -125,16 +126,16 @@ LLARS_CreateRunCountGUI()
 	Gui, Add, Text, x180 y183 w125 h20 Center vEstRunRemaining
 	Gui, Add, Text, x5 y205 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x10 y211 w165 h20, Status
+	Gui, Add, Text, x10 y211 w145 h20, Status
 	Gui, Font, s10 Bold cGreen
-	Gui, Add, Text, x180 y211 w125 h20 Center vState1
-	Gui, Add, Text, x10 y211 w165 h20 cBlack vScriptGreen
+	Gui, Add, Text, x160 y211 w145 h20 Center vState1
+	Gui, Add, Text, x10 y211 w145 h20 cBlack vScriptGreen
 	Gui, Font, s10 Bold cBlue
-	Gui, Add, Text, x180 y211 w125 h20 Center vState3
-	Gui, Add, Text, x10 y211 w165 h20 cBlack vScriptBlue
+	Gui, Add, Text, x160 y211 w145 h20 Center vState3
+	Gui, Add, Text, x10 y211 w145 h20 cBlack vScriptBlue
 	Gui, Font, s10 Bold cRed
-	Gui, Add, Text, x180 y211 w125 h20 Center vState2
-	Gui, Add, Text, x10 y211 w165 h20 cBlack vScriptRed
+	Gui, Add, Text, x160 y211 w145 h20 Center vState2
+	Gui, Add, Text, x10 y211 w145 h20 cBlack vScriptRed
 	GuiControl,, State2, ** OFF **
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x73 y239 w170 h29 gExitb, Exit LLARS
@@ -144,8 +145,11 @@ LLARS_CreateRunCountGUI()
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
-	Gui, Show, w315 h275, LLARS
-	WinMove, LLARS,, X, Y
+	if (hasMainPosition)
+		Gui, Show, x%X% y%Y% w315 h275, LLARS
+	else
+		Gui, Show, w315 h275, LLARS
+	CheckPOS(LLARSMainGuiHwnd)
 	count = 0
 	++frcount
 }
@@ -157,12 +161,14 @@ LLARS_CreateRunCountGUI()
 ; Creates the LLARS control window used by duration-based scripts.
 LLARS_CreateTimerGUI()
 {
-	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR
+	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
 	global TimerCount, State3, State2, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
 
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
-	WinGetPos, X, Y,,, LLARS
+	hasMainPosition := LLARS_MainGetPosition(X, Y)
+	if (!hasMainPosition)
+		hasMainPosition := LLARS_MainLoadPosition(X, Y)
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
@@ -182,13 +188,13 @@ LLARS_CreateTimerGUI()
 	Gui, Add, Text, x180 y120 w125 h20 Center vTimerCount
 	Gui, Add, Text, x5 y142 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x10 y148 w165 h20, Status
+	Gui, Add, Text, x10 y148 w145 h20, Status
 	Gui, Font, s10 Bold cBlue
-	Gui, Add, Text, x180 y148 w125 h20 Center vState3
-	Gui, Add, Text, x10 y148 w165 h20 cBlack vScriptBlue
+	Gui, Add, Text, x160 y148 w145 h20 Center vState3
+	Gui, Add, Text, x10 y148 w145 h20 cBlack vScriptBlue
 	Gui, Font, s10 Bold cRed
-	Gui, Add, Text, x180 y148 w125 h20 Center vState2
-	Gui, Add, Text, x10 y148 w165 h20 cBlack vScriptRed
+	Gui, Add, Text, x160 y148 w145 h20 Center vState2
+	Gui, Add, Text, x10 y148 w145 h20 cBlack vScriptRed
 	GuiControl,, State2, ** OFF **
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x73 y176 w170 h29 gExitb, Exit LLARS
@@ -198,8 +204,11 @@ LLARS_CreateTimerGUI()
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
-	Gui, Show, w315 h212, LLARS
-	WinMove, LLARS,, X, Y
+	if (hasMainPosition)
+		Gui, Show, x%X% y%Y% w315 h212, LLARS
+	else
+		Gui, Show, w315 h212, LLARS
+	CheckPOS(LLARSMainGuiHwnd)
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
 	{
 		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_SCRIPT_DIR "\LLARS Logo.ico"

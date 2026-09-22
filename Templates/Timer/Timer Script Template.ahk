@@ -45,7 +45,6 @@ GuiControl,, State3, Done
 
 SetTimer, Countdown, Off
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; =========================================================================
@@ -64,9 +63,7 @@ TimerSetup()
 	; |     ONE-TIME STARTUP / TIMER SCHEDULING GOES HERE       |
 	; ============================================================
 	;
-	; Managed callback timers read their configured min/max range,
-	; randomize a fresh interval every cycle, reclaim RuneScape when
-	; the callback is due, and are cleaned up automatically by LLARS.
+	; Managed callback timers read their configured min/max range, randomize a fresh interval every cycle, reclaim RuneScape when the callback is due, and are cleaned up automatically by LLARS.
 	;
 	; The example [Script Timer] section is disabled by default.
 	ScriptTimerID := LLARS_TimerRepeat("Script Timer", Func("ScriptTimer"))
@@ -116,7 +113,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m

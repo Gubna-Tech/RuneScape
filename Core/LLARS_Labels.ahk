@@ -2,10 +2,7 @@
 ; |     LLARS LABEL LIBRARY     -     LLARS LABEL LIBRARY        |
 ; ================================================================
 
-; Provides Escape-key shortcuts for closing the various secondary
-; LLARS GUIs through the same close paths used by their Close buttons.
-; Only windows owned by this LLARS process are handled here so Escape in
-; RuneScape, message boxes, or unrelated applications is never intercepted.
+; Provides Escape-key shortcuts for closing the various secondary LLARS GUIs through the same close paths used by their Close buttons.
 ~Esc::
 WinGet, LLARS_EscapeActivePID, PID, A
 if (LLARS_EscapeActivePID != DllCall("GetCurrentProcessId"))
@@ -28,6 +25,11 @@ Else IfWinActive, Timer ahk_class AutoHotkeyGUI
 Else IfWinActive, Information ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseInfo
+}
+
+Else IfWinActive, Timing Audit ahk_class AutoHotkeyGUI
+{
+	GoSub, CloseDeveloperTimingAudit
 }
 
 Else IfWinActive, Developer Mode ahk_class AutoHotkeyGUI
@@ -87,6 +89,11 @@ LLARS_CheckHotkeyConfig()
 LLARS_UpdateConfigStatus()
 return
 
+; Developer Mode remains available independently of normal control locking.
+LLARS_AlwaysOnHotkeyWatchdog:
+LLARS_EnableDeveloperHotkey(LLARS_lhk5)
+return
+
 ; Updates the temporary Random Sleep countdown shown in the status area.
 UpdateCountdown:
 RemainingTime := EndTime - A_TickCount
@@ -111,91 +118,100 @@ RandomSleepAmountToMinutesSeconds(time)
 
 ; Updates the current-loop and full-run estimates shown by RunCount scripts.
 UpdateEstimatedTime:
-if (!LLARS_RUNNING)
-	return
-
-if (EstCompletedLoops = 0 && EstConfiguredFirstLoopAverage > 0)
-{
-	EstimatedLoopTime := EstConfiguredFirstLoopAverage
-}
-
-else if (EstFollowingCompletedLoops > 0 && EstFollowingAverageLoopTime > 0)
-{
-	; Once real following loops exist, their measured average continuously
-	; improves the prediction for all remaining ordinary loops.
-	EstimatedLoopTime := EstFollowingAverageLoopTime
-}
-
-else if (EstConfiguredFollowingLoopAverage > 0)
-{
-	EstimatedLoopTime := EstConfiguredFollowingLoopAverage
-}
-
-else if (EstConfiguredLoopAverage > 0)
-{
-	EstimatedLoopTime := EstConfiguredLoopAverage
-}
-
-else
-{
-	GuiControl,, EstLoopRemaining, Calculating
-	GuiControl,, EstRunRemaining, Calculating
-	return
-}
-
-if (EstLoopStartTick > 0)
-{
-	ElapsedLoopTime := A_TickCount - EstLoopStartTick
-	PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment - ElapsedLoopTime
-}
-
-else
-{
-	PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment
-}
-
-if (PredictiveLoopRemainingTime < 0)
-	PredictiveLoopRemainingTime := 0
-if (EstFinalSleepActive && EstFinalSleepEndTick > 0)
-	EstLoopRemainingTime := EstFinalSleepEndTick - A_TickCount
-else
-	EstLoopRemainingTime := PredictiveLoopRemainingTime
-if (EstLoopRemainingTime < 0)
-	EstLoopRemainingTime := 0
-EstLoopTotalSeconds := Floor(EstLoopRemainingTime / 1000)
-EstLoopHours := Floor(EstLoopTotalSeconds / 3600)
-EstLoopMinutes := Floor(Mod(EstLoopTotalSeconds, 3600) / 60)
-EstLoopSeconds := Mod(EstLoopTotalSeconds, 60)
-EstLoopDisplay := EstLoopHours "h " EstLoopMinutes "m " EstLoopSeconds "s"
-GuiControl,, EstLoopRemaining, %EstLoopDisplay%
-if (EstFollowingCompletedLoops > 0 && EstFollowingAverageLoopTime > 0)
-	FutureLoopTime := EstFollowingAverageLoopTime
-else if (EstConfiguredFollowingLoopAverage > 0)
-	FutureLoopTime := EstConfiguredFollowingLoopAverage
-else
-	FutureLoopTime := EstimatedLoopTime
-
-if (EstLoopStartTick > 0)
-	LoopsRemaining := runcount3 - count
-else
-	LoopsRemaining := runcount3
-if (LoopsRemaining < 0)
-	LoopsRemaining := 0
-if (EstLoopStartTick > 0)
-	EstRunRemainingTime := EstLoopRemainingTime + (LoopsRemaining * FutureLoopTime)
-else if (LoopsRemaining > 0)
-	EstRunRemainingTime := EstimatedLoopTime + ((LoopsRemaining - 1) * FutureLoopTime)
-else
-	EstRunRemainingTime := 0
-if (EstRunRemainingTime < 0)
-	EstRunRemainingTime := 0
-EstRunTotalSeconds := Floor(EstRunRemainingTime / 1000)
-EstRunHours := Floor(EstRunTotalSeconds / 3600)
-EstRunMinutes := Floor(Mod(EstRunTotalSeconds, 3600) / 60)
-EstRunSeconds := Mod(EstRunTotalSeconds, 60)
-EstRunDisplay := EstRunHours "h " EstRunMinutes "m " EstRunSeconds "s"
-GuiControl,, EstRunRemaining, %EstRunDisplay%
+LLARS_UpdateEstimatedTimeNow()
 return
+
+LLARS_UpdateEstimatedTimeNow()
+{
+	global LLARS_RUNNING, EstCompletedLoops, EstConfiguredFirstLoopAverage
+	global EstFollowingCompletedLoops, EstFollowingAverageLoopTime
+	global EstConfiguredFollowingLoopAverage, EstConfiguredLoopAverage
+	global EstLoopStartTick, EstRandomSleepAdjustment, EstFinalSleepActive, EstFinalSleepEndTick
+	global runcount3, count
+	if (!LLARS_RUNNING)
+		return
+
+	if (EstCompletedLoops = 0 && EstConfiguredFirstLoopAverage > 0)
+	{
+		EstimatedLoopTime := EstConfiguredFirstLoopAverage
+	}
+
+	else if (EstFollowingCompletedLoops > 0 && EstFollowingAverageLoopTime > 0)
+	{
+		; Once real following loops exist, their measured average continuously improves the prediction for all remaining ordinary loops.
+		EstimatedLoopTime := EstFollowingAverageLoopTime
+	}
+
+	else if (EstConfiguredFollowingLoopAverage > 0)
+	{
+		EstimatedLoopTime := EstConfiguredFollowingLoopAverage
+	}
+
+	else if (EstConfiguredLoopAverage > 0)
+	{
+		EstimatedLoopTime := EstConfiguredLoopAverage
+	}
+
+	else
+	{
+		GuiControl, 1:, EstLoopRemaining, Calculating
+		GuiControl, 1:, EstRunRemaining, Calculating
+		return
+	}
+
+	if (EstLoopStartTick > 0)
+	{
+		ElapsedLoopTime := A_TickCount - EstLoopStartTick
+		PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment - ElapsedLoopTime
+	}
+
+	else
+	{
+		PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment
+	}
+
+	if (PredictiveLoopRemainingTime < 0)
+		PredictiveLoopRemainingTime := 0
+	if (EstFinalSleepActive && EstFinalSleepEndTick > 0)
+		EstLoopRemainingTime := EstFinalSleepEndTick - A_TickCount
+	else
+		EstLoopRemainingTime := PredictiveLoopRemainingTime
+	if (EstLoopRemainingTime < 0)
+		EstLoopRemainingTime := 0
+	EstLoopTotalSeconds := Floor(EstLoopRemainingTime / 1000)
+	EstLoopHours := Floor(EstLoopTotalSeconds / 3600)
+	EstLoopMinutes := Floor(Mod(EstLoopTotalSeconds, 3600) / 60)
+	EstLoopSeconds := Mod(EstLoopTotalSeconds, 60)
+	EstLoopDisplay := EstLoopHours "h " EstLoopMinutes "m " EstLoopSeconds "s"
+	GuiControl, 1:, EstLoopRemaining, %EstLoopDisplay%
+	if (EstFollowingCompletedLoops > 0 && EstFollowingAverageLoopTime > 0)
+		FutureLoopTime := EstFollowingAverageLoopTime
+	else if (EstConfiguredFollowingLoopAverage > 0)
+		FutureLoopTime := EstConfiguredFollowingLoopAverage
+	else
+		FutureLoopTime := EstimatedLoopTime
+
+	if (EstLoopStartTick > 0)
+		LoopsRemaining := runcount3 - count
+	else
+		LoopsRemaining := runcount3
+	if (LoopsRemaining < 0)
+		LoopsRemaining := 0
+	if (EstLoopStartTick > 0)
+		EstRunRemainingTime := EstLoopRemainingTime + (LoopsRemaining * FutureLoopTime)
+	else if (LoopsRemaining > 0)
+		EstRunRemainingTime := EstimatedLoopTime + ((LoopsRemaining - 1) * FutureLoopTime)
+	else
+		EstRunRemainingTime := 0
+	if (EstRunRemainingTime < 0)
+		EstRunRemainingTime := 0
+	EstRunTotalSeconds := Floor(EstRunRemainingTime / 1000)
+	EstRunHours := Floor(EstRunTotalSeconds / 3600)
+	EstRunMinutes := Floor(Mod(EstRunTotalSeconds, 3600) / 60)
+	EstRunSeconds := Mod(EstRunTotalSeconds, 60)
+	EstRunDisplay := EstRunHours "h " EstRunMinutes "m " EstRunSeconds "s"
+	GuiControl, 1:, EstRunRemaining, %EstRunDisplay%
+}
 
 ; =====================================================================
 ; |     COMBO BUTTON     -     COMBO BUTTON     -     COMBO BUTTON    |
@@ -264,13 +280,9 @@ return
 
 ; Builds a reset list from the script's Config.ini only. An entry is
 ; included only when its section is explicitly type=hotkey, coordinate,
-; or color and currently contains a saved value. Other configuration
-; values such as offsets, timers, ranges, options, and chances can never
-; be selected or modified by this GUI.
+; or color and currently contains a saved value.
 ResetConfig:
-WinGetPos, GUIxc, GUIyc,,,LLARS
-IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
-IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+LLARS_MainSavePosition()
 Gui 1: Hide
 Gui Combo: Destroy
 DisableHotkey()
@@ -334,8 +346,7 @@ else
 	GuiControl, Reset: Disable, ResetConfigButton
 return
 
-; Clears only the recognized key(s) belonging to the selected typed editor
-; section. The section itself and every unrelated key remain untouched.
+; Clears only the recognized key(s) belonging to the selected typed editor section.
 ResetSelectedConfig:
 GuiControlGet, resetSelection, Reset:, ResetSectionList
 if !resetConfigItems.HasKey(resetSelection)
@@ -356,7 +367,6 @@ if !LLARS_ResetConfigItem("Config.ini", resetSection, resetType)
 	return
 }
 
-Log("CONFIG RESET", resetTypeDisplay " | " resetSection)
 LLARS_DeveloperAction("Config Reset || " . resetTypeDisplay . " || " . resetSection)
 LLARS_UpdateConfigStatus()
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -386,8 +396,7 @@ EnableHotkey()
 return
 
 
-; Clears every saved framework-recognized Hotkey, Coordinate, and Color
-; currently shown by the Reset Config GUI. No other Config.ini keys can be
+; Clears every saved framework-recognized Hotkey, Coordinate, and Color currently shown by the Reset Config GUI.
 ; touched because every item still passes through LLARS_ResetConfigItem().
 ResetAllConfig:
 resetCount := 0
@@ -413,7 +422,6 @@ for resetDisplay, resetItem in resetConfigItems
 	if LLARS_ResetConfigItem("Config.ini", resetItem.section, resetItem.type)
 	{
 		resetChanged := true
-		Log("CONFIG RESET", resetItem.typeDisplay " | " resetItem.section)
 	}
 }
 
@@ -469,9 +477,7 @@ return
 ; to each configuration section. Sections marked type=coordinate are
 ; automatically included without requiring their names in the script.
 Coordinates:
-WinGetPos, GUIxc, GUIyc,,,LLARS
-IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
-IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+LLARS_MainSavePosition()
 Gui 1: Hide
 LLARS_DeveloperUIAction("Configuration", "Closed")
 Gui Combo: Destroy
@@ -488,6 +494,7 @@ IniRead, allContents, %scriptHotkeyConfigFile%
 IniRead, llarsContents, %LLARS_CONFIG_FILE%
 sectionList := " ***** Make a Selection ***** | "
 configCoordinatesFound := false
+coordinateConfigFiles := {}
 
 ; Add a section header for Config.ini coordinates.
 sectionList .= "| ---- Script Coordinates ---- "
@@ -502,9 +509,10 @@ Loop, Parse, allContents, `n, `r
 	StringReplace, currentSection, currentSection, [, , All
 	StringReplace, currentSection, currentSection, ], , All
 	currentSection := Trim(currentSection)
-	if (GetConfigType("Config.ini", currentSection) = "coordinate")
+	if (GetConfigType(scriptHotkeyConfigFile, currentSection) = "coordinate")
 	{
 		sectionList .= "|" currentSection
+		coordinateConfigFiles[currentSection] := scriptHotkeyConfigFile
 		configCoordinatesFound := true
 	}
 }
@@ -527,7 +535,10 @@ Loop, Parse, llarsContents, `n, `r
 	StringReplace, currentSection, currentSection, ], , All
 	currentSection := Trim(currentSection)
 	if (GetConfigType(LLARS_CONFIG_FILE, currentSection) = "coordinate")
+	{
 		sectionList .= "|" currentSection
+		coordinateConfigFiles[currentSection] := LLARS_CONFIG_FILE
+	}
 }
 
 Gui, 2: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged, % sectionList
@@ -557,17 +568,23 @@ if (selectedSection = "" || selectedSection = " " || selectedSection = " ***** M
 GoSub, ButtonClicked
 return
 
-; Handles the two coordinate-selection modes:
-; "pixel coordinate" captures one point, while all other sections
-; capture a top-left and bottom-right corner to form a rectangle.
+; Handles coordinate selection from the section's actual schema.
 ButtonClicked:
-if (selectedSection = "pixel coordinate")
+coordinateConfigFile := coordinateConfigFiles.HasKey(selectedSection) ? coordinateConfigFiles[selectedSection] : "Config.ini"
+IniRead, coordinateKeys, %coordinateConfigFile%, %selectedSection%
+hasPointCoordinateKeys := RegExMatch(coordinateKeys, "im)^x=") && RegExMatch(coordinateKeys, "im)^y=")
+hasRectangleCoordinateKeys := RegExMatch(coordinateKeys, "im)^xmin=") || RegExMatch(coordinateKeys, "im)^xmax=") || RegExMatch(coordinateKeys, "im)^ymin=") || RegExMatch(coordinateKeys, "im)^ymax=")
+explicitPointCoordinateSection := (selectedSection = "Trigger Pixel" || selectedSection = "Inventory Pixel" || selectedSection = "Pixel Coordinate")
+pointCoordinateSection := (explicitPointCoordinateSection || (hasPointCoordinateKeys && !hasRectangleCoordinateKeys))
+
+if (pointCoordinateSection)
 {
     Gui, 2: Hide
     WinActivate, RuneScape
     x := ""
     y := ""
     ButtonText := selectedSection
+    CoordinateRButtonWasDown := false
     SetTimer, CheckClicksPixel, 10
     Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
     Gui 11u: Color, Red
@@ -600,6 +617,7 @@ else
     xmax := ""
     ymax := ""
     ButtonText := selectedSection
+    CoordinateRButtonWasDown := false
     SetTimer, CheckClicks, 10
     Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
     Gui 11u: Color, Red
@@ -624,17 +642,15 @@ else
 
 return
 
-; Captures the first and second right-click positions for rectangle
-; coordinates, then writes the resulting bounds to the appropriate
-; configuration file. Logout is stored in LLARS Config.ini.
+; Captures the first and second right-click positions for rectangle coordinates, then writes the resulting bounds to the appropriate configuration file.
 CheckClicks:
 if GetKeyState("Esc", "P")
 {
-	Log("RELOAD", "Reload triggered by Escape")
 	Reload
 }
 
-if GetKeyState("RButton", "P")
+CoordinateRButtonDown := GetKeyState("RButton")
+if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 {
 	MouseGetPos, MouseX, MouseY
 	ClickCount++
@@ -670,16 +686,12 @@ if GetKeyState("RButton", "P")
 		; Show the selected area while the saved confirmation is visible.
 		LLARS_ShowCoordinatePreview(xmin, ymin, xmax, ymax)
 		SetTimer, CheckClicks, Off
-		if (ButtonText = "Logout")
-			configFile := LLARS_CONFIG_FILE
-		else
-			configFile := "Config.ini"
+		configFile := (coordinateConfigFile != "") ? coordinateConfigFile : ((ButtonText = "Logout") ? LLARS_CONFIG_FILE : "Config.ini")
 		IniWrite, %xmin%, %configFile%, %ButtonText%, xmin
 		IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
 		IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
 		IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
 		LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . xmin . "-" . xmax . " || Y=" . ymin . "-" . ymax, false)
-		Log("COORDINATES CHANGED", " %buttontext% | X=" xmin "-" xmax " | Y=" ymin "-" ymax)
 		if (ButtonText = "Logout")
 		{
 			Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
@@ -732,19 +744,19 @@ if GetKeyState("RButton", "P")
 
 	Sleep, 250
 }
+CoordinateRButtonWasDown := CoordinateRButtonDown
 
 return
 
-; Handles single-point coordinate capture for the special
-; "pixel coordinate" configuration section.
+; Handles single-point coordinate capture for point-only configuration sections.
 CheckClicksPixel:
 if GetKeyState("Esc", "P")
 {
-	Log("RELOAD", "Reload triggered by Escape")
 	Reload
 }
 
-if GetKeyState("RButton", "P")
+CoordinateRButtonDown := GetKeyState("RButton")
+if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 {
 	MouseGetPos, MouseX, MouseY
 	Gui 11: Destroy
@@ -767,10 +779,15 @@ if GetKeyState("RButton", "P")
 	x := MouseX
 	y := MouseY
 	SetTimer, CheckClicksPixel, Off
-	IniWrite, %x%, Config.ini, %ButtonText%, x
-	IniWrite, %y%, Config.ini, %ButtonText%, y
+	configFile := (coordinateConfigFile != "") ? coordinateConfigFile : "Config.ini"
+	; Point sections are authoritative single X/Y coordinates.
+	IniDelete, %configFile%, %ButtonText%, xmin
+	IniDelete, %configFile%, %ButtonText%, xmax
+	IniDelete, %configFile%, %ButtonText%, ymin
+	IniDelete, %configFile%, %ButtonText%, ymax
+	IniWrite, %x%, %configFile%, %ButtonText%, x
+	IniWrite, %y%, %configFile%, %ButtonText%, y
 	LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . x . " || Y=" . y, false)
-	Log("COORDINATES CHANGED", "Pixel Coordinate | X=" x " | Y=" y)
 	Sleep, 1500
 	Gui 13: Destroy
 	Gui 13u: Destroy
@@ -780,6 +797,7 @@ if GetKeyState("RButton", "P")
 	EnableHotkey()
 	Sleep, 250
 }
+CoordinateRButtonWasDown := CoordinateRButtonDown
 
 return
 
@@ -790,7 +808,6 @@ LLARS_ShowCoordinatePreview(x1, y1, x2, y2)
 	LLARS_HideCoordinatePreview()
 
 	; Mouse coordinates are captured relative to the RuneScape client area.
-	; Convert them to screen coordinates before positioning the preview GUIs.
 	LLARS_ClientToScreen(x1, y1)
 	LLARS_ClientToScreen(x2, y2)
 	border := 3
@@ -807,11 +824,7 @@ LLARS_ShowCoordinatePreview(x1, y1, x2, y2)
 	if (height < border * 2)
 		height := border * 2
 
-	; These are top-level layered + transparent windows. Windows uses the
-	; combination of WS_EX_LAYERED (0x80000) and WS_EX_TRANSPARENT (0x20)
-	; for click-through hit testing. WS_EX_NOACTIVATE (0x08000000) keeps the
-	; visual overlay from taking focus. No message hook or interactive handler
-	; is attached to the overlay.
+	; These are top-level layered + transparent windows.
 
 	Gui, 14: +AlwaysOnTop -Caption -Border +ToolWindow +E0x08080020 +HwndoverlayTopHwnd
 	Gui, 14: Color, Red
@@ -836,9 +849,7 @@ LLARS_ShowCoordinatePreview(x1, y1, x2, y2)
 	LLARS_MakeCoordinateOverlayLayered(overlayRightHwnd)
 }
 
-; Makes the already-created border strip fully opaque while retaining its
-; layered/click-through window style. This is display-only and never handles
-; mouse input itself.
+; Makes the already-created border strip fully opaque while retaining its layered/click-through window style.
 LLARS_MakeCoordinateOverlayLayered(hWnd)
 {
 	if (!hWnd)
@@ -851,10 +862,7 @@ LLARS_MakeCoordinateOverlayLayered(hWnd)
 		, "UInt", 0x2)
 }
 
-; While Developer Mode is open, shows the Config.ini coordinate region that
-; contains the current NaturalClick target. Rectangle coordinates use their full
-; saved bounds; fixed x/y coordinates use a small visible box around the pixel.
-; The overlay is click-through and never activates or steals RuneScape focus.
+; While Developer Mode is open, shows the Config.ini coordinate region that contains the current NaturalClick target.
 LLARS_DeveloperCoordinateOverlay(x, y, section := "", scope := "script")
 {
 	global LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
@@ -870,8 +878,7 @@ LLARS_DeveloperCoordinateOverlay(x, y, section := "", scope := "script")
 		configPath := LLARS_SCRIPT_DIR . "\Config.ini"
 
 	; LLARS_Click() passes the exact configured coordinate section so the
-	; debugger does not have to guess which rectangle produced a randomized
-	; target. Direct/legacy NaturalClick() calls still fall back to matching x/y.
+	; debugger does not have to guess which rectangle produced a randomized target.
 	if (section = "")
 	{
 		if !IsFunc("LLARS_DeveloperClickTarget")
@@ -896,8 +903,7 @@ LLARS_DeveloperCoordinateOverlay(x, y, section := "", scope := "script")
 		if (xmin != "" && xmax != "" && ymin != "" && ymax != "")
 		{
 			LLARS_ShowCoordinatePreview(xmin, ymin, xmax, ymax)
-			; Keep the target visible for the full NaturalClick. NaturalClick itself
-			; schedules the hide 500 ms after the physical click succeeds.
+			; Keep the target visible for the full NaturalClick.
 			SetTimer, LLARS_HideDeveloperCoordinateOverlay, Off
 			return true
 		}
@@ -914,14 +920,12 @@ LLARS_DeveloperCoordinateOverlay(x, y, section := "", scope := "script")
 		return false
 
 	LLARS_ShowCoordinatePreview(fixedX - 5, fixedY - 5, fixedX + 5, fixedY + 5)
-	; Keep the target visible for the full NaturalClick. NaturalClick itself
-	; schedules the hide 500 ms after the physical click succeeds.
+	; Keep the target visible for the full NaturalClick.
 	SetTimer, LLARS_HideDeveloperCoordinateOverlay, Off
 	return true
 }
 
-; Ends the Developer Mode coordinate overlay. A positive delay keeps it visible
-; for that many milliseconds before hiding; zero hides it immediately.
+; Ends the Developer Mode coordinate overlay.
 LLARS_DeveloperCoordinateOverlayHide(delay := 0)
 {
 	SetTimer, LLARS_HideDeveloperCoordinateOverlay, Off
@@ -939,8 +943,7 @@ LLARS_HideDeveloperCoordinateOverlay:
 LLARS_HideCoordinatePreview()
 return
 
-; Converts RuneScape client coordinates to absolute screen coordinates for
-; temporary overlays. This does not change the coordinates saved to Config.ini.
+; Converts RuneScape client coordinates to absolute screen coordinates for temporary overlays.
 LLARS_ClientToScreen(ByRef x, ByRef y)
 {
 	global LLARS_RunRuneScapeHwnd
@@ -986,9 +989,7 @@ LLARS_HideCoordinatePreview()
 ; each configuration section. Sections marked type=color are
 ; automatically included without requiring their names in the script.
 Color:
-WinGetPos, GUIxc, GUIyc,,,LLARS
-IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
-IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+LLARS_MainSavePosition()
 Gui 1: Hide
 LLARS_DeveloperUIAction("Configuration", "Closed")
 Gui Combo: Destroy
@@ -1000,7 +1001,8 @@ Gui 2: Add, Text, x5 y29 w280 h18 Center, Colors
 Gui 2: Add, Text, x10 y49 w270 h2 0x10
 Gui 2: Font, s10 Bold cBlack
 DisableHotkey()
-IniRead, allContents, Config.ini
+colorConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
+IniRead, allContents, %colorConfigFile%
 sectionList := " ***** Make a Selection ***** "
 
 ; Only add sections that are explicitly categorized as colors.
@@ -1012,7 +1014,7 @@ Loop, Parse, allContents, `n, `r
 	StringReplace, currentSection, currentSection, [, , All
 	StringReplace, currentSection, currentSection, ], , All
 	currentSection := Trim(currentSection)
-	if (GetConfigType("Config.ini", currentSection) = "color")
+	if (GetConfigType(colorConfigFile, currentSection) = "color")
 		sectionList .= "|" currentSection
 }
 
@@ -1040,46 +1042,158 @@ if (selectedSection != " ***** Make a Selection ***** ")
 	GoSub, ColorSelected
 return
 
-; Reads the pixel location mapped to the selected color section, captures its
-; current color, and writes that color into the selected Config.ini section.
-; Older scripts without coordinate= metadata continue using [Pixel Coordinate].
+; Colors with coordinate= metadata keep the existing mapped-coordinate behavior.
+; Standalone colors have no fixed coordinate, so LLARS asks for one physical
+; right-click in RuneScape and samples the exact RGB value under the cursor.
 ColorSelected:
 Gui, 2: Hide
 WinActivate, RuneScape
 x := ""
 y := ""
 ButtonText := selectedSection
-Sleep, 500
-IniRead, colorCoordinateSection, Config.ini, %ButtonText%, coordinate, ERROR
+colorConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
+Sleep, 350
+IniRead, colorCoordinateSection, %colorConfigFile%, %ButtonText%, coordinate, ERROR
 colorCoordinateSection := Trim(colorCoordinateSection)
 if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
-	colorCoordinateSection := "Pixel Coordinate"
-IniRead, x, Config.ini, %colorCoordinateSection%, x
-IniRead, y, Config.ini, %colorCoordinateSection%, y
+{
+	; Preserve legacy LLARS scripts that intentionally use [Pixel Coordinate]
+	; as their shared color sample point.
+	IniRead, legacyColorX, %colorConfigFile%, Pixel Coordinate, x, ERROR
+	IniRead, legacyColorY, %colorConfigFile%, Pixel Coordinate, y, ERROR
+	if legacyColorX is number
+	{
+		if legacyColorY is number
+			colorCoordinateSection := "Pixel Coordinate"
+	}
+}
+if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
+{
+	SetTimer, CheckColorClick, 25
+	colorHoverText := "Right-click the exact color for [ " . selectedSection . " ] | RGB: ------"
+	colorPickerBorder := 12
+	colorPickerInnerHeight := 38
+	colorPickerInnerWidth := Min(1080, A_ScreenWidth - (colorPickerBorder * 2) - 16)
+	if (colorPickerInnerWidth < 620)
+		colorPickerInnerWidth := 620
+	colorPickerOuterWidth := colorPickerInnerWidth + (colorPickerBorder * 2)
+	colorPickerOuterHeight := colorPickerInnerHeight + (colorPickerBorder * 2)
+	colorPickerRightX := colorPickerOuterWidth - colorPickerBorder
+	colorPickerBottomY := colorPickerOuterHeight - colorPickerBorder
+	Gui 11u: Destroy
+	Gui 11: Destroy
+	Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled +ToolWindow -Caption
+	Gui 11: Margin, 0, 0
+	Gui 11: Color, White
+	Gui 11: Add, Progress, x0 y0 w%colorPickerOuterWidth% h%colorPickerBorder% cRed BackgroundRed Disabled, 100
+	Gui 11: Add, Progress, x0 y%colorPickerBottomY% w%colorPickerOuterWidth% h%colorPickerBorder% cRed BackgroundRed Disabled, 100
+	Gui 11: Add, Progress, x0 y%colorPickerBorder% w%colorPickerBorder% h%colorPickerInnerHeight% cRed BackgroundRed Disabled, 100
+	Gui 11: Add, Progress, x%colorPickerRightX% y%colorPickerBorder% w%colorPickerBorder% h%colorPickerInnerHeight% cRed BackgroundRed Disabled, 100
+	Gui 11: Font, s16 bold cBlack
+	Gui 11: Add, Text, x%colorPickerBorder% y%colorPickerBorder% w%colorPickerInnerWidth% h%colorPickerInnerHeight% Center +0x200 vTone, %colorHoverText%
+	Gui 11: Show, NoActivate xcenter y0 w%colorPickerOuterWidth% h%colorPickerOuterHeight%, ColorPicker
+	return
+}
+
+IniRead, x, %colorConfigFile%, %colorCoordinateSection%, x, ERROR
+IniRead, y, %colorConfigFile%, %colorCoordinateSection%, y, ERROR
+if x is not number
+{
+	LLARS_CreatorConfigError(ButtonText . " references an invalid color coordinate section: " . colorCoordinateSection)
+	Gui, 2: Destroy
+	Gui, 1: Show
+	EnableHotkey()
+	return
+}
+if y is not number
+{
+	LLARS_CreatorConfigError(ButtonText . " references an invalid color coordinate section: " . colorCoordinateSection)
+	Gui, 2: Destroy
+	Gui, 1: Show
+	EnableHotkey()
+	return
+}
 PixelGetColor, color, %x%, %y%, RGB
-colorKey := LLARS_GetColorKey("Config.ini", ButtonText)
-IniWrite, %color%, Config.ini, %ButtonText%, %colorKey%
-Log("COLOR CHANGED IN CONFIG", ButtonText " | " colorKey " = " color)
-Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13u: Color, Green
-Gui 13u: Font, cGreen
-Gui 13u: Font, s16 bold
-Gui 13u: Add, Text, valertlabel center,----%buttontext% has been updated in the Config.ini file`n----
-Gui 13u: +ToolWindow
-Gui 13u: -caption
-Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+GoSub, SaveColorSelection
+return
+
+; Captures one standalone RGB value directly from the RuneScape client.
+CheckColorClick:
+if GetKeyState("Esc", "P")
+{
+	Reload
+}
+
+hoverColor := "------"
+if WinActive("RuneScape")
+{
+	MouseGetPos, hoverX, hoverY
+	PixelGetColor, hoverColor, %hoverX%, %hoverY%, RGB
+	if (hoverColor = "")
+		hoverColor := "------"
+	else
+		StringUpper, hoverColor, hoverColor
+}
+colorHoverText := "Right-click the exact color for [ " . selectedSection . " ] | RGB: " . hoverColor
+GuiControl, 11:, Tone, %colorHoverText%
+
+if GetKeyState("RButton", "P")
+{
+	MouseGetPos, x, y
+	PixelGetColor, color, %x%, %y%, RGB
+	SetTimer, CheckColorClick, Off
+	Gui 11: Destroy
+	Gui 11u: Destroy
+	GoSub, SaveColorSelection
+	Sleep, 250
+}
+return
+
+; Saves and displays the sampled RGB.
+SaveColorSelection:
+StringUpper, color, color
+colorKey := LLARS_GetColorKey(colorConfigFile, ButtonText)
+IniWrite, %color%, %colorConfigFile%, %ButtonText%, %colorKey%
+duplicateColors := LLARS_ColorDuplicateSections(colorConfigFile, ButtonText, color)
+if (duplicateColors = "")
+	colorResultText := ButtonText . " = " . color . " | Unique"
+else
+	colorResultText := ButtonText . " = " . color . " | Matches: " . duplicateColors
+LLARS_DeveloperAction("Color || " . ButtonText . " || RGB=" . color . ((duplicateColors != "") ? " || Matches=" . duplicateColors : ""), false)
+LLARS_DeveloperColorConfigAction(ButtonText " | " colorKey " = " color . ((duplicateColors != "") ? " | Matches: " . duplicateColors : ""))
+; Build one balanced confirmation window: white center with an equal 12 px green frame on every side.
+colorResultHeight := 38
+colorResultBorder := 12
+Gui 19: Destroy
+Gui 19: +ToolWindow -Caption
+Gui 19: Font, s16 bold
+Gui 19: Add, Text, vLLARSColorMeasure -Wrap, %colorResultText%
+Gui 19: Show, Hide AutoSize, ColorConfirmationMeasure
+GuiControlGet, colorResultTextPos, 19:Pos, LLARSColorMeasure
+colorResultWidth := colorResultTextPosW + 50
+Gui 19: Destroy
+if (colorResultWidth < 520)
+	colorResultWidth := 520
+colorResultMaxWidth := A_ScreenWidth - (colorResultBorder * 2) - 16
+if (colorResultWidth > colorResultMaxWidth)
+	colorResultWidth := colorResultMaxWidth
+colorResultOuterWidth := colorResultWidth + (colorResultBorder * 2)
+colorResultOuterHeight := colorResultHeight + (colorResultBorder * 2)
+colorResultRightX := colorResultOuterWidth - colorResultBorder
+colorResultBottomY := colorResultOuterHeight - colorResultBorder
+Gui 13u: Destroy
+Gui 13: Destroy
+Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled +ToolWindow -Caption
+Gui 13: Margin, 0, 0
 Gui 13: Color, White
-Gui 13: Font, s16 bold
-Gui 13: Add, Text, vTthree center, %buttontext% has been updated in the Config.ini file
-Gui 13: -caption
-Gui 13: Show, NoActivate xcenter y9999, TopGUI
-wingetpos,,,,bottomH, BottomGUI
-wingetpos,,,,topH, TopGUI
-topPOS := (bottomH - topH) / 2
-Gui, TopGUI: +LabelTopGUI
-WinMove, TopGUI,, , %topPOS%
-Sleep 1500
+Gui 13: Add, Progress, x0 y0 w%colorResultOuterWidth% h%colorResultBorder% cGreen BackgroundGreen Disabled, 100
+Gui 13: Add, Progress, x0 y%colorResultBottomY% w%colorResultOuterWidth% h%colorResultBorder% cGreen BackgroundGreen Disabled, 100
+Gui 13: Add, Progress, x0 y%colorResultBorder% w%colorResultBorder% h%colorResultHeight% cGreen BackgroundGreen Disabled, 100
+Gui 13: Add, Progress, x%colorResultRightX% y%colorResultBorder% w%colorResultBorder% h%colorResultHeight% cGreen BackgroundGreen Disabled, 100
+Gui 13: Font, s16 bold cBlack
+Gui 13: Add, Text, x%colorResultBorder% y%colorResultBorder% w%colorResultWidth% h%colorResultHeight% Center +0x200 vTthree, %colorResultText%
+Gui 13: Show, NoActivate xcenter y0 w%colorResultOuterWidth% h%colorResultOuterHeight%, ColorConfirmation
+Sleep 1800
 Gui 13: Destroy
 Gui 13u: Destroy
 LLARS_DeveloperUIAction("Colors", "Closed")
@@ -1087,6 +1201,36 @@ Gui, 2: Destroy
 Gui, 1: Show
 EnableHotkey()
 return
+
+LLARS_ColorDuplicateSections(configFile, selectedSection, selectedColor)
+{
+	selectedColor := Trim(selectedColor)
+	StringUpper, selectedColor, selectedColor
+	duplicates := ""
+	IniRead, colorSections, %configFile%
+	Loop, Parse, colorSections, `n, `r
+	{
+		section := Trim(A_LoopField)
+		StringReplace, section, section, [, , All
+		StringReplace, section, section, ], , All
+		section := Trim(section)
+		if (section = "" || section = selectedSection)
+			continue
+		if (GetConfigType(configFile, section) != "color")
+			continue
+		otherKey := LLARS_GetColorKey(configFile, section)
+		IniRead, otherColor, %configFile%, %section%, %otherKey%, ERROR
+		otherColor := Trim(otherColor)
+		StringUpper, otherColor, otherColor
+		if (otherColor = selectedColor)
+		{
+			if (duplicates != "")
+				duplicates .= ", "
+			duplicates .= section
+		}
+	}
+	return duplicates
+}
 
 ; ================================================================
 ; |     HOTKEY GUI     -     HOTKEY GUI     -     HOTKEY GUI     |
@@ -1096,13 +1240,9 @@ return
 ; each configuration section. Sections marked type=hotkey are
 ; automatically included without requiring their names in the script.
 ;
-; The hotkeyConfigFiles object records which INI file each section
-; came from. This prevents the script from guessing the source file
-; later when a hotkey is selected or changed.
+; The hotkeyConfigFiles object records which INI file each section came from.
 Hotkey:
-WinGetPos, GUIxc, GUIyc,,,LLARS
-IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
-IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+LLARS_MainSavePosition()
 Gui 1: Hide
 LLARS_DeveloperUIAction("Configuration", "Closed")
 Gui Combo: Destroy
@@ -1125,7 +1265,6 @@ configHotkeysFound := false
 sectionList .= "| ---- Script Hotkeys ---- "
 
 ; Add sections from Config.ini that are explicitly categorized as hotkeys.
-; Store the source file at the same time the section is added.
 Loop, Parse, allContents, `n
 {
 	currentSection := Trim(A_LoopField)
@@ -1150,7 +1289,6 @@ sectionList .= "| "
 sectionList .= "| ---- LLARS Hotkeys ---- "
 
 ; Add sections from LLARS Config.ini that are explicitly categorized as hotkeys.
-; Store the source file at the same time the section is added.
 Loop, Parse, llarsContents, `n
 {
 	currentSection := Trim(A_LoopField)
@@ -1204,8 +1342,7 @@ GuiControl,, ChosenHotkey, ** NONE **
 if (selectedSection = "" || selectedSection = " " || selectedSection = " ***** Make a Selection ***** " || selectedSection = " ---- Script Hotkeys ---- " || selectedSection = " ---- LLARS Hotkeys ---- ")
 {
 
-	; Move focus away from the dropdown so keyboard letters cannot
-	; jump to another section while no hotkey section is selected.
+	; Move focus away from the dropdown so keyboard letters cannot jump to another section while no hotkey section is selected.
 	GuiControl, Focus, HotkeysText
 	return
 }
@@ -1235,7 +1372,6 @@ return
 ButtonClicked2:
 if GetKeyState("Esc", "P")
 {
-	Log("RELOAD", "Reload triggered by Escape")
 	Reload
 }
 
@@ -1254,8 +1390,6 @@ if (selectedHotkeySection = "" || selectedHotkeyConfigFile = "")
 Gui, 3: Submit, NoHide
 
 ; The Hotkey control fires while modifiers are still being pressed.
-; Wait for a complete valid combination so entries such as Ctrl+Shift+D
-; are not saved as only Ctrl or Ctrl+Shift.
 if !LLARS_IsValidConfigHotkey(ChosenHotkey)
 	return
 
@@ -1272,7 +1406,6 @@ if (selectedHotkeyConfigFile = LLARS_CONFIG_FILE)
 }
 else
 	hotkeyConfigDisplay := "Config.ini"
-Log("HOTKEY CHANGED", "Hotkey = " ChosenHotkey)
 LLARS_DeveloperUIAction("Hotkeys", "Closed")
 Gui, 3: Destroy
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -1309,7 +1442,6 @@ return
 ResumeB:
 LLARS_PAUSED := false
 LLARS_DeveloperAction("Script || Resumed")
-Log("RESUME", "Script resumed")
 GuiControl,,ScriptBlue, % LLARS_DisplayScriptName()
 GuiControl,,State3, Running
 GuiControl, Dev:, DeveloperRunningText, Running
@@ -1320,7 +1452,6 @@ Return
 PauseB:
 LLARS_PAUSED := true
 LLARS_DeveloperAction("Script || Paused")
-Log("PAUSE", "Script paused")
 GuiControl,,State2, Paused
 GuiControl,,ScriptRed, % LLARS_DisplayScriptName()
 GuiControl, Dev:, DeveloperRunningText, Paused
@@ -1342,22 +1473,18 @@ Return
 ; |     EXIT BUTTON     -     EXIT BUTTON     -     EXIT BUTTON           |
 ; =========================================================================
 
-; Handles both the Exit button and normal GUI close event.
+; Handles the Exit button and normal GUI close event.
 ExitB:
 	Suspend, Permit
 LLARS_DeveloperHotkey("Exit")
 guiclose:
-Log("EXIT", "LLARS exited normally")
-WinGetPos, GUIxc, GUIyc,,,LLARS ahk_class AutoHotkeyGUI
-IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
-IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+LLARS_MainSavePosition()
 
 if (DeveloperGuiHwnd && WinExist("ahk_id " . DeveloperGuiHwnd))
 	LLARS_DeveloperSavePosition(DeveloperGuiHwnd)
 
 if IsFunc("LLARS_TimerStopAll")
 	LLARS_TimerStopAll()
-EndLogSession("Normal Exit")
 ExitApp
 
 ; ===================================================================
@@ -1415,9 +1542,7 @@ if (scriptHotkeys = "")
 	scriptHotkeys := "No script hotkeys configured"
 else
 	scriptHotkeys := RTrim(scriptHotkeys, "`n`r")
-WinGetPos, GUIxc, GUIyc,,,LLARS
-IniWrite, %GUIxc%, %LLARS_CONFIG_FILE%, GUI POS, guix
-IniWrite, %GUIyc%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+LLARS_MainSavePosition()
 Gui 3: hide
 ; Size the Information GUI from its actual hotkey content so each section
 ; keeps its own space without relying on relative Y positions.
@@ -1432,9 +1557,7 @@ hotkeyBoxY := 57
 hotkeyTextY := hotkeyBoxY + 21
 hotkeyBoxHeight := hotkeyHeight + 29
 
-; When there are no script-specific Config.ini hotkeys, keep the full text
-; height so every LLARS hotkey remains visible while trimming only the unused
-; bottom padding from the group box.
+; When there are no script-specific Config.ini hotkeys, keep the full text height so every LLARS hotkey remains visible while trimming only the unused bottom padding from the group box.
 if (configHotkeys = "")
 	hotkeyBoxHeight := hotkeyHeight + 25
 additionalTitleY := hotkeyBoxY + hotkeyBoxHeight + 4
@@ -1652,10 +1775,7 @@ if (developerActions = "")
 
 developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
 
-; Compact two-row run summary. Keeping this outside a pane makes the live
-; dashboard easier to scan and leaves the four diagnostic panes more room.
-; Labels stay normal-weight while the live values are bold for a cleaner
-; visual hierarchy without making every bit of summary text heavy.
+; Compact two-row run summary.
 Gui Dev: Font, s10 Norm cBlack
 Gui Dev: Add, Text, x20 y71 w70 h18 Right, State:
 Gui Dev: Font, s10 Bold cBlack
@@ -1702,18 +1822,21 @@ Gui Dev: Font, s10 Norm cBlack
 Gui Dev: Add, Edit, x30 y501 w500 h132 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Button, x80 y648 w190 h27 gToggleDeveloperLightweight, Lightweight Mode
-Gui Dev: Add, Button, x290 y648 w190 h27 gCloseDeveloperMode, Close
+Gui Dev: Add, Button, x35 y648 w155 h27 gToggleDeveloperLightweight, Lightweight Mode
+Gui Dev: Add, Button, x202 y648 w155 h27 gDeveloperTimingAudit, Timing Audit
+Gui Dev: Add, Button, x369 y648 w155 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
+; Build the full dashboard while the parent is hidden so the hotkey toggle
+; never exposes the unfinished Developer Mode shell before its child panes exist.
+Gui Dev: Show, Hide w560 h688, Developer Mode
+LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd)
+LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd)
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
 	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h688, Developer Mode
 else
 	Gui Dev: Show, Center w560 h688, Developer Mode
-LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd)
-LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd)
 
-LLARS_EnableExitHotkey()
 LLARS_EnableDeveloperHotkey()
 LLARS_DeveloperLastHotkeys := developerHotkeys
 LLARS_DeveloperLastInspectorSignature := LLARS_DeveloperInspectorSignature(developerPixelTargets)
@@ -1746,8 +1869,9 @@ Gui Dev: Add, GroupBox, x20 y82 w520 h218, Recent Framework Actions
 Gui Dev: Font, s10 Norm cBlack
 Gui Dev: Add, Edit, x30 y104 w500 h184 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Button, x80 y312 w190 h27 gToggleDeveloperLightweight, Full Mode
-Gui Dev: Add, Button, x290 y312 w190 h27 gCloseDeveloperMode, Close
+Gui Dev: Add, Button, x35 y312 w155 h27 gToggleDeveloperLightweight, Full Mode
+Gui Dev: Add, Button, x202 y312 w155 h27 gDeveloperTimingAudit, Timing Audit
+Gui Dev: Add, Button, x369 y312 w155 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
@@ -1755,12 +1879,300 @@ if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
 else
 	Gui Dev: Show, Center w560 h350, Developer Mode
 
-LLARS_EnableExitHotkey()
 LLARS_EnableDeveloperHotkey()
 LLARS_DeveloperLastActions := developerActions
 PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
 SetTimer, LLARS_DeveloperAutoRefresh, 750
 return
+
+DeveloperTimingAudit:
+SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, Off
+if (DeveloperTimingAuditHwnd && WinExist("ahk_id " . DeveloperTimingAuditHwnd))
+{
+	Gui Audit: Show
+	WinActivate, ahk_id %DeveloperTimingAuditHwnd%
+	SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, 750
+	Gui Dev: Default
+	return
+}
+Gui Audit: Destroy
+DeveloperTimingAuditHwnd := 0
+LLARS_DeveloperTimingAuditPaused := false
+DeveloperTimingAuditLastText := ""
+DeveloperTimingAuditFilter := ""
+DeveloperTimingAuditSortColumn := 0
+DeveloperTimingAuditSortDirection := "Asc"
+Gui Audit: +AlwaysOnTop +OwnDialogs +ToolWindow +HwndDeveloperTimingAuditHwnd
+Gui Audit: Font, s13 Bold cBlack
+Gui Audit: Add, Text, x5 y5 w530 h26 Center, LLARS
+Gui Audit: Font, s11 Bold cBlack
+Gui Audit: Add, Text, x5 y30 w530 h19 Center, Timing Audit
+Gui Audit: Font, s10 Norm cGray
+Gui Audit: Add, Text, x5 y51 w530 h19 Center, Last 500 audit actions. Newest first.
+Gui Audit: Add, Text, x50 y73 w440 h2 0x10
+Gui Audit: Font, s10 Norm cBlack, Segoe UI
+Gui Audit: Add, Text, x20 y87 w42 h22 +0x200, Filter:
+Gui Audit: Add, Edit, x64 y86 w326 h23 gDeveloperTimingAuditFilterChanged vDeveloperTimingAuditFilter
+Gui Audit: Font, s9 Bold cBlack, Segoe UI
+Gui Audit: Add, Button, x400 y85 w120 h25 gResetDeveloperTimingAuditView, Reset View
+Gui Audit: Font, s10 Norm cBlack, Segoe UI
+Gui Audit: Add, ListView, x20 y119 w500 h253 Grid -Multi AltSubmit gDeveloperTimingAuditListEvent +HwndDeveloperTimingAuditListHwnd vDeveloperTimingAuditList, Action|Detail|Value
+Gui Audit: Default
+Gui Audit: ListView, DeveloperTimingAuditList
+LV_ModifyCol(1, 105)
+LV_ModifyCol(2, 230)
+LV_ModifyCol(3, 145)
+LLARS_DeveloperPopulateTimingAudit()
+Gui Audit: Font, s11 Bold cBlack, Segoe UI
+Gui Audit: Add, Button, x115 y385 w145 h28 gToggleDeveloperTimingAuditPause vDeveloperTimingAuditPauseButton, Pause
+Gui Audit: Add, Button, x280 y385 w145 h28 gCloseDeveloperTimingAudit, Close
+Gui Audit: -Caption
+Gui Audit: Show, Center w540 h425, Timing Audit
+SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, 750
+Gui Dev: Default
+return
+
+ToggleDeveloperTimingAuditPause:
+LLARS_DeveloperTimingAuditPaused := !LLARS_DeveloperTimingAuditPaused
+if (LLARS_DeveloperTimingAuditPaused)
+{
+	SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, Off
+	GuiControl, Audit:, DeveloperTimingAuditPauseButton, Resume
+}
+else
+{
+	GuiControl, Audit:, DeveloperTimingAuditPauseButton, Pause
+	DeveloperTimingAuditLastText := ""
+	LLARS_DeveloperPopulateTimingAudit()
+	SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, 750
+}
+return
+
+LLARS_DeveloperTimingAuditAutoRefresh:
+if (LLARS_DeveloperTimingAuditPaused)
+	return
+if (!DeveloperTimingAuditHwnd || !WinExist("ahk_id " . DeveloperTimingAuditHwnd))
+{
+	SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, Off
+	return
+}
+LLARS_DeveloperPopulateTimingAudit()
+return
+
+DeveloperTimingAuditFilterChanged:
+GuiControlGet, DeveloperTimingAuditFilter, Audit:, DeveloperTimingAuditFilter
+DeveloperTimingAuditLastText := ""
+LLARS_DeveloperPopulateTimingAudit()
+return
+
+DeveloperTimingAuditListEvent:
+if (A_GuiEvent = "ColClick")
+{
+	if (DeveloperTimingAuditSortColumn = A_EventInfo)
+		DeveloperTimingAuditSortDirection := (DeveloperTimingAuditSortDirection = "Asc") ? "Desc" : "Asc"
+	else
+	{
+		DeveloperTimingAuditSortColumn := A_EventInfo
+		DeveloperTimingAuditSortDirection := "Asc"
+	}
+	DeveloperTimingAuditLastText := ""
+	LLARS_DeveloperPopulateTimingAudit()
+}
+return
+
+ResetDeveloperTimingAuditView:
+DeveloperTimingAuditFilter := ""
+DeveloperTimingAuditSortColumn := 0
+DeveloperTimingAuditSortDirection := "Asc"
+GuiControl, Audit:, DeveloperTimingAuditFilter,
+DeveloperTimingAuditLastText := ""
+LLARS_DeveloperPopulateTimingAudit()
+return
+
+CloseDeveloperTimingAudit:
+SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, Off
+Gui Audit: Destroy
+DeveloperTimingAuditHwnd := 0
+LLARS_DeveloperTimingAuditPaused := false
+DeveloperTimingAuditLastText := ""
+DeveloperTimingAuditListHwnd := 0
+Gui Dev: Default
+return
+
+AuditGuiClose:
+AuditGuiEscape:
+Gosub, CloseDeveloperTimingAudit
+return
+
+; Displays the concise audit history in fixed columns.
+LLARS_DeveloperPopulateTimingAudit()
+{
+	global LLARS_DeveloperAuditActions, DeveloperTimingAuditLastText, DeveloperTimingAuditListHwnd
+	global DeveloperTimingAuditFilter, DeveloperTimingAuditSortColumn, DeveloperTimingAuditSortDirection
+
+	signature := "TimingAudit|" . DeveloperTimingAuditFilter . "|" . DeveloperTimingAuditSortColumn . "|" . DeveloperTimingAuditSortDirection . "|"
+	if IsObject(LLARS_DeveloperAuditActions)
+	{
+		for _, auditAction in LLARS_DeveloperAuditActions
+			signature .= auditAction . "|"
+	}
+
+	if (signature = DeveloperTimingAuditLastText)
+		return
+	DeveloperTimingAuditLastText := signature
+
+	Gui Audit: Default
+	Gui Audit: ListView, DeveloperTimingAuditList
+	if (DeveloperTimingAuditListHwnd)
+		SendMessage, 0xB, 0, 0,, ahk_id %DeveloperTimingAuditListHwnd%
+	LV_Delete()
+	LV_ModifyCol(1, "", "Action")
+	LV_ModifyCol(2, "", "Detail")
+	LV_ModifyCol(3, "", "Value")
+
+	matchingActions := 0
+	if (!IsObject(LLARS_DeveloperAuditActions) || LLARS_DeveloperAuditActions.Length() = 0)
+	{
+		LV_Add("", "No audit actions recorded yet.", "", "")
+	}
+	else
+	{
+		auditCount := LLARS_DeveloperAuditActions.Length()
+		Loop, %auditCount%
+		{
+			auditIndex := auditCount - A_Index + 1
+			auditAction := LLARS_DeveloperAuditActions[auditIndex]
+			LLARS_DeveloperTimingAuditColumns(auditAction, auditType, auditDetail, auditValue)
+			if (DeveloperTimingAuditFilter != "")
+			{
+				auditSearchText := auditType . " " . auditDetail . " " . auditValue
+				if !InStr(auditSearchText, DeveloperTimingAuditFilter, false)
+					continue
+			}
+			LV_Add("", auditType, auditDetail, auditValue)
+			matchingActions++
+		}
+
+		if (matchingActions = 0)
+			LV_Add("", "No matching audit actions.", "", "")
+	}
+
+	if (DeveloperTimingAuditSortColumn >= 1 && DeveloperTimingAuditSortColumn <= 3 && matchingActions > 0)
+	{
+		sortOption := (DeveloperTimingAuditSortDirection = "Desc") ? "SortDesc" : "Sort"
+		LV_ModifyCol(DeveloperTimingAuditSortColumn, sortOption)
+		sortArrow := (DeveloperTimingAuditSortDirection = "Desc") ? " ↓" : " ↑"
+		if (DeveloperTimingAuditSortColumn = 1)
+			LV_ModifyCol(1, "", "Action" . sortArrow)
+		else if (DeveloperTimingAuditSortColumn = 2)
+			LV_ModifyCol(2, "", "Detail" . sortArrow)
+		else if (DeveloperTimingAuditSortColumn = 3)
+			LV_ModifyCol(3, "", "Value" . sortArrow)
+	}
+
+	if (DeveloperTimingAuditListHwnd)
+	{
+		SendMessage, 0xB, 1, 0,, ahk_id %DeveloperTimingAuditListHwnd%
+		WinSet, Redraw,, ahk_id %DeveloperTimingAuditListHwnd%
+	}
+	if (LV_GetCount() > 0)
+		LV_Modify(1, "Vis")
+	Gui Dev: Default
+}
+
+; Converts the concise framework action strings into the three audit columns.
+LLARS_DeveloperTimingAuditColumns(action, ByRef auditType, ByRef auditDetail, ByRef auditValue)
+{
+	auditType := ""
+	auditDetail := ""
+	auditValue := ""
+	parts := StrSplit(action, " || ")
+	if (!IsObject(parts) || parts.Length() = 0)
+		return
+
+	auditType := Trim(parts[1])
+	partCount := parts.Length()
+
+	if (auditType = "Color Search")
+	{
+		if (partCount >= 2)
+			auditType := Trim(parts[2])
+		if (partCount >= 3)
+			auditDetail := Trim(parts[3])
+		if (partCount >= 4)
+		{
+			auditValue := Trim(parts[4])
+			if RegExMatch(auditValue, "^-?\d+(?:\.\d+)?$")
+				auditValue := "Clicks = " . auditValue
+		}
+		return
+	}
+
+	if (auditType = "Color Click")
+	{
+		auditType := "Target"
+		if (partCount >= 2)
+			auditDetail := Trim(parts[2])
+		if (partCount >= 4)
+			auditValue := Trim(parts[4])
+		return
+	}
+
+	if (auditType = "MouseMove")
+	{
+		auditType := "Move"
+		if (partCount >= 2)
+		{
+			auditValue := Trim(parts[2])
+			auditValue := StrReplace(auditValue, "(", "")
+			auditValue := StrReplace(auditValue, ")", "")
+			auditValue := StrReplace(auditValue, " > ", " -> ")
+		}
+		return
+	}
+
+	if (auditType = "NaturalClick")
+	{
+		auditType := "Click"
+		if (partCount >= 2)
+			auditDetail := Trim(parts[2])
+		if (partCount >= 3)
+			auditValue := Trim(parts[3])
+		return
+	}
+
+	if (auditType = "NaturalClick Timing")
+	{
+		auditType := "Click Time"
+		if (partCount >= 2)
+			auditValue := Trim(parts[2])
+		return
+	}
+
+	if (auditType = "Mouse Timing")
+	{
+		auditType := "Mouse Hold"
+		if (partCount >= 2)
+			auditValue := Trim(parts[2])
+		return
+	}
+
+	if (partCount >= 3)
+	{
+		auditDetail := Trim(parts[2])
+		auditValue := Trim(parts[3])
+		return
+	}
+
+	if (partCount = 2)
+	{
+		secondField := Trim(parts[2])
+		if RegExMatch(secondField, "i)(?:^Hold=|\bms$|^\([^)]*\)(?:\s*>\s*\([^)]*\))?$)")
+			auditValue := secondField
+		else
+			auditDetail := secondField
+	}
+}
 
 ToggleDeveloperLightweight:
 SetTimer, LLARS_DeveloperAutoRefresh, Off
@@ -1770,8 +2182,6 @@ Gosub, DeveloperModeDashboard
 return
 
 ; Toggles Developer Mode without changing any normal LLARS runtime behavior.
-; Refreshes only the live Developer Mode values so the window itself stays
-; in place and does not flash or rebuild.
 LLARS_DeveloperAutoRefresh:
 if !WinExist("Developer Mode ahk_class AutoHotkeyGUI")
 {
@@ -1868,7 +2278,6 @@ else
 	LLARS_DeveloperRefreshInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets)
 
 ; Active Hotkeys uses the same scrollable child-pane method as Live Inspector.
-; Rebuild only when its contents change and preserve the user's scroll position.
 if (developerHotkeys != LLARS_DeveloperLastHotkeys)
 {
 	LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd, true)
@@ -1889,10 +2298,15 @@ if (developerDiagnostics != LLARS_DeveloperLastDiagnostics)
 }
 return
 
-; Closes only the developer diagnostics window. The Information window and
-; main LLARS GUI remain open exactly as they were.
+; Closes only the developer diagnostics window.
 CloseDeveloperMode:
 SetTimer, LLARS_DeveloperAutoRefresh, Off
+SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, Off
+Gui Audit: Destroy
+DeveloperTimingAuditHwnd := 0
+DeveloperTimingAuditListHwnd := 0
+LLARS_DeveloperTimingAuditPaused := false
+DeveloperTimingAuditLastText := ""
 LLARS_DeveloperSavePosition(DeveloperGuiHwnd)
 LLARS_DeveloperUIAction("Developer Mode", "Closed")
 LLARS_DeveloperDestroyInspectorPanel()
@@ -1903,8 +2317,7 @@ Gui 1: Default
 Gui 1: Show
 return
 
-; Builds Developer Mode pixel-target data from active typed Config.ini color
-; sections. Each target keeps its coordinate, live RGB, and configured RGB.
+; Builds Developer Mode pixel-target data from active typed Config.ini color sections.
 LLARS_DeveloperPixelTargets()
 {
 	global LLARS_SCRIPT_DIR
@@ -1956,18 +2369,15 @@ LLARS_DeveloperPixelTargets()
 		return targets
 	}
 
+	; Only the legacy [Pixel Coordinate] section is treated as an implicit shared
+	; fixed pixel.
 	sharedPoint := ""
-	if (pointSections.Length() = 1)
-		sharedPoint := pointSections[1]
-	else
+	for _, pointInfo in pointSections
 	{
-		for _, pointInfo in pointSections
+		if (pointInfo.Name = "Pixel Coordinate")
 		{
-			if (pointInfo.Name = "Pixel Coordinate")
-			{
-				sharedPoint := pointInfo
-				break
-			}
+			sharedPoint := pointInfo
+			break
 		}
 	}
 
@@ -2007,16 +2417,16 @@ LLARS_DeveloperPixelTargets()
 			StringUpper, targetColor, targetColor
 
 		targets.Push({Name: colorSection
-			, Coordinates: coordinateText
+			, Coordinates: IsObject(pointInfo) ? coordinateText : "Search"
 			, ActualColor: actualColor
-			, TargetColor: targetColor})
+			, TargetColor: targetColor
+			, HasFixedPoint: IsObject(pointInfo)})
 	}
 
 	return targets
 }
 
-; Creates one scrollable Live Inspector pane. The top mouse information and all
-; configured pixel targets use the same left label / bold right value layout.
+; Creates one scrollable Live Inspector pane.
 LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor, targets, parentHwnd, preserveScroll := false)
 {
 	static inspectorMessagesRegistered := false
@@ -2065,32 +2475,44 @@ LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor,
 			actualColor := targetInfo.ActualColor
 			targetColor := targetInfo.TargetColor
 
+			sectionDisplay := sectionName
+			sectionHeight := 18
+			if RegExMatch(sectionName, "i)^(Resource|Deposit) Color ([0-9]+)$", sectionParts)
+			{
+				sectionDisplay := sectionParts1 . "`nColor " . sectionParts2
+				sectionHeight := 36
+			}
+			valueY := rowY + Floor((sectionHeight - 18) / 2)
+
 			Gui DevInspector: Font, s10 Norm cBlack
-			Gui DevInspector: Add, Text, x5 y%rowY% w108 h18 -Wrap, %sectionName%
-			; Keep coordinates bold like the other inspector values. A vertical
-			; separator avoids any ambiguity from compact punctuation rendering.
+			Gui DevInspector: Add, Text, x5 y%rowY% w108 h%sectionHeight%, %sectionDisplay%
+			; Keep the right-side mode/value deliberately short so long target names stay readable inside the fixed-width Live Inspector pane.
 			Gui DevInspector: Font, s10 Bold cBlack
-			Gui DevInspector: Add, Text, x116 y%rowY% w96 h20 Right -Wrap, %coordinates%
-			rowY += 23
+			Gui DevInspector: Add, Text, x116 y%valueY% w84 h20 Right -Wrap, %coordinates%
+			rowY += sectionHeight + 5
 
 			actualHwnd := ""
-			LLARS_DeveloperAddInspectorRow("Actual RGB", actualColor, rowY, actualHwnd)
-			DeveloperInspectorActualHwnds.Push(actualHwnd)
-			rowY += 21
-
 			targetHwnd := ""
-			LLARS_DeveloperAddInspectorRow("Target RGB", targetColor, rowY, targetHwnd)
+			if (targetInfo.HasFixedPoint)
+			{
+				LLARS_DeveloperAddInspectorRow("Actual RGB", actualColor, rowY, actualHwnd)
+				rowY += 21
+				LLARS_DeveloperAddInspectorRow("Target RGB", targetColor, rowY, targetHwnd)
+				rowY += 29
+			}
+			else
+			{
+				LLARS_DeveloperAddInspectorRow("Target RGB", targetColor, rowY, targetHwnd)
+				rowY += 29
+			}
+			DeveloperInspectorActualHwnds.Push(actualHwnd)
 			DeveloperInspectorTargetHwnds.Push(targetHwnd)
-			rowY += 29
 		}
 	}
 
 	DeveloperInspectorContentHeight := Max(rowY, DeveloperInspectorViewHeight)
 
 	; Show the child GUI hidden first, then position it with SetWindowPos.
-	; For WS_CHILD windows SetWindowPos uses parent-client coordinates, which
-	; keeps the inspector inside the Live Inspector group regardless of where
-	; the Developer Mode window itself is positioned on screen.
 	Gui DevInspector: Show, Hide w230 h%DeveloperInspectorViewHeight%
 	DllCall("SetWindowPos", "Ptr", DeveloperInspectorHwnd, "Ptr", 0
 		, "Int", 30, "Int", 166, "Int", 230, "Int", DeveloperInspectorViewHeight
@@ -2553,9 +2975,7 @@ LLARS_DeveloperConfigSectionActive(ConfigPath, section)
 
 LLARS_DeveloperPixelPointForColor(ConfigPath, colorSection, pointSections, sharedPoint, colorIndex)
 {
-	; MultiColor templates can explicitly map each color section to the exact
-	; coordinate section it belongs to. Prefer that metadata before any naming
-	; fallback so several colors can share each of several monitored pixels.
+	; MultiColor templates can explicitly map each color section to the exact coordinate section it belongs to.
 	IniRead, mappedCoordinate, %ConfigPath%, %colorSection%, coordinate, ERROR
 	mappedCoordinate := Trim(mappedCoordinate)
 	if (mappedCoordinate != "" && mappedCoordinate != "ERROR")
@@ -2580,9 +3000,7 @@ LLARS_DeveloperPixelPointForColor(ConfigPath, colorSection, pointSections, share
 		}
 	}
 
-	if (pointSections.Length() >= colorIndex)
-		return pointSections[colorIndex]
-
+	; Do not pair a standalone color with a coordinate by list position.
 	return ""
 }
 

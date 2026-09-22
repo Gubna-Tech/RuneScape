@@ -46,7 +46,6 @@ GuiControl,, State3, Done
 
 SetTimer, Countdown, Off
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; =========================================================================
@@ -79,16 +78,14 @@ if LLARS_PixelMatches("Pixel Coordinate", "Target Color")
 	; Standard creator API examples:
 	LLARS_Sleep("Sleep Timer")
 
-	; A timer may finish while the sleep is running. Do not allow the
-	; interrupted action thread to resume with a late click after completion.
+	; A timer may finish while the sleep is running.
 	if !LLARS_RunActive()
 		return
 
 	LLARS_SetStatus("Working", "Action Location")
 	LLARS_Click("Action Location")
 
-	; Wait until the watched pixel changes away from the target
-	; before allowing another detection.
+	; Wait until the watched pixel changes away from the target before allowing another detection.
 	SetTimer, ResetCheck, 100
 }
 
@@ -131,7 +128,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m
