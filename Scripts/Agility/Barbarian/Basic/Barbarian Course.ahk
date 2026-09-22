@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Rope Swing")
+		LLARS_SetStatus("Traversing", "Rope Swing")
 		LLARS_Click("Rope swing prime")
 
 		LLARS_Sleep("Sleep Rope swing prime")
@@ -47,39 +47,39 @@ Run(ctx)
 	{
 		; Make sure RuneScape is active before continuing.
 
-		LLARS_SetStatus("Agility", "Rope Swing")
+		LLARS_SetStatus("Traversing", "Rope Swing")
 		LLARS_Click("Rope swing Main")
 
 		LLARS_Sleep("Sleep Rope swing Main")
 
 	}
 
-	LLARS_SetStatus("Agility", "Log Balance")
+	LLARS_SetStatus("Traversing", "Log Balance")
 	LLARS_Click("Log balance")
 
 	LLARS_Sleep("Sleep Log balance")
 
-	LLARS_SetStatus("Agility", "Obstacle Net")
+	LLARS_SetStatus("Traversing", "Obstacle Net")
 	LLARS_Click("Obstacle net")
 
 	LLARS_Sleep("Sleep Obstacle net")
 
-	LLARS_SetStatus("Agility", "Balancing Ledge")
+	LLARS_SetStatus("Traversing", "Balancing Ledge")
 	LLARS_Click("Balancing ledge")
 
 	LLARS_Sleep("Sleep Balancing ledge")
 
-	LLARS_SetStatus("Agility", "Ladder")
+	LLARS_SetStatus("Traversing", "Ladder")
 	LLARS_Click("Ladder")
 
 	LLARS_Sleep("Sleep Ladder")
 
-	LLARS_SetStatus("Agility", "Crumbling Wall 1")
+	LLARS_SetStatus("Traversing", "Crumbling Wall 1")
 	LLARS_Click("Crumbling Wall 1")
 
 	LLARS_Sleep("Sleep Crumbling Wall 1")
 
-	LLARS_SetStatus("Agility", "Crumbling Wall 2")
+	LLARS_SetStatus("Traversing", "Crumbling Wall 2")
 	LLARS_Click("Crumbling Wall 2")
 
 	LLARS_Sleep("Sleep Crumbling Wall 2", !LLARS_RandomSleepRoll())

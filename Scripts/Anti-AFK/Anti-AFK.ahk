@@ -24,7 +24,7 @@ if (!LLARS_StartTimerRun())
 
 SetTimer, Countdown, 1000
 
-Log("ANTI-AFK", "Anti-AFK system started")
+LLARS_DeveloperAntiAFKAction("ANTI-AFK", "Anti-AFK system started")
 AntiAFKTimerID := LLARS_TimerOnce("AFK", Func("AntiAFK"))
 
 return
@@ -46,7 +46,6 @@ GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 SetTimer, Countdown, Off
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; =========================================================================
@@ -64,8 +63,7 @@ AntiAFK()
     if !LLARS_RunActive()
         return
 
-    ; Preserve the old cadence by scheduling the next random activation before
-    ; carrying out this movement/tooltip cycle.
+    ; Preserve the old cadence by scheduling the next random activation before carrying out this movement/tooltip cycle.
     AntiAFKTimerID := LLARS_TimerOnce("AFK", Func("AntiAFK"))
 
     if !LLARS_WaitForRuneScape("Anti-AFK MouseMove")
@@ -87,7 +85,7 @@ AntiAFK()
     if !AntiAFKNaturalClick(x, y)
         return
 
-    Log("ANTI-AFK MOVE", "Mouse moved | X=" x " Y=" y)
+    LLARS_DeveloperAntiAFKAction("ANTI-AFK MOVE", "Mouse moved | X=" x " Y=" y)
 
     Loop, 100
     {
@@ -96,7 +94,7 @@ AntiAFK()
         Sleep, 25
     }
     ToolTip
-    Log("ANTI-AFK", "Anti-AFK activation completed")
+    LLARS_DeveloperAntiAFKAction("ANTI-AFK", "Anti-AFK activation completed")
 }
 
 ; ================================================================
@@ -119,7 +117,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m

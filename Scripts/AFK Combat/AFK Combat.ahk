@@ -49,7 +49,6 @@ AFKCombat_StopTimers()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; ============================================================================================
@@ -99,7 +98,7 @@ AFKCombat_SetupHotkey(section, tooltipText)
         return
 
     AFKCombat_ScheduleHotkey(section, tooltipText)
-    LLARS_SetStatus("Combat", section)
+    LLARS_SetStatus("Fighting", section)
     LLARS_PressHotkey(section)
     AFKCombat_ShowTooltip(tooltipText)
 }
@@ -115,11 +114,10 @@ AFKCombat_HotkeyTimer(section, tooltipText)
     if !LLARS_RunActive()
         return
 
-    ; The original labels randomized and reset the next timer before performing
-    ; the action. Scheduling first preserves that cadence.
+    ; The original labels randomized and reset the next timer before performing the action.
     AFKCombat_ScheduleHotkey(section, tooltipText)
     DisableButton()
-    LLARS_SetStatus("Combat", section)
+    LLARS_SetStatus("Fighting", section)
     LLARS_PressHotkey(section)
     AFKCombat_ShowTooltip(tooltipText)
 }
@@ -157,9 +155,7 @@ AFKCombat_MouseMoveAction()
     if !LLARS_WaitForRuneScape("Anti-AFK MouseMove")
         return
 
-    ; LLARS owns client-coordinate mouse mode. Choose a point inside the exact
-    ; RuneScape client selected for this run, then verify focus immediately again
-    ; before the physical MouseMove.
+    ; LLARS owns client-coordinate mouse mode.
     VarSetCapacity(clientRect, 16, 0)
     if !DllCall("GetClientRect", "Ptr", LLARS_RunRuneScapeHwnd, "Ptr", &clientRect)
         return
@@ -239,8 +235,7 @@ AFKCombat_CannonTimer()
 
 AFKCombat_SetupBindingContract()
 {
-    ; The old script schedules this option at startup but does not immediately
-    ; consume/notepaper a contract. Preserve that distinction.
+    ; The old script schedules this option at startup but does not immediately consume/notepaper a contract.
     if !LLARS_ConfigReadBool("Binding Contract")
         return
 
@@ -323,7 +318,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m

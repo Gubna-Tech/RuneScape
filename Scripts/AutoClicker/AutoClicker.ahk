@@ -57,7 +57,6 @@ GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 SetTimer, Countdown, Off
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; =========================================================================
@@ -85,10 +84,8 @@ RandomClick()
     else
         TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
     LastClickTime := A_TickCount
-    Log("CLICK", "Click Location | " TimeSinceClick)
 
-    ; Match the old script: start the next randomized interval before the
-    ; tooltip delay, rather than waiting until this callback fully returns.
+    ; Match the old script: start the next randomized interval before the tooltip delay, rather than waiting until this callback fully returns.
     AutoClickerTimerID := LLARS_TimerOnce("Timer", Func("RandomClick"))
 
     Loop, 100
@@ -113,7 +110,6 @@ RandomClick()
 ; ======================================================================
 ; Opens AutoClicker's click-interval editor from the LLARS Combo menu.
 AutoClickerTimer:
-Log("TIMER CONFIG", "Opening Timer configuration editor")
 
 Gui 1: Hide
 Gui Combo: Destroy
@@ -122,7 +118,6 @@ DisableHotkey()
 IniRead, sa1, Config.ini, Timer, min
 IniRead, sa2, Config.ini, Timer, max
 
-Log("TIMER CONFIG", "Current values loaded - Min=" sa1 "ms, Max=" sa2 "ms")
 
 Gui 5: +LastFound +AlwaysOnTop +OwnDialogs
 Gui 5: Font, bold s12
@@ -150,25 +145,21 @@ GuiControlGet, NewMax,, MaxEdit
 NewMin := Trim(NewMin)
 NewMax := Trim(NewMax)
 
-Log("TIMER CONFIG", "Save requested - Min=" NewMin "ms, Max=" NewMax "ms")
 
 if (NewMin = "" || NewMax = "")
 {
-	Log("CONFIG ERROR", "Timer save failed - minimum or maximum timer is blank")
 	MsgBox, 48, Timer Error, Minimum and maximum timer values cannot be blank.
 	return
 }
 
 if !RegExMatch(NewMin, "^\d+$") || !RegExMatch(NewMax, "^\d+$")
 {
-	Log("CONFIG ERROR", "Timer save failed - minimum or maximum timer is not numeric")
 	MsgBox, 48, Timer Error, Minimum and maximum timer values must contain numbers only.
 	return
 }
 
 if (NewMin > NewMax)
 {
-	Log("CONFIG ERROR", "Timer save failed - minimum timer is greater than maximum timer")
 	MsgBox, 48, Timer Error, Minimum timer cannot be greater than maximum timer.
 	return
 }
@@ -176,7 +167,6 @@ if (NewMin > NewMax)
 IniWrite, %NewMin%, Config.ini, Timer, min
 IniWrite, %NewMax%, Config.ini, Timer, max
 
-Log("TIMER CONFIG", "Timer values written to Config.ini - Min=" NewMin "ms, Max=" NewMax "ms")
 
 Gui 5: Destroy
 Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -206,7 +196,6 @@ Gui 13: Destroy
 Gui 1: Show
 EnableHotkey()
 
-Log("TIMER CONFIG", "Timer configuration update completed")
 return
 
 EndMsg:
@@ -222,7 +211,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m

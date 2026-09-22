@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Log Balance")
+		LLARS_SetStatus("Traversing", "Log Balance")
 		LLARS_Click("Log Balance Prime")
 
 		LLARS_Sleep("Sleep Log")
@@ -47,39 +47,39 @@ Run(ctx)
 	{
 		LLARS_Sleep("Sleep Brief")
 
-		LLARS_SetStatus("Agility", "Log Balance")
+		LLARS_SetStatus("Traversing", "Log Balance")
 		LLARS_Click("Log Balance Main")
 
 		LLARS_Sleep("Sleep Loop")
 
 	}
 
-	LLARS_SetStatus("Agility", "Obstacle Net 1")
+	LLARS_SetStatus("Traversing", "Obstacle Net 1")
 	LLARS_Click("Obstacle Net 1")
 
 	LLARS_Sleep("Sleep Net 1")
 
-	LLARS_SetStatus("Agility", "Tree Branch 1")
+	LLARS_SetStatus("Traversing", "Tree Branch 1")
 	LLARS_Click("Tree Branch 1")
 
 	LLARS_Sleep("Sleep Normal")
 
-	LLARS_SetStatus("Agility", "Balance Rope")
+	LLARS_SetStatus("Traversing", "Balance Rope")
 	LLARS_Click("Balance Rope")
 
 	LLARS_Sleep("Sleep Rope")
 
-	LLARS_SetStatus("Agility", "Tree Branch 2")
+	LLARS_SetStatus("Traversing", "Tree Branch 2")
 	LLARS_Click("Tree Branch 2")
 
 	LLARS_Sleep("Sleep Action")
 
-	LLARS_SetStatus("Agility", "Obstacle Net 2")
+	LLARS_SetStatus("Traversing", "Obstacle Net 2")
 	LLARS_Click("Obstacle Net 2")
 
 	LLARS_Sleep("Sleep Net 2")
 
-	LLARS_SetStatus("Agility", "Obstacle Pipe")
+	LLARS_SetStatus("Traversing", "Obstacle Pipe")
 	LLARS_Click("Obstacle Pipe")
 
 	LLARS_Sleep("Sleep Pipe", !LLARS_RandomSleepRoll())

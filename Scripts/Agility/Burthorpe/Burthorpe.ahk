@@ -37,7 +37,7 @@ Run(ctx)
 
 	if (ctx.IsFirst)
 	{
-		LLARS_SetStatus("Agility", "Log Beam")
+		LLARS_SetStatus("Traversing", "Log Beam")
 		LLARS_Click("Log Beam Prime")
 
 		LLARS_Sleep("Sleep Log Beam Prime")
@@ -45,39 +45,39 @@ Run(ctx)
 	}
 	else
 	{
-		LLARS_SetStatus("Agility", "Log Beam")
+		LLARS_SetStatus("Traversing", "Log Beam")
 		LLARS_Click("Log Beam Main")
 
 		LLARS_Sleep("Sleep Log Beam Main")
 
 	}
 
-	LLARS_SetStatus("Agility", "Wall")
+	LLARS_SetStatus("Traversing", "Wall")
 	LLARS_Click("Wall")
 
 	LLARS_Sleep("Sleep Wall")
 
-	LLARS_SetStatus("Agility", "Balancing Ledge")
+	LLARS_SetStatus("Traversing", "Balancing Ledge")
 	LLARS_Click("Balancing Ledge")
 
 	LLARS_Sleep("Sleep Balancing Ledge")
 
-	LLARS_SetStatus("Agility", "Low Wall")
+	LLARS_SetStatus("Traversing", "Low Wall")
 	LLARS_Click("Obstacle low wall")
 
 	LLARS_Sleep("Sleep Obstacle low wall")
 
-	LLARS_SetStatus("Agility", "Rope Swing")
+	LLARS_SetStatus("Traversing", "Rope Swing")
 	LLARS_Click("Rope swing")
 
 	LLARS_Sleep("Sleep Rope swing")
 
-	LLARS_SetStatus("Agility", "Monkey Bars")
+	LLARS_SetStatus("Traversing", "Monkey Bars")
 	LLARS_Click("Monkey bars")
 
 	LLARS_Sleep("Sleep Monkey bars")
 
-	LLARS_SetStatus("Agility", "Ledge")
+	LLARS_SetStatus("Traversing", "Ledge")
 	LLARS_Click("Ledge")
 
 	LLARS_Sleep("Sleep Ledge", !LLARS_RandomSleepRoll())
