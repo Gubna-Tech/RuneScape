@@ -391,8 +391,8 @@ LLARS_EnableExitHotkey(lhk4 := "")
 	if (lhk4 = "" || !LLARS_IsValidConfigHotkey(lhk4))
 		return false
 
-	oldHotkey := LLARS_AlwaysHotkey(LLARS_lhk4)
-	newHotkey := LLARS_AlwaysHotkey(lhk4)
+	oldHotkey := LLARS_HookHotkey(LLARS_lhk4)
+	newHotkey := LLARS_HookHotkey(lhk4)
 
 	if (oldHotkey != "" && LLARS_lhk4 != lhk4)
 		Hotkey, %oldHotkey%, ExitB, Off
