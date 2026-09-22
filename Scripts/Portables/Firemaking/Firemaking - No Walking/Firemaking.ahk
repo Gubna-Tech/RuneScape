@@ -86,7 +86,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Using", "Portable Brazier")
+	LLARS_SetStatus("Opening", "Portable Brazier")
 	LLARS_Click("Brazier")
 
 	LLARS_SetStatus("Firemaking", "Logs")

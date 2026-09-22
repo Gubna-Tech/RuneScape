@@ -37,12 +37,12 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Crafting", "Candles")
+	LLARS_SetStatus("Opening", "Candle Interface")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Making", "Candles")
+	LLARS_SetStatus("Crafting", "Candles")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Make", true)

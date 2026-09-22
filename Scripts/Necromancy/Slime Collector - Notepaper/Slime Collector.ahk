@@ -44,6 +44,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Brief")
 
+	LLARS_SetStatus("Noting", "Slime")
 	LLARS_Click("Magic Notepaper")
 
 	LLARS_RandomSleepThisLoop := LLARS_RandomSleepRoll()

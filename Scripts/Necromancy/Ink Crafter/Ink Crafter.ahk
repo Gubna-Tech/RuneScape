@@ -47,12 +47,12 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Crafting", "Ink")
+	LLARS_SetStatus("Opening", "Ink Interface")
 	LLARS_PressHotkey("Skillbar Hotkey")
 
 	LLARS_Sleep("Sleep Short")
 
-	LLARS_SetStatus("Making", "Ink")
+	LLARS_SetStatus("Crafting", "Ink")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Make", true)

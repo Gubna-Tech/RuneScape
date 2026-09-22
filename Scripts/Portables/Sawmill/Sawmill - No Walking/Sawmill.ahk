@@ -137,7 +137,7 @@ Run(ctx)
 
 	LLARS_PressKey("1")
 
-	LLARS_SetStatus("Cutting", "Planks")
+	LLARS_SetStatus("Making", "Planks")
 	IniRead, sa1, Config.ini, Sleep Normal, min
 	IniRead, sa2, Config.ini, Sleep Normal, max
 	Random, SleepAmount, %sa1%, %sa2%

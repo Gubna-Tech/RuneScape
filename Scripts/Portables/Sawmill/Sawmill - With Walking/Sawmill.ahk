@@ -76,7 +76,7 @@ Run(ctx)
 
 	}
 
-	LLARS_SetStatus("Cutting", "Planks")
+	LLARS_SetStatus("Making", "Planks")
 	type := LLARS_ConfigRead("Plank Type", "Type", "")
 	if (type = 1 or type = 2 or type = 3 or type = 4 or type = 5 or type = 6)
 	{
