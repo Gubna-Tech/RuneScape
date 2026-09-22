@@ -268,6 +268,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	global LLARS_lhk1
 	global LLARS_lhk2
 	global LLARS_lhk3
+	global LLARS_lhk4
 	global LLARS_RUNNING
 	global LLARS_CONTROLS_LOCKED
 
@@ -297,21 +298,27 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 
 	; Only update the Start hotkey when requested.
 	if (startOnly)
-		return
+		return true
 
 	IniRead, lhk2, %LLARS_CONFIG_FILE%, Information Hotkey, hotkey
 	IniRead, lhk3, %LLARS_CONFIG_FILE%, color/coordinate/hotkey Hotkey, hotkey
+	IniRead, lhk4, %LLARS_CONFIG_FILE%, Exit Hotkey, hotkey
 	if (lhk2 = "ERROR")
 		lhk2 := ""
 	if (lhk3 = "ERROR")
 		lhk3 := ""
+	if (lhk4 = "ERROR")
+		lhk4 := ""
 	lhk2 := Trim(lhk2)
 	lhk3 := Trim(lhk3)
+	lhk4 := Trim(lhk4)
 
 	oldlhk2 := LLARS_HookHotkey(LLARS_lhk2)
 	newlhk2 := LLARS_HookHotkey(lhk2)
 	oldlhk3 := LLARS_HookHotkey(LLARS_lhk3)
 	newlhk3 := LLARS_HookHotkey(lhk3)
+	oldlhk4 := LLARS_HookHotkey(LLARS_lhk4)
+	newlhk4 := LLARS_HookHotkey(lhk4)
 
 	; Disable the previously configured Information/Pause hotkey if it changed.
 	if (oldlhk2 != "" && LLARS_lhk2 != lhk2)
@@ -374,31 +381,17 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 			Hotkey, %newlhk3%, resumeb, Off
 		}
 	}
-}
 
-; Keeps the configured Exit hotkey enabled at all times.
-LLARS_EnableExitHotkey(lhk4 := "")
-{
-	global LLARS_lhk4
-
-	if (lhk4 = "")
-		IniRead, lhk4, %LLARS_CONFIG_FILE%, Exit Hotkey, hotkey
-
-	if (lhk4 = "ERROR")
-		lhk4 := ""
-	lhk4 := Trim(lhk4)
-
+	; Exit uses the same normal dynamic-hotkey path as Pause/Resume and stays enabled.
 	if (lhk4 = "" || !LLARS_IsValidConfigHotkey(lhk4))
 		return false
 
-	oldHotkey := LLARS_HookHotkey(LLARS_lhk4)
-	newHotkey := LLARS_HookHotkey(lhk4)
-
-	if (oldHotkey != "" && LLARS_lhk4 != lhk4)
-		Hotkey, %oldHotkey%, ExitB, Off
+	if (oldlhk4 != "" && LLARS_lhk4 != lhk4)
+		Hotkey, %oldlhk4%, ExitB, Off
 
 	LLARS_lhk4 := lhk4
-	Hotkey, %newHotkey%, ExitB, On
+	Hotkey, %newlhk4%, ExitB, On
+
 	return true
 }
 
@@ -459,11 +452,8 @@ LLARS_CheckHotkeyConfig()
 	lhk4 := Trim(lhk4)
 	lhk5 := Trim(lhk5)
 
-	if (lhk1 != LLARS_lhk1 || lhk2 != LLARS_lhk2 || lhk3 != LLARS_lhk3)
+	if (lhk1 != LLARS_lhk1 || lhk2 != LLARS_lhk2 || lhk3 != LLARS_lhk3 || lhk4 != LLARS_lhk4)
 		SetLLARSHOTKEYS("On")
-
-	if (lhk4 != "" && lhk4 != LLARS_lhk4)
-		LLARS_EnableExitHotkey(lhk4)
 
 	LLARS_EnableDeveloperHotkey(lhk5)
 }
@@ -732,14 +722,12 @@ LLARS_Initialize()
 	LLARS_RunStartTick := 0
 	LLARS_RUN_TYPE := "Not Started"
 
-	if !LLARS_EnableExitHotkey()
+	if !SetLLARSHOTKEYS("On")
 	{
 		MsgBox, 16, LLARS Exit Hotkey Error, The configured Exit hotkey is invalid.`n`nLLARS will close instead of running without a working Exit key.
 		ExitApp
 	}
 	LLARS_DeveloperInitializeKeyboardHook()
-
-	SetLLARSHOTKEYS("On")
 	LLARS_EnableDeveloperHotkey()
 	SetTimer, LLARS_AlwaysOnHotkeyWatchdog, 250
 	DetectHiddenWindows, On

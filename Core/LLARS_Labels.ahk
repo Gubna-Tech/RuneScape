@@ -1473,9 +1473,8 @@ Return
 ; |     EXIT BUTTON     -     EXIT BUTTON     -     EXIT BUTTON           |
 ; =========================================================================
 
-; Handles the Exit button and normal GUI close event.
+; Handles the Exit hotkey/button and normal GUI close event.
 ExitB:
-	Suspend, Permit
 LLARS_DeveloperHotkey("Exit")
 guiclose:
 LLARS_MainSavePosition()

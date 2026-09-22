@@ -560,7 +560,7 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 {
 	global LLARS_RUNNING, LLARS_PAUSED, LLARS_RunRuneScapeHwnd
 	global LLARS_CreatorCurrentStatus, LLARS_CreatorCurrentActivity
-	global LLARS_lhk4, LLARS_lhk5
+	global LLARS_lhk5
 
 	if (requireRun && !LLARS_RUNNING)
 	{
@@ -600,7 +600,6 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 	GuiControl, 1:, State3, Restoring Game
 
 	; Prevent managed timers from entering another creator callback while focus recovery is in progress.
-	LLARS_EnableExitHotkey(LLARS_lhk4)
 	LLARS_EnableDeveloperHotkey(LLARS_lhk5)
 	Thread, NoTimers, true
 	Loop
