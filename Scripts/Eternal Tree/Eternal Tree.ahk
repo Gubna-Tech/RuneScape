@@ -31,6 +31,7 @@ EternalTreeColorMode := ""
 EternalTreeAcquireMatcher := ""
 EternalTreeTrackMatcher := ""
 EternalTreeClickTick := 0
+EternalTreeTrackingEstablished := false
 EternalTreeAbsentChecks := 0
 EternalTreePresentChecks := 0
 EternalTreePresentEvidenceTick := 0
@@ -127,6 +128,7 @@ if (EternalTreeState = "Find Tree")
 			EternalTreeTargetY := foundY
 			EternalTreeTargetScore := targetScore
 			EternalTreeClickTick := A_TickCount
+			EternalTreeTrackingEstablished := false
 			EternalTreeAbsentChecks := 0
 			EternalTreePresentChecks := 0
 			EternalTreePresentEvidenceTick := 0
@@ -143,9 +145,41 @@ else if (EternalTreeState = "Wait Tree Gone")
 {
 	LLARS_SetStatus("Cutting", "Eternal Tree")
 
-	; Give the click/hover animation time to settle before disappearance checks.
-	if ((A_TickCount - EternalTreeClickTick) >= 1400)
+	; Let the character finish moving before the clicked tree is reacquired at its new screen position.
+	if ((A_TickCount - EternalTreeClickTick) >= 2500)
 	{
+		if (!EternalTreeTrackingEstablished)
+		{
+			reacquiredX := ""
+			reacquiredY := ""
+			reacquiredScore := 0
+			reacquiredDensity := 0
+			reacquired := false
+
+			if (EternalTreeColorMode = "Normal")
+				reacquired := LLARS_ColorFindRuneScapeLargeCluster(EternalTreeAcquireMatcher, reacquiredX, reacquiredY, reacquiredScore, reacquiredDensity, 220, 4, 48, 30, 8, 2, 32, 4)
+			else if (EternalTreeColorMode = "High Contrast")
+				reacquired := LLARS_ColorFindRuneScapeLargeCluster(EternalTreeAcquireMatcher, reacquiredX, reacquiredY, reacquiredScore, reacquiredDensity, 260, 4, 48, 30, 8, 2, 32, 4)
+
+			if (reacquired)
+			{
+				oldX := EternalTreeTargetX
+				oldY := EternalTreeTargetY
+				EternalTreeTargetX := reacquiredX
+				EternalTreeTargetY := reacquiredY
+				EternalTreeTargetScore := reacquiredScore
+				EternalTreeTrackingEstablished := true
+				LLARS_DeveloperAction("Eternal Tree || Tracking established after movement || (" . oldX . ", " . oldY . ") > (" . EternalTreeTargetX . ", " . EternalTreeTargetY . ")")
+			}
+		}
+
+		if (!EternalTreeTrackingEstablished)
+		{
+			if (LLARS_RUNNING)
+				SetTimer, EternalTreeTick, 250
+			return
+		}
+
 		trackingScore := 0
 		cameraMotion := 0
 		trackState := LLARS_ColorTrackRuneScapeTarget(EternalTreeTargetX, EternalTreeTargetY, EternalTreeTrackMatcher, trackingScore, cameraMotion, "Eternal Tree", 118, 34, 4, 78, 38, 38, 2000, 18.0, 110, true)
@@ -226,6 +260,7 @@ else if (EternalTreeState = "Wait Tree Gone")
 			EternalTreeAcquireMatcher := ""
 			EternalTreeTrackMatcher := ""
 			EternalTreeClickTick := 0
+			EternalTreeTrackingEstablished := false
 			EternalTreeAbsentChecks := 0
 			EternalTreePresentChecks := 0
 			EternalTreePresentEvidenceTick := 0
