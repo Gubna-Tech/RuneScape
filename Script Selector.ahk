@@ -855,7 +855,7 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 
-Case "Fire + Form - Portables":
+		Case "Fire + Form - Portables":
 		script := "Fire + Form"
 		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will form an urn and then fire it before repeating the process."
 		GuiReset()
@@ -1883,29 +1883,15 @@ Case "Fire + Form - Portables":
 
 		Case "Eternal Tree":
 		script := "Eternal Tree"
-		scriptinfo := "Uses ALT1 AfkWarden to detect stopped Woodcutting XP and alternates between the East and West Eternal Trees. Start next to the West Tree. ALT1 with AfkWarden is required."
+		scriptinfo := "Finds and cuts Eternal Trees using built-in color detection, then tracks the selected tree until it is depleted before finding the next one."
 		GuiReset()
-		SetSetupDifficulty("Hard")
+		SetSetupDifficulty("Easy")
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
 		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
+		Gui Info: Font, s13 normal bold cGreen
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		Gui Info: +ToolWindow
@@ -1933,15 +1919,15 @@ Case "Fire + Form - Portables":
 
 		Case "Divination":
 		script := "Divination"
-		scriptinfo := "Finds yellow Divination resources with enriched priority, tracks depletion, and deposits when the inventory is full."
+		scriptinfo := "Use RuneScape High Contrast Mode. Finds yellow Divination resources with enriched priority, tracks depletion, and deposits when the inventory is full."
 		GuiReset()
-		SetSetupDifficulty("Hard")
+		SetSetupDifficulty("Easy")
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
 		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
+		Gui Info: Font, s13 normal bold cGreen
+		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		Gui Info: +ToolWindow
