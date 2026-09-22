@@ -72,7 +72,7 @@ Run(ctx)
 
 	LLARS_Sleep("Sleep Walk")
 
-	LLARS_SetStatus("Cutting", "Planks")
+	LLARS_SetStatus("Making", "Planks")
 	LLARS_PressKey("Space")
 
 	LLARS_Sleep("Sleep Cut", true)
