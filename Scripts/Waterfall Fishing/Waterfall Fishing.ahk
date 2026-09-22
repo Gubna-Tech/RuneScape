@@ -45,7 +45,6 @@ GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 SetTimer, Countdown, Off
 
-Log("TIMER COMPLETE", "Timed run reached zero")
 Goto, EndMsg
 
 ; ========================================================================================
@@ -83,7 +82,6 @@ if LLARS_PixelMatches("Pixel Coordinate", "Red")
     LLARS_SetStatus("Fishing", "Fishing Spot")
     LLARS_Click("Fishing Spot")
     LastClickTime := A_TickCount
-    Log("CLICK", "Fishing Spot | " TimeSinceClick)
 
     Loop, 100
     {
@@ -137,7 +135,6 @@ Logout()
 GuiControl,, TimerCount, Done
 GuiControl,, State3, Done
 
-Log("COMPLETE", "Script completed normally | Total time: " hours "h " minutes "m")
 
 SoundPlay, C:\Windows\Media\Ring06.wav, 1
 MsgBox, 64, LLARS Run Info, %scriptname% has completed running`n`nTotal time: %hours%h %minutes%m
