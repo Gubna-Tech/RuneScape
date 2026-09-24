@@ -571,16 +571,30 @@ return
 ; Handles coordinate selection from the section's actual schema.
 ButtonClicked:
 coordinateConfigFile := coordinateConfigFiles.HasKey(selectedSection) ? coordinateConfigFiles[selectedSection] : "Config.ini"
-IniRead, coordinateKeys, %coordinateConfigFile%, %selectedSection%
-hasPointCoordinateKeys := RegExMatch(coordinateKeys, "im)^x=") && RegExMatch(coordinateKeys, "im)^y=")
-hasRectangleCoordinateKeys := RegExMatch(coordinateKeys, "im)^xmin=") || RegExMatch(coordinateKeys, "im)^xmax=") || RegExMatch(coordinateKeys, "im)^ymin=") || RegExMatch(coordinateKeys, "im)^ymax=")
-explicitPointCoordinateSection := (selectedSection = "Trigger Pixel" || selectedSection = "Inventory Pixel" || selectedSection = "Pixel Coordinate")
-pointCoordinateSection := (explicitPointCoordinateSection || (hasPointCoordinateKeys && !hasRectangleCoordinateKeys))
+missingCoordinateKey := "__LLARS_COORDINATE_KEY_MISSING__"
+IniRead, pointXKey, %coordinateConfigFile%, %selectedSection%, x, %missingCoordinateKey%
+IniRead, pointYKey, %coordinateConfigFile%, %selectedSection%, y, %missingCoordinateKey%
+IniRead, rectangleXMinKey, %coordinateConfigFile%, %selectedSection%, xmin, %missingCoordinateKey%
+IniRead, rectangleXMaxKey, %coordinateConfigFile%, %selectedSection%, xmax, %missingCoordinateKey%
+IniRead, rectangleYMinKey, %coordinateConfigFile%, %selectedSection%, ymin, %missingCoordinateKey%
+IniRead, rectangleYMaxKey, %coordinateConfigFile%, %selectedSection%, ymax, %missingCoordinateKey%
+hasAnyPointCoordinateKeys := (pointXKey != missingCoordinateKey || pointYKey != missingCoordinateKey)
+hasPointCoordinateKeys := (pointXKey != missingCoordinateKey && pointYKey != missingCoordinateKey)
+hasAnyRectangleCoordinateKeys := (rectangleXMinKey != missingCoordinateKey || rectangleXMaxKey != missingCoordinateKey || rectangleYMinKey != missingCoordinateKey || rectangleYMaxKey != missingCoordinateKey)
+hasRectangleCoordinateKeys := (rectangleXMinKey != missingCoordinateKey && rectangleXMaxKey != missingCoordinateKey && rectangleYMinKey != missingCoordinateKey && rectangleYMaxKey != missingCoordinateKey)
+
+if ((!hasPointCoordinateKeys && hasAnyPointCoordinateKeys) || (!hasRectangleCoordinateKeys && hasAnyRectangleCoordinateKeys) || (hasAnyPointCoordinateKeys && hasAnyRectangleCoordinateKeys) || (!hasAnyPointCoordinateKeys && !hasAnyRectangleCoordinateKeys))
+{
+	LLARS_CreatorConfigError("Coordinate section [" . selectedSection . "] must define either x/y for one pixel or xmin/xmax/ymin/ymax for a rectangle.")
+	return
+}
+
+pointCoordinateSection := hasPointCoordinateKeys
 
 if (pointCoordinateSection)
 {
     Gui, 2: Hide
-    WinActivate, RuneScape
+    LLARS_ActivateValidatedRuneScape()
     x := ""
     y := ""
     ButtonText := selectedSection
@@ -610,7 +624,7 @@ if (pointCoordinateSection)
 else
 {
     Gui, 2: Hide
-    WinActivate, RuneScape
+    LLARS_ActivateValidatedRuneScape()
     ClickCount := 0
     xmin := ""
     ymin := ""
@@ -949,7 +963,7 @@ LLARS_ClientToScreen(ByRef x, ByRef y)
 	global LLARS_RunRuneScapeHwnd
 
 	hWnd := 0
-	if (LLARS_RunRuneScapeHwnd && DllCall("IsWindow", "Ptr", LLARS_RunRuneScapeHwnd))
+	if (LLARS_RunRuneScapeHwnd && DllCall("IsWindow", "Ptr", LLARS_RunRuneScapeHwnd) && LLARS_IsRuneScapeWindow(LLARS_RunRuneScapeHwnd))
 		hWnd := LLARS_RunRuneScapeHwnd
 
 	if (!hWnd)
@@ -960,7 +974,7 @@ LLARS_ClientToScreen(ByRef x, ByRef y)
 	}
 
 	if (!hWnd)
-		hWnd := WinExist("RuneScape")
+		hWnd := LLARS_FindRuneScapeWindow()
 	if (!hWnd)
 		return
 
@@ -1042,12 +1056,12 @@ if (selectedSection != " ***** Make a Selection ***** ")
 	GoSub, ColorSelected
 return
 
-; Colors with coordinate= metadata keep the existing mapped-coordinate behavior.
-; Standalone colors have no fixed coordinate, so LLARS asks for one physical
-; right-click in RuneScape and samples the exact RGB value under the cursor.
+; Colors with coordinate= metadata use that exact point. When metadata is absent,
+; LLARS also uses a uniquely matching x/y coordinate section by name. Standalone
+; colors still ask for one physical right-click and sample that exact RGB value.
 ColorSelected:
 Gui, 2: Hide
-WinActivate, RuneScape
+LLARS_ActivateValidatedRuneScape()
 x := ""
 y := ""
 ButtonText := selectedSection
@@ -1055,6 +1069,8 @@ colorConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
 Sleep, 350
 IniRead, colorCoordinateSection, %colorConfigFile%, %ButtonText%, coordinate, ERROR
 colorCoordinateSection := Trim(colorCoordinateSection)
+if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
+	colorCoordinateSection := LLARS_ColorMatchingPointSection(colorConfigFile, ButtonText)
 if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 {
 	; Preserve legacy LLARS scripts that intentionally use [Pixel Coordinate]
@@ -1117,6 +1133,38 @@ PixelGetColor, color, %x%, %y%, RGB
 GoSub, SaveColorSelection
 return
 
+LLARS_ColorMatchingPointSection(configFile, colorSection)
+{
+	colorToken := LLARS_DeveloperPixelSectionToken(colorSection)
+	if (colorToken = "")
+		return ""
+
+	IniRead, sections, %configFile%
+	matchedSection := ""
+	Loop, Parse, sections, `n, `r
+	{
+		section := Trim(A_LoopField)
+		if (section = "" || GetConfigType(configFile, section) != "coordinate")
+			continue
+
+		IniRead, pointX, %configFile%, %section%, x, ERROR
+		IniRead, pointY, %configFile%, %section%, y, ERROR
+		if pointX is not number
+			continue
+		if pointY is not number
+			continue
+
+		if (LLARS_DeveloperPixelSectionToken(section) != colorToken)
+			continue
+
+		if (matchedSection != "")
+			return ""
+		matchedSection := section
+	}
+
+	return matchedSection
+}
+
 ; Captures one standalone RGB value directly from the RuneScape client.
 CheckColorClick:
 if GetKeyState("Esc", "P")
@@ -1125,7 +1173,7 @@ if GetKeyState("Esc", "P")
 }
 
 hoverColor := "------"
-if WinActive("RuneScape")
+if LLARS_IsRuneScapeActive()
 {
 	MouseGetPos, hoverX, hoverY
 	PixelGetColor, hoverColor, %hoverX%, %hoverY%, RGB
@@ -3007,14 +3055,14 @@ LLARS_DeveloperPixelSectionToken(section)
 {
 	token := Trim(section)
 	StringLower, token, token
-	token := RegExReplace(token, "i)\b(target|pixel|color|coordinate|coordinates)\b", "")
+	token := RegExReplace(token, "i)\b(target|pixel|color|coordinate|coordinates|empty|default)\b", "")
 	token := RegExReplace(token, "[^a-z0-9]+", "")
 	return token
 }
 
 LLARS_DeveloperPixelColorAt(x, y)
 {
-	if !WinActive("RuneScape")
+	if !LLARS_IsRuneScapeActive()
 		return "--"
 
 	x := Round(x + 0)

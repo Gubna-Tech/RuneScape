@@ -943,7 +943,7 @@ LLARS_DeveloperScriptKey(vkCode, keyUp := false, eventTick := "")
 		return
 	}
 
-	if (!LLARS_RUNNING || !WinActive("RuneScape"))
+	if (!LLARS_RUNNING || !LLARS_IsRuneScapeActive())
 		return
 	if LLARS_DeveloperKeyStates.HasKey(vkCode)
 		return
@@ -1138,10 +1138,10 @@ LLARS_DeveloperMousePixel(ByRef mouseX, ByRef mouseY, ByRef pixelColor, ByRef in
 	inspectorStatus := "INACTIVE"
 
 	; Never inspect another application.
-	developerRuneScapeHWND := WinActive("RuneScape")
-	if (!developerRuneScapeHWND)
+	developerRuneScapeHWND := WinExist("A")
+	if !LLARS_IsRuneScapeWindow(developerRuneScapeHWND)
 	{
-		if WinExist("RuneScape")
+		if LLARS_FindRuneScapeWindow()
 			inspectorStatus := "INACTIVE"
 		else
 			inspectorStatus := "NOT FOUND"
@@ -1184,7 +1184,7 @@ LLARS_DeveloperMousePixel(ByRef mouseX, ByRef mouseY, ByRef pixelColor, ByRef in
 ; Confirms RuneScape is available before allowing automation to begin.
 LLARS_CheckGame()
 {
-	if WinExist("RuneScape")
+	if LLARS_FindRuneScapeWindow()
 		return true
 
 	Gui 1: Hide
@@ -1302,6 +1302,62 @@ LLARS_StartRun()
 		}
 	}
 	return true
+}
+
+; Validates and starts a condition-driven script that runs until the script itself reports completion.
+LLARS_StartUntilDoneRun()
+{
+	global LLARS_RUNNING, LLARS_PAUSED
+	global startcheck, LLARS_RunStartTick, LLARS_RUN_TYPE, LLARS_DeveloperKeyStates
+
+	if (!LLARS_CheckGame())
+		return false
+
+	if (ConfigError())
+		return false
+
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
+	LLARS_DeveloperHotkey("Start")
+	startcheck := 1
+	LLARS_DeveloperKeyStates := {}
+	LLARS_RUNNING := true
+	LLARS_PAUSED := false
+	LLARS_RunStartTick := A_TickCount
+	LLARS_RUN_TYPE := "UntilDone"
+	LLARS_DeveloperAction("Until-Done Run Started")
+	LLARS_CreateUntilDoneGUI()
+	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
+	GuiControl,, State3, Running
+	DisableButton()
+	SetLLARSHOTKEYS()
+	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")
+	{
+		if !LLARS_ActivateRuneScapeAtRunStart()
+		{
+			LLARS_RUNNING := false
+			EnableButton()
+			return false
+		}
+	}
+	return true
+}
+
+; Clears shared running state after a condition-driven script reaches its own completion condition.
+LLARS_EndUntilDoneRun()
+{
+	global LLARS_RUNNING, LLARS_RunStartTick, LLARS_DeveloperKeyStates
+	global LLARS_RunRuneScapeHwnd
+
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
+	LLARS_DeveloperAction("Until-Done Run Completed")
+	LLARS_RUNNING := false
+	LLARS_DeveloperKeyStates := {}
+	LLARS_RunStartTick := 0
+	LLARS_RunRuneScapeHwnd := 0
+	EnableButton()
+	SetLLARSHOTKEYS()
 }
 
 ; Validates and starts a duration-based script using the user's run time.
@@ -2345,7 +2401,7 @@ LLARS_GetColorKey(file, section)
 
 		key := Trim(SubStr(line, 1, equalsPos - 1))
 		color := Trim(SubStr(line, equalsPos + 1))
-		if (key = "option" || key = "type" || key = "depends")
+		if (key = "option" || key = "type" || key = "depends" || key = "coordinate" || key = "action")
 			continue
 
 		candidateKey := key
@@ -2866,7 +2922,7 @@ LLARS_FindRuneScapeWindow()
 		return activeHwnd
 
 	WinGet, titleHwnd, ID, RuneScape
-	if (titleHwnd)
+	if (titleHwnd && LLARS_IsRuneScapeWindow(titleHwnd))
 		return titleHwnd
 
 	WinGet, windowList, List
@@ -2876,13 +2932,22 @@ LLARS_FindRuneScapeWindow()
 		if (!DllCall("IsWindowVisible", "Ptr", hwnd))
 			continue
 
-		WinGet, processName, ProcessName, ahk_id %hwnd%
-		StringLower, processName, processName
-		if processName in runescape.exe,rs2client.exe
+		if (LLARS_IsRuneScapeWindow(hwnd))
 			return hwnd
 	}
 
 	return 0
+}
+
+; Activates RuneScape only after resolving a window through the shared validator.
+LLARS_ActivateValidatedRuneScape()
+{
+	runeScapeHwnd := LLARS_FindRuneScapeWindow()
+	if (!runeScapeHwnd)
+		return 0
+
+	WinActivate, ahk_id %runeScapeHwnd%
+	return runeScapeHwnd
 }
 
 ; Returns the RuneScape HWND NaturalClick may use, reclaiming run focus if needed.

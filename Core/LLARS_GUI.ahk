@@ -8,7 +8,7 @@
 ; Creates the main LLARS control window.
 LLARS_CreateMainGUI()
 {
-	global value, scriptname, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
+	global value, scriptname, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_SCRIPT_TYPE
 	global Counter, State3, State2, ScriptBlue, ScriptRed
 	global ConfigStatusHotkeys, ConfigStatusCoordinates, ConfigStatusColors
 	global ConfigStatusHotkeysLabel, ConfigStatusCoordinatesLabel, ConfigStatusColorsLabel
@@ -28,10 +28,20 @@ LLARS_CreateMainGUI()
 	Gui, Add, Button, x10 y115 w295 h25 gResetConfig, Reset Config
 	Gui, Add, Text, x5 y146 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Text, x10 y152 w165 h20, Run Count
-	Gui, Font, s10 cRed
-	Gui, Add, Text, x180 y152 w125 h20 Center vCounter
-	GuiControl,,Counter, ** NOT SET **
+	if (LLARS_SCRIPT_TYPE = "UntilDone")
+	{
+		Gui, Add, Text, x10 y152 w165 h20, Run Mode
+		Gui, Font, s10 cBlue
+		Gui, Add, Text, x180 y152 w125 h20 Center vCounter
+		GuiControl,, Counter, Until Complete
+	}
+	else
+	{
+		Gui, Add, Text, x10 y152 w165 h20, Run Count
+		Gui, Font, s10 cRed
+		Gui, Add, Text, x180 y152 w125 h20 Center vCounter
+		GuiControl,, Counter, ** NOT SET **
+	}
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y176 w145 h20, Status
 	Gui, Font, s10 Bold cBlue
@@ -217,3 +227,63 @@ LLARS_CreateTimerGUI()
 		SendMessage, 0x80, 1, hIcon
 	}
 }
+
+; ================================================================
+; |     UNTIL-DONE GUI     -     UNTIL-DONE GUI                  |
+; ================================================================
+
+; Creates the LLARS running window for scripts that stop only when their own completion condition is reached.
+LLARS_CreateUntilDoneGUI()
+{
+	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_CONFIG_FILE
+	global State3, State2, ScriptBlue, ScriptRed
+	displayScriptName := LLARS_DisplayScriptName()
+
+	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
+	hasMainPosition := LLARS_MainGetPosition(X, Y)
+	if (!hasMainPosition)
+		hasMainPosition := LLARS_MainLoadPosition(X, Y)
+	Gui destroy
+	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
+	Gui, Font, s12 Bold
+	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
+	Gui, Add, Text, x5 y49 w305 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Button, x10 y57 w145 h25 gStart, Start
+	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
+	Gui, Add, Button, x10 y86 w145 h25 gPauseb, Pause
+	Gui, Add, Button, x160 y86 w145 h25 gResumeb, Resume
+	Gui, Add, Text, x5 y114 w305 h2 0x10
+	Gui, Font, s10 Bold
+	Gui, Add, Text, x10 y120 w145 h20, Status
+	Gui, Font, s10 Bold cBlue
+	Gui, Add, Text, x160 y120 w145 h20 Center vState3
+	Gui, Add, Text, x10 y120 w145 h20 cBlack vScriptBlue
+	Gui, Font, s10 Bold cRed
+	Gui, Add, Text, x160 y120 w145 h20 Center vState2
+	Gui, Add, Text, x10 y120 w145 h20 cBlack vScriptRed
+	GuiControl,, State2, ** OFF **
+	Gui, Font, s10 Bold
+	Gui, Add, Button, x73 y148 w170 h29 gExitb, Exit LLARS
+	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	{
+		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
+	}
+
+	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
+	if (hasMainPosition)
+		Gui, Show, x%X% y%Y% w315 h184, LLARS
+	else
+		Gui, Show, w315 h184, LLARS
+	CheckPOS(LLARSMainGuiHwnd)
+	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	{
+		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_SCRIPT_DIR "\LLARS Logo.ico"
+			, uint, 1, int, 0, int, 0, uint, 0x10)
+		SendMessage, 0x80, 0, hIcon
+		SendMessage, 0x80, 1, hIcon
+	}
+}
+
