@@ -41,6 +41,8 @@ EternalTreeLastTrackState := ""
 EternalTreeSignature := ""
 EternalTreeSignatureAbsentChecks := 0
 EternalTreeSignatureAbsentStartTick := 0
+EternalTreeEstablishAbsentChecks := 0
+EternalTreeEstablishAbsentStartTick := 0
 EternalTreeCutCount := 0
 EternalTreeSearchLogged := false
 
@@ -142,6 +144,8 @@ if (EternalTreeState = "Find Tree")
 			EternalTreeSignature := ""
 			EternalTreeSignatureAbsentChecks := 0
 			EternalTreeSignatureAbsentStartTick := 0
+			EternalTreeEstablishAbsentChecks := 0
+			EternalTreeEstablishAbsentStartTick := 0
 			EternalTreeCutCount++
 			EternalTreeSearchLogged := false
 			EternalTreeState := "Wait Tree Gone"
@@ -175,6 +179,9 @@ else if (EternalTreeState = "Wait Tree Gone")
 
 			if (EternalTreeMovementTracked)
 			{
+				EternalTreeEstablishAbsentChecks := 0
+				EternalTreeEstablishAbsentStartTick := 0
+
 				; One final generous local follow keeps identity tied to the clicked tree.
 				finalMovementScore := 0
 				finalMovementCameraMotion := 0
@@ -205,7 +212,46 @@ else if (EternalTreeState = "Wait Tree Gone")
 					EternalTreeTargetY := reacquiredY
 					EternalTreeTargetScore := reacquiredScore
 					EternalTreeTrackingEstablished := true
+					EternalTreeEstablishAbsentChecks := 0
+					EternalTreeEstablishAbsentStartTick := 0
 					LLARS_DeveloperAction("Eternal Tree || Tracking established after movement || Global fallback || (" . oldX . ", " . oldY . ") > (" . EternalTreeTargetX . ", " . EternalTreeTargetY . ")")
+				}
+				else
+				{
+					if (EternalTreeEstablishAbsentChecks = 0)
+						EternalTreeEstablishAbsentStartTick := A_TickCount
+					EternalTreeEstablishAbsentChecks++
+					if (EternalTreeEstablishAbsentChecks = 1)
+						LLARS_DeveloperAction("Eternal Tree || Clicked tree missing before tracking established || Confirming")
+
+					; If the clicked tree depletes during the movement grace period, repeated
+					; failed reacquisition is trustworthy absence instead of an endless wait.
+					if (EternalTreeEstablishAbsentChecks >= 4
+						&& EternalTreeEstablishAbsentStartTick
+						&& (A_TickCount - EternalTreeEstablishAbsentStartTick) >= 750)
+					{
+						LLARS_DeveloperAction("Eternal Tree || Pre-tracking absence confirmed || Tree gone || Find next tree")
+						EternalTreeTargetX := ""
+						EternalTreeTargetY := ""
+						EternalTreeTargetScore := 0
+						EternalTreeColorMode := ""
+						EternalTreeAcquireMatcher := ""
+						EternalTreeTrackMatcher := ""
+						EternalTreeClickTick := 0
+						EternalTreeTrackingEstablished := false
+						EternalTreeMovementTracked := false
+						EternalTreeAbsentChecks := 0
+						EternalTreePresentChecks := 0
+						EternalTreePresentEvidenceTick := 0
+						EternalTreeAbsentStartTick := 0
+						EternalTreeLastTrackState := ""
+						EternalTreeSignature := ""
+						EternalTreeSignatureAbsentChecks := 0
+						EternalTreeSignatureAbsentStartTick := 0
+						EternalTreeEstablishAbsentChecks := 0
+						EternalTreeEstablishAbsentStartTick := 0
+						EternalTreeState := "Find Tree"
+					}
 				}
 			}
 
@@ -350,6 +396,8 @@ else if (EternalTreeState = "Wait Tree Gone")
 			EternalTreeSignature := ""
 			EternalTreeSignatureAbsentChecks := 0
 			EternalTreeSignatureAbsentStartTick := 0
+			EternalTreeEstablishAbsentChecks := 0
+			EternalTreeEstablishAbsentStartTick := 0
 			EternalTreeState := "Find Tree"
 		}
 		else
