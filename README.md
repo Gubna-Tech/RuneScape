@@ -78,7 +78,7 @@ LLARS is designed for both:
 >
 > **You do not need to make changes to the script itself.**
 >
-> Normal script configuration should be performed through the **LLARS GUI** and the provided LLARS and script configuration files.
+> Normal script configuration should be performed through the **LLARS GUI**, the root `LLARS Config.ini`, and any script-local `Config.ini` provided for that activity. Some scripts do not require a local `Config.ini`.
 
 The scripts in this repository are specifically designed for **RuneScape 3 (RS3)** and are **not intended for use with Old School RuneScape (OSRS)**.
 
@@ -103,7 +103,7 @@ The LLARS Setup Guide is the primary guide for learning how to:
 - Set up LLARS and its scripts
 - Configure a script through the LLARS GUI
 - Configure hotkeys, coordinates, and colors
-- Understand the LLARS and script `Config.ini` files
+- Understand the root LLARS configuration and script-local `Config.ini` files when a script provides one
 - Understand required and optional settings
 - Run scripts correctly
 - Understand timer and run-count settings
@@ -132,15 +132,15 @@ The Legacy Script Creator Guide covers lower-level and traditional AutoHotkey pa
 
 ### Config.ini Instructions
 
-When setting up a script for the first time, you should also read that script's `Config.ini`.
+When setting up a script for the first time, read its **Information** text and, if the script folder includes one, its `Config.ini`.
 
-The `Config.ini` may contain important instructions and information specific to that script.
+A script-local `Config.ini` may contain important instructions and information specific to that activity. Some scripts do not need a local `Config.ini` because their behavior is driven by shared LLARS settings or by the script itself.
 
 > **Pay close attention to the instructions and comments above each section.**
 >
 > They may explain how a setting works or exactly what should be selected when configuring it through the LLARS GUI.
 
-Different scripts can require different configurations, so **do not assume that the settings or instructions from one script apply to another**.
+Different scripts can require different configurations—or no script-local configuration at all—so **do not assume that the settings or instructions from one script apply to another**.
 
 For normal setup, use the **LLARS GUI whenever possible** rather than manually editing configuration files.
 

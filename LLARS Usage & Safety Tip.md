@@ -7,14 +7,14 @@ LLARS is an automation framework for RuneScape3 (RS3). Before running any script
 1. **Read the Setup Guide**  
    Read the [LLARS - Setup Guide](Documentation/LLARS%20-%20Setup%20Guide.pdf) before setting up or running LLARS. It explains the framework, GUI, hotkeys, coordinates, colors, timers, RunCount settings, and normal script operation.
 
-2. **Read the Script's Config.ini**  
-   Individual scripts can have their own requirements and instructions. Read the comments in that script's `Config.ini` and do not assume that settings from one script apply to another.
+2. **Read the Script Information and Any Config.ini**  
+   Individual scripts can have their own requirements and instructions. Read the script's Information text and, when its folder includes one, the comments in its `Config.ini`. Some scripts do not require a local `Config.ini`, so do not assume that settings from one script apply to another.
 
 3. **Understand the Account Risk**  
    Automation can violate game rules or terms of service and may result in account penalties. Only use LLARS after considering that risk and accepting responsibility for the account on which you run it.
 
 4. **Test Your Configuration First**  
-   Before starting a long run, use a short RunCount or Time-by-User session to confirm that coordinates, colors, inventory positions, bank positions, and other script-specific settings still match your current game layout.
+   Before starting a long run, use a short RunCount or Time-by-User session when that run mode applies. Confirm that any configured coordinates, colors, inventory positions, bank positions, and other script-specific requirements still match your current game layout.
 
 ## While Using LLARS
 
@@ -31,7 +31,7 @@ LLARS is an automation framework for RuneScape3 (RS3). Before running any script
    When using a new script or a newly changed configuration, observe the first few loops. Confirm that the script performs the expected actions and that the LLARS timer and RunCount behavior make sense for the activity.
 
 9. **Do Not Assume a Script Is Maintenance-Free**  
-   Game updates can change interfaces, object positions, timing, colors, or behavior. A script that worked previously may need its configuration updated before it is safe to run again.
+   Game updates can change interfaces, object positions, timing, colors, or behavior. A script that worked previously may need its configuration updated—or the script itself may need maintenance—before it behaves correctly again.
 
 10. **Stop When Something Looks Wrong**  
     If LLARS clicks the wrong location, encounters an unexpected interface, stops progressing, or otherwise behaves differently from expected, use the Exit hotkey and correct the configuration before continuing.

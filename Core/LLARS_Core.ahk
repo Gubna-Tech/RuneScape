@@ -3279,11 +3279,12 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 	fineTimingJitter := LLARS_HumanRandomInt(-fineTimingRange, fineTimingRange, stream . ".FineTiming", 10)
 	duration += fineTimingJitter
 
+	durationCap := (stream = "NaturalClick") ? 3000 : 6500
 	if (duration < 55)
 		duration := 55
-	if (duration > 6500)
-		duration := 6500
-	duration := LLARS_HumanizeTimingEnding(duration, 55, 6500, stream . ".Movement")
+	if (duration > durationCap)
+		duration := durationCap
+	duration := LLARS_HumanizeTimingEnding(duration, 55, durationCap, stream . ".Movement")
 
 	; Keep meaningful model bounds available to callers/debuggers without forcing the selected duration into fixed buckets or rounded-looking timing values.
 	fastestBallisticSpeed := preferredBallisticSpeed * maximumSpeedMultiplier
@@ -3294,8 +3295,10 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 	maximumDuration := Round(maximumDuration * distanceSlowdownMultiplier)
 	if (minimumDuration < 55)
 		minimumDuration := 55
-	if (maximumDuration > 6500)
-		maximumDuration := 6500
+	if (minimumDuration > durationCap)
+		minimumDuration := durationCap
+	if (maximumDuration > durationCap)
+		maximumDuration := durationCap
 
 	; Add enough samples to keep slower long movements visually smooth.
 	stepSpacing := LLARS_HumanRandomInt(5, 9, stream . ".StepSpacing", 4)
