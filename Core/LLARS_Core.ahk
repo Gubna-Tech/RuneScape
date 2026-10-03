@@ -3621,12 +3621,13 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		targetElapsed := Round(duration * t)
 		actualElapsed := A_TickCount - startTime
 		delay := targetElapsed - actualElapsed
-		if (delay < 1)
-			delay := 1
-		if (delay > 35)
-			delay := 35
-		; AutoHotkey Sleep yields to hotkeys while Thread NoTimers continues to protect the path from timer callbacks.
-		Sleep, %delay%
+		if (delay > 0)
+		{
+			if (delay > 35)
+				delay := 35
+			; AutoHotkey Sleep yields to hotkeys while Thread NoTimers continues to protect the path from timer callbacks.
+			Sleep, %delay%
+		}
 	}
 
 	if (movementResult != 1)
