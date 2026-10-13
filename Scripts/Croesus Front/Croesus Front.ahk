@@ -62,6 +62,10 @@ CheckPixel:
 if (!LLARS_RUNNING)
     return
 
+; Skip this timer sample instead of entering the passive foreground wait while an LLARS GUI has focus.
+if (LLARS_PAUSED || !LLARS_RunRuneScapeHwnd || DllCall("GetForegroundWindow", "Ptr") != LLARS_RunRuneScapeHwnd)
+    return
+
 LLARS_SetStatus("Monitoring", "Croesus Front")
 
 if LLARS_PixelMatches("Pixel Coordinate", "Red")
@@ -95,6 +99,10 @@ return
 
 ResetCheck:
 if (!LLARS_RUNNING)
+    return
+
+; Skip this timer sample instead of entering the passive foreground wait while an LLARS GUI has focus.
+if (LLARS_PAUSED || !LLARS_RunRuneScapeHwnd || DllCall("GetForegroundWindow", "Ptr") != LLARS_RunRuneScapeHwnd)
     return
 
 if !LLARS_PixelMatches("Pixel Coordinate", "Red")
