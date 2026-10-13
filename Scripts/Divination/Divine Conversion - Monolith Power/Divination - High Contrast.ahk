@@ -30,6 +30,7 @@ DivinationTargetScore := 0
 DivinationTargetType := ""
 DivinationResourceClickTick := 0
 DivinationResourceAbsentChecks := 0
+DivinationResourcePresentChecks := 0
 DivinationResourceAbsentStartTick := 0
 DivinationResourceAbsenceLogged := false
 DivinationNoYellowStartTick := 0
@@ -46,6 +47,8 @@ DivinationResourceCount := 0
 DivinationDepositCount := 0
 DivinationResourceSearchLogged := false
 DivinationDepositSearchLogged := false
+DivinationPostDepositEnrichedUntil := A_TickCount + 1250
+DivinationEnrichedPriorityMisses := 0
 
 SetTimer, Countdown, 1000
 SetTimer, DivinationTick, 250
@@ -128,31 +131,67 @@ if (DivinationState = "Find Resource")
 	targetDensity := 0
 
 	; Enriched resources are dramatically larger than ordinary yellow nodes.
+	; Check several independent yellow bodies before allowing a normal fallback.
+	; This preserves the existing size-based detector, but prevents the nearest
+	; normal wisp from hiding a larger enriched wisp elsewhere on screen.
 	DivinationTargetType := ""
-	if LLARS_ColorGetRuneScapeClient(searchHwnd, searchWidth, searchHeight)
+	enrichedBodySamples := 0
+	enrichedBodyWidth := 0
+	enrichedBodyHeight := 0
+	if Divination_FindEnrichedCandidate(foundX, foundY, targetScore, targetDensity, enrichedBodyWidth, enrichedBodyHeight, enrichedBodySamples)
+	{
+		DivinationTargetType := "Enriched"
+		DivinationEnrichedPriorityMisses := 0
+		LLARS_DeveloperAction("Divination || Enriched body verified || Samples=" . enrichedBodySamples . " || Spread=" . enrichedBodyWidth . "x" . enrichedBodyHeight)
+	}
+	else
+	{
+		DivinationEnrichedPriorityMisses++
+	}
+
+	; Enriched is authoritative. Do not allow a normal fallback until the
+	; enriched detector has completed several independent scans with no hit.
+	; This is scan-count based rather than only wall-clock based, so slow image
+	; captures cannot collapse the priority window into one or two real checks.
+	if (DivinationTargetType = ""
+		&& DivinationEnrichedPriorityMisses >= 4
+		&& (!DivinationPostDepositEnrichedUntil || A_TickCount >= DivinationPostDepositEnrichedUntil)
+		&& LLARS_ColorGetRuneScapeClient(searchHwnd, searchWidth, searchHeight))
 	{
 		searchCaptureMethod := ""
 		searchCapture := LLARS_ColorCaptureVisibleClient(searchHwnd, searchWidth, searchHeight, searchCaptureMethod)
 		if IsObject(searchCapture)
 		{
-			enrichedFound := LLARS_ColorFindLargeClusterFromCapture(searchCapture, "Divination_IsResourceColor", foundX, foundY, targetScore, targetDensity, 90, 4, 28, 8, 8, 2, 20, 4, "center-biased")
-			if (enrichedFound)
-			{
-				enrichedBodySamples := 0
-				enrichedBodyWidth := 0
-				enrichedBodyHeight := 0
-
-				if Divination_IsEnrichedConnectedBody(searchCapture, foundX, foundY, targetScore, enrichedBodySamples, enrichedBodyWidth, enrichedBodyHeight)
-				{
-					DivinationTargetType := "Enriched"
-					LLARS_DeveloperAction("Divination || Enriched body verified || Samples=" . enrichedBodySamples . " || Spread=" . enrichedBodyWidth . "x" . enrichedBodyHeight)
-				}
-			}
-
-			if (DivinationTargetType = ""
-				&& LLARS_ColorFindLargeClusterFromCapture(searchCapture, "Divination_IsResourceColor", foundX, foundY, targetScore, targetDensity, 10, 4, 48, 8, 8, 2, 20, 4, "center-biased"))
+			if LLARS_ColorFindLargeClusterFromCapture(searchCapture, "Divination_IsResourceColor", foundX, foundY, targetScore, targetDensity, 10, 4, 48, 8, 8, 2, 20, 4, "center-biased")
 				DivinationTargetType := "Normal"
 			LLARS_CreatorReleaseCapture(searchCapture)
+		}
+	}
+
+	; A normal candidate is only a fallback. Before committing to it, give the
+	; enriched detector one final fresh capture so a visible enriched wisp can
+	; never lose merely because the normal scan ran later in the same search.
+	if (DivinationTargetType = "Normal")
+	{
+		priorityX := ""
+		priorityY := ""
+		priorityScore := 0
+		priorityDensity := 0
+		priorityBodyWidth := 0
+		priorityBodyHeight := 0
+		priorityBodySamples := 0
+		if Divination_FindEnrichedCandidate(priorityX, priorityY, priorityScore, priorityDensity, priorityBodyWidth, priorityBodyHeight, priorityBodySamples)
+		{
+			DivinationEnrichedPriorityMisses := 0
+			foundX := priorityX
+			foundY := priorityY
+			targetScore := priorityScore
+			targetDensity := priorityDensity
+			enrichedBodyWidth := priorityBodyWidth
+			enrichedBodyHeight := priorityBodyHeight
+			enrichedBodySamples := priorityBodySamples
+			DivinationTargetType := "Enriched"
+			LLARS_DeveloperAction("Divination || Enriched won final priority check || Samples=" . enrichedBodySamples . " || Spread=" . enrichedBodyWidth . "x" . enrichedBodyHeight)
 		}
 	}
 
@@ -167,12 +206,15 @@ if (DivinationState = "Find Resource")
 			DivinationTargetScore := targetScore
 			DivinationResourceClickTick := A_TickCount
 			DivinationResourceAbsentChecks := 0
+			DivinationResourcePresentChecks := 0
 									DivinationResourceAbsentStartTick := 0
 						DivinationResourceStartDensity := Divination_ReadResourceDensity(DivinationTargetX, DivinationTargetY, DivinationTargetType)
 			DivinationResourceTrackingEstablished := false
 			DivinationEnrichedScanTick := A_TickCount
 			DivinationResourceCount++
 			DivinationResourceSearchLogged := false
+			DivinationPostDepositEnrichedUntil := 0
+			DivinationEnrichedPriorityMisses := 0
 			DivinationState := "Wait Resource Gone"
 			LLARS_DeveloperAction("Divination || " . DivinationTargetType . " resource clicked || Tracking exact resource")
 			Divination_MoveMouseOffResource(DivinationTargetX, DivinationTargetY)
@@ -202,25 +244,52 @@ else if (DivinationState = "Wait Resource Gone")
 				if (DivinationResourceStartDensity <= 0 && currentDensity > 0)
 					DivinationResourceStartDensity := currentDensity
 				LLARS_DeveloperAction("Divination || Resource tracking established after movement || (" . DivinationTargetX . ", " . DivinationTargetY . ") || Density=" . currentDensity)
-			}
-			else if (DivinationResourceAbsentChecks > 0 && DivinationResourceAbsenceLogged)
-				LLARS_DeveloperAction("Divination || Resource visible again || Absence cancelled || Density=" . currentDensity . "/" . DivinationResourceStartDensity)
 
-			DivinationResourceAbsentChecks := 0
-			DivinationResourceAbsentStartTick := 0
-			DivinationResourceAbsenceLogged := false
-			DivinationNoYellowStartTick := 0
+				DivinationResourceAbsentChecks := 0
+				DivinationResourcePresentChecks := 0
+				DivinationResourceAbsentStartTick := 0
+				DivinationResourceAbsenceLogged := false
+				DivinationNoYellowStartTick := 0
+			}
+			else if (DivinationResourceAbsentChecks > 0)
+			{
+				; Small Eternal Tree safeguard: one noisy present frame cannot erase
+				; depletion progress. Require only two consecutive present frames here.
+				DivinationResourcePresentChecks++
+				if (DivinationResourcePresentChecks = 1 && DivinationResourceAbsenceLogged)
+					LLARS_DeveloperAction("Divination || Resource visible again || Verifying 1/2 || Density=" . currentDensity . "/" . DivinationResourceStartDensity)
+
+				if (DivinationResourcePresentChecks >= 2)
+				{
+					if (DivinationResourceAbsenceLogged)
+						LLARS_DeveloperAction("Divination || Resource presence confirmed || Absence cancelled || Density=" . currentDensity . "/" . DivinationResourceStartDensity)
+					DivinationResourceAbsentChecks := 0
+					DivinationResourcePresentChecks := 0
+					DivinationResourceAbsentStartTick := 0
+					DivinationResourceAbsenceLogged := false
+					DivinationNoYellowStartTick := 0
+				}
+			}
+			else
+			{
+				DivinationResourcePresentChecks := 0
+				DivinationResourceAbsentStartTick := 0
+				DivinationResourceAbsenceLogged := false
+				DivinationNoYellowStartTick := 0
+			}
 		}
 		else if (trackState = 0 && !DivinationResourceTrackingEstablished)
 		{
 			; Still walking / camera still settling.
 			DivinationResourceAbsentChecks := 0
+			DivinationResourcePresentChecks := 0
 			DivinationResourceAbsentStartTick := 0
 			DivinationResourceAbsenceLogged := false
 			DivinationNoYellowStartTick := 0
 		}
 		else if (trackState = 0)
 		{
+			DivinationResourcePresentChecks := 0
 			if (DivinationResourceAbsentChecks = 0)
 			{
 				DivinationResourceAbsentStartTick := A_TickCount
@@ -255,14 +324,20 @@ else if (DivinationState = "Wait Resource Gone")
 			DivinationResourceAbsentChecks++
 			absenceDuration := A_TickCount - DivinationResourceAbsentStartTick
 
-			if (DivinationResourceAbsentChecks >= 5 && absenceDuration >= 900)
+			if (DivinationResourceAbsentChecks >= 6 && absenceDuration >= 1250)
 			{
 				LLARS_DeveloperAction("Divination || Resource depleted || Missing " . absenceDuration . " ms || Find another resource")
 				Divination_ClearResourceTarget()
 				DivinationResourceSearchLogged := false
+				DivinationPostDepositEnrichedUntil := A_TickCount + 1250
+				DivinationEnrichedPriorityMisses := 0
 				DivinationState := "Find Resource"
 				resourceGone := true
 			}
+		}
+		else if (trackState < 0 && DivinationResourceAbsentChecks > 0)
+		{
+			DivinationResourcePresentChecks := 0
 		}
 	}
 
@@ -297,6 +372,7 @@ else if (DivinationState = "Wait Resource Gone")
 					DivinationTargetType := "Enriched"
 					DivinationResourceClickTick := A_TickCount
 					DivinationResourceAbsentChecks := 0
+					DivinationResourcePresentChecks := 0
 					DivinationResourceAbsentStartTick := 0
 					DivinationResourceAbsenceLogged := false
 					DivinationNoYellowStartTick := 0
@@ -372,8 +448,10 @@ else if (DivinationState = "Deposit Grace")
 		else
 		{
 			DivinationResourceSearchLogged := false
+			DivinationPostDepositEnrichedUntil := A_TickCount + 1250
+			DivinationEnrichedPriorityMisses := 0
 			DivinationState := "Find Resource"
-			LLARS_DeveloperAction("Divination || Deposit cleared full inventory dialog || Find resource")
+			LLARS_DeveloperAction("Divination || Deposit cleared full inventory dialog || Enriched priority: 1250 ms + 4 verified misses before normal fallback")
 		}
 	}
 }
@@ -381,6 +459,8 @@ else
 {
 	DivinationResourceSearchLogged := false
 	DivinationDepositSearchLogged := false
+	DivinationPostDepositEnrichedUntil := A_TickCount + 1250
+	DivinationEnrichedPriorityMisses := 0
 	DivinationState := "Find Resource"
 	LLARS_DeveloperAction("Divination || State recovered || Find resource")
 }
@@ -472,21 +552,53 @@ Divination_FindDepositBackground(ByRef foundX, ByRef foundY, ByRef targetScore, 
 	if !IsObject(capture)
 		return false
 
-	found := LLARS_ColorFindLargeClusterFromCapture(capture
-		, "Divination_IsDepositColor"
-		, foundX
-		, foundY
-		, targetScore
-		, targetDensity
-		, 120
-		, 4
-		, 48
-		, 35
-		, 8
-		, 2
-		, 32
-		, 4
-		, "center-biased")
+	; A player's white spell ring can look similar to the deposit. Keep the
+	; existing white-cluster search, but reject small connected white bodies
+	; and continue to the next candidate. The deposit is consistently the
+	; substantially larger connected white mass.
+	found := false
+	attempt := 0
+	while (attempt < 5)
+	{
+		attempt++
+		candidateX := ""
+		candidateY := ""
+		candidateScore := 0
+		candidateDensity := 0
+
+		if !LLARS_ColorFindLargeClusterFromCapture(capture
+			, "Divination_IsDepositColor"
+			, candidateX
+			, candidateY
+			, candidateScore
+			, candidateDensity
+			, 120
+			, 4
+			, 48
+			, 35
+			, 8
+			, 2
+			, 32
+			, 4
+			, "center-biased")
+			break
+
+		depositSamples := 0
+		depositWidth := 0
+		depositHeight := 0
+		if Divination_IsDepositConnectedBody(capture, candidateX, candidateY, depositSamples, depositWidth, depositHeight)
+		{
+			foundX := candidateX
+			foundY := candidateY
+			targetScore := candidateScore
+			targetDensity := candidateDensity
+			found := true
+			break
+		}
+
+		LLARS_DeveloperAction("Divination || White candidate rejected || Samples=" . depositSamples . " || Spread=" . depositWidth . "x" . depositHeight)
+		Divination_MaskCaptureArea(capture, candidateX, candidateY, 42)
+	}
 
 	LLARS_CreatorReleaseCapture(capture)
 	return found
@@ -503,37 +615,365 @@ Divination_ClickDepositBackground(ByRef clientX, ByRef clientY)
 	if !IsObject(capture)
 		return false
 
-	verified := LLARS_ColorReacquireDensePoint(capture
-		, "Divination_IsDepositColor"
-		, clientX
-		, clientY
-		, 12
-		, 36
-		, 6
-		, 2)
+	; Deposit clicking deliberately does NOT require the final click coordinate to
+	; itself be a white pixel. The white swirl/rim is only used to recover the
+	; deposit geometry; once the large deposit body is verified we click the true
+	; center of that body's bounds. This avoids being pulled back to a bright edge.
+	hintX := Round(clientX + 0)
+	hintY := Round(clientY + 0)
+	clickX := ""
+	clickY := ""
+	bodySamples := 0
+	bodyWidth := 0
+	bodyHeight := 0
+	minX := ""
+	maxX := ""
+	minY := ""
+	maxY := ""
 
-	targetDensity := verified ? LLARS_ColorDensity(capture, "Divination_IsDepositColor", clientX, clientY, 28, 4) : 0
+	resolved := Divination_ResolveDepositGeometry(capture
+		, hintX
+		, hintY
+		, clickX
+		, clickY
+		, bodySamples
+		, bodyWidth
+		, bodyHeight
+		, minX
+		, maxX
+		, minY
+		, maxY)
+
 	LLARS_CreatorReleaseCapture(capture)
 
-	if (!verified || targetDensity < 80)
+	if !resolved
 	{
-		LLARS_DeveloperAction("Divination || Deposit verification failed || No click")
+		; Never fall back to the old edge point. If the full deposit geometry cannot
+		; be resolved on this frame, wait for the next Find Deposit pass instead.
+		LLARS_DeveloperAction("Divination || Deposit center unresolved || No edge fallback / no click")
 		return false
 	}
 
-	; Color detection coordinates are RuneScape client-relative while NaturalClick
-	; requires physical screen coordinates. Convert immediately before the click.
-	VarSetCapacity(screenPoint, 8, 0)
-	NumPut(Round(clientX + 0), screenPoint, 0, "Int")
-	NumPut(Round(clientY + 0), screenPoint, 4, "Int")
-	if !DllCall("ClientToScreen", "Ptr", hWnd, "Ptr", &screenPoint)
+	clientX := clickX
+	clientY := clickY
+	depositCenterX := Round((minX + maxX) / 2)
+	depositCenterY := Round((minY + maxY) / 2)
+	LLARS_DeveloperAction("Divination || Deposit near-center target || Client=(" . clientX . ", " . clientY . ") || Center=(" . depositCenterX . ", " . depositCenterY . ") || Offset=(" . (clientX - depositCenterX) . ", " . (clientY - depositCenterY) . ") || Bounds=(" . minX . "," . minY . ")-(" . maxX . "," . maxY . ") || Spread=" . bodyWidth . "x" . bodyHeight . " || Samples=" . bodySamples)
+
+	; LLARS runs mouse coordinates in Client mode, so the verified deposit center
+	; must remain client-relative all the way into LLARS_ClickPoint. Converting it
+	; with ClientToScreen would add the window-frame/title-bar offset a second
+	; time and push an otherwise centered click down toward the deposit edge.
+	clientX := Round(clientX + 0)
+	clientY := Round(clientY + 0)
+
+	LLARS_DeveloperAction("Divination || Deposit click verified || Client=(" . clientX . ", " . clientY . ") || Geometry=center/client-coordinates")
+	return LLARS_ClickPoint(clientX, clientY, "left", "Divination Deposit")
+}
+
+
+Divination_ResolveDepositGeometry(capture, hintX, hintY, ByRef clickX, ByRef clickY, ByRef bodySamples, ByRef bodyWidth, ByRef bodyHeight, ByRef minX, ByRef maxX, ByRef minY, ByRef maxY)
+{
+	clickX := ""
+	clickY := ""
+	bodySamples := 0
+	bodyWidth := 0
+	bodyHeight := 0
+	minX := ""
+	maxX := ""
+	minY := ""
+	maxY := ""
+
+	if !IsObject(capture)
 		return false
 
-	screenX := NumGet(screenPoint, 0, "Int")
-	screenY := NumGet(screenPoint, 4, "Int")
+	; First try to recover the same deposit around the location found on the
+	; previous frame. Reacquisition is used only to get a seed pixel; it can no
+	; longer become the actual click point.
+	seedX := Round(hintX + 0)
+	seedY := Round(hintY + 0)
+	if LLARS_ColorReacquireDensePoint(capture
+		, "Divination_IsDepositColor"
+		, seedX
+		, seedY
+		, 12
+		, 42
+		, 6
+		, 2)
+	{
+		if Divination_DepositGeometryFromSeed(capture, seedX, seedY, clickX, clickY, bodySamples, bodyWidth, bodyHeight, minX, maxX, minY, maxY)
+			return true
+	}
 
-	LLARS_DeveloperAction("Divination || Deposit click verified || Client=(" . clientX . ", " . clientY . ") || Screen=(" . screenX . ", " . screenY . ") || Density=" . targetDensity)
-	return LLARS_ClickPoint(screenX, screenY, "left", "Divination Deposit")
+	; If animation/occlusion moved the bright seed, perform a fresh deposit search
+	; in this same capture. Small player spell rings are rejected by the existing
+	; large-body contract before a center is accepted.
+	attempt := 0
+	while (attempt < 6)
+	{
+		attempt++
+		candidateX := ""
+		candidateY := ""
+		candidateScore := 0
+		candidateDensity := 0
+
+		if !LLARS_ColorFindLargeClusterFromCapture(capture
+			, "Divination_IsDepositColor"
+			, candidateX
+			, candidateY
+			, candidateScore
+			, candidateDensity
+			, 120
+			, 4
+			, 48
+			, 35
+			, 8
+			, 2
+			, 32
+			, 4
+			, "center-biased")
+			break
+
+		if Divination_DepositGeometryFromSeed(capture, candidateX, candidateY, clickX, clickY, bodySamples, bodyWidth, bodyHeight, minX, maxX, minY, maxY)
+			return true
+
+		Divination_MaskCaptureArea(capture, candidateX, candidateY, 42)
+	}
+
+	return false
+}
+
+
+Divination_DepositGeometryFromSeed(capture, seedX, seedY, ByRef clickX, ByRef clickY, ByRef bodySamples, ByRef bodyWidth, ByRef bodyHeight, ByRef minX, ByRef maxX, ByRef minY, ByRef maxY)
+{
+	global Divination_LastDepositQuadrant
+	clickX := ""
+	clickY := ""
+	bodySamples := 0
+	bodyWidth := 0
+	bodyHeight := 0
+	minX := ""
+	maxX := ""
+	minY := ""
+	maxY := ""
+	sumX := 0
+	sumY := 0
+
+	if !Divination_GetDepositBody(capture, seedX, seedY, bodySamples, minX, maxX, minY, maxY, sumX, sumY)
+		return false
+
+	bodyWidth := maxX - minX + 1
+	bodyHeight := maxY - minY + 1
+
+	; Keep the same proven deposit-vs-spell size contract. The click position is
+	; now independent from white-pixel density, so a dark swirl through the exact
+	; visual center cannot force the mouse back toward the bright rim.
+	if (bodySamples < 650
+		|| bodyWidth < 66
+		|| bodyHeight < 62
+		|| bodyWidth > 125
+		|| bodyHeight > 125)
+		return false
+
+	boxCenterX := Round((minX + maxX) / 2)
+	boxCenterY := Round((minY + maxY) / 2)
+
+	; Require a genuinely interior geometry point. This is intentionally based on
+	; the verified body's outer geometry rather than finding another white pixel.
+	insetX := Min(boxCenterX - minX, maxX - boxCenterX)
+	insetY := Min(boxCenterY - minY, maxY - boxCenterY)
+	if (insetX < 24 || insetY < 22)
+		return false
+
+	; Keep every deposit click very near the true geometry center, but avoid
+	; landing on the exact same center pixel each trip. Pick a different quadrant
+	; than the previous deposit and use only a tiny 2-5 px offset. This stays
+	; comfortably inside the verified body while looking less mechanically exact.
+	Random, depositQuadrant, 1, 4
+	if (Divination_LastDepositQuadrant >= 1 && Divination_LastDepositQuadrant <= 4 && depositQuadrant = Divination_LastDepositQuadrant)
+	{
+		Random, quadrantStep, 1, 3
+		depositQuadrant := Mod(Divination_LastDepositQuadrant - 1 + quadrantStep, 4) + 1
+	}
+	Divination_LastDepositQuadrant := depositQuadrant
+
+	Random, centerOffsetX, 2, 5
+	Random, centerOffsetY, 2, 5
+	if (depositQuadrant = 1)
+	{
+		clickX := boxCenterX + centerOffsetX
+		clickY := boxCenterY - centerOffsetY
+	}
+	else if (depositQuadrant = 2)
+	{
+		clickX := boxCenterX - centerOffsetX
+		clickY := boxCenterY - centerOffsetY
+	}
+	else if (depositQuadrant = 3)
+	{
+		clickX := boxCenterX - centerOffsetX
+		clickY := boxCenterY + centerOffsetY
+	}
+	else
+	{
+		clickX := boxCenterX + centerOffsetX
+		clickY := boxCenterY + centerOffsetY
+	}
+	return true
+}
+
+
+Divination_IsDepositConnectedBody(capture, centerX, centerY, ByRef bodySamples := 0, ByRef bodyWidth := 0, ByRef bodyHeight := 0)
+{
+	bodySamples := 0
+	bodyWidth := 0
+	bodyHeight := 0
+	minX := ""
+	maxX := ""
+	minY := ""
+	maxY := ""
+	sumX := 0
+	sumY := 0
+
+	if !Divination_GetDepositBody(capture, centerX, centerY, bodySamples, minX, maxX, minY, maxY, sumX, sumY)
+		return false
+
+	bodyWidth := maxX - minX + 1
+	bodyHeight := maxY - minY + 1
+
+	; User screenshots consistently separate the real deposit (~80x76+ white
+	; body) from player spell rings (~60x59). Keep some margin for animation.
+	return (bodySamples >= 650
+		&& bodyWidth >= 66
+		&& bodyHeight >= 62
+		&& bodyWidth <= 125
+		&& bodyHeight <= 125)
+}
+
+
+Divination_GetDepositBody(capture, centerX, centerY, ByRef bodySamples, ByRef minX, ByRef maxX, ByRef minY, ByRef maxY, ByRef sumX, ByRef sumY)
+{
+	bodySamples := 0
+	minX := ""
+	maxX := ""
+	minY := ""
+	maxY := ""
+	sumX := 0
+	sumY := 0
+
+	if !IsObject(capture)
+		return false
+
+	seedX := Round(centerX + 0)
+	seedY := Round(centerY + 0)
+	if !Divination_CaptureDepositPixel(capture, seedX, seedY)
+	{
+		foundSeed := false
+		seedRadius := 16
+		offsetY := -seedRadius
+		while (offsetY <= seedRadius && !foundSeed)
+		{
+			offsetX := -seedRadius
+			while (offsetX <= seedRadius)
+			{
+				testX := seedX + offsetX
+				testY := seedY + offsetY
+				if Divination_CaptureDepositPixel(capture, testX, testY)
+				{
+					seedX := testX
+					seedY := testY
+					foundSeed := true
+					break
+				}
+				offsetX += 2
+			}
+			offsetY += 2
+		}
+
+		if !foundSeed
+			return false
+	}
+
+	componentStep := 1
+	componentRadius := 115
+	leftLimit := Max(0, seedX - componentRadius)
+	rightLimit := Min(capture.Width - 1, seedX + componentRadius)
+	topLimit := Max(0, seedY - componentRadius)
+	bottomLimit := Min(capture.Height - 1, seedY + componentRadius)
+
+	queueX := [seedX]
+	queueY := [seedY]
+	visited := {}
+	visited[seedX . "|" . seedY] := true
+	head := 1
+
+	minX := seedX
+	maxX := seedX
+	minY := seedY
+	maxY := seedY
+
+	while (head <= queueX.Length())
+	{
+		pointX := queueX[head]
+		pointY := queueY[head]
+		head++
+
+		bodySamples++
+		sumX += pointX
+		sumY += pointY
+		if (pointX < minX)
+			minX := pointX
+		if (pointX > maxX)
+			maxX := pointX
+		if (pointY < minY)
+			minY := pointY
+		if (pointY > maxY)
+			maxY := pointY
+
+		dyStep := -componentStep
+		while (dyStep <= componentStep)
+		{
+			dxStep := -componentStep
+			while (dxStep <= componentStep)
+			{
+				if (dxStep != 0 || dyStep != 0)
+				{
+					nextX := pointX + dxStep
+					nextY := pointY + dyStep
+					if (nextX >= leftLimit && nextX <= rightLimit
+						&& nextY >= topLimit && nextY <= bottomLimit)
+					{
+						key := nextX . "|" . nextY
+						if !visited.HasKey(key)
+						{
+							visited[key] := true
+							if Divination_CaptureDepositPixel(capture, nextX, nextY)
+							{
+								queueX.Push(nextX)
+								queueY.Push(nextY)
+							}
+						}
+					}
+				}
+				dxStep += componentStep
+			}
+			dyStep += componentStep
+		}
+	}
+
+	return (bodySamples > 0)
+}
+
+
+Divination_CaptureDepositPixel(capture, x, y)
+{
+	if !IsObject(capture)
+		return false
+	if (x < 0 || x >= capture.Width || y < 0 || y >= capture.Height)
+		return false
+
+	rgb := NumGet(capture.Bits + (((y * capture.Width) + x) * 4), 0, "UInt") & 0xFFFFFF
+	return Divination_IsDepositColor(rgb)
 }
 
 
@@ -628,6 +1068,7 @@ Divination_ClearResourceTarget()
 	DivinationTargetType := ""
 	DivinationResourceClickTick := 0
 	DivinationResourceAbsentChecks := 0
+	DivinationResourcePresentChecks := 0
 	DivinationResourceAbsentStartTick := 0
 	DivinationResourceAbsenceLogged := false
 	DivinationNoYellowStartTick := 0
@@ -703,7 +1144,14 @@ Divination_ResourcePresentAtClick(ByRef centerX, ByRef centerY, targetType, star
 		else
 			minimumDensity := 90
 
-		if (currentDensity >= minimumDensity)
+		; Density alone can be held up by nearby normal wisps after the clicked
+		; enriched node has vanished. Keep the existing density tolerance, but
+		; require the large connected enriched body to still exist at this target.
+		enrichedBodySamples := 0
+		enrichedBodyWidth := 0
+		enrichedBodyHeight := 0
+		if (currentDensity >= minimumDensity
+			&& Divination_IsEnrichedConnectedBody(capture, centerX, centerY, currentDensity, enrichedBodySamples, enrichedBodyWidth, enrichedBodyHeight))
 		{
 			LLARS_CreatorReleaseCapture(capture)
 			return 1
@@ -784,7 +1232,13 @@ Divination_ReacquireTrackedResource(capture, oldX, oldY, targetType, ByRef found
 	; Camera/world scrolling from walking can move the same node a substantial amount on screen.
 	if (!allowGlobalReacquire)
 	{
-		reacquireRadius := Max(110, Round(Min(capture.Width, capture.Height) * 0.30))
+		; Once tracking is established, an enriched node should only drift locally.
+		; Do not silently adopt a newly spawned enriched node elsewhere on screen.
+		if (targetType = "Enriched")
+			reacquireRadius := Min(96, Max(64, Round(Min(capture.Width, capture.Height) * 0.10)))
+		else
+			reacquireRadius := Max(110, Round(Min(capture.Width, capture.Height) * 0.30))
+
 		deltaX := candidateX - oldX
 		deltaY := candidateY - oldY
 		if (((deltaX * deltaX) + (deltaY * deltaY)) > (reacquireRadius * reacquireRadius))
@@ -1048,7 +1502,17 @@ Divination_IsEnrichedConnectedBody(capture, centerX, centerY, clusterScore, ByRe
 		return false
 
 	bodyToClusterRatio := bodySamples / clusterScore
-	return (bodyToClusterRatio >= 2.25)
+
+	; The real enriched wisp is consistently much larger than normal wisps in
+	; the supplied views. Keep the original ratio test, but reject compact normal
+	; bodies that can occasionally satisfy that ratio because of animation.
+	minimumBodyWidth := 42
+	minimumBodyHeight := 42
+	minimumMaxSpan := 52
+	return (bodyToClusterRatio >= 2.25
+		&& bodyWidth >= minimumBodyWidth
+		&& bodyHeight >= minimumBodyHeight
+		&& Max(bodyWidth, bodyHeight) >= minimumMaxSpan)
 }
 
 Divination_CaptureResourcePixel(capture, x, y)
@@ -1063,7 +1527,7 @@ Divination_CaptureResourcePixel(capture, x, y)
 }
 
 
-Divination_FindEnrichedCandidate(ByRef foundX, ByRef foundY, ByRef targetScore, ByRef targetDensity, ByRef bodyWidth := 0, ByRef bodyHeight := 0)
+Divination_FindEnrichedCandidate(ByRef foundX, ByRef foundY, ByRef targetScore, ByRef targetDensity, ByRef bodyWidth := 0, ByRef bodyHeight := 0, ByRef bodySamples := 0)
 {
 	global DivinationTargetX, DivinationTargetY, DivinationTargetType
 
@@ -1073,6 +1537,7 @@ Divination_FindEnrichedCandidate(ByRef foundX, ByRef foundY, ByRef targetScore, 
 	targetDensity := 0
 	bodyWidth := 0
 	bodyHeight := 0
+	bodySamples := 0
 
 	if !LLARS_ColorGetRuneScapeClient(hWnd, clientWidth, clientHeight)
 		return false
@@ -1084,21 +1549,70 @@ Divination_FindEnrichedCandidate(ByRef foundX, ByRef foundY, ByRef targetScore, 
 	if !IsObject(capture)
 		return false
 
-	; If we are already on enriched, remove that node from this scan so the search can see a second enriched spawn instead of returning the current one forever.
+	; If we are already on enriched, remove that node from this scan so the search
+	; can see a second enriched spawn instead of returning the current one forever.
 	if (DivinationTargetType = "Enriched")
 		Divination_MaskCaptureArea(capture, DivinationTargetX, DivinationTargetY, 75)
 
-	found := LLARS_ColorFindLargeClusterFromCapture(capture, "Divination_IsResourceColor", foundX, foundY, targetScore, targetDensity, 90, 4, 28, 8, 8, 2, 20, 4, "center-biased")
-
-	if (found)
-	{
-		bodySamples := 0
-		found := Divination_IsEnrichedConnectedBody(capture, foundX, foundY, targetScore, bodySamples, bodyWidth, bodyHeight)
-	}
+	found := Divination_FindEnrichedCandidateFromCapture(capture, foundX, foundY, targetScore, targetDensity, bodyWidth, bodyHeight, bodySamples)
 
 	LLARS_CreatorReleaseCapture(capture)
 	return found
 }
+
+
+Divination_FindEnrichedCandidateFromCapture(capture, ByRef foundX, ByRef foundY, ByRef targetScore, ByRef targetDensity, ByRef bodyWidth := 0, ByRef bodyHeight := 0, ByRef bodySamples := 0)
+{
+	foundX := ""
+	foundY := ""
+	targetScore := 0
+	targetDensity := 0
+	bodyWidth := 0
+	bodyHeight := 0
+	bodySamples := 0
+
+	if !IsObject(capture)
+		return false
+
+	; LLARS' general large-cluster finder intentionally prefers the object nearest
+	; screen center. For Divination that can be a normal wisp even when a larger
+	; enriched wisp exists elsewhere. Reject verified-normal candidates, mask only
+	; that small area, and try the next body before giving up.
+	attempt := 0
+	while (attempt < 6)
+	{
+		attempt++
+		candidateX := ""
+		candidateY := ""
+		candidateScore := 0
+		candidateDensity := 0
+
+		if !LLARS_ColorFindLargeClusterFromCapture(capture, "Divination_IsResourceColor", candidateX, candidateY, candidateScore, candidateDensity, 90, 4, 28, 8, 8, 2, 20, 4, "center-biased")
+			return false
+
+		candidateSamples := 0
+		candidateWidth := 0
+		candidateHeight := 0
+		if Divination_IsEnrichedConnectedBody(capture, candidateX, candidateY, candidateScore, candidateSamples, candidateWidth, candidateHeight)
+		{
+			foundX := candidateX
+			foundY := candidateY
+			targetScore := candidateScore
+			targetDensity := candidateDensity
+			bodyWidth := candidateWidth
+			bodyHeight := candidateHeight
+			bodySamples := candidateSamples
+			return true
+		}
+
+		; Normal wisps are much smaller than enriched. A 38px mask removes the
+		; rejected normal body without wiping a nearby enriched candidate.
+		Divination_MaskCaptureArea(capture, candidateX, candidateY, 38)
+	}
+
+	return false
+}
+
 
 Divination_MaskCaptureArea(capture, centerX, centerY, radius)
 {
