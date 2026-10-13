@@ -3357,6 +3357,239 @@ LLARS_NaturalMovementRefreshEstimate()
 		LLARS_UpdateEstimatedTimeNow()
 }
 
+; Plans an occasional slight overshoot so the existing NaturalClick path can miss
+; past the true click point before a short corrective submovement returns to it.
+LLARS_NaturalClickOvershootPlan(startX, startY, targetX, targetY, runeScapeHwnd)
+{
+	dx := targetX - startX
+	dy := targetY - startY
+	distance := Sqrt((dx * dx) + (dy * dy))
+	if (distance < 45 || LLARS_RandomUnit() >= 0.20)
+		return ""
+
+	VarSetCapacity(clientRect, 16, 0)
+	if !DllCall("GetClientRect", "Ptr", runeScapeHwnd, "Ptr", &clientRect)
+		return ""
+	clientWidth := NumGet(clientRect, 8, "Int")
+	clientHeight := NumGet(clientRect, 12, "Int")
+	if (clientWidth <= 2 || clientHeight <= 2)
+		return ""
+
+	unitX := dx / distance
+	unitY := dy / distance
+	perpX := -unitY
+	perpY := unitX
+	; Make the miss visible enough to read as a genuine overshoot instead of tiny endpoint jitter.
+	overshootDistance := LLARS_HumanRandomInt(22, 38, "NaturalClick.OvershootDistance", 5)
+	lateralOffset := LLARS_HumanRandomInt(-7, 7, "NaturalClick.OvershootLateral", 4)
+	missX := Round(targetX + (unitX * overshootDistance) + (perpX * lateralOffset))
+	missY := Round(targetY + (unitY * overshootDistance) + (perpY * lateralOffset))
+
+	if (missX < 1)
+		missX := 1
+	if (missY < 1)
+		missY := 1
+	if (missX >= clientWidth)
+		missX := clientWidth - 1
+	if (missY >= clientHeight)
+		missY := clientHeight - 1
+
+	correctionDX := targetX - missX
+	correctionDY := targetY - missY
+	correctionDistance := Sqrt((correctionDX * correctionDX) + (correctionDY * correctionDY))
+	if (correctionDistance < 5)
+		return ""
+
+	return {x:missX, y:missY}
+}
+
+; Corrects an overshot NaturalClick endpoint back to the exact click coordinate.
+; The correction intentionally continues a few pixels in the incoming direction,
+; bends around in a visible arc, then makes a slower controlled final approach.
+; No click can occur at the miss point.
+LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd, runBound := false, sourceStartX := "", sourceStartY := "")
+{
+	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick overshoot correction", runeScapeHwnd))
+		return -1
+	if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+		return 0
+
+	correctionDX := targetX - missX
+	correctionDY := targetY - missY
+	correctionDistance := Sqrt((correctionDX * correctionDX) + (correctionDY * correctionDY))
+	if (correctionDistance <= 1)
+	{
+		MouseMove, %targetX%, %targetY%, 0
+		return 1
+	}
+
+	; Preserve the incoming direction so the cursor does not instantly reverse on a
+	; straight line. The first control point continues slightly past the miss before
+	; the correction curves back toward the real target.
+	incomingDX := missX - sourceStartX
+	incomingDY := missY - sourceStartY
+	incomingDistance := Sqrt((incomingDX * incomingDX) + (incomingDY * incomingDY))
+	if (sourceStartX = "" || sourceStartY = "" || incomingDistance < 1)
+	{
+		incomingX := -correctionDX / correctionDistance
+		incomingY := -correctionDY / correctionDistance
+	}
+	else
+	{
+		incomingX := incomingDX / incomingDistance
+		incomingY := incomingDY / incomingDistance
+	}
+	correctionUnitX := correctionDX / correctionDistance
+	correctionUnitY := correctionDY / correctionDistance
+	perpX := -correctionUnitY
+	perpY := correctionUnitX
+
+	turnExtension := LLARS_HumanRandomInt(7, 14, "NaturalClick.OvershootCorrectionTurnExtension", 4)
+	curveSign := (LLARS_RandomUnit() < 0.5) ? -1 : 1
+	arcAmount := LLARS_HumanRandomInt(6, 13, "NaturalClick.OvershootCorrectionArc", 4) * curveSign
+	entryArc := arcAmount * (LLARS_HumanRandomInt(35, 65, "NaturalClick.OvershootCorrectionEntryArc", 4) / 100.0)
+	finalLead := LLARS_HumanRandomInt(7, 13, "NaturalClick.OvershootCorrectionFinalLead", 4)
+
+	cp1X := missX + (incomingX * turnExtension) + (perpX * entryArc)
+	cp1Y := missY + (incomingY * turnExtension) + (perpY * entryArc)
+	cp2X := targetX - (correctionUnitX * finalLead) + (perpX * arcAmount)
+	cp2Y := targetY - (correctionUnitY * finalLead) + (perpY * arcAmount)
+
+	; Deliberately slower than the ballistic reach. Short corrections remain under a
+	; second, but are long enough to look like visual reacquisition rather than snap-back.
+	baseDuration := 220 + Round(correctionDistance * 7.5)
+	durationPercent := LLARS_HumanRandomInt(90, 118, "NaturalClick.OvershootCorrectionDuration", 6)
+	duration := Round(baseDuration * durationPercent / 100)
+	if (duration < 340)
+		duration := 340
+	if (duration > 640)
+		duration := 640
+	duration := LLARS_HumanizeTimingEnding(duration, 340, 640, "NaturalClick.OvershootCorrection.Movement")
+
+	rawSteps := Round(correctionDistance * 3.5)
+	if (rawSteps < 80)
+		rawSteps := 80
+	if (rawSteps > 180)
+		rawSteps := 180
+	seedX := LLARS_HumanRandomInt(1, 2147483000, "NaturalClick.OvershootCorrectionNoiseSeedX", 6)
+	seedY := LLARS_HumanRandomInt(1, 2147483000, "NaturalClick.OvershootCorrectionNoiseSeedY", 6)
+	noiseAmount := correctionDistance * 0.035
+	if (noiseAmount < 0.55)
+		noiseAmount := 0.55
+	if (noiseAmount > 1.65)
+		noiseAmount := 1.65
+
+	; Build the full curved path first and then traverse it by arc length, matching
+	; NaturalClick's movement character instead of interpolating directly to target.
+	points := []
+	lengths := []
+	totalLength := 0
+	previousX := missX
+	previousY := missY
+	points.Push({x:missX, y:missY})
+	lengths.Push(0)
+	previousNoiseX := 0
+	previousNoiseY := 0
+	Loop, %rawSteps%
+	{
+		t := A_Index / rawSteps
+		inv := 1 - t
+		currentX := (inv * inv * inv * missX)
+		currentX += (3 * inv * inv * t * cp1X)
+		currentX += (3 * inv * t * t * cp2X)
+		currentX += (t * t * t * targetX)
+		currentY := (inv * inv * inv * missY)
+		currentY += (3 * inv * inv * t * cp1Y)
+		currentY += (3 * inv * t * t * cp2Y)
+		currentY += (t * t * t * targetY)
+
+		noiseFade := Sin(t * 3.14159265)
+		if (t > 0.78)
+		{
+			fade := (1 - t) / 0.22
+			if (fade < 0)
+				fade := 0
+			noiseFade *= fade
+		}
+		rawNoiseX := NaturalNoise(seedX, t + 7.17) * noiseAmount * noiseFade
+		rawNoiseY := NaturalNoise(seedY, t + 19.41) * noiseAmount * noiseFade
+		noiseX := (previousNoiseX * 0.72) + (rawNoiseX * 0.28)
+		noiseY := (previousNoiseY * 0.72) + (rawNoiseY * 0.28)
+		previousNoiseX := noiseX
+		previousNoiseY := noiseY
+		currentX += noiseX
+		currentY += noiseY
+
+		segmentDX := currentX - previousX
+		segmentDY := currentY - previousY
+		segmentLength := Sqrt((segmentDX * segmentDX) + (segmentDY * segmentDY))
+		totalLength += segmentLength
+		points.Push({x:currentX, y:currentY})
+		lengths.Push(totalLength)
+		previousX := currentX
+		previousY := currentY
+	}
+
+	steps := Round(duration / 7)
+	if (steps < 48)
+		steps := 48
+	if (steps > 92)
+		steps := 92
+	startTick := A_TickCount
+	searchIndex := 2
+	previousX := missX
+	previousY := missY
+	Loop, %steps%
+	{
+		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus during NaturalClick overshoot correction", runeScapeHwnd))
+			return -1
+		if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
+			return 0
+
+		t := A_Index / steps
+		; Blend linear progress with smoothstep so the correction retains visible
+		; momentum out of the miss, then settles progressively into the true target.
+		smoothT := t * t * (3 - (2 * t))
+		timingT := (0.24 * t) + (0.76 * smoothT)
+		targetLength := totalLength * timingT
+		while (searchIndex < lengths.Length() && lengths[searchIndex] < targetLength)
+			searchIndex++
+		if (searchIndex > lengths.Length())
+			searchIndex := lengths.Length()
+		prevIndex := searchIndex - 1
+		if (prevIndex < 1)
+			prevIndex := 1
+		prevLength := lengths[prevIndex]
+		nextLength := lengths[searchIndex]
+		lengthRange := nextLength - prevLength
+		blend := (lengthRange <= 0) ? 0 : (targetLength - prevLength) / lengthRange
+		point1 := points[prevIndex]
+		point2 := points[searchIndex]
+		currentX := Round(point1.x + ((point2.x - point1.x) * blend))
+		currentY := Round(point1.y + ((point2.y - point1.y) * blend))
+		if (currentX != previousX || currentY != previousY)
+		{
+			MouseMove, %currentX%, %currentY%, 0
+			previousX := currentX
+			previousY := currentY
+		}
+
+		LLARS_NaturalMovementRefreshEstimate()
+		targetElapsed := Round(duration * t)
+		delay := targetElapsed - (A_TickCount - startTick)
+		if (delay > 0)
+		{
+			if (delay > 24)
+				delay := 24
+			Sleep, %delay%
+		}
+	}
+
+	MouseMove, %targetX%, %targetY%, 0
+	LLARS_DeveloperAction("NaturalClick Overshoot Correction || (" . missX . ", " . missY . ") > (" . targetX . ", " . targetY . ") || Arc=" . Round(totalLength) . " px || " . duration . " ms")
+	return 1
+}
+
 ; ================================================================
 ; |     LLARS MOUSE LIBRARY     -     LLARS MOUSE LIBRARY        |
 ; ================================================================
@@ -3439,6 +3672,17 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	dx := x - startX
 	dy := y - startY
 	distance := Sqrt((dx * dx) + (dy * dy))
+	overshootPlan := LLARS_NaturalClickOvershootPlan(startX, startY, x, y, runeScapeHwnd)
+	movementX := x
+	movementY := y
+	if IsObject(overshootPlan)
+	{
+		movementX := overshootPlan.x
+		movementY := overshootPlan.y
+		dx := movementX - startX
+		dy := movementY - startY
+		distance := Sqrt((dx * dx) + (dy * dy))
+	}
 	if (distance <= 2)
 	{
 		DllCall("QueryPerformanceFrequency", "Int64*", movementPerformanceFrequency)
@@ -3527,11 +3771,11 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		currentX := (inv * inv * inv * startX)
 		currentX += (3 * inv * inv * ease * cp1X)
 		currentX += (3 * inv * ease * ease * cp2X)
-		currentX += (ease * ease * ease * x)
+		currentX += (ease * ease * ease * movementX)
 		currentY := (inv * inv * inv * startY)
 		currentY += (3 * inv * inv * ease * cp1Y)
 		currentY += (3 * inv * ease * ease * cp2Y)
-		currentY += (ease * ease * ease * y)
+		currentY += (ease * ease * ease * movementY)
 		nx := NaturalNoise(seedX, t)
 		ny := NaturalNoise(seedY, t + 13.731)
 		noiseFade := Sin(t * 3.14159265)
@@ -3649,7 +3893,21 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		LLARS_NaturalMovementTimingEnd()
 		return -1
 	}
-	MouseMove, %x%, %y%, 0
+	MouseMove, %movementX%, %movementY%, 0
+	if IsObject(overshootPlan)
+	{
+		correctionResult := LLARS_NaturalClickCorrectOvershoot(movementX, movementY, x, y, runeScapeHwnd, runBound, startX, startY)
+		if (correctionResult != 1)
+		{
+			LLARS_NaturalMovementTimingEnd()
+			return correctionResult
+		}
+		LLARS_DeveloperAction("NaturalClick Overshoot || Target=(" . x . ", " . y . ") || Miss=(" . movementX . ", " . movementY . ") || Corrected")
+	}
+	else
+	{
+		MouseMove, %x%, %y%, 0
+	}
 	DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
 	actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
 	LLARS_NaturalMovementTimingEnd()
