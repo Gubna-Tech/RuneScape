@@ -3752,6 +3752,78 @@ LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, baselineMask 
 	return false
 }
 
+; Right-clicks do not create RuneScape's red interaction X. Verify them by
+; confirming that a RuneScape context menu appears over/near the target.
+LLARS_RightClickContextMenuVisible(centerX, centerY, runeScapeHwnd)
+{
+	if (!IsFunc("LLARS_ColorCaptureVisibleClient")
+		|| !IsFunc("LLARS_ColorContextMenuOverlapsTarget")
+		|| !IsFunc("LLARS_CreatorReleaseCapture"))
+	{
+		return -1
+	}
+
+	if (!runeScapeHwnd || !DllCall("IsWindow", "Ptr", runeScapeHwnd))
+		return -1
+	if (DllCall("GetForegroundWindow", "Ptr") != runeScapeHwnd)
+		return -1
+
+	VarSetCapacity(clientRect, 16, 0)
+	if !DllCall("GetClientRect", "Ptr", runeScapeHwnd, "Ptr", &clientRect)
+		return -1
+
+	clientWidth := NumGet(clientRect, 8, "Int")
+	clientHeight := NumGet(clientRect, 12, "Int")
+	if (clientWidth <= 0 || clientHeight <= 0)
+		return -1
+
+	captureMethod := ""
+	capture := LLARS_ColorCaptureVisibleClient(runeScapeHwnd, clientWidth, clientHeight, captureMethod)
+	if !IsObject(capture)
+		return -1
+
+	visible := LLARS_ColorContextMenuOverlapsTarget(capture, centerX, centerY)
+	LLARS_CreatorReleaseCapture(capture)
+	return visible ? 1 : 0
+}
+
+LLARS_WaitForRightClickConfirmation(centerX, centerY, runeScapeHwnd, timeoutMs := 650)
+{
+	startTick := A_TickCount
+	captureFailures := 0
+
+	Loop
+	{
+		state := LLARS_RightClickContextMenuVisible(centerX, centerY, runeScapeHwnd)
+		if (state = 1)
+		{
+			LLARS_DeveloperAction("RedClick || Right-click context menu confirmed || " . (A_TickCount - startTick) . " ms")
+			return true
+		}
+		if (state < 0)
+			captureFailures++
+
+		if ((A_TickCount - startTick) >= timeoutMs)
+			break
+
+		Sleep, 15
+	}
+
+	LLARS_DeveloperAction("RedClick || Right-click context menu not detected || CaptureFailures=" . captureFailures . " || Timeout=" . timeoutMs . " ms")
+	return false
+}
+
+LLARS_WaitForVerifiedClickConfirmation(centerX, centerY, button, runeScapeHwnd, redBaselineMask := 0)
+{
+	button := Trim(button)
+	StringLower, button, button
+
+	if (button = "right")
+		return LLARS_WaitForRightClickConfirmation(centerX, centerY, runeScapeHwnd)
+
+	return LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, redBaselineMask)
+}
+
 LLARS_StopRunTimersForMisclick()
 {
 	; Creator/API timers are tracked centrally. Legacy scripts also have a small
@@ -3796,7 +3868,11 @@ LLARS_AbortRunForMisclick(x, y, clickTarget := "")
 		SetLLARSHOTKEYS("On")
 	if IsFunc("LLARS_SetStatus")
 		LLARS_SetStatus("Error", "Misclick detected")
-	GuiControl,, TimerCount, Misclick
+
+	; TimerCount exists only on Timer-mode GUIs. RunCount/UntilDone scripts
+	; must not touch it from the shared verified-click misclick halt path.
+	if (LLARS_RUN_TYPE = "Timer")
+		GuiControl,, TimerCount, Misclick
 
 	SoundBeep, 880, 180
 	MsgBox, 16, LLARS Misclick Detected, % "LLARS stopped this run because the expected RuneScape interaction confirmation was not detected.`n`nTarget: " . clickTarget . "`nCoordinate: (" . x . ", " . y . ")`n`nThe run has been halted. Check RuneScape and start the run again when ready."
@@ -3931,12 +4007,15 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		MouseGetPos, clickX, clickY
 		if (clickX != x || clickY != y)
 			return -1
-		redBaselineMask := verifyRedClick ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
+		verificationButton := Trim(button)
+		StringLower, verificationButton, verificationButton
+		redBaselineMask := (verifyRedClick && verificationButton != "right") ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
 		LLARS_HumanMouseClick(button)
 		if (verifyRedClick)
 		{
-			LLARS_DeveloperAction("RedClick || Physical click sent || (" . x . ", " . y . ")")
-			if !LLARS_WaitForRedClickConfirmation(x, y, runeScapeHwnd, redBaselineMask)
+			verificationType := (verificationButton = "right") ? "ContextMenu" : "RedX"
+			LLARS_DeveloperAction("RedClick || Click sent || Button=" . verificationButton . " || Verify=" . verificationType . " || (" . x . ", " . y . ")")
+			if !LLARS_WaitForVerifiedClickConfirmation(x, y, verificationButton, runeScapeHwnd, redBaselineMask)
 			{
 				LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
 				if (redClickFailureMode = "return" || redClickFailureMode = "retry")
@@ -4168,12 +4247,15 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	MouseGetPos, clickX, clickY
 	if (clickX != x || clickY != y)
 		return -1
-	redBaselineMask := verifyRedClick ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
+	verificationButton := Trim(button)
+	StringLower, verificationButton, verificationButton
+	redBaselineMask := (verifyRedClick && verificationButton != "right") ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
 	LLARS_HumanMouseClick(button)
 	if (verifyRedClick)
 	{
-		LLARS_DeveloperAction("RedClick || Physical click sent || (" . x . ", " . y . ")")
-		if !LLARS_WaitForRedClickConfirmation(x, y, runeScapeHwnd, redBaselineMask)
+		verificationType := (verificationButton = "right") ? "ContextMenu" : "RedX"
+		LLARS_DeveloperAction("RedClick || Click sent || Button=" . verificationButton . " || Verify=" . verificationType . " || (" . x . ", " . y . ")")
+		if !LLARS_WaitForVerifiedClickConfirmation(x, y, verificationButton, runeScapeHwnd, redBaselineMask)
 		{
 			LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
 			if (redClickFailureMode = "return" || redClickFailureMode = "retry")
