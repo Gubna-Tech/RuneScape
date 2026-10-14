@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Opening", "Spinning Wheel")
-	LLARS_Click("Spinning Wheel - Fungal Only")
+	LLARS_RedClick("Spinning Wheel - Fungal Only")
 
 	LLARS_Sleep("Sleep Short")
 

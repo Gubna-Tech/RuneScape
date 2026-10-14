@@ -38,7 +38,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Banking", "Planks")
-		LLARS_Click("Bank Prime")
+		LLARS_RedClick("Bank Prime")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -48,13 +48,13 @@ Run(ctx)
 		LLARS_Sleep("Sleep Short")
 
 		LLARS_SetStatus("Moving", "Sawmill")
-		LLARS_Click("Sawmill")
+		LLARS_RedClick("Sawmill")
 
 	}
 	else
 	{
 		LLARS_SetStatus("Banking", "Planks")
-		LLARS_Click("Bank Main")
+		LLARS_RedClick("Bank Main")
 
 		LLARS_Sleep("Sleep Walk")
 
@@ -66,7 +66,7 @@ Run(ctx)
 		LLARS_Sleep("Sleep Short")
 
 		LLARS_SetStatus("Moving", "Sawmill")
-		LLARS_Click("Sawmill")
+		LLARS_RedClick("Sawmill")
 
 	}
 
