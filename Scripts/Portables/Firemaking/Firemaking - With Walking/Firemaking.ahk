@@ -40,7 +40,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Banking", "Logs")
-		LLARS_Click("Bank Prime Coords")
+		LLARS_RedClick("Bank Prime Coords")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -60,7 +60,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Moving", "Portable Brazier")
-	LLARS_Click("Brazier Coords")
+	LLARS_RedClick("Brazier Coords")
 
 	LLARS_Sleep("Sleep Walk")
 
@@ -68,7 +68,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Fire")
 
 	LLARS_SetStatus("Banking", "Logs")
-	LLARS_Click("Bank Main Coords")
+	LLARS_RedClick("Bank Main Coords")
 
 	LLARS_Sleep("Sleep Walk", true)
 }

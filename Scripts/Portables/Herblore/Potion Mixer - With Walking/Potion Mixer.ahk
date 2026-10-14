@@ -40,7 +40,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Banking", "Potions")
-		LLARS_Click("Bank Prime Coords")
+		LLARS_RedClick("Bank Prime Coords")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -60,7 +60,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Moving", "Portable Well")
-	LLARS_Click("Well Coords")
+	LLARS_RedClick("Well Coords")
 
 	LLARS_Sleep("Sleep Walk")
 
@@ -70,7 +70,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Mix")
 
 	LLARS_SetStatus("Banking", "Potions")
-	LLARS_Click("Bank Main Coords")
+	LLARS_RedClick("Bank Main Coords")
 
 	LLARS_Sleep("Sleep Walk", true)
 }

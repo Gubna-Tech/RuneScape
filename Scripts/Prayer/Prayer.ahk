@@ -45,7 +45,7 @@ Run(ctx)
 		{
 
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_Click("Bank Coords")
+			LLARS_RedClick("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
 
@@ -73,7 +73,7 @@ Run(ctx)
 		{
 
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_Click("Bank Coords")
+			LLARS_RedClick("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
 
@@ -100,7 +100,7 @@ Run(ctx)
 	}
 
 	LLARS_SetStatus("Banking", "Prayer")
-	LLARS_Click("Bank Coords")
+	LLARS_RedClick("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 
@@ -150,7 +150,7 @@ Run(ctx)
 		If (bobtime <= 60000)
 		{
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_Click("Bank Coords")
+			LLARS_RedClick("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
 
@@ -182,7 +182,7 @@ Run(ctx)
 		If (powdertime <= 60000)
 		{
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_Click("Bank Coords")
+			LLARS_RedClick("Bank Coords")
 
 			LLARS_Sleep("Sleep Short")
 

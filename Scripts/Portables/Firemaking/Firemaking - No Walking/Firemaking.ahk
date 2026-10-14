@@ -47,7 +47,7 @@ Run(ctx)
 		SetTimer, UpdateTime, 1000
 
 		LLARS_SetStatus("Banking", "Logs")
-		LLARS_Click("Bank")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -75,7 +75,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Banking", "Logs")
-	LLARS_Click("Bank")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Short")
 
@@ -87,7 +87,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Opening", "Portable Brazier")
-	LLARS_Click("Brazier")
+	LLARS_RedClick("Brazier")
 
 	LLARS_SetStatus("Firemaking", "Logs")
 	IniRead, sa1, Config.ini, Sleep Fire, min
@@ -103,7 +103,7 @@ Run(ctx)
 	if (LLARS_RenewThisLoop)
 	{
 		LLARS_SetStatus("Banking", "Logs")
-		LLARS_Click("Bank")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Short")
 

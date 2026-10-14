@@ -84,7 +84,7 @@ if LLARS_PixelMatches("Pixel Coordinate", "Red")
         TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
 
     LLARS_SetStatus("Fishing", "Fishing Spot")
-    LLARS_Click("Fishing Spot")
+    LLARS_RedClick("Fishing Spot")
     LastClickTime := A_TickCount
 
     Loop, 100

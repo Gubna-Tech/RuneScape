@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Wine")
-	LLARS_Click("Bank Coords")
+	LLARS_RedClick("Bank Coords")
 
 	LLARS_Sleep("Sleep Short")
 

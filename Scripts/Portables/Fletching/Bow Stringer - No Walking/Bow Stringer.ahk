@@ -47,7 +47,7 @@ Run(ctx)
 		SetTimer, UpdateTime, 1000
 
 		LLARS_SetStatus("Banking", "Bows")
-		LLARS_Click("Bank")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -75,7 +75,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Banking", "Bows")
-	LLARS_Click("Bank")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Short")
 
@@ -87,7 +87,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Opening", "Portable Fletcher")
-	LLARS_Click("Fletcher")
+	LLARS_RedClick("Fletcher")
 
 	LLARS_Sleep("Sleep Short")
 
@@ -107,7 +107,7 @@ Run(ctx)
 	if (LLARS_RenewThisLoop)
 	{
 		LLARS_SetStatus("Banking", "Bows")
-		LLARS_Click("Bank")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Short")
 

@@ -38,7 +38,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Opening", "Anvil")
-		LLARS_Click("Anvil Coords")
+		LLARS_RedClick("Anvil Coords")
 
 		LLARS_Sleep("Sleep Normal")
 
@@ -89,7 +89,7 @@ Run(ctx)
 	else
 	{
 		LLARS_SetStatus("Opening", "Anvil")
-		LLARS_Click("Anvil Coords")
+		LLARS_RedClick("Anvil Coords")
 
 	}
 
