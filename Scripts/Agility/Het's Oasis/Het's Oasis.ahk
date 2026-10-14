@@ -38,7 +38,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Traversing", "Fallen Palm Tree")
-		LLARS_Click("Fallen Palm Tree prime")
+		LLARS_RedClick("Fallen Palm Tree prime")
 
 		LLARS_Sleep("Sleep Fallen Palm Tree prime")
 
@@ -46,84 +46,84 @@ Run(ctx)
 	else
 	{
 		LLARS_SetStatus("Traversing", "Fallen Palm Tree")
-		LLARS_Click("Fallen Palm Tree Main")
+		LLARS_RedClick("Fallen Palm Tree Main")
 
 		LLARS_Sleep("Sleep Fallen Palm Tree Main")
 
 	}
 
 	LLARS_SetStatus("Traversing", "Fallen Palm Tree 1")
-	LLARS_Click("Fallen Palm Tree 1")
+	LLARS_RedClick("Fallen Palm Tree 1")
 
 	LLARS_Sleep("Sleep Fallen Palm Tree 1")
 
 	LLARS_SetStatus("Traversing", "Rope Ladder")
-	LLARS_Click("Rope Ladder")
+	LLARS_RedClick("Rope Ladder")
 
 	LLARS_Sleep("Sleep Rope Ladder")
 
 	LLARS_SetStatus("Traversing", "Gap 1")
-	LLARS_Click("Gap 1")
+	LLARS_RedClick("Gap 1")
 
 	LLARS_Sleep("Sleep Gap 1")
 
 	LLARS_SetStatus("Traversing", "Stone Pillar")
-	LLARS_Click("Stone Pillar")
+	LLARS_RedClick("Stone Pillar")
 
 	LLARS_Sleep("Sleep Stone Pillar")
 
 	LLARS_SetStatus("Traversing", "Rock Wall")
-	LLARS_Click("Rock Wall")
+	LLARS_RedClick("Rock Wall")
 
 	LLARS_Sleep("Sleep Rock Wall")
 
 	LLARS_SetStatus("Traversing", "Fallen Palm Tree 2")
-	LLARS_Click("Fallen Palm Tree 2")
+	LLARS_RedClick("Fallen Palm Tree 2")
 
 	LLARS_Sleep("Sleep Fallen Palm Tree 2")
 
 	LLARS_SetStatus("Traversing", "Small Gap")
-	LLARS_Click("Small Gap")
+	LLARS_RedClick("Small Gap")
 
 	LLARS_Sleep("Sleep Small Gap")
 
 	LLARS_SetStatus("Traversing", "Medium Gap")
-	LLARS_Click("Medium Gap")
+	LLARS_RedClick("Medium Gap")
 
 	LLARS_Sleep("Sleep Medium Gap")
 
 	LLARS_SetStatus("Traversing", "Fallen Palm Tree 3")
-	LLARS_Click("Fallen Palm Tree 3")
+	LLARS_RedClick("Fallen Palm Tree 3")
 
 	LLARS_Sleep("Sleep Fallen Palm Tree 3")
 
 	LLARS_SetStatus("Traversing", "Collapsed Walls")
-	LLARS_Click("Collapsed Walls")
+	LLARS_RedClick("Collapsed Walls")
 
 	LLARS_Sleep("Sleep Collapsed Walls")
 
 	LLARS_SetStatus("Traversing", "Large Rock 1")
-	LLARS_Click("Large Rock 1")
+	LLARS_RedClick("Large Rock 1")
 
 	LLARS_Sleep("Sleep Large Rock 1")
 
 	LLARS_SetStatus("Traversing", "Ledge 1")
-	LLARS_Click("Ledge 1")
+	LLARS_RedClick("Ledge 1")
 
 	LLARS_Sleep("Sleep Ledge 1")
 
 	LLARS_SetStatus("Traversing", "Gap 2")
-	LLARS_Click("Gap 2")
+	LLARS_RedClick("Gap 2")
 
 	LLARS_Sleep("Sleep Gap 2")
 
 	LLARS_SetStatus("Traversing", "Ledge 2")
-	LLARS_Click("Ledge 2")
+	LLARS_RedClick("Ledge 2")
 
 	LLARS_Sleep("Sleep Ledge 2")
 
 	LLARS_SetStatus("Traversing", "Large Rock 2")
-	LLARS_Click("Large Rock 2")
+	LLARS_RedClick("Large Rock 2")
 
 	LLARS_Sleep("Sleep Large Rock 2", !LLARS_RandomSleepRoll())
 

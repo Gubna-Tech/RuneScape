@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Amulets")
-	LLARS_Click("Bank Coords")
+	LLARS_RedClick("Bank Coords")
 
 	; Short randomized delay after banking.
 	LLARS_Sleep("Sleep Short")

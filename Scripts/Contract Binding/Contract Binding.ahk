@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Trading", "Magestix")
-	LLARS_Click("Magestix")
+	LLARS_RedClick("Magestix")
 
 	LLARS_Sleep("Sleep Short")
 
@@ -139,7 +139,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Infusing", "Obelisk")
-	LLARS_Click("Obelisk")
+	LLARS_RedClick("Obelisk")
 
 	LLARS_Sleep("Sleep Short")
 

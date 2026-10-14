@@ -128,7 +128,7 @@ if (EternalTreeState = "Find Tree")
 	{
 		LLARS_SetStatus("Clicking", "Eternal Tree")
 		LLARS_DeveloperAction("Eternal Tree || Target found || " . EternalTreeColorMode . " || (" . foundX . ", " . foundY . ") || Score=" . targetScore)
-		if LLARS_ColorClickDenseTarget(foundX, foundY, EternalTreeAcquireMatcher, "Eternal Tree", "left", 24, 20, 40, 32, 4)
+		if LLARS_ColorClickDenseTarget(foundX, foundY, EternalTreeAcquireMatcher, "Eternal Tree", "left", 24, 20, 40, 32, 4, true)
 		{
 			EternalTreeTargetX := foundX
 			EternalTreeTargetY := foundY
