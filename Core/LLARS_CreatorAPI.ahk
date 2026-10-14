@@ -1335,6 +1335,76 @@ LLARS_Click(section, button := "left", scope := "script")
 	}
 }
 
+; Creator-facing verified world-object click. Movement and physical click timing
+; are identical to LLARS_Click/NaturalClick, but the run is stopped immediately
+; if RuneScape's red interaction X is not detected after the click.
+LLARS_RedClick(section, button := "left", scope := "script")
+{
+	global LLARS_NaturalClickFocusLost
+
+	if !LLARS_RunActive()
+		return false
+
+	button := Trim(button)
+	StringLower, button, button
+	if button not in left,right
+	{
+		LLARS_CreatorConfigError("LLARS_RedClick button must be left or right: " . button)
+		return false
+	}
+
+	if !LLARS_ConfigReadPoint(section, x, y, scope)
+		return false
+
+	Loop
+	{
+		if !LLARS_WaitForRuneScape("Verified click " . section)
+			return false
+
+		LLARS_NaturalClickFocusLost := false
+		if RedClick(x, y, button, section, scope)
+			return true
+
+		if (!LLARS_NaturalClickFocusLost || !LLARS_RunActive())
+			return false
+	}
+}
+
+
+; Nonfatal RedClick variant. A missing red X returns false and leaves the run
+; active so the caller can reacquire or retry the action.
+LLARS_RedClickRetry(section, button := "left", scope := "script")
+{
+	global LLARS_NaturalClickFocusLost
+
+	if !LLARS_RunActive()
+		return false
+
+	button := Trim(button)
+	StringLower, button, button
+	if button not in left,right
+	{
+		LLARS_CreatorConfigError("LLARS_RedClickRetry button must be left or right: " . button)
+		return false
+	}
+
+	if !LLARS_ConfigReadPoint(section, x, y, scope)
+		return false
+
+	Loop
+	{
+		if !LLARS_WaitForRuneScape("Retryable verified click " . section)
+			return false
+
+		LLARS_NaturalClickFocusLost := false
+		if RedClickRetry(x, y, button, section, scope)
+			return true
+
+		if (!LLARS_NaturalClickFocusLost || !LLARS_RunActive())
+			return false
+	}
+}
+
 ; Updates the standard LLARS status row without requiring scripts to know the underlying GUI control names.
 LLARS_SetStatus(status, activity := "")
 {
@@ -2174,6 +2244,94 @@ LLARS_ClickPoint(x, y, button := "left", actionName := "Pixel Target")
 		{
 			return true
 		}
+
+		if (!LLARS_NaturalClickFocusLost || !LLARS_RunActive())
+			return false
+	}
+}
+
+
+; Runtime-coordinate version of LLARS_RedClick. Use this for detected world
+; objects that normally show RuneScape's red interaction X.
+LLARS_RedClickPoint(x, y, button := "left", actionName := "Verified Pixel Target")
+{
+	global LLARS_NaturalClickFocusLost
+
+	if !LLARS_RunActive()
+		return false
+	if x is not number
+	{
+		LLARS_CreatorConfigError("Runtime RedClick X coordinate is invalid: " . x)
+		return false
+	}
+	if y is not number
+	{
+		LLARS_CreatorConfigError("Runtime RedClick Y coordinate is invalid: " . y)
+		return false
+	}
+
+	x := Round(x + 0)
+	y := Round(y + 0)
+	button := Trim(button)
+	StringLower, button, button
+	if button not in left,right
+	{
+		LLARS_CreatorConfigError("LLARS_RedClickPoint button must be left or right: " . button)
+		return false
+	}
+
+	Loop
+	{
+		if !LLARS_WaitForRuneScape("Verified runtime click " . actionName)
+			return false
+
+		LLARS_NaturalClickFocusLost := false
+		if RedClick(x, y, button, actionName)
+			return true
+
+		if (!LLARS_NaturalClickFocusLost || !LLARS_RunActive())
+			return false
+	}
+}
+
+
+; Runtime-coordinate nonfatal RedClick. A missing confirmation returns false so
+; dynamic-target scripts can reacquire a fresh object and try again.
+LLARS_RedClickRetryPoint(x, y, button := "left", actionName := "Retryable Verified Pixel Target")
+{
+	global LLARS_NaturalClickFocusLost
+
+	if !LLARS_RunActive()
+		return false
+	if x is not number
+	{
+		LLARS_CreatorConfigError("Runtime RedClick retry X coordinate is invalid: " . x)
+		return false
+	}
+	if y is not number
+	{
+		LLARS_CreatorConfigError("Runtime RedClick retry Y coordinate is invalid: " . y)
+		return false
+	}
+
+	x := Round(x + 0)
+	y := Round(y + 0)
+	button := Trim(button)
+	StringLower, button, button
+	if button not in left,right
+	{
+		LLARS_CreatorConfigError("LLARS_RedClickRetryPoint button must be left or right: " . button)
+		return false
+	}
+
+	Loop
+	{
+		if !LLARS_WaitForRuneScape("Retryable verified runtime click " . actionName)
+			return false
+
+		LLARS_NaturalClickFocusLost := false
+		if RedClickRetry(x, y, button, actionName)
+			return true
 
 		if (!LLARS_NaturalClickFocusLost || !LLARS_RunActive())
 			return false
@@ -3188,7 +3346,7 @@ LLARS_ColorReacquireDensePoint(capture, matcher, ByRef clientX, ByRef clientY, r
 }
 
 ; Verifies that a target is still a dense match immediately before clicking it.
-LLARS_ColorClickDenseTarget(ByRef clientX, ByRef clientY, matcher, actionName := "Color Target", button := "left", reacquireRadius := 24, minimumReacquireDensity := 20, minimumTargetDensity := 40, targetDensityRadius := 32, targetDensityStep := 4)
+LLARS_ColorClickDenseTarget(ByRef clientX, ByRef clientY, matcher, actionName := "Color Target", button := "left", reacquireRadius := 24, minimumReacquireDensity := 20, minimumTargetDensity := 40, targetDensityRadius := 32, targetDensityStep := 4, verifyRedClick := false, retryRedClick := false)
 {
 	if !LLARS_ColorGetRuneScapeClient(hWnd, clientWidth, clientHeight)
 		return false
@@ -3204,6 +3362,13 @@ LLARS_ColorClickDenseTarget(ByRef clientX, ByRef clientY, matcher, actionName :=
 
 	if (!verified || targetDensity < minimumTargetDensity)
 		return false
+
+	if (verifyRedClick)
+	{
+		if (retryRedClick)
+			return LLARS_RedClickRetryPoint(clientX, clientY, button, actionName)
+		return LLARS_RedClickPoint(clientX, clientY, button, actionName)
+	}
 
 	return LLARS_ClickPoint(clientX, clientY, button, actionName)
 }

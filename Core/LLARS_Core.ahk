@@ -3591,10 +3591,238 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 }
 
 ; ================================================================
+; |     REDCLICK VERIFICATION     -     REDCLICK VERIFICATION    |
+; ================================================================
+; RedClick uses the exact NaturalClick movement/click path, but verifies that
+; RuneScape drew its red world-interaction X around the intended click point.
+; Use this only for interactions that normally produce that red X.
+;
+; FrameRecorder calibration (2026-10-13):
+; - 16/16 successful world-object clicks produced the same X signature.
+; - Dominant solid X color: RGB 156,9,6 (0x9C0906).
+; - Solid body spans roughly 14x14 px centered on the click (-7..+6).
+; - First detectable frame: ~47-79 ms after mouse-down.
+; - Strong/full signature: ~125-172 ms.
+; - Still detectable through ~375-438 ms.
+; - Two non-world/UI clicks produced no matching signature at all.
+;
+; Keep the verification area deliberately tight around the click so nearby red
+; scenery/UI cannot satisfy the check.
+LLARS_RedClickArmPresent(centerX, centerY, signX, signY, clientWidth, clientHeight)
+{
+	; The recorded X occupies only the immediate ~8 px around the click.
+	if (signX < 0)
+	{
+		x1 := centerX - 8
+		x2 := centerX - 1
+	}
+	else
+	{
+		x1 := centerX
+		x2 := centerX + 7
+	}
+
+	if (signY < 0)
+	{
+		y1 := centerY - 8
+		y2 := centerY - 1
+	}
+	else
+	{
+		y1 := centerY
+		y2 := centerY + 7
+	}
+
+	if (x1 < 0)
+		x1 := 0
+	if (y1 < 0)
+		y1 := 0
+	if (x2 >= clientWidth)
+		x2 := clientWidth - 1
+	if (y2 >= clientHeight)
+		y2 := clientHeight - 1
+	if (x1 > x2 || y1 > y2)
+		return false
+
+	; Calibrated against the recorded solid-core red. A small variation allows
+	; minor render/anti-alias differences while remaining far tighter than the
+	; earlier generic "red" search.
+	PixelSearch, redX, redY, %x1%, %y1%, %x2%, %y2%, 0x9C0906, 18, Fast RGB
+	return !ErrorLevel
+}
+
+LLARS_RedClickArmMask(centerX, centerY, runeScapeHwnd)
+{
+	if (!runeScapeHwnd || !DllCall("IsWindow", "Ptr", runeScapeHwnd))
+		return 0
+
+	VarSetCapacity(clientRect, 16, 0)
+	if !DllCall("GetClientRect", "Ptr", runeScapeHwnd, "Ptr", &clientRect)
+		return 0
+	clientWidth := NumGet(clientRect, 8, "Int")
+	clientHeight := NumGet(clientRect, 12, "Int")
+	if (clientWidth < 2 || clientHeight < 2)
+		return 0
+
+	mask := 0
+	if LLARS_RedClickArmPresent(centerX, centerY, -1, -1, clientWidth, clientHeight)
+		mask := mask | 1 ; north-west
+	if LLARS_RedClickArmPresent(centerX, centerY, 1, -1, clientWidth, clientHeight)
+		mask := mask | 2 ; north-east
+	if LLARS_RedClickArmPresent(centerX, centerY, -1, 1, clientWidth, clientHeight)
+		mask := mask | 4 ; south-west
+	if LLARS_RedClickArmPresent(centerX, centerY, 1, 1, clientWidth, clientHeight)
+		mask := mask | 8 ; south-east
+	return mask
+}
+
+LLARS_RedClickArmCount(mask)
+{
+	count := 0
+	Loop, 4
+	{
+		bit := 1 << (A_Index - 1)
+		if (mask & bit)
+			count++
+	}
+	return count
+}
+
+LLARS_RedClickMaskLooksLikeX(mask)
+{
+	; The capture corpus showed all four arms every time. Requiring three arms
+	; keeps a little tolerance for scaling/render variance while still proving
+	; both diagonal axes are present.
+	if (LLARS_RedClickArmCount(mask) < 3)
+		return false
+	if (!(mask & 9)) ; NW / SE axis
+		return false
+	if (!(mask & 6)) ; NE / SW axis
+		return false
+	return true
+}
+
+LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, baselineMask := 0, timeoutMs := 520)
+{
+	startTick := A_TickCount
+	consecutive := 0
+	bestMask := 0
+	bestArms := 0
+	baselineLooksLikeX := LLARS_RedClickMaskLooksLikeX(baselineMask)
+	baselineArms := LLARS_RedClickArmCount(baselineMask)
+
+	Loop
+	{
+		if ((A_TickCount - startTick) > timeoutMs)
+			break
+		if (!DllCall("IsWindow", "Ptr", runeScapeHwnd) || WinExist("A") != runeScapeHwnd)
+			return false
+
+		mask := LLARS_RedClickArmMask(centerX, centerY, runeScapeHwnd)
+		arms := LLARS_RedClickArmCount(mask)
+		if (arms > bestArms)
+		{
+			bestArms := arms
+			bestMask := mask
+		}
+
+		looksLikeX := LLARS_RedClickMaskLooksLikeX(mask)
+		; Reject a pre-existing static red-X-like pattern. In normal use the
+		; baseline is empty and the new 4-arm signature appears after the click.
+		freshEvidence := !baselineLooksLikeX || (mask != baselineMask && arms >= baselineArms)
+
+		if (looksLikeX && freshEvidence)
+		{
+			consecutive++
+			if (consecutive >= 2)
+			{
+				LLARS_DeveloperAction("RedClick || Calibrated red X confirmed || Mask=" . mask . " || Arms=" . arms . " || " . (A_TickCount - startTick) . " ms")
+				return true
+			}
+		}
+		else
+		{
+			consecutive := 0
+		}
+
+		Sleep, 16
+	}
+
+	LLARS_DeveloperAction("RedClick || Calibrated red X not detected || BestMask=" . bestMask . " || BestArms=" . bestArms . " || BaselineMask=" . baselineMask . " || Timeout=" . timeoutMs . " ms")
+	return false
+}
+
+LLARS_StopRunTimersForMisclick()
+{
+	; Creator/API timers are tracked centrally. Legacy scripts also have a small
+	; set of literal run timers, so stop those when their labels exist in the
+	; currently loaded script. UI/developer watchdog timers are intentionally
+	; left alone so the user can recover and start a new run normally.
+	if IsFunc("LLARS_TimerStopAll")
+		LLARS_TimerStopAll()
+
+	runTimerLabels := ["Countdown", "UpdateCountdown", "UpdateEstimatedTime", "UpdateTime"
+		, "CheckClicks", "CheckClicksPixel", "CheckColorClick", "CheckInventoryPixels"
+		, "CheckPixel", "ResetCheck", "ColorSearchTick", "DivinationTick", "EternalTreeTick", "updatebob"]
+	for _, labelName in runTimerLabels
+	{
+		if IsLabel(labelName)
+			SetTimer, %labelName%, Off
+	}
+}
+
+LLARS_AbortRunForMisclick(x, y, clickTarget := "")
+{
+	global LLARS_RUNNING, LLARS_PAUSED, LLARS_RunStartTick, LLARS_RunRuneScapeHwnd
+	global LLARS_DeveloperKeyStates, LLARS_DeveloperControlKeyStates
+
+	if (clickTarget = "")
+		clickTarget := "verified world interaction"
+
+	LLARS_DeveloperAction("RedClick Verification Failed || " . clickTarget . " || (" . x . ", " . y . ") || Run aborted")
+	LLARS_StopRunTimersForMisclick()
+
+	LLARS_RUNNING := false
+	LLARS_PAUSED := false
+	LLARS_RunStartTick := 0
+	LLARS_RunRuneScapeHwnd := 0
+	LLARS_DeveloperKeyStates := {}
+	LLARS_DeveloperControlKeyStates := {}
+	LLARS_DeveloperCoordinateOverlayHideSafe()
+
+	if IsFunc("EnableButton")
+		EnableButton()
+	if IsFunc("SetLLARSHOTKEYS")
+		SetLLARSHOTKEYS("On")
+	if IsFunc("LLARS_SetStatus")
+		LLARS_SetStatus("Error", "Misclick detected")
+	GuiControl,, TimerCount, Misclick
+
+	SoundBeep, 880, 180
+	MsgBox, 16, LLARS Misclick Detected, % "LLARS stopped this run because the expected RuneScape interaction confirmation was not detected.`n`nTarget: " . clickTarget . "`nCoordinate: (" . x . ", " . y . ")`n`nThe run has been halted. Check RuneScape and start the run again when ready."
+	return false
+}
+
+; Direct-coordinate verified click. This keeps NaturalClick's movement,
+; overshoot/correction, focus safety, and click timing unchanged. A failed
+; verification is fatal for the active run.
+RedClick(x, y, button := "left", coordinateSection := "", coordinateScope := "script")
+{
+	return NaturalClick(x, y, button, coordinateSection, coordinateScope, true, "abort")
+}
+
+; Nonfatal verified click for workflows that are expected to occasionally
+; miss and can safely reacquire/retry the action themselves.
+RedClickRetry(x, y, button := "left", coordinateSection := "", coordinateScope := "script")
+{
+	return NaturalClick(x, y, button, coordinateSection, coordinateScope, true, "return")
+}
+
+; ================================================================
 ; |     LLARS MOUSE LIBRARY     -     LLARS MOUSE LIBRARY        |
 ; ================================================================
 ; Moves the mouse to a target using LLARS naturalized movement, then clicks.
-NaturalClick(x, y, button := "left", coordinateSection := "", coordinateScope := "script")
+NaturalClick(x, y, button := "left", coordinateSection := "", coordinateScope := "script", verifyRedClick := false, redClickFailureMode := "abort")
 {
 	global LLARS_NaturalClickFocusLost, LLARS_RUNNING
 
@@ -3618,7 +3846,7 @@ NaturalClick(x, y, button := "left", coordinateSection := "", coordinateScope :=
 		; Refresh the Developer coordinate overlay on every NaturalClick retry.
 		LLARS_DeveloperCoordinateOverlayShowSafe(x, y, coordinateSection, coordinateScope)
 
-		result := LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound, coordinateSection)
+		result := LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound, coordinateSection, verifyRedClick, redClickFailureMode)
 		if (result = 1)
 		{
 			; Leave the target visible briefly after the successful physical click so the developer can see exactly where the action landed.
@@ -3659,7 +3887,7 @@ NaturalClick(x, y, button := "left", coordinateSection := "", coordinateScope :=
 }
 
 ; Performs one complete natural mouse path.
-LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordinateSection := "")
+LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordinateSection := "", verifyRedClick := false, redClickFailureMode := "abort")
 {
 	if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
 		return 0
@@ -3703,7 +3931,23 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		MouseGetPos, clickX, clickY
 		if (clickX != x || clickY != y)
 			return -1
+		redBaselineMask := verifyRedClick ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
 		LLARS_HumanMouseClick(button)
+		if (verifyRedClick)
+		{
+			LLARS_DeveloperAction("RedClick || Physical click sent || (" . x . ", " . y . ")")
+			if !LLARS_WaitForRedClickConfirmation(x, y, runeScapeHwnd, redBaselineMask)
+			{
+				LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
+				if (redClickFailureMode = "return" || redClickFailureMode = "retry")
+				{
+					LLARS_DeveloperAction("RedClick Verification Failed || " . coordinateSection . " || (" . x . ", " . y . ") || Retry requested")
+					return 0
+				}
+				LLARS_AbortRunForMisclick(x, y, coordinateSection)
+				Exit
+			}
+		}
 		LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
 		return true
 	}
@@ -3924,7 +4168,23 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	MouseGetPos, clickX, clickY
 	if (clickX != x || clickY != y)
 		return -1
+	redBaselineMask := verifyRedClick ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
 	LLARS_HumanMouseClick(button)
+	if (verifyRedClick)
+	{
+		LLARS_DeveloperAction("RedClick || Physical click sent || (" . x . ", " . y . ")")
+		if !LLARS_WaitForRedClickConfirmation(x, y, runeScapeHwnd, redBaselineMask)
+		{
+			LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
+			if (redClickFailureMode = "return" || redClickFailureMode = "retry")
+			{
+				LLARS_DeveloperAction("RedClick Verification Failed || " . coordinateSection . " || (" . x . ", " . y . ") || Retry requested")
+				return 0
+			}
+			LLARS_AbortRunForMisclick(x, y, coordinateSection)
+			Exit
+		}
+	}
 	LLARS_DeveloperNaturalClick(x, y, button, coordinateSection)
 	return true
 }
