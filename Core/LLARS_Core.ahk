@@ -3846,7 +3846,7 @@ LLARS_StopRunTimersForMisclick()
 LLARS_AbortRunForMisclick(x, y, clickTarget := "")
 {
 	global LLARS_RUNNING, LLARS_PAUSED, LLARS_RunStartTick, LLARS_RunRuneScapeHwnd
-	global LLARS_DeveloperKeyStates, LLARS_DeveloperControlKeyStates
+	global LLARS_DeveloperKeyStates, LLARS_DeveloperControlKeyStates, LLARS_RUN_TYPE
 
 	if (clickTarget = "")
 		clickTarget := "verified world interaction"
@@ -3871,8 +3871,15 @@ LLARS_AbortRunForMisclick(x, y, clickTarget := "")
 
 	; TimerCount exists only on Timer-mode GUIs. RunCount/UntilDone scripts
 	; must not touch it from the shared verified-click misclick halt path.
+	; Keep this recovery-only GUI update from escaping into LLARS_RunCount's outer try/catch.
 	if (LLARS_RUN_TYPE = "Timer")
-		GuiControl,, TimerCount, Misclick
+	{
+		try
+			GuiControl,, TimerCount, Misclick
+		catch
+		{
+		}
+	}
 
 	SoundBeep, 880, 180
 	MsgBox, 16, LLARS Misclick Detected, % "LLARS stopped this run because the expected RuneScape interaction confirmation was not detected.`n`nTarget: " . clickTarget . "`nCoordinate: (" . x . ", " . y . ")`n`nThe run has been halted. Check RuneScape and start the run again when ready."
