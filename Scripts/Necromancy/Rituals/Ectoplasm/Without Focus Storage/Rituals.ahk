@@ -38,7 +38,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Setting Up", "Pedestal")
-		LLARS_Click("Pedestal - Pedestal")
+		LLARS_RedClick("Pedestal - Pedestal")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -69,7 +69,7 @@ Run(ctx)
 		LLARS_Sleep("Sleep Normal")
 
 		LLARS_SetStatus("Setting Up", "Pedestal")
-		LLARS_Click("Pedestal - Pedestal", "right")
+		LLARS_RedClick("Pedestal - Pedestal", "right")
 		LLARS_Sleep("Sleep Short")
 
 		minx := LLARS_ConfigReadNumber("Offset", "minx")
@@ -86,13 +86,13 @@ Run(ctx)
 		LLARS_Sleep("Sleep Repair")
 
 		LLARS_SetStatus("Moving", "Platform")
-		LLARS_Click("Platform")
+		LLARS_RedClick("Platform")
 
 	}
 	else
 	{
 		LLARS_SetStatus("Moving", "Pedestal")
-		LLARS_Click("Pedestal - Platform")
+		LLARS_RedClick("Pedestal - Platform")
 
 		LLARS_Sleep("Sleep Walk")
 		LLARS_PressKey("space")
@@ -102,7 +102,7 @@ Run(ctx)
 		LLARS_Sleep("Sleep Normal")
 
 		LLARS_SetStatus("Setting Up", "Pedestal")
-		LLARS_Click("Pedestal - Pedestal", "right")
+		LLARS_RedClick("Pedestal - Pedestal", "right")
 		LLARS_Sleep("Sleep Short")
 
 		minx := LLARS_ConfigReadNumber("Offset", "minx")
@@ -119,7 +119,7 @@ Run(ctx)
 		LLARS_Sleep("Sleep Repair")
 
 		LLARS_SetStatus("Moving", "Platform")
-		LLARS_Click("Platform")
+		LLARS_RedClick("Platform")
 
 	}
 

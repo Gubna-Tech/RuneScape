@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Telekinetic Grind")
-	LLARS_Click("Bank Coords")
+	LLARS_RedClick("Bank Coords")
 
 	LLARS_RandomSleep()
 

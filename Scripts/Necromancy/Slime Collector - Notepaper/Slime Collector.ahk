@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Collecting", "Pool of Slime")
-	LLARS_Click("Pool of Slime")
+	LLARS_RedClick("Pool of Slime")
 
 	LLARS_Sleep("Sleep Collect")
 
