@@ -58,8 +58,7 @@ CloseOtherLLARS()
 ; ===================================================================
 
 ; List of available scripts.
-scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Armour Crafter - Portables - Non-Walking|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Cutter - Portables - Non-Walking|Bow Cutter - Portables - Walking|Bow Stringer|Bow Stringer - Portables - Non-Walking|Bow Stringer - Portables - Walking|Brick Maker - Fort Forinthry|Agility - Burthorpe|Candle Crafter|Herb Cleaner - Skillcape|Clay Fire - Portables - Non-Walking|Clay Fire - Portables - Walking|Clay Form - Portables - Non-Walking|Clay Form - Portables - Walking|Cooking - Burthorpe|Cooking - Fort Forinthry|Cooking - Portables - Non-Walking|Cooking - Portables - Walking|Fire + Form - Portables|Fire Urn - Lunar Spell|Firemaking - Portables - Non-Walking|Firemaking - Portables - Walking|Frame Maker - Fort Forinthry|Gem Cutter|Gem Cutter - Portables - Non-Walking|Gem Cutter - Portables - Walking|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Potion Mixer - Portables - Non-Walking|Potion Mixer - Portables - Walking|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sawmill - Portables - Non-Walking|Sawmill - Portables - Walking|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tanning - Portables - Non-Walking|Tanning - Portables - Walking|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|Archaeology - Excavate|Croesus Front|Eternal Tree|Waterfall Fishing|Divination - Divine Conversion - Monolith Power|Divination - Normal - Non-Monolith Power|Macro Creator"
-
+scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Stringer|Brick Maker - Fort Forinthry|Agility - Burthorpe|Candle Crafter|Herb Cleaner - Skillcape|Cooking - Burthorpe|Cooking - Fort Forinthry|Fire Urn - Lunar Spell|Frame Maker - Fort Forinthry|Gem Cutter|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|Archaeology - Excavate|Croesus Front|Eternal Tree|Waterfall Fishing|Divination - Divine Conversion - Monolith Power|Divination - Normal - Non-Monolith Power"
 ; Calculates the total number of scripts.
 ScriptTotal := StrSplit(scriptArray, "|").Length()
 
@@ -326,24 +325,6 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
-		Case "Armour Crafter - Portables - Non-Walking":
-		script := "Armour Crafter"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will make your desired amount of a selected armour."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Armour Crafter - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
 		Case "Armour Crafter":
 		script := "Armour Crafter"
 		scriptinfo := "Crafts your selected armour for a predetermined amount of runs."
@@ -560,42 +541,6 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
-		Case "Bow Cutter - Portables - Walking":
-		script := "Bow Cutter"
-		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. With the Portable Crafter, it will cut logs into unstrung bows."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Bow Cutter - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bow Cutter - Portables - Non-Walking":
-		script := "Bow Cutter"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will cut logs into unstrung bows."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Bow Cutter - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
 		Case "Bow Stringer":
 		script := "Bow Stringer"
 		scriptinfo := "Combines bowstring with unstrung bows using the in-game bank preset hotkey."
@@ -607,42 +552,6 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bow Stringer - Portables - Walking":
-		script := "Bow Stringer"
-		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. With the Portable Crafter, it will combine bowstring with unstrung bows."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Bow Stringer - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bow Stringer - Portables - Non-Walking":
-		script := "Bow Stringer"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will combine bowstring with unstrung bows."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Bow Stringer - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		Gui Info: +ToolWindow
@@ -722,81 +631,9 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
-		Case "Clay Fire - Portables - Non-Walking":
-		script := "Clay Fire"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will fire an unfired urn."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Clay Fire - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Clay Fire - Portables - Walking":
-		script := "Clay Fire"
-		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. Using the Portable Crafter, it will fire an unfired urn."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Clay Fire - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Clay Form - Portables - Non-Walking":
-		script := "Clay Form"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will form an unfired urn of your choice."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Clay Form - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Clay Form - Portables - Walking":
-		script := "Clay Form"
-		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. Using the Portable Crafter, it will form an unfired urn of your choice."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Clay Form - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
 		Case "Cooking - Burthorpe":
 		script := "Cooking"
-		scriptinfo := "Walks between the Range and main bank in Burthorpe to cook an inventory of food. Portables and Fort cooking are recommended over this script."
+		scriptinfo := "Walks between the Range and main bank in Burthorpe to cook an inventory of food. Fort Forinthry cooking is recommended over this script."
 		GuiReset()
 		SetSetupDifficulty("Hard")
 		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
@@ -830,60 +667,6 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
-		Case "Cooking - Portables - Non-Walking":
-		script := "Cooking"
-		scriptinfo := "Uses a Portable Range within (1) tile of a bank. Using the Portable Range, it will cook an inventory of food."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Cooking - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Cooking - Portables - Walking":
-		script := "Cooking"
-		scriptinfo := "Uses a Portable Range that is more than (1) tile from a bank and requires walking. Using the Portable Range, it will cook an inventory of food."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Cooking - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
-		Case "Fire + Form - Portables":
-		script := "Fire + Form"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will form an urn and then fire it before repeating the process."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Fire + Form - Portables
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
 		Case "Fire Urn - Lunar Spell":
 		script := "Fire Urn"
 		scriptinfo := "Uses the Lunar Spell 'Fire Urn' to fire an inventory of unfired urns."
@@ -895,42 +678,6 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, Fire Urn - Lunar Spell
 		Gui Info: Font, s13 normal bold cGreen
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Firemaking - Portables - Non-Walking":
-		script := "Firemaking"
-		scriptinfo := "Uses a Portable Brazier within (1) tile of a bank. Using the Portable Brazier, it will burn an inventory of logs."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Firemaking - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Firemaking - Portables - Walking":
-		script := "Firemaking"
-		scriptinfo := "Uses a Portable Brazier that is more than (1) tile from a bank and requires walking. Using the Portable Brazier, it will burn an inventory of logs."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Firemaking - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		Gui Info: +ToolWindow
@@ -985,42 +732,6 @@ if A_GuiEvent = Normal
 		Gui Info: Add, Text, center x5 w480, %Script%
 		Gui Info: Font, s13 normal bold cGreen
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Gem Cutter - Portables - Non-Walking":
-		script := "Gem Cutter"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. Using the Portable Crafter, it will cut an inventory of uncut gems."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Gem Cutter - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Gem Cutter - Portables - Walking":
-		script := "Gem Cutter"
-		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. Using the Portable Crafter, it will cut an inventory of uncut gems."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Gem Cutter - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
 		Gui Info: Add, Text, center x5 w480, %scriptinfo%
 		Gui Info: +ToolWindow
@@ -1298,42 +1009,6 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
-		Case "Potion Mixer - Portables - Non-Walking":
-		script := "Potion Mixer"
-		scriptinfo := "Uses a Portable Well within (1) tile of a bank. Using the Portable Well, it will combine an inventory of ingredients to make potions."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Potion Mixer - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Potion Mixer - Portables - Walking":
-		script := "Potion Mixer"
-		scriptinfo := "Uses a Portable Well that is more than (1) tile from a bank and requires walking. Using the Portable Well, it will combine an inventory of ingredients to make potions."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Potion Mixer - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
 		Case "Prayer":
 		script := "Prayer"
 		scriptinfo := "Buries an inventory of bones or scatters an inventory of ashes. This is a bank-standing script and does not work with altars."
@@ -1496,42 +1171,6 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 		
-		Case "Sawmill - Portables - Non-Walking":
-		script := "Sawmill"
-		scriptinfo := "Uses a Portable Sawmill within (1) tile of a bank. With the Portable Sawmill, it will cut logs into planks."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Sawmill - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Sawmill - Portables - Walking":
-		script := "Sawmill"
-		scriptinfo := "it will tan various hides."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Sawmill - Portables - Walking
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
 		Case "Sift Soil - Lunar Spell":
 		script := "Sift Soil"
 		scriptinfo := "Uses the Lunar Spell Sift Soil to screen various soils."
@@ -1595,42 +1234,6 @@ if A_GuiEvent = Normal
 		Gui Info: Color, White
 		Gui Info: Font, s14 bold underline cBlue
 		Gui Info: Add, Text, center x5 w480, Stone Wall - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Tanning - Portables - Non-Walking":
-		script := "Tanning"
-		scriptinfo := "Uses a Portable Crafter within (1) tile of a bank. With the Portable Crafter, it will tan various hides."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Tanning - Portables - Non-Walking
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Tanning - Portables - Walking":
-		script := "Tanning"
-		scriptinfo := "Uses a Portable Crafter that is more than (1) tile from a bank and requires walking. With the Portable Crafter, it will cut logs into planks."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Tanning - Portables - Walking
 		Gui Info: Font, s13 normal bold cRed
 		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
 		Gui Info: Font, S12 cBlack
@@ -1964,24 +1567,6 @@ if A_GuiEvent = Normal
 		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
 		GuiBalance()
 
-		Case "Macro Creator":
-		script := "Macro Creator"
-		scriptinfo := "Records physical input performed in RuneScape and generates a new LLARS macro using the Creator API."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
 	}
 	return
 }
@@ -2017,10 +1602,6 @@ Switch selectedScript
 	Case "Anti-AFK":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Anti-AFK"
 		scriptFile := "Anti-AFK.ahk"
-
-	Case "Armour Crafter - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Armour Crafter\Armour Crafter - No Walking"
-		scriptFile := "Armour Crafter.ahk"
 
 	Case "Armour Crafter":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Armour Crafter"
@@ -2070,24 +1651,8 @@ Switch selectedScript
 		scriptDir := LLARS_SCRIPTS_DIR . "\Bow Cutter"
 		scriptFile := "Bow Cutter.ahk"
 
-	Case "Bow Cutter - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Fletching\Bow Cutter - With Walking"
-		scriptFile := "Bow Cutter.ahk"
-
-	Case "Bow Cutter - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Fletching\Bow Cutter - No Walking"
-		scriptFile := "Bow Cutter.ahk"
-
 	Case "Bow Stringer":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Bow Stringer"
-		scriptFile := "Bow Stringer.ahk"
-
-	Case "Bow Stringer - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Fletching\Bow Stringer - With Walking"
-		scriptFile := "Bow Stringer.ahk"
-
-	Case "Bow Stringer - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Fletching\Bow Stringer - No Walking"
 		scriptFile := "Bow Stringer.ahk"
 
 	Case "Brick Maker - Fort Forinthry":
@@ -2106,22 +1671,6 @@ Switch selectedScript
 		scriptDir := LLARS_SCRIPTS_DIR . "\Herb Cleaner - Skillcape"
 		scriptFile := "Skillcape Cleaner.ahk"
 
-	Case "Clay Fire - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Clay\Clay Fire\Clay Fire - No Walking"
-		scriptFile := "Clay Fire.ahk"
-
-	Case "Clay Fire - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Clay\Clay Fire\Clay Fire - With Walking"
-		scriptFile := "Clay Fire.ahk"
-
-	Case "Clay Form - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Clay\Clay Form\Clay Form - No Walking"
-		scriptFile := "Clay Form.ahk"
-
-	Case "Clay Form - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Clay\Clay Form\Clay Form - With Walking"
-		scriptFile := "Clay Form.ahk"
-
 	Case "Cooking - Burthorpe":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Cooking"
 		scriptFile := "Cooking.ahk"
@@ -2130,29 +1679,9 @@ Switch selectedScript
 		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Cooking"
 		scriptFile := "Cooking.ahk"
 
-	Case "Cooking - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Cooking\Cooking - No Walking"
-		scriptFile := "Cooking.ahk"
-
-	Case "Cooking - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Cooking\Cooking - With Walking"
-		scriptFile := "Cooking.ahk"
-
-	Case "Fire + Form - Portables":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Clay\Fire + Form"
-		scriptFile := "Fire + Form.ahk"
-
 	Case "Fire Urn - Lunar Spell":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Fire Urn"
 		scriptFile := "Fire Urn.ahk"
-
-	Case "Firemaking - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Firemaking\Firemaking - No Walking"
-		scriptFile := "Firemaking.ahk"
-
-	Case "Firemaking - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Firemaking\Firemaking - With Walking"
-		scriptFile := "Firemaking.ahk"
 
 	Case "Frame Maker - Fort Forinthry":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Frame Maker"
@@ -2160,14 +1689,6 @@ Switch selectedScript
 
 	Case "Gem Cutter":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Gem Cutter"
-		scriptFile := "Gem Cutter.ahk"
-
-	Case "Gem Cutter - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Gem Cutter\Gem Cutter - No Walking"
-		scriptFile := "Gem Cutter.ahk"
-
-	Case "Gem Cutter - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Gem Cutter\Gem Cutter - With Walking"
 		scriptFile := "Gem Cutter.ahk"
 
 	Case "Glassblowing":
@@ -2230,14 +1751,6 @@ Switch selectedScript
 		scriptDir := LLARS_SCRIPTS_DIR . "\Potion Mixer"
 		scriptFile := "Potion Mixer.ahk"
 
-	Case "Potion Mixer - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Herblore\Potion Mixer - No Walking"
-		scriptFile := "Potion Mixer.ahk"
-
-	Case "Potion Mixer - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Herblore\Potion Mixer - With Walking"
-		scriptFile := "Potion Mixer.ahk"
-
 	Case "Prayer":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Prayer"
 		scriptFile := "Prayer.ahk"
@@ -2274,14 +1787,6 @@ Switch selectedScript
 		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Rituals\Essence & Necroplasm\Without Focus Storage"
 		scriptFile := "Rituals.ahk"
 
-	Case "Sawmill - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Sawmill\Sawmill - No Walking"
-		scriptFile := "Sawmill.ahk"
-
-	Case "Sawmill - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Sawmill\Sawmill - With Walking"
-		scriptFile := "Sawmill.ahk"
-
 	Case "Sift Soil - Lunar Spell":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Sift Soil"
 		scriptFile := "Sift Soil.ahk"
@@ -2297,14 +1802,6 @@ Switch selectedScript
 	Case "Stone Wall - Fort Forinthry":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Stone Wall"
 		scriptFile := "Stone Wall.ahk"
-
-	Case "Tanning - Portables - Non-Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Tanning\Tanning - No Walking"
-		scriptFile := "Tanning.ahk"
-
-	Case "Tanning - Portables - Walking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Portables\Crafting\Tanning\Tanning - With Walking"
-		scriptFile := "Tanning.ahk"
 
 	Case "Tele Grind - Lunar Spell - No Banking":
 		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking"
@@ -2383,9 +1880,6 @@ Switch selectedScript
 		scriptDir := LLARS_SCRIPTS_DIR . "\Divination\Normal - Non-Monolith Power"
 		scriptFile := "Divination - High Contrast.ahk"
 
-	Case "Macro Creator":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Macro Creator"
-		scriptFile := "Macro Creator.ahk"
 	Default:
 		MsgBox, 48, Script Missing, No launch location is configured for:`n%selectedScript%
 		return
