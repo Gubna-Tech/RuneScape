@@ -171,7 +171,7 @@ AFKCombat_MouseMoveAction()
     Random, RandomSpeed, 25, 100
     if !LLARS_WaitForRuneScape("Anti-AFK MouseMove")
         return
-    MouseMove, %x%, %y%, %RandomSpeed%
+    LLARS_InputMouseMove(x, y, RandomSpeed)
     AFKCombat_ShowTooltip("Activated Anti-AFK")
 }
 
