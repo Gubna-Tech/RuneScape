@@ -11,8 +11,6 @@ echo This runs the official Interception uninstaller once, verifies the
 echo keyboard/mouse filter registrations were removed, and then requires one
 echo Windows restart to finish unloading the driver.
 echo.
-echo There is no second uninstall pass or second restart.
-echo.
 echo Close any running LLARS scripts before continuing.
 echo.
 pause
@@ -29,7 +27,7 @@ echo AutoHotInterception / Interception was removed successfully.
 echo LLARS verified the Interception keyboard/mouse filter registrations are gone.
 echo.
 echo Windows must restart once to finish unloading/deleting any pending driver remnants.
-echo After that restart, uninstall is complete. No second cleanup pass will run.
+echo After that restart, uninstall is complete.
 echo This LLARS copy will use standard AutoHotkey input afterward.
 echo.
 choice /C YN /N /M "Restart Windows now? [Y/N]: "
@@ -45,7 +43,6 @@ exit /b 0
 :FAILED
 echo.
 echo AutoHotInterception / Interception uninstall could not be verified.
-echo No second automatic uninstall will be attempted.
 echo Do NOT manually delete keyboard.sys or mouse.sys.
 echo.
 echo Copy/paste these files to Gubna:

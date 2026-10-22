@@ -22,6 +22,45 @@ LLARS_AHI_LibraryReady(projectRoot := "")
     return true
 }
 
+LLARS_AHI_ConfigPath(projectRoot := "")
+{
+    if (projectRoot = "")
+        return ""
+    return projectRoot . "\LLARS Config.ini"
+}
+
+LLARS_AHI_Mode(projectRoot := "")
+{
+    configPath := LLARS_AHI_ConfigPath(projectRoot)
+    if (configPath = "" || !FileExist(configPath))
+        return "ahi"
+
+    IniRead, mode, %configPath%, Input Backend, mode, ahi
+    mode := Trim(mode)
+    StringLower, mode, mode
+    return (mode = "standard") ? "standard" : "ahi"
+}
+
+LLARS_AHI_SetMode(projectRoot, mode)
+{
+    configPath := LLARS_AHI_ConfigPath(projectRoot)
+    if (configPath = "")
+        return false
+
+    StringLower, mode, mode
+    mode := (mode = "ahi") ? "ahi" : "standard"
+    IniWrite, %mode%, %configPath%, Input Backend, mode
+    return (ErrorLevel = 0)
+}
+
+
+
+
+
+
+
+
+
 LLARS_AHI_BundledPayloadFiles(projectRoot := "")
 {
     vendor := projectRoot . "\Vendor\AutoHotInterception"
@@ -197,6 +236,16 @@ LLARS_AHI_DriverRegistered()
         && LLARS_AHI_RegistryServicePresent("mouse")
         && FileExist(driverRoot . "keyboard.sys")
         && FileExist(driverRoot . "mouse.sys")) ? true : false
+}
+
+LLARS_AHI_DriverPresent()
+{
+    keyboardClass := "{4D36E96B-E325-11CE-BFC1-08002BE10318}"
+    mouseClass := "{4D36E96F-E325-11CE-BFC1-08002BE10318}"
+    return (LLARS_AHI_RegistryFilterPresent(keyboardClass, "keyboard")
+        || LLARS_AHI_RegistryFilterPresent(mouseClass, "mouse")
+        || LLARS_AHI_RegistryServicePresent("keyboard")
+        || LLARS_AHI_RegistryServicePresent("mouse"))
 }
 
 LLARS_AHI_DriverReady()
@@ -375,6 +424,7 @@ LLARS_AHI_BuildSupportReport(projectRoot, trigger := "Manual")
     global LLARS_AHI_STATUS_REASON, LLARS_AHI_STATUS_DETAIL
     global LLARS_AHI_DRIVER_READY, LLARS_AHI_RUNTIME_READY
     global LLARS_AHI_LAST_MOUSE_TRANSPORT, LLARS_AHI_LAST_KEYBOARD_TRANSPORT
+    global LLARS_AHI_HELD_KEYS, LLARS_AHI_HELD_MOUSE, LLARS_AHI_EXIT_REGISTERED
     global LLARS_DeveloperActions
 
     FormatTime, reportTime,, yyyy-MM-dd HH:mm:ss
@@ -419,7 +469,7 @@ LLARS_AHI_BuildSupportReport(projectRoot, trigger := "Manual")
 
     report .= "`r`n[AHI Status]`r`n"
     report .= "Input Engine: " . engineState . "`r`n"
-    report .= "Mouse behavior: LLARS keeps its original NaturalClick movement and timing while sending supported mouse input through AutoHotInterception.`r`n"
+    report .= "Mouse behavior: LLARS keeps its original NaturalClick movement and timing; speed-0 movement points use AutoHotInterception across the Windows virtual desktop.`r`n"
     report .= "AHI Runtime: " . runtimeState . "`r`n"
     report .= "Interception Functional: " . (functionalReady ? "Ready" : "Not ready") . "`r`n"
     report .= "Functional Detail: " . (functionalReason = "" ? "<none>" : functionalReason) . "`r`n"
@@ -519,7 +569,7 @@ LLARS_AHI_ShowRuntimeProblem(projectRoot)
 
     LLARS_AHI_WriteSupportReport(projectRoot, "Runtime initialization unavailable")
     reason := (LLARS_AHI_STATUS_REASON = "") ? "Unknown AutoHotInterception initialization error" : LLARS_AHI_STATUS_REASON
-    MsgBox, 48, LLARS Recommended Input Issue, LLARS recommends AutoHotInterception for its mouse and keyboard input.`n`nAutoHotInterception is not fully available, so LLARS is using Standard AutoHotkey fallback for the affected input this run.`n`nStatus: %reason%`n`nA support report was saved automatically at:`nVendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt`n`nIf this continues after restarting LLARS/Windows, open Developer Mode > Copy AHI Report and paste it to Gubna.
+    MsgBox, 0x40030, LLARS AHI Issue, AutoHotInterception is selected as the recommended input backend, but it is not fully available.`n`nLLARS is using Standard AutoHotkey fallback for the affected input this run.`n`nStatus: %reason%`n`nA support report was saved automatically at:`nVendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt`n`nIf this continues after restarting LLARS/Windows, open Developer Mode > Copy AHI Report and paste it to Gubna.
 }
 
 LLARS_AHI_ReadSetupResult(projectRoot)
@@ -681,24 +731,144 @@ LLARS_AHI_RunSetup(projectRoot)
 }
 
 
+LLARS_AHI_RunUninstall(projectRoot)
+{
+    setupPath := LLARS_AHI_SetupScript(projectRoot)
+    if !FileExist(setupPath)
+        return "MISSING"
+
+    powershell := A_WinDir . "\System32\WindowsPowerShell\v1.0\powershell.exe"
+    command := Chr(34) . powershell . Chr(34)
+        . " -NoProfile -ExecutionPolicy Bypass -File " . Chr(34) . setupPath . Chr(34)
+        . " -ProjectRoot " . Chr(34) . projectRoot . Chr(34)
+        . " -Uninstall"
+    LLARS_AHI_Trace(projectRoot, "Launching bundled input-driver uninstall")
+    RunWait, %command%, %projectRoot%, Hide UseErrorLevel
+    uninstallExitCode := ErrorLevel
+    uninstallLastError := A_LastError
+    if (uninstallExitCode = "ERROR")
+    {
+        LLARS_AHI_Trace(projectRoot, "Uninstall bootstrap launch failed; Win32=" . uninstallLastError)
+        return uninstallLastError
+    }
+    LLARS_AHI_Trace(projectRoot, "Uninstall bootstrap exited with code " . uninstallExitCode)
+    return uninstallExitCode
+}
+
+LLARS_AHI_DisableForProcess(reason := "Standard AutoHotkey fallback selected")
+{
+    global LLARS_AHI_Object, LLARS_AHI_READY, LLARS_AHI_MOUSE_ID, LLARS_AHI_KEYBOARD_ID
+    global LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY, LLARS_AHI_STATUS_REASON, LLARS_AHI_STATUS_DETAIL
+    global LLARS_AHI_DRIVER_READY, LLARS_AHI_LAST_MOUSE_TRANSPORT, LLARS_AHI_LAST_KEYBOARD_TRANSPORT
+
+    if IsFunc("LLARS_AHI_ReleaseAllInput")
+        LLARS_AHI_ReleaseAllInput()
+    if IsFunc("LLARS_AHI_NativeTransportDispose")
+        LLARS_AHI_NativeTransportDispose()
+
+    LLARS_AHI_Object := ""
+    LLARS_AHI_READY := false
+    LLARS_AHI_MOUSE_ID := 0
+    LLARS_AHI_KEYBOARD_ID := 0
+    LLARS_AHI_MOUSE_READY := false
+    LLARS_AHI_KEYBOARD_READY := false
+    LLARS_AHI_DRIVER_READY := false
+    LLARS_AHI_STATUS_REASON := reason
+    LLARS_AHI_STATUS_DETAIL := ""
+    LLARS_AHI_LAST_MOUSE_TRANSPORT := "Standard AutoHotkey fallback"
+    LLARS_AHI_LAST_KEYBOARD_TRANSPORT := "Standard AutoHotkey fallback"
+    return true
+}
+
+LLARS_AHI_RequestUninstall(projectRoot, interactive := true, reinstallAfter := false)
+{
+    previousMode := LLARS_AHI_Mode(projectRoot)
+    LLARS_AHI_DisableForProcess("AHI uninstall requested")
+
+    result := LLARS_AHI_RunUninstall(projectRoot)
+    if (result = "MISSING")
+    {
+        LLARS_AHI_SetMode(projectRoot, previousMode)
+        if (interactive)
+            MsgBox, 0x40030, LLARS Input Driver, The LLARS Interception uninstall tool is missing.`n`nRe-extract the complete LLARS package before trying again.
+        return false
+    }
+    if (result = 1223)
+    {
+        LLARS_AHI_SetMode(projectRoot, previousMode)
+        return false
+    }
+    if (result = 0 || result = 3010)
+    {
+        LLARS_AHI_SetMode(projectRoot, reinstallAfter ? "ahi" : "standard")
+        if (interactive)
+            LLARS_AHI_ShowUninstallRestartMessage(reinstallAfter)
+        return true
+    }
+
+    LLARS_AHI_SetMode(projectRoot, previousMode)
+    LLARS_AHI_SupportHint(projectRoot, "Interception uninstall failed; exit=" . result)
+    if (interactive)
+        MsgBox, 0x40030, LLARS Input Driver, LLARS could not verify that Interception was removed.`n`nDo not manually delete keyboard.sys or mouse.sys.`n`nUse Developer Mode > Copy AHI Report for troubleshooting.
+    return false
+}
+
+LLARS_AHI_FallbackModeCheck(projectRoot, interactive := true)
+{
+    if (projectRoot = "")
+        return false
+
+    ; Standard AutoHotkey is retained as a fallback choice. The only startup
+    ; action required here is completing an uninstall that already succeeded.
+    if LLARS_AHI_UninstallPending(projectRoot)
+    {
+        if LLARS_AHI_UninstallStillPending(projectRoot)
+        {
+            if (interactive)
+                LLARS_AHI_ShowUninstallRestartMessage(false)
+            return false
+        }
+    }
+    return true
+}
+
+LLARS_AHI_Enable(projectRoot, interactive := true)
+{
+    if (projectRoot = "")
+        return false
+
+    if LLARS_AHI_UninstallPending(projectRoot)
+    {
+        if LLARS_AHI_UninstallStillPending(projectRoot)
+        {
+            if (interactive)
+                LLARS_AHI_ShowUninstallRestartMessage(true)
+            return false
+        }
+    }
+
+    LLARS_AHI_SetMode(projectRoot, "ahi")
+    ready := LLARS_AHI_StartupGate(projectRoot, interactive, true, false)
+    return ready
+}
+
 LLARS_AHI_ShowRestartMessage(isReminder := false)
 {
-    ; 262144 = WS_EX_TOPMOST. Keep both the first prompt and later reminders
-    ; visible above LLARS windows.
+    ; 262144 = WS_EX_TOPMOST. Keep restart prompts above LLARS windows.
     if (isReminder)
     {
-        restartTitle := "LLARS Restart Still Required"
+        restartTitle := "LLARS AHI Restart Required"
         restartText := "AutoHotInterception setup is complete, but Windows has not restarted yet."
-            . "`n`nRestart Windows now so LLARS can use the recommended input driver?"
-            . "`n`nChoose No to restart later. LLARS will keep reminding you until Windows has actually restarted."
+            . "`n`nRestart Windows now so LLARS can use its recommended AHI input backend?"
+            . "`n`nChoose No to restart later. LLARS will remind you the next time it starts."
     }
     else
     {
-        restartTitle := "LLARS Input Setup Complete"
+        restartTitle := "LLARS AHI Setup Complete"
         restartText := "AutoHotInterception was installed successfully."
-            . "`n`nWindows must restart once before LLARS can use the recommended input driver."
+            . "`n`nWindows must restart once before LLARS can use its recommended AHI input backend."
             . "`n`nRestart Windows now?"
-            . "`n`nChoose No to restart later. LLARS will remind you the next time LLARS starts."
+            . "`n`nChoose No to restart later. LLARS will remind you the next time it starts."
     }
 
     MsgBox, 262180, %restartTitle%, %restartText%
@@ -706,27 +876,39 @@ LLARS_AHI_ShowRestartMessage(isReminder := false)
         Shutdown, 2
 }
 
-LLARS_AHI_ShowUninstallRestartMessage()
+LLARS_AHI_ShowUninstallRestartMessage(reinstallAfter := false)
 {
-    MsgBox, 0x40024, LLARS AHI Uninstall - Restart Required, AutoHotInterception / Interception was removed successfully.`n`nWindows must restart once to finish unloading the driver.`n`nThere is no second uninstall pass after restart.`n`nRestart Windows now?
+    if (reinstallAfter)
+        uninstallText := "The existing AutoHotInterception / Interception driver was removed successfully.`n`nRestart Windows once to finish the AHI repair. On the next LLARS launch, the bundled AHI installer will be offered automatically.`n`nRestart Windows now?"
+    else
+        uninstallText := "AutoHotInterception / Interception was removed successfully.`n`nWindows must restart once to finish unloading the driver.`n`nRestart Windows now?"
+
+    MsgBox, 0x40024, LLARS AHI - Restart Required, %uninstallText%
     IfMsgBox, Yes
         Shutdown, 2
 }
 
-; First-run gate shared by Script Selector and scripts launched directly.
-; The only unavoidable user interaction on a fresh PC is Windows elevation for
-; the Interception driver and the one reboot required by that driver.
-LLARS_AHI_StartupGate(projectRoot, interactive := true)
+; Startup gate shared by Script Selector and scripts launched directly.
+; AutoHotInterception is the recommended LLARS backend; Standard AutoHotkey
+; remains available as a fallback when AHI is declined or unavailable.
+LLARS_AHI_StartupGate(projectRoot, interactive := true, force := false, setupConfirmed := false)
 {
     static gateRan := false
     static gateResult := false
 
-    if (gateRan)
+    if (gateRan && !force)
         return gateResult
     gateRan := true
 
     if (projectRoot = "")
         return false
+
+    if (!force && LLARS_AHI_Mode(projectRoot) != "ahi")
+    {
+        gateResult := false
+        LLARS_AHI_FallbackModeCheck(projectRoot, interactive)
+        return false
+    }
 
     ; A successful one-pass uninstall blocks AHI setup only for the remainder
     ; of the current Windows boot. After one real reboot the marker clears.
@@ -741,11 +923,6 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true)
         }
         LLARS_AHI_Trace(projectRoot, "Windows reboot detected after uninstall; uninstall marker cleared")
     }
-
-    ; A full uninstall removes the bundled AHI payload from this LLARS copy.
-    ; Treat that as an intentional Standard-AHK configuration, not corruption.
-    if FileExist(projectRoot . "\Vendor\AutoHotInterception\.ahi-uninstalled")
-        return false
 
     pendingRestart := LLARS_AHI_PendingRestart(projectRoot)
     if (pendingRestart)
@@ -766,7 +943,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true)
         LLARS_AHI_Trace(projectRoot, "Bundled AHI runtime is incomplete; refusing driver changes")
         LLARS_AHI_SupportHint(projectRoot, "Bundled AHI runtime missing")
         if (interactive)
-            MsgBox, 48, LLARS Input Files Missing, LLARS is missing one or more bundled AutoHotInterception runtime files.`n`nRe-extract or redownload the complete LLARS package. The Windows driver was not changed.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+            MsgBox, 0x40030, LLARS Input Files Missing, LLARS is missing one or more bundled AutoHotInterception runtime files.`n`nRe-extract or redownload the complete LLARS package. The Windows driver was not changed.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
         return false
     }
 
@@ -779,7 +956,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true)
         LLARS_AHI_Trace(projectRoot, "Bundled AHI file security preparation failed: " . fileSecurityReason)
         LLARS_AHI_SupportHint(projectRoot, "Bundled AHI file security preparation failed")
         if (interactive)
-            MsgBox, 48, LLARS Input Files, LLARS could not prepare the bundled AutoHotInterception files for Windows.`n`nMove or re-extract LLARS to a folder you can write to, then try again.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+            MsgBox, 0x40030, LLARS Input Files, LLARS could not prepare the bundled AutoHotInterception files for Windows.`n`nMove or re-extract LLARS to a folder you can write to, then try again.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
         return false
     }
 
@@ -800,30 +977,58 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true)
         LLARS_AHI_Trace(projectRoot, "Interception is registered but not functional: " . functionalReason)
         LLARS_AHI_SupportHint(projectRoot, "Driver registered but not functional: " . functionalReason)
         if (interactive)
-            MsgBox, 48, LLARS Input Driver, Interception is installed but is not active on this Windows boot.`n`nRestart Windows once and try LLARS again. If it still does not initialize, open Developer Mode and use Copy AHI Report for Gubna.`n`nLLARS will use standard AutoHotkey input for this run.
+            MsgBox, 0x40030, LLARS Input Driver, Interception is installed but is not active on this Windows boot.`n`nRestart Windows once and try LLARS again. If it still does not initialize, open Developer Mode and use Copy AHI Report for Gubna.`n`nLLARS will use standard AutoHotkey input for this run.
+        return false
+    }
+
+    ; A partial Interception registration needs a clean repair instead of an
+    ; install-over. Remove the incomplete driver, reboot once, then reinstall
+    ; LLARS's bundled AHI copy on the next launch.
+    if LLARS_AHI_DriverPresent()
+    {
+        LLARS_AHI_Trace(projectRoot, "Partial Interception registration detected; repair required")
+        LLARS_AHI_SupportHint(projectRoot, "Partial Interception registration detected")
+        if (!interactive)
+            return false
+
+        repairText := "LLARS detected an incomplete AutoHotInterception / Interception driver installation."
+            . "`n`nLLARS recommends repairing AHI by removing the incomplete driver, restarting Windows once, then reinstalling the bundled LLARS copy."
+            . "`n`nRepair AHI now?"
+            . "`n`nYes = Start AHI repair"
+            . "`nNo = Use Standard AutoHotkey fallback"
+        MsgBox, 0x40034, LLARS AHI Repair, %repairText%
+        IfMsgBox, Yes
+            return LLARS_AHI_RequestUninstall(projectRoot, true, true)
+
+        LLARS_AHI_SetMode(projectRoot, "standard")
         return false
     }
 
     if (!interactive)
         return false
 
-    setupText := "LLARS strongly recommends AutoHotInterception for reliable mouse and keyboard input."
-        . "`n`nRecommended and trusted by Gubna for LLARS."
-        . "`nEverything required is already included with LLARS."
-        . "`nSetup only installs the Windows Interception driver and needs one Administrator prompt."
-        . "`nAfter setup, LLARS will ask you to restart Windows once."
-        . "`n`nOK = Install Recommended Input"
-        . "`nCancel = Use Standard AutoHotkey Input"
-    MsgBox, 49, LLARS Input Setup, %setupText%
-    IfMsgBox, Cancel
-        return false
+    if (!setupConfirmed)
+    {
+        setupText := "LLARS recommends AutoHotInterception (AHI) for mouse and keyboard input."
+            . "`n`nEverything required is already included with LLARS."
+            . "`nSetup installs the Windows Interception keyboard/mouse driver and needs one Administrator prompt."
+            . "`nAfter setup, LLARS will ask you to restart Windows once."
+            . "`n`nOK = Install AHI (Recommended)"
+            . "`nCancel = Use Standard AutoHotkey (Fallback)"
+        MsgBox, 0x40031, LLARS AHI Setup, %setupText%
+        IfMsgBox, Cancel
+        {
+            LLARS_AHI_SetMode(projectRoot, "standard")
+            return false
+        }
+    }
 
     setupResult := LLARS_AHI_RunSetup(projectRoot)
     LLARS_AHI_Trace(projectRoot, "RunSetup returned: " . setupResult)
     if (setupResult = "MISSING")
     {
         LLARS_AHI_SupportHint(projectRoot, "Setup failure: setup tool missing")
-        MsgBox, 48, LLARS Input Setup, The LLARS AutoHotInterception setup tool is missing.`n`nRe-extract or redownload LLARS. The Windows driver was not changed.
+        MsgBox, 0x40030, LLARS Input Setup, The LLARS AutoHotInterception setup tool is missing.`n`nRe-extract or redownload LLARS. The Windows driver was not changed.
         return false
     }
     if (setupResult = 1223)
@@ -841,7 +1046,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true)
     if (setupState = "BUNDLE_ERROR")
     {
         LLARS_AHI_SupportHint(projectRoot, "Setup failure: bundled payload missing/corrupt")
-        MsgBox, 48, LLARS Input Setup, LLARS could not verify its bundled AutoHotInterception files.`n`nRe-extract or redownload the complete LLARS package. Nothing was downloaded and the Windows driver was not changed.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+        MsgBox, 0x40030, LLARS Input Setup, LLARS could not verify its bundled AutoHotInterception files.`n`nRe-extract or redownload the complete LLARS package. Nothing was downloaded and the Windows driver was not changed.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
         return false
     }
 
@@ -854,7 +1059,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true)
     {
         LLARS_AHI_Trace(projectRoot, "Setup did not report success; no restart prompt")
         LLARS_AHI_SupportHint(projectRoot, "Setup failure: state=" . setupState . "; exit=" . setupResult)
-        MsgBox, 48, LLARS Input Setup, AutoHotInterception setup did not complete successfully.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt`nUse Developer Mode > Copy AHI Report to paste the details to Gubna.
+        MsgBox, 0x40030, LLARS Input Setup, AutoHotInterception setup did not complete successfully.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt`nUse Developer Mode > Copy AHI Report to paste the details to Gubna.
         return false
     }
 
@@ -862,7 +1067,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true)
     {
         LLARS_AHI_Trace(projectRoot, "Setup reported success but bundled runtime verification failed")
         LLARS_AHI_SupportHint(projectRoot, "Setup failure: runtime verification")
-        MsgBox, 48, LLARS Input Setup, LLARS setup completed, but the bundled AutoHotInterception runtime is incomplete.`n`nRe-extract or redownload LLARS. LLARS will use standard AutoHotkey input for this run.
+        MsgBox, 0x40030, LLARS Input Setup, LLARS setup completed, but the bundled AutoHotInterception runtime is incomplete.`n`nRe-extract or redownload LLARS. LLARS will use standard AutoHotkey input for this run.
         return false
     }
 
@@ -905,6 +1110,21 @@ LLARS_AHI_Initialize(projectRoot := "")
     LLARS_AHI_DRIVER_READY := false
     LLARS_AHI_LAST_MOUSE_TRANSPORT := "No mouse action yet"
     LLARS_AHI_LAST_KEYBOARD_TRANSPORT := "No keyboard action yet"
+    LLARS_AHI_HELD_KEYS := {}
+    LLARS_AHI_HELD_MOUSE := {}
+    if (!LLARS_AHI_EXIT_REGISTERED)
+    {
+        OnExit("LLARS_AHI_OnExit")
+        LLARS_AHI_EXIT_REGISTERED := true
+    }
+
+    if (LLARS_AHI_Mode(projectRoot) != "ahi")
+    {
+        LLARS_AHI_STATUS_REASON := "Standard AutoHotkey fallback selected"
+        LLARS_AHI_LAST_MOUSE_TRANSPORT := "Standard AutoHotkey fallback"
+        LLARS_AHI_LAST_KEYBOARD_TRANSPORT := "Standard AutoHotkey fallback"
+        return false
+    }
 
     if !LLARS_AHI_RUNTIME_READY
     {
@@ -983,6 +1203,8 @@ LLARS_AHI_Initialize(projectRoot := "")
     LLARS_AHI_MOUSE_READY := (LLARS_AHI_MOUSE_ID >= 11 && LLARS_AHI_MOUSE_ID <= 20)
     LLARS_AHI_KEYBOARD_READY := (LLARS_AHI_KEYBOARD_ID >= 1 && LLARS_AHI_KEYBOARD_ID <= 10)
     LLARS_AHI_READY := (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY)
+    if (LLARS_AHI_MOUSE_READY)
+        LLARS_AHI_NativeTransportInitialize(projectRoot)
 
     if (LLARS_AHI_MOUSE_READY && LLARS_AHI_KEYBOARD_READY)
         LLARS_AHI_STATUS_REASON := "Ready"
@@ -1203,10 +1425,208 @@ LLARS_AHI_LogRuntimeFallback(kind, reason, detail := "")
     }
 }
 
-; Converts the active window's client coordinate to an Interception absolute
-; coordinate on the primary display. NaturalClick already owns the trajectory
-; and cadence, so AHI must only transport each point -- never generate a second
-; movement path of its own.
+
+; Keeps LLARS-generated input transitions ordered and provides a virtual-desktop
+; Interception transport for NaturalClick points without changing the trajectory.
+LLARS_AHI_NativeTransportInitialize(projectRoot := "")
+{
+    global LLARS_AHI_NATIVE_MODULE, LLARS_AHI_NATIVE_CONTEXT
+    global LLARS_AHI_NATIVE_SEND, LLARS_AHI_NATIVE_DESTROY
+
+    LLARS_AHI_NativeTransportDispose()
+    if (projectRoot = "")
+        return false
+
+    bitness := (A_PtrSize = 8) ? "x64" : "x86"
+    dllFile := projectRoot . "\Vendor\AutoHotInterception\Lib\" . bitness . "\interception.dll"
+    if !FileExist(dllFile)
+        return false
+
+    LLARS_AHI_NATIVE_MODULE := DllCall("Kernel32\LoadLibraryW", "WStr", dllFile, "Ptr")
+    if (!LLARS_AHI_NATIVE_MODULE)
+        return false
+
+    createProc := DllCall("Kernel32\GetProcAddress", "Ptr", LLARS_AHI_NATIVE_MODULE, "AStr", "interception_create_context", "Ptr")
+    LLARS_AHI_NATIVE_SEND := DllCall("Kernel32\GetProcAddress", "Ptr", LLARS_AHI_NATIVE_MODULE, "AStr", "interception_send", "Ptr")
+    LLARS_AHI_NATIVE_DESTROY := DllCall("Kernel32\GetProcAddress", "Ptr", LLARS_AHI_NATIVE_MODULE, "AStr", "interception_destroy_context", "Ptr")
+    if (!createProc || !LLARS_AHI_NATIVE_SEND || !LLARS_AHI_NATIVE_DESTROY)
+    {
+        LLARS_AHI_NativeTransportDispose()
+        return false
+    }
+
+    LLARS_AHI_NATIVE_CONTEXT := DllCall(createProc, "CDecl Ptr")
+    if (!LLARS_AHI_NATIVE_CONTEXT)
+    {
+        LLARS_AHI_NativeTransportDispose()
+        return false
+    }
+    return true
+}
+
+LLARS_AHI_NativeTransportDispose()
+{
+    global LLARS_AHI_NATIVE_MODULE, LLARS_AHI_NATIVE_CONTEXT
+    global LLARS_AHI_NATIVE_SEND, LLARS_AHI_NATIVE_DESTROY
+
+    if (LLARS_AHI_NATIVE_CONTEXT && LLARS_AHI_NATIVE_DESTROY)
+    {
+        try DllCall(LLARS_AHI_NATIVE_DESTROY, "Ptr", LLARS_AHI_NATIVE_CONTEXT, "CDecl")
+    }
+    LLARS_AHI_NATIVE_CONTEXT := 0
+    LLARS_AHI_NATIVE_SEND := 0
+    LLARS_AHI_NATIVE_DESTROY := 0
+
+    if (LLARS_AHI_NATIVE_MODULE)
+        DllCall("Kernel32\FreeLibrary", "Ptr", LLARS_AHI_NATIVE_MODULE)
+    LLARS_AHI_NATIVE_MODULE := 0
+}
+
+LLARS_AHI_SendVirtualAbsolute(mouseId, absoluteX, absoluteY)
+{
+    global LLARS_AHI_NATIVE_CONTEXT, LLARS_AHI_NATIVE_SEND
+    if (!LLARS_AHI_NATIVE_CONTEXT || !LLARS_AHI_NATIVE_SEND)
+        return false
+
+    ; InterceptionMouseStroke: state(ushort), flags(ushort), rolling(short),
+    ; alignment(2), x(int), y(int), information(uint).  VIRTUAL_DESKTOP and
+    ; MOVE_NOCOALESCE preserve LLARS' point stream across multi-monitor layouts.
+    VarSetCapacity(stroke, 20, 0)
+    NumPut(0, stroke, 0, "UShort")
+    NumPut(0x001 | 0x002 | 0x008, stroke, 2, "UShort")
+    NumPut(0, stroke, 4, "Short")
+    NumPut(Round(absoluteX), stroke, 8, "Int")
+    NumPut(Round(absoluteY), stroke, 12, "Int")
+    NumPut(0, stroke, 16, "UInt")
+    sent := DllCall(LLARS_AHI_NATIVE_SEND, "Ptr", LLARS_AHI_NATIVE_CONTEXT, "Int", mouseId, "Ptr", &stroke, "UInt", 1, "CDecl Int")
+    return (sent = 1)
+}
+
+LLARS_AHI_TransportName(kind := "")
+{
+    global LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
+    global LLARS_AHI_LAST_MOUSE_TRANSPORT, LLARS_AHI_LAST_KEYBOARD_TRANSPORT
+
+    StringLower, kind, kind
+    if (kind = "mouse")
+    {
+        if (SubStr(LLARS_AHI_LAST_MOUSE_TRANSPORT, 1, 4) = "AHI ")
+            return "AutoHotInterception"
+        if (SubStr(LLARS_AHI_LAST_MOUSE_TRANSPORT, 1, 2) = "No")
+            return LLARS_AHI_MOUSE_READY ? "AutoHotInterception" : "Standard AutoHotkey"
+        return "Standard AutoHotkey"
+    }
+    if (kind = "keyboard")
+    {
+        if (SubStr(LLARS_AHI_LAST_KEYBOARD_TRANSPORT, 1, 4) = "AHI ")
+            return "AutoHotInterception"
+        if (SubStr(LLARS_AHI_LAST_KEYBOARD_TRANSPORT, 1, 2) = "No")
+            return LLARS_AHI_KEYBOARD_READY ? "AutoHotInterception" : "Standard AutoHotkey"
+        return "Standard AutoHotkey"
+    }
+    return (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY) ? "AutoHotInterception" : "Standard AutoHotkey"
+}
+
+LLARS_AHI_KeyHeld(keyName)
+{
+    global LLARS_AHI_HELD_KEYS
+    if !IsObject(LLARS_AHI_HELD_KEYS)
+        return false
+    keyId := Trim(keyName)
+    StringLower, keyId, keyId
+    return LLARS_AHI_HELD_KEYS.HasKey(keyId)
+}
+
+LLARS_AHI_ReleaseAllInput()
+{
+    global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_KEYBOARD_ID
+    global LLARS_AHI_HELD_KEYS, LLARS_AHI_HELD_MOUSE, LLARS_CreatorExplicitKeyHolds
+
+    wasCritical := A_IsCritical
+    if (!wasCritical)
+        Critical, On
+
+    if !IsObject(LLARS_AHI_HELD_KEYS)
+        LLARS_AHI_HELD_KEYS := {}
+    if !IsObject(LLARS_AHI_HELD_MOUSE)
+        LLARS_AHI_HELD_MOUSE := {}
+
+    for keyId, heldInfo in LLARS_AHI_HELD_KEYS
+    {
+        released := false
+        if (IsObject(LLARS_AHI_Object) && LLARS_AHI_KEYBOARD_ID)
+        {
+            try
+            {
+                LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, heldInfo.Scan, 0)
+                released := true
+            }
+        }
+        if (!released && heldInfo.Name != "")
+        {
+            keyUp := "{" . heldInfo.Name . " up}"
+            SendEvent, %keyUp%
+        }
+    }
+    LLARS_AHI_HELD_KEYS := {}
+
+    ; Explicit creator holds can use either AHI or the compatibility backend.
+    ; Clear any creator-side bookkeeping when a run is paused/stopped so a
+    ; later key-up cannot inherit stale state from the previous run.
+    if IsObject(LLARS_CreatorExplicitKeyHolds)
+    {
+        for explicitId, explicitInfo in LLARS_CreatorExplicitKeyHolds
+        {
+            if (explicitInfo.Transport != "AHI" && explicitInfo.Name != "")
+            {
+                keyUp := "{" . explicitInfo.Name . " up}"
+                SendEvent, %keyUp%
+            }
+        }
+        LLARS_CreatorExplicitKeyHolds := {}
+    }
+
+    for buttonName, heldInfo in LLARS_AHI_HELD_MOUSE
+    {
+        released := false
+        if (IsObject(LLARS_AHI_Object) && LLARS_AHI_MOUSE_ID)
+        {
+            try
+            {
+                LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, heldInfo.Code, 0)
+                released := true
+            }
+        }
+        if (!released)
+        {
+            if (buttonName = "right")
+                Click, Right Up
+            else if (buttonName = "middle")
+                Click, Middle Up
+            else if (buttonName = "xbutton1")
+                Click, X1 Up
+            else if (buttonName = "xbutton2")
+                Click, X2 Up
+            else
+                Click, Up
+        }
+    }
+    LLARS_AHI_HELD_MOUSE := {}
+
+    if (!wasCritical)
+        Critical, Off
+    return true
+}
+
+LLARS_AHI_OnExit(exitReason := "", exitCode := 0)
+{
+    LLARS_AHI_ReleaseAllInput()
+    LLARS_AHI_NativeTransportDispose()
+}
+
+; Converts the active window's client coordinate to the Interception virtual-
+; desktop absolute space. NaturalClick owns the trajectory and cadence; the
+; transport sends each calculated point without creating another movement path.
 LLARS_AHI_ClientPointToAbsolute(x, y, ByRef absoluteX, ByRef absoluteY)
 {
     hwnd := DllCall("GetForegroundWindow", "Ptr")
@@ -1221,28 +1641,23 @@ LLARS_AHI_ClientPointToAbsolute(x, y, ByRef absoluteX, ByRef absoluteY)
 
     screenX := NumGet(point, 0, "Int")
     screenY := NumGet(point, 4, "Int")
-    screenWidth := A_ScreenWidth + 0
-    screenHeight := A_ScreenHeight + 0
-    if (screenWidth <= 1 || screenHeight <= 1)
+    SysGet, virtualLeft, 76
+    SysGet, virtualTop, 77
+    SysGet, virtualWidth, 78
+    SysGet, virtualHeight, 79
+    if (virtualWidth <= 1 || virtualHeight <= 1)
+        return false
+    if (screenX < virtualLeft || screenY < virtualTop || screenX >= (virtualLeft + virtualWidth) || screenY >= (virtualTop + virtualHeight))
         return false
 
-    ; AHI's SendMouseMoveAbsolute uses the normal Interception absolute range
-    ; (0..65535) for the primary display. If the active client is on another
-    ; monitor, preserve the original LLARS MouseMove instead of mis-targeting.
-    if (screenX < 0 || screenY < 0 || screenX >= screenWidth || screenY >= screenHeight)
-        return false
-
-    ; Windows absolute mouse input uses a 0..65535 normalized space. Using
-    ; 65536/size with an upward round matches the pixel mapping used by mature
-    ; Windows input implementations and avoids the common one-pixel drift.
-    absoluteX := Ceil(screenX * (65536.0 / screenWidth))
-    absoluteY := Ceil(screenY * (65536.0 / screenHeight))
-    if (absoluteX < 1)
-        absoluteX := 1
+    absoluteX := Round(((screenX - virtualLeft) * 65535.0) / (virtualWidth - 1))
+    absoluteY := Round(((screenY - virtualTop) * 65535.0) / (virtualHeight - 1))
+    if (absoluteX < 0)
+        absoluteX := 0
     else if (absoluteX > 65535)
         absoluteX := 65535
-    if (absoluteY < 1)
-        absoluteY := 1
+    if (absoluteY < 0)
+        absoluteY := 0
     else if (absoluteY > 65535)
         absoluteY := 65535
     return true
@@ -1262,13 +1677,15 @@ LLARS_InputMouseMove(x, y, speed := "")
     global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_MOUSE_READY
     global LLARS_AHI_STATUS_DETAIL
 
+    ; Native/default-speed MouseMove is retained only where LLARS originally
+    ; relied on AutoHotkey's own speed profile. NaturalClick always passes 0.
     if (speed = "" || speed != 0)
     {
         if (speed = "")
             MouseMove, %x%, %y%
         else
             MouseMove, %x%, %y%, %speed%
-        LLARS_AHI_RecordTransport("mouse", "Original AHK Move | " . (speed = "" ? "Default speed" : "Speed=" . speed))
+        LLARS_AHI_RecordTransport("mouse", "Standard AHK compatibility move | " . (speed = "" ? "Default speed" : "Speed=" . speed))
         return true
     }
 
@@ -1278,35 +1695,44 @@ LLARS_InputMouseMove(x, y, speed := "")
         {
             try
             {
-                ; Send one absolute stroke for each point already calculated by LLARS.
-                LLARS_AHI_Object.SendMouseMoveAbsolute(LLARS_AHI_MOUSE_ID, absoluteX, absoluteY)
-                LLARS_AHI_RecordTransport("mouse", "AHI Absolute Move | #" . LLARS_AHI_MOUSE_ID)
-                return true
+                if LLARS_AHI_SendVirtualAbsolute(LLARS_AHI_MOUSE_ID, absoluteX, absoluteY)
+                {
+                    LLARS_AHI_RecordTransport("mouse", "AHI Virtual Desktop Move | #" . LLARS_AHI_MOUSE_ID)
+                    return true
+                }
+
+                ; If the direct virtual-desktop transport is unavailable, the
+                ; AHI wrapper still provides a safe primary-display fallback.
+                SysGet, virtualLeft, 76
+                SysGet, virtualTop, 77
+                SysGet, virtualWidth, 78
+                SysGet, virtualHeight, 79
+                if (virtualLeft = 0 && virtualTop = 0 && virtualWidth = A_ScreenWidth && virtualHeight = A_ScreenHeight)
+                {
+                    LLARS_AHI_Object.SendMouseMoveAbsolute(LLARS_AHI_MOUSE_ID, absoluteX, absoluteY)
+                    LLARS_AHI_RecordTransport("mouse", "AHI Absolute Move | #" . LLARS_AHI_MOUSE_ID)
+                    return true
+                }
+                throw Exception("Virtual-desktop Interception transport is unavailable")
             }
             catch e
             {
-                ; A movement failure falls back without disabling AHI mouse buttons.
                 absoluteTransportFailed := true
                 LLARS_AHI_STATUS_DETAIL := e.Message
-                LLARS_AHI_DeveloperAction("Input Backend || AHI absolute movement failed || Fallback=Original LLARS MouseMove")
+                LLARS_AHI_DeveloperAction("Input Backend || AHI movement transport failed || Compatibility movement enabled")
             }
-        }
-        else
-        {
-            ; AHI absolute synthesis is primary-monitor based. Preserve the
-            ; original LLARS movement on secondary-monitor/client layouts.
-            LLARS_AHI_RecordTransport("mouse", "Original AHK Move | AHI absolute unavailable for this display")
         }
     }
 
     MouseMove, %x%, %y%, 0
-    LLARS_AHI_RecordTransport("mouse", "Original AHK Move | Speed=0 fallback")
+    LLARS_AHI_RecordTransport("mouse", "Standard AHK compatibility move | Speed=0")
     return true
 }
 
 LLARS_InputMouseButton(button := "left", state := 1)
 {
     global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_MOUSE_READY
+    global LLARS_AHI_HELD_MOUSE
 
     button := Trim(button)
     StringLower, button, button
@@ -1323,16 +1749,34 @@ LLARS_InputMouseButton(button := "left", state := 1)
     else
         return false
 
+    if !IsObject(LLARS_AHI_HELD_MOUSE)
+        LLARS_AHI_HELD_MOUSE := {}
+
+    state := state ? 1 : 0
+    if (state && LLARS_AHI_HELD_MOUSE.HasKey(button))
+        return true
+    if (!state && !LLARS_AHI_HELD_MOUSE.HasKey(button))
+        return true
+
     if (LLARS_AHI_MOUSE_READY && IsObject(LLARS_AHI_Object))
     {
         try
         {
-            LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, state ? 1 : 0)
+            LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, state)
+            if (state)
+                LLARS_AHI_HELD_MOUSE[button] := {Code:code}
+            else
+                LLARS_AHI_HELD_MOUSE.Delete(button)
             LLARS_AHI_RecordTransport("mouse", "AHI " . button . (state ? " down" : " up") . " | #" . LLARS_AHI_MOUSE_ID)
             return true
         }
         catch e
         {
+            if (state)
+            {
+                try LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, 0)
+            }
+            LLARS_AHI_HELD_MOUSE.Delete(button)
             LLARS_AHI_MOUSE_READY := false
             LLARS_AHI_LogRuntimeFallback("Mouse", "Button transport error", e.Message)
         }
@@ -1373,8 +1817,28 @@ LLARS_InputMouseButton(button := "left", state := 1)
         else
             Click, Up
     }
+    if (state)
+        LLARS_AHI_HELD_MOUSE[button] := {Code:code}
+    else
+        LLARS_AHI_HELD_MOUSE.Delete(button)
     LLARS_AHI_RecordTransport("mouse", "Standard AHK " . button . (state ? " down" : " up"))
     return true
+}
+
+; Centralized drag transport for future LLARS drag actions. It uses the same
+; movement and held-button helpers as NaturalClick so the selected backend stays consistent.
+LLARS_InputMouseDrag(startX, startY, endX, endY, button := "left", speed := 0)
+{
+    if !LLARS_InputMouseMove(startX, startY, 0)
+        return false
+    if !LLARS_InputMouseButton(button, 1)
+        return false
+
+    moved := LLARS_InputMouseMove(endX, endY, speed)
+    released := LLARS_InputMouseButton(button, 0)
+    transportName := LLARS_AHI_TransportName("mouse")
+    LLARS_AHI_DeveloperAction("Mouse Drag || " . button . " || (" . startX . ", " . startY . ") -> (" . endX . ", " . endY . ") || " . transportName)
+    return (moved && released)
 }
 
 LLARS_AHI_SendWheel(keyName)
@@ -1461,6 +1925,7 @@ LLARS_AHI_KeyScanCode(keyName)
 LLARS_AHI_SendKeyState(keyName, state)
 {
     global LLARS_AHI_Object, LLARS_AHI_KEYBOARD_ID, LLARS_AHI_KEYBOARD_READY
+    global LLARS_AHI_HELD_KEYS
     if (!LLARS_AHI_KEYBOARD_READY || !IsObject(LLARS_AHI_Object))
         return false
 
@@ -1468,14 +1933,33 @@ LLARS_AHI_SendKeyState(keyName, state)
     if (!scanCode)
         return false
 
+    if !IsObject(LLARS_AHI_HELD_KEYS)
+        LLARS_AHI_HELD_KEYS := {}
+    keyId := Trim(keyName)
+    StringLower, keyId, keyId
+    state := state ? 1 : 0
+    if (state && LLARS_AHI_HELD_KEYS.HasKey(keyId))
+        return true
+    if (!state && !LLARS_AHI_HELD_KEYS.HasKey(keyId))
+        return true
+
     try
     {
-        LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, scanCode, state ? 1 : 0)
+        LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, scanCode, state)
+        if (state)
+            LLARS_AHI_HELD_KEYS[keyId] := {Name:keyName, Scan:scanCode}
+        else
+            LLARS_AHI_HELD_KEYS.Delete(keyId)
         LLARS_AHI_RecordTransport("keyboard", "AHI " . keyName . (state ? " down" : " up") . " | #" . LLARS_AHI_KEYBOARD_ID)
         return true
     }
     catch e
     {
+        if (state)
+        {
+            try LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, scanCode, 0)
+        }
+        LLARS_AHI_HELD_KEYS.Delete(keyId)
         LLARS_AHI_KEYBOARD_READY := false
         LLARS_AHI_LogRuntimeFallback("Keyboard", "Key transport error", e.Message)
         return false
@@ -1521,62 +2005,84 @@ LLARS_AHI_SendSequence(sendSequence, keyHold := 60, keyDelay := 20)
     if !LLARS_AHI_ParseModifiers(prefix, modifierKeys)
         return false
 
-    baseScan := LLARS_AHI_KeyScanCode(keyName)
-    if (!baseScan)
+    if (LLARS_AHI_KeyScanCode(keyName) = 0)
         return false
-
-    modifierScans := []
     for _, modifierKey in modifierKeys
     {
-        modifierScan := LLARS_AHI_KeyScanCode(modifierKey)
-        if (!modifierScan)
+        if (LLARS_AHI_KeyScanCode(modifierKey) = 0)
             return false
-        modifierScans.Push(modifierScan)
     }
 
+    ; A timed key press should never release an explicit held key owned by a
+    ; separate LLARS action. Suppress the conflicting press instead.
+    if LLARS_AHI_KeyHeld(keyName)
+    {
+        LLARS_AHI_DeveloperAction("Keyboard Safety || Press suppressed because " . keyName . " is already held")
+        return true
+    }
+
+    wasCritical := A_IsCritical
+    if (!wasCritical)
+        Critical, On
+
+    ownedModifiers := []
+    baseDown := false
     try
     {
-        for _, modifierScan in modifierScans
+        for _, modifierKey in modifierKeys
         {
-            LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, modifierScan, 1)
+            if !LLARS_AHI_KeyHeld(modifierKey)
+            {
+                if !LLARS_AHI_SendKeyState(modifierKey, 1)
+                    throw Exception("Modifier down failed: " . modifierKey)
+                ownedModifiers.Push(modifierKey)
+            }
             if (keyDelay > 0)
                 Sleep, %keyDelay%
         }
 
         DllCall("QueryPerformanceFrequency", "Int64*", keyHoldPerformanceFrequency)
+        if !LLARS_AHI_SendKeyState(keyName, 1)
+            throw Exception("Key down failed: " . keyName)
+        baseDown := true
         DllCall("QueryPerformanceCounter", "Int64*", keyHoldStartCounter)
-        LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, baseScan, 1)
         if (keyHold > 0)
             Sleep, %keyHold%
-        LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, baseScan, 0)
         DllCall("QueryPerformanceCounter", "Int64*", keyHoldEndCounter)
+        if !LLARS_AHI_SendKeyState(keyName, 0)
+            throw Exception("Key up failed: " . keyName)
+        baseDown := false
+
         if (keyHoldPerformanceFrequency > 0)
             LLARS_AHI_LAST_KEY_HOLD_MS := Round(((keyHoldEndCounter - keyHoldStartCounter) * 1000.0) / keyHoldPerformanceFrequency)
         else
             LLARS_AHI_LAST_KEY_HOLD_MS := keyHold
 
-        index := modifierScans.MaxIndex()
+        index := ownedModifiers.MaxIndex()
         while (index >= 1)
         {
             if (keyDelay > 0)
                 Sleep, %keyDelay%
-            LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, modifierScans[index], 0)
+            LLARS_AHI_SendKeyState(ownedModifiers[index], 0)
             index--
         }
         LLARS_AHI_RecordTransport("keyboard", "AHI " . sendSequence . " | #" . LLARS_AHI_KEYBOARD_ID)
+        if (!wasCritical)
+            Critical, Off
         return true
     }
     catch e
     {
-        ; Release the base key and any modifiers that may have gone down before
-        ; falling back, so a transport failure cannot leave a key held.
-        try LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, baseScan, 0)
-        index := modifierScans.MaxIndex()
+        if (baseDown)
+            LLARS_AHI_SendKeyState(keyName, 0)
+        index := ownedModifiers.MaxIndex()
         while (index >= 1)
         {
-            try LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, modifierScans[index], 0)
+            LLARS_AHI_SendKeyState(ownedModifiers[index], 0)
             index--
         }
+        if (!wasCritical)
+            Critical, Off
         LLARS_AHI_KEYBOARD_READY := false
         LLARS_AHI_LogRuntimeFallback("Keyboard", "Sequence transport error", e.Message)
         return false

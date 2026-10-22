@@ -261,7 +261,7 @@ Generator_FindMainLLARS()
 	{
 		GeneratorWindowHWND := GeneratorWindowList%A_Index%
 		WinGetTitle, GeneratorWindowTitle, ahk_id %GeneratorWindowHWND%
-		if (GeneratorWindowTitle = "LLARS")
+		if (GeneratorWindowTitle = "LLARS" || InStr(GeneratorWindowTitle, "LLARS - v") = 1)
 			return GeneratorWindowHWND
 	}
 

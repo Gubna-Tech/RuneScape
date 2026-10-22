@@ -13,6 +13,7 @@ LLARS_CreateMainGUI()
 	global ConfigStatusHotkeys, ConfigStatusCoordinates, ConfigStatusColors
 	global ConfigStatusHotkeysLabel, ConfigStatusCoordinatesLabel, ConfigStatusColorsLabel
 	displayScriptName := LLARS_DisplayScriptName()
+	windowTitle := LLARS_WindowTitle()
 
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
@@ -74,9 +75,9 @@ LLARS_CreateMainGUI()
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	LLARS_UpdateConfigStatus()
 	if LLARS_MainLoadPosition(x, y)
-		Gui, Show, x%x% y%y% w315 h337, LLARS
+		Gui, Show, x%x% y%y% w315 h337, %windowTitle%
 	else
-		Gui, Show, w315 h337, LLARS
+		Gui, Show, w315 h337, %windowTitle%
 	CheckPOS(LLARSMainGuiHwnd)
 
 	; Loads the custom LLARS icon into the main GUI when available.
@@ -99,6 +100,7 @@ LLARS_CreateRunCountGUI()
 	global scriptname, value, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
 	global Counter, Counter2, EstLoopRemaining, EstRunRemaining, State1, State3, State2, ScriptGreen, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
+	windowTitle := LLARS_WindowTitle()
 
 	LLARS_RUNNING := true
 	SetLLARSHOTKEYS()
@@ -156,9 +158,9 @@ LLARS_CreateRunCountGUI()
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	if (hasMainPosition)
-		Gui, Show, x%X% y%Y% w315 h275, LLARS
+		Gui, Show, x%X% y%Y% w315 h275, %windowTitle%
 	else
-		Gui, Show, w315 h275, LLARS
+		Gui, Show, w315 h275, %windowTitle%
 	CheckPOS(LLARSMainGuiHwnd)
 	count = 0
 	++frcount
@@ -174,6 +176,7 @@ LLARS_CreateTimerGUI()
 	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
 	global TimerCount, State3, State2, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
+	windowTitle := LLARS_WindowTitle()
 
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
 	hasMainPosition := LLARS_MainGetPosition(X, Y)
@@ -215,9 +218,9 @@ LLARS_CreateTimerGUI()
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	if (hasMainPosition)
-		Gui, Show, x%X% y%Y% w315 h212, LLARS
+		Gui, Show, x%X% y%Y% w315 h212, %windowTitle%
 	else
-		Gui, Show, w315 h212, LLARS
+		Gui, Show, w315 h212, %windowTitle%
 	CheckPOS(LLARSMainGuiHwnd)
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
 	{
@@ -238,6 +241,7 @@ LLARS_CreateUntilDoneGUI()
 	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_CONFIG_FILE
 	global State3, State2, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
+	windowTitle := LLARS_WindowTitle()
 
 	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
 	hasMainPosition := LLARS_MainGetPosition(X, Y)
@@ -274,9 +278,9 @@ LLARS_CreateUntilDoneGUI()
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	if (hasMainPosition)
-		Gui, Show, x%X% y%Y% w315 h184, LLARS
+		Gui, Show, x%X% y%Y% w315 h184, %windowTitle%
 	else
-		Gui, Show, w315 h184, LLARS
+		Gui, Show, w315 h184, %windowTitle%
 	CheckPOS(LLARSMainGuiHwnd)
 	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
 	{

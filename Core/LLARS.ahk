@@ -2,9 +2,12 @@
 ; |     LLARS MASTER LIBRARY     -     LLARS MASTER LIBRARY      |
 ; ================================================================
 
-; Loads AutoHotInterception when first-run setup has installed its AHK v1 library.
-; *i keeps a fresh LLARS download launchable before that one-time setup occurs.
+; Loads the bundled AutoHotInterception AHK v1 library when available.
+; *i keeps first launch working while the Windows Interception driver is being set up.
 #Include *i %A_LineFile%\..\..\Vendor\AutoHotInterception\Lib\AutoHotInterception.ahk
+
+; Loads version metadata and GitHub release update helpers.
+#Include %A_LineFile%\..\LLARS_Update.ahk
 
 ; Loads the LLARS input-backend/bootstrap layer.
 #Include %A_LineFile%\..\LLARS_AHI.ahk

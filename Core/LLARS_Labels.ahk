@@ -27,6 +27,11 @@ Else IfWinActive, Information ahk_class AutoHotkeyGUI
 	GoSub, CloseInfo
 }
 
+Else IfWinActive, Input Settings ahk_class AutoHotkeyGUI
+{
+	GoSub, CloseInputSettings
+}
+
 Else IfWinActive, Timing Audit ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseDeveloperTimingAudit
@@ -1498,6 +1503,8 @@ Return
 ; Pauses the interrupted automation thread while keeping this hotkey thread
 ; alive so Developer Mode can continue refreshing elapsed time and live data.
 PauseB:
+if IsFunc("LLARS_AHI_ReleaseAllInput")
+	LLARS_AHI_ReleaseAllInput()
 LLARS_PAUSED := true
 LLARS_DeveloperAction("Script || Paused")
 GuiControl,,State2, Paused
@@ -1532,6 +1539,8 @@ if (DeveloperGuiHwnd && WinExist("ahk_id " . DeveloperGuiHwnd))
 
 if IsFunc("LLARS_TimerStopAll")
 	LLARS_TimerStopAll()
+if IsFunc("LLARS_AHI_ReleaseAllInput")
+	LLARS_AHI_ReleaseAllInput()
 ExitApp
 
 ; ===================================================================
@@ -1557,7 +1566,7 @@ if (LLARS_lhk3 != "")
 if (LLARS_lhk4 != "")
 	scriptHotkeys .= "Exit: " . LLARS_lhk4 . "`n"
 if (LLARS_lhk5 != "")
-	scriptHotkeys .= "Developer Mode: " . LLARS_lhk5 . "`n"
+	scriptHotkeys .= "Developer Mode: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk5) . "`n"
 
 ; Read script-specific hotkeys from Config.ini.
 configHotkeys := ""
@@ -1619,7 +1628,8 @@ resourceTitleY := resourceDividerY + 8
 llarsConfigY := resourceTitleY + 23
 scriptConfigY := llarsConfigY + 29
 developerModeY := scriptConfigY + 29
-discordY := developerModeY + 29
+inputSettingsY := developerModeY + 29
+discordY := inputSettingsY + 29
 closeDividerY := discordY + 32
 closeInfoY := closeDividerY + 8
 informationHeight := closeInfoY + 39
@@ -1667,6 +1677,7 @@ Gui 20: Add, Text, x10 y%resourceTitleY% w270 h20 Center, Resources
 Gui 20: Add, Button, x60 y%llarsConfigY% w170 h25 gInfoLLARS, LLARS Config
 Gui 20: Add, Button, x60 y%scriptConfigY% w170 h25 gInfoConfig, Script Config
 Gui 20: Add, Button, x60 y%developerModeY% w170 h25 gDeveloperMode, Developer Mode
+Gui 20: Add, Button, x60 y%inputSettingsY% w170 h25 gInputSettings, Input Settings
 Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
 Gui 20: Add, Text, x10 y%closeDividerY% w270 h2 0x10
 Gui 20: Add, Button, x60 y%closeInfoY% w170 h29 gCloseInfo, Close Information
@@ -1724,6 +1735,117 @@ return
 InfoLLARS:
 EnableHotkey()
 Run %LLARS_CONFIG_FILE%
+return
+
+; Opens LLARS input-backend controls. AutoHotInterception is the recommended
+; backend; Standard AutoHotkey remains available as a fallback.
+InputSettings:
+EnableHotkey()
+Gui 20: Hide
+Gui 21: Destroy
+Gui 21: +AlwaysOnTop +OwnDialogs +LastFound +ToolWindow -caption
+Gui 21: Font, s12 Bold cBlack
+Gui 21: Add, Text, x5 y5 w400 h25 Center, LLARS
+Gui 21: Font, s11 Bold cBlack
+Gui 21: Add, Text, x5 y30 w400 h20 Center, Input Settings
+Gui 21: Add, Text, x12 y55 w386 h2 0x10
+Gui 21: Font, s10 Norm cBlack
+Gui 21: Add, Text, x20 y67 w370 h50 Center, AutoHotInterception (AHI) is the recommended LLARS input backend.`nStandard AutoHotkey remains available as a fallback.
+Gui 21: Font, s10 Bold cBlack
+Gui 21: Add, Text, x15 y126 w380 h20 Center vInputBackendStatus
+Gui 21: Add, Text, x15 y150 w380 h20 Center vInputActiveStatus
+Gui 21: Add, Text, x15 y174 w380 h20 Center vInputDriverStatus
+Gui 21: Add, Button, x65 y208 w280 h30 gInputEnableAHI, Enable / Repair AHI
+Gui 21: Add, Button, x65 y244 w280 h30 gInputUseStandard, Use Standard AutoHotkey
+Gui 21: Add, Button, x65 y280 w280 h30 gInputUninstallAHI vInputUninstallButton, Uninstall AHI / Interception
+Gui 21: Add, Text, x12 y321 w386 h2 0x10
+Gui 21: Add, Button, x90 y333 w230 h31 gCloseInputSettings, Close Input Settings
+Gosub, RefreshInputSettings
+Gui 21: Show, Center w410 h374, Input Settings
+return
+
+RefreshInputSettings:
+inputMode := IsFunc("LLARS_AHI_Mode") ? LLARS_AHI_Mode(LLARS_ROOT) : "ahi"
+if (inputMode = "ahi")
+	inputBackendText := "Backend: AutoHotInterception (Recommended)"
+else
+	inputBackendText := "Backend: Standard AutoHotkey (Fallback)"
+
+inputMouseAHIReady := IsFunc("LLARS_AHI_IsReady") ? LLARS_AHI_IsReady("mouse") : false
+inputKeyboardAHIReady := IsFunc("LLARS_AHI_IsReady") ? LLARS_AHI_IsReady("keyboard") : false
+if (inputMode != "ahi")
+	inputActiveText := "Active input: Standard AutoHotkey"
+else if (inputMouseAHIReady && inputKeyboardAHIReady)
+	inputActiveText := "Active input: AutoHotInterception"
+else if (inputMouseAHIReady || inputKeyboardAHIReady)
+	inputActiveText := "Active input: Mixed (AHI + Standard fallback)"
+else
+	inputActiveText := "Active input: Standard AutoHotkey (AHI fallback)"
+
+inputDriverInstalled := IsFunc("LLARS_AHI_DriverPresent") ? LLARS_AHI_DriverPresent() : false
+inputDriverRegistered := IsFunc("LLARS_AHI_DriverRegistered") ? LLARS_AHI_DriverRegistered() : false
+inputUninstallPending := IsFunc("LLARS_AHI_UninstallPending") ? LLARS_AHI_UninstallPending(LLARS_ROOT) : false
+if (inputUninstallPending && IsFunc("LLARS_AHI_UninstallStillPending") && LLARS_AHI_UninstallStillPending(LLARS_ROOT))
+	inputDriverText := "AHI driver: Restart required"
+else if (inputDriverRegistered)
+	inputDriverText := "AHI driver: Installed"
+else if (inputDriverInstalled)
+	inputDriverText := "AHI driver: Repair required"
+else
+	inputDriverText := "AHI driver: Not installed"
+GuiControl, 21:, InputBackendStatus, %inputBackendText%
+GuiControl, 21:, InputActiveStatus, %inputActiveText%
+GuiControl, 21:, InputDriverStatus, %inputDriverText%
+if (inputDriverInstalled)
+	GuiControl, 21:Enable, InputUninstallButton
+else
+	GuiControl, 21:Disable, InputUninstallButton
+return
+
+InputUseStandard:
+if IsFunc("LLARS_AHI_SetMode")
+	LLARS_AHI_SetMode(LLARS_ROOT, "standard")
+if IsFunc("LLARS_AHI_DisableForProcess")
+	LLARS_AHI_DisableForProcess("Standard AutoHotkey fallback selected")
+MsgBox, 0x40040, LLARS Input Settings, Standard AutoHotkey fallback is selected.`n`nYou can switch back to the recommended AHI backend at any time from Input Settings.
+Gosub, RefreshInputSettings
+return
+
+InputEnableAHI:
+inputAHIReady := false
+if IsFunc("LLARS_AHI_Enable")
+	inputAHIReady := LLARS_AHI_Enable(LLARS_ROOT, true)
+if (inputAHIReady)
+	MsgBox, 0x40040, LLARS Input Settings, AutoHotInterception (AHI) is enabled and ready.
+Gosub, RefreshInputSettings
+return
+
+InputUninstallAHI:
+if IsFunc("LLARS_AHI_DriverPresent") && !LLARS_AHI_DriverPresent()
+{
+	MsgBox, 0x40040, LLARS Input Settings, The AHI / Interception driver is not currently installed.
+	Gosub, RefreshInputSettings
+	return
+}
+confirmUninstall := "Uninstall the AHI / Interception keyboard and mouse driver from Windows?"
+	. "`n`nLLARS will use Standard AutoHotkey fallback until AHI is installed again."
+	. "`nA Windows restart is required after uninstall to finish unloading the driver."
+	. "`n`nThis is normally only needed for troubleshooting or a clean AHI reinstall."
+MsgBox, 0x40034, LLARS Input Driver, %confirmUninstall%
+IfMsgBox, Yes
+{
+	if IsFunc("LLARS_AHI_RequestUninstall")
+		LLARS_AHI_RequestUninstall(LLARS_ROOT, true, false)
+}
+Gosub, RefreshInputSettings
+return
+
+CloseInputSettings:
+Gui 21: Destroy
+if WinExist("Information ahk_class AutoHotkeyGUI")
+	Gui 20: Show
+else
+	Gui 1: Show
 return
 
 ; ============================================================================
@@ -2275,6 +2397,33 @@ LLARS_DeveloperTimingAuditColumns(action, ByRef auditType, ByRef auditDetail, By
 	if (auditType = "NaturalClick")
 	{
 		auditType := "Click"
+		if (partCount >= 2)
+			auditDetail := Trim(parts[2])
+		if (partCount >= 3)
+			auditValue := Trim(parts[3])
+		return
+	}
+
+	if (auditType = "Move")
+	{
+		if (partCount >= 2)
+			auditValue := Trim(parts[2])
+		if (partCount >= 3)
+			auditDetail := Trim(parts[3])
+		return
+	}
+
+	if RegExMatch(auditType, "i)^(Left|Right|Middle|XButton1|XButton2) Click$")
+	{
+		if (partCount >= 2)
+			auditValue := Trim(parts[2])
+		if (partCount >= 3)
+			auditDetail := Trim(parts[3])
+		return
+	}
+
+	if (auditType = "Key Press" || auditType = "Key Hold")
+	{
 		if (partCount >= 2)
 			auditDetail := Trim(parts[2])
 		if (partCount >= 3)

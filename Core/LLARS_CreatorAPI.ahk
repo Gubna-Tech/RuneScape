@@ -805,6 +805,8 @@ LLARS_CreatorRunError(error, iteration := "", totalRuns := "")
 	EnableButton()
 	SetLLARSHOTKEYS("On")
 	LLARS_SetStatus("Error")
+	if IsFunc("LLARS_AHI_ReleaseAllInput")
+		LLARS_AHI_ReleaseAllInput()
 	LLARS_DeveloperAction("Script Error || " . message)
 	MsgBox, 4112, LLARS Script Error, %message%
 	return false
@@ -1155,8 +1157,9 @@ LLARS_CreatorPrepareKeyboardInput(action := "Keyboard")
 ; Dispatches keyboard input only while the exact RuneScape HWND captured by the focus gate is still the foreground window.
 LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 {
-	global LLARS_AHI_LAST_KEY_HOLD_MS
-	static explicitKeyHolds := {}
+	global LLARS_AHI_LAST_KEY_HOLD_MS, LLARS_CreatorExplicitKeyHolds
+	if !IsObject(LLARS_CreatorExplicitKeyHolds)
+		LLARS_CreatorExplicitKeyHolds := {}
 
 	Loop
 	{
@@ -1196,6 +1199,13 @@ LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 			keyHoldMaximum := (keyHold >= 120) ? 188 : 112
 			keyHold := LLARS_HumanizeTimingEnding(keyHold, keyHoldMinimum, keyHoldMaximum, "Keyboard.Hold")
 		}
+		else
+		{
+			keyHoldMinimum := 43
+			keyHoldMaximum := 112
+		}
+		if IsFunc("LLARS_HumanDistinctTiming")
+			keyHold := LLARS_HumanDistinctTiming(keyHold, keyHoldMinimum, keyHoldMaximum, "Keyboard.Hold.Final")
 
 		sentWithAHI := false
 		if IsFunc("LLARS_AHI_SendSequence")
@@ -1232,22 +1242,22 @@ LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 			stateKeyId := stateKey
 			StringLower, stateKeyId, stateKeyId
 			if (stateDirection = "down")
-				explicitKeyHolds[stateKeyId] := {Tick:A_TickCount, Transport:(sentWithAHI ? "AHI" : "Standard AHK")}
-			else if explicitKeyHolds.HasKey(stateKeyId)
+				LLARS_CreatorExplicitKeyHolds[stateKeyId] := {Tick:A_TickCount, Transport:(sentWithAHI ? "AHI" : "Standard AHK"), Name:stateKey}
+			else if LLARS_CreatorExplicitKeyHolds.HasKey(stateKeyId)
 			{
-				heldState := explicitKeyHolds[stateKeyId]
-				explicitKeyHolds.Delete(stateKeyId)
+				heldState := LLARS_CreatorExplicitKeyHolds[stateKeyId]
+				LLARS_CreatorExplicitKeyHolds.Delete(stateKeyId)
 				explicitHoldMs := A_TickCount - heldState.Tick
 				if (explicitHoldMs < 0)
 					explicitHoldMs += 4294967296
-				LLARS_DeveloperAction("Keyboard Timing || {" . stateKey . "} || Hold=" . explicitHoldMs . " ms || Explicit Down/Up || " . heldState.Transport)
+				LLARS_DeveloperAction("Key Hold || " . stateKey . " || Hold=" . explicitHoldMs . " ms || " . (heldState.Transport = "AHI" ? "AutoHotInterception" : "Standard AutoHotkey"))
 			}
 		}
 		else
 		{
 			timingName := (SubStr(sendSequence, 1, 5) = "{Raw}") ? action : sendSequence
 			actualKeyHold := (sentWithAHI && LLARS_AHI_LAST_KEY_HOLD_MS != "") ? LLARS_AHI_LAST_KEY_HOLD_MS : keyHold
-			LLARS_DeveloperAction("Keyboard Timing || " . timingName . " || Hold=" . actualKeyHold . " ms || Delay=" . keyDelay . " ms || " . (sentWithAHI ? "AHI" : "Standard AHK"))
+			LLARS_DeveloperAction("Key Press || " . timingName . " || Hold=" . actualKeyHold . " ms || Delay=" . keyDelay . " ms || " . (sentWithAHI ? "AutoHotInterception" : "Standard AutoHotkey"))
 		}
 		return true
 	}
@@ -1314,7 +1324,7 @@ LLARS_PressKey(keyName)
 	if !LLARS_CreatorSendInput(sendSequence, "Key " . keyName)
 		return false
 	if keyName in WheelUp,WheelDown,WheelLeft,WheelRight
-		LLARS_DeveloperAction("Mouse Wheel || " . keyName)
+		LLARS_DeveloperAction("Mouse Wheel || " . keyName . " || " . (IsFunc("LLARS_AHI_TransportName") ? LLARS_AHI_TransportName("mouse") : "Standard AutoHotkey"))
 	return true
 }
 
@@ -2948,7 +2958,7 @@ LLARS_ColorCaptureBackgroundClient(hWnd, clientWidth, clientHeight, ByRef captur
 	bufferBytes := clientWidth * clientHeight * 4
 	printed := false
 
-	; Keep the proven RuneScape path to one full composited render per check.
+	; Use one full composited RuneScape render per check.
 	DllCall("ntdll\RtlZeroMemory", "Ptr", bits, "UPtr", bufferBytes)
 	printed := DllCall("PrintWindow", "Ptr", hWnd, "Ptr", hMemoryDC, "UInt", 3)
 	if (printed && LLARS_ColorCaptureHasContent(bits, clientWidth, clientHeight))
@@ -3827,7 +3837,7 @@ LLARS_ColorMatchComponentSignature(capture, signature, matcher, ByRef matchRatio
 		&& (minimumCoverage <= 0 || bestCoverage >= minimumCoverage))
 }
 
-; Tracks a DTM-style component signature in foreground or through the same proven throttled PrintWindow(flags=3) background path used by the connected tracker.
+; Tracks a DTM-style component signature in foreground or through the throttled PrintWindow(flags=3) background path used by the connected tracker.
 LLARS_ColorTrackRuneScapeSignature(signature, matcher, ByRef matchRatio, ByRef matchedPoints, trackerKey := "Color Signature", searchRadius := 8, searchStep := 2, pointRadius := 2, minimumRatio := 0.45, minimumMatchedPoints := 4, backgroundInterval := 2000, useContextMenuGuard := true, minimumCoverage := 0.0)
 {
 	static backgroundCaptureTicks := ""

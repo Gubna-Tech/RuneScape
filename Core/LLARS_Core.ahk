@@ -55,8 +55,12 @@ CheckPOS(hwnd := "")
 		return
 
 	WinGetTitle, guiTitle, ahk_id %hwnd%
-	if guiTitle not in LLARS,Combo,Reset Configuration,Coordinates,Colors,Hotkeys,Information,Developer Mode,Multiple Client,No Client Detected,Config Error,Game Not Found,Timer
-		return
+	isLLARSMainTitle := (guiTitle = "LLARS" || InStr(guiTitle, "LLARS - v") = 1)
+	if (!isLLARSMainTitle)
+	{
+		if guiTitle not in Combo,Reset Configuration,Coordinates,Colors,Hotkeys,Information,Input Settings,Developer Mode,Multiple Client,No Client Detected,Config Error,Game Not Found,Timer
+			return
+	}
 
 	WinGetPos, GUIx, GUIy, GUIw, GUIh, ahk_id %hwnd%
 	if (GUIw = "" || GUIh = "")
@@ -693,14 +697,21 @@ LLARS_Initialize()
 		return false
 	}
 
+	SetWorkingDir, %LLARS_SCRIPT_DIR%
+	CloseOtherLLARS()
+	if (!LLARS_CheckStartupFiles())
+		return false
+
+	; Complete the bounded GitHub release check before input-backend checks or the script GUI.
+	; Scripts launched by the selector inherit its completed-check marker and skip it.
+	LLARS_CheckForUpdates()
+
 	; Supports both normal Script Selector launches and scripts opened directly.
-	; Keep first-run/restart handling early, but postpone the heavier CLR/AHI
-	; object initialization until after the main LLARS window is visible.
+	; AHI is the recommended input backend; Standard AutoHotkey remains the
+	; fallback when AHI is declined or unavailable.
 	LLARS_AHI_GateStartTick := A_TickCount
 	LLARS_AHI_GateReady := LLARS_AHI_StartupGate(LLARS_ROOT, true)
 	LLARS_AHI_GateElapsed := A_TickCount - LLARS_AHI_GateStartTick
-
-	SetWorkingDir, %LLARS_SCRIPT_DIR%
 	LLARS_lhk1 := ""
 	LLARS_lhk2 := ""
 	LLARS_lhk3 := ""
@@ -741,9 +752,6 @@ LLARS_Initialize()
 	LLARS_EnableDeveloperHotkey()
 	SetTimer, LLARS_AlwaysOnHotkeyWatchdog, 250
 	DetectHiddenWindows, On
-	CloseOtherLLARS()
-	if (!LLARS_CheckStartupFiles())
-		return false
 
 	coordcount = 0
 	frcount = 0
@@ -1170,7 +1178,7 @@ LLARS_DeveloperCaptureAuditAction(action)
 ; Keeps only the timing/input events shown by Developer Timing Audit.
 LLARS_DeveloperAuditActionWanted(action)
 {
-	if RegExMatch(action, "i)^(KeyPress|Keyboard Timing|Mouse Timing|MouseMove|NaturalClick(?: Timing| Movement)?) \|\|")
+	if RegExMatch(action, "i)^(KeyPress|Key Press|Key Hold|Keyboard Timing|Mouse Timing|MouseMove|Move|Left Click|Right Click|Middle Click|XButton[12] Click|NaturalClick(?: Timing| Movement)?) \|\|")
 		return true
 
 	if RegExMatch(action, "i)^(Color Search|Color Click|Divination Color Audit) \|\|")
@@ -1492,6 +1500,8 @@ LLARS_EndUntilDoneRun()
 	if IsFunc("LLARS_TimerStopAll")
 		LLARS_TimerStopAll()
 	LLARS_DeveloperAction("Until-Done Run Completed")
+	if IsFunc("LLARS_AHI_ReleaseAllInput")
+		LLARS_AHI_ReleaseAllInput()
 	LLARS_RUNNING := false
 	LLARS_DeveloperKeyStates := {}
 	LLARS_RunStartTick := 0
@@ -1567,6 +1577,8 @@ LLARS_EndTimerRun()
 	if IsFunc("LLARS_TimerStopAll")
 		LLARS_TimerStopAll()
 	LLARS_DeveloperAction("Timed Run Completed")
+	if IsFunc("LLARS_AHI_ReleaseAllInput")
+		LLARS_AHI_ReleaseAllInput()
 	LLARS_RUNNING := false
 	LLARS_DeveloperKeyStates := {}
 	LLARS_RunStartTick := 0
@@ -2010,6 +2022,8 @@ LLARS_RunComplete()
 	if IsFunc("LLARS_TimerStopAll")
 		LLARS_TimerStopAll()
 	LLARS_DeveloperAction("Run Completed || " . runcount3 . " runs")
+	if IsFunc("LLARS_AHI_ReleaseAllInput")
+		LLARS_AHI_ReleaseAllInput()
 	Logout()
 	SetTimer, UpdateEstimatedTime, Off
 	GuiControl,, EstLoopRemaining, 0h 0m 0s
@@ -2071,7 +2085,13 @@ LLARS_ShowMissingConfigFile(fileName)
 ; Checks that the script and shared LLARS configuration files are present.
 LLARS_CheckStartupFiles()
 {
-	global LLARS_DISABLE_SCRIPT_CONFIG
+	global LLARS_DISABLE_SCRIPT_CONFIG, LLARS_ROOT
+
+	if !FileExist(LLARS_ROOT "\VERSION")
+	{
+		MsgBox, 48, LLARS Files Missing, LLARS is missing VERSION.`n`nRe-extract or redownload the complete LLARS release before continuing.
+		return false
+	}
 
 	if (!LLARS_DISABLE_SCRIPT_CONFIG)
 	{
@@ -3308,6 +3328,42 @@ LLARS_HumanizeTimingEnding(value, minimum, maximum, stream := "")
 	return adjusted
 }
 
+; Prevents an immediately repeated requested timing value while preserving the configured range.
+; This operates on the requested LLARS timing value; Windows scheduler granularity can
+; still make two measured elapsed durations display the same millisecond afterward.
+LLARS_HumanDistinctTiming(value, minimum, maximum, stream := "")
+{
+	static lastValues := {}
+	value := Round(value)
+	minimum := Round(minimum)
+	maximum := Round(maximum)
+
+	if (maximum < minimum)
+	{
+		swap := minimum
+		minimum := maximum
+		maximum := swap
+	}
+
+	if (stream = "" || maximum <= minimum)
+		return value
+
+	if (lastValues.HasKey(stream) && value = lastValues[stream])
+	{
+		candidate := LLARS_HumanRandomInt(minimum, maximum, stream . ".Distinct", 4)
+		if (candidate = lastValues[stream])
+		{
+			candidate := (value < maximum) ? value + 1 : value - 1
+			if (candidate < minimum)
+				candidate := minimum
+		}
+		value := candidate
+	}
+
+	lastValues[stream] := value
+	return value
+}
+
 ; Performs one physical mouse-button press with a varied down/up hold time.
 LLARS_HumanMouseClick(button := "left")
 {
@@ -3318,16 +3374,30 @@ LLARS_HumanMouseClick(button := "left")
 	holdMinimum := (holdTime >= 118) ? 118 : 38
 	holdMaximum := (holdTime >= 118) ? 176 : 108
 	holdTime := LLARS_HumanizeTimingEnding(holdTime, holdMinimum, holdMaximum, "MouseClick.Hold." . button)
+	holdTime := LLARS_HumanDistinctTiming(holdTime, holdMinimum, holdMaximum, "MouseClick.Hold.Final." . button)
+
+	wasCritical := A_IsCritical
+	if (!wasCritical)
+		Critical, On
 
 	DllCall("QueryPerformanceFrequency", "Int64*", mouseHoldPerformanceFrequency)
+	if !LLARS_InputMouseButton(button, 1)
+	{
+		if (!wasCritical)
+			Critical, Off
+		return 0
+	}
 	DllCall("QueryPerformanceCounter", "Int64*", mouseHoldStartCounter)
-	LLARS_InputMouseButton(button, 1)
 	Sleep, %holdTime%
 	DllCall("QueryPerformanceCounter", "Int64*", mouseHoldEndCounter)
 	LLARS_InputMouseButton(button, 0)
-	actualHoldTime := Round(((mouseHoldEndCounter - mouseHoldStartCounter) * 1000.0) / mouseHoldPerformanceFrequency)
+	if (!wasCritical)
+		Critical, Off
 
-	LLARS_DeveloperAction("Mouse Timing || " . button . " | Hold=" . actualHoldTime . " ms")
+	actualHoldTime := Round(((mouseHoldEndCounter - mouseHoldStartCounter) * 1000.0) / mouseHoldPerformanceFrequency)
+	displayButton := (button = "right") ? "Right" : (button = "middle") ? "Middle" : (button = "xbutton1") ? "XButton1" : (button = "xbutton2") ? "XButton2" : "Left"
+	transportName := IsFunc("LLARS_AHI_TransportName") ? LLARS_AHI_TransportName("mouse") : "Standard AutoHotkey"
+	LLARS_DeveloperAction(displayButton . " Click || Hold=" . actualHoldTime . " ms || " . transportName)
 	return actualHoldTime
 }
 
@@ -3416,7 +3486,7 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 		duration := durationCap
 	duration := LLARS_HumanizeTimingEnding(duration, 55, durationCap, stream . ".Movement")
 
-	; Keep meaningful model bounds available to callers/debuggers without forcing the selected duration into fixed buckets or rounded-looking timing values.
+	; Keep meaningful timing bounds available without forcing the selected duration into fixed buckets or rounded-looking values.
 	fastestBallisticSpeed := preferredBallisticSpeed * maximumSpeedMultiplier
 	slowestBallisticSpeed := preferredBallisticSpeed * minimumSpeedMultiplier
 	minimumDuration := Round((((distance * 0.89) / fastestBallisticSpeed) * 1000) / 0.66 * 0.96)
@@ -3982,6 +4052,8 @@ LLARS_AbortRunForMisclick(x, y, clickTarget := "")
 		clickTarget := "verified world interaction"
 
 	LLARS_DeveloperAction("RedClick Verification Failed || " . clickTarget . " || (" . x . ", " . y . ") || Run aborted")
+	if IsFunc("LLARS_AHI_ReleaseAllInput")
+		LLARS_AHI_ReleaseAllInput()
 	LLARS_StopRunTimersForMisclick()
 
 	LLARS_RUNNING := false
@@ -4109,7 +4181,6 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		return -1
 
 	MouseGetPos, startX, startY
-	LLARS_DeveloperAction("MouseMove || (" . startX . ", " . startY . ") > (" . x . ", " . y . ")")
 	dx := x - startX
 	dy := y - startY
 	distance := Sqrt((dx * dx) + (dy * dy))
@@ -4131,7 +4202,8 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		LLARS_InputMouseMove(x, y, 0)
 		DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
 		actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
-		LLARS_DeveloperAction("NaturalClick Movement || (" . startX . ", " . startY . ") > (" . x . ", " . y . ") || " . actualMovementElapsed . " ms")
+		moveTransport := IsFunc("LLARS_AHI_TransportName") ? LLARS_AHI_TransportName("mouse") : "Standard AutoHotkey"
+		LLARS_DeveloperAction("Move || " . actualMovementElapsed . " ms || " . moveTransport . " || (" . startX . ", " . startY . ") -> (" . x . ", " . y . ")")
 		pause := LLARS_HumanTiming(42, 126, "NaturalClick.TargetDwell", 0.035, 135, 215)
 		Sleep, %pause%
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick verification", runeScapeHwnd))
@@ -4371,19 +4443,26 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
 	actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
 	LLARS_NaturalMovementTimingEnd()
-	LLARS_DeveloperAction("NaturalClick Movement || (" . startX . ", " . startY . ") > (" . x . ", " . y . ") || " . actualMovementElapsed . " ms")
+	moveTransport := IsFunc("LLARS_AHI_TransportName") ? LLARS_AHI_TransportName("mouse") : "Standard AutoHotkey"
+	LLARS_DeveloperAction("Move || " . actualMovementElapsed . " ms || " . moveTransport . " || (" . startX . ", " . startY . ") -> (" . x . ", " . y . ")")
 	pause := LLARS_HumanTiming(42, 126, "NaturalClick.TargetDwell", 0.035, 135, 215)
 	Sleep, %pause%
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick verification", runeScapeHwnd))
 		return -1
 	MouseGetPos, clickX, clickY
 	if (clickX != x || clickY != y)
+	{
+		LLARS_DeveloperAction("Cursor Validation || Target=(" . x . ", " . y . ") || Actual=(" . clickX . ", " . clickY . ") || Retry")
 		return -1
+	}
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus immediately before NaturalClick", runeScapeHwnd))
 		return -1
 	MouseGetPos, clickX, clickY
 	if (clickX != x || clickY != y)
+	{
+		LLARS_DeveloperAction("Cursor Validation || Target=(" . x . ", " . y . ") || Actual=(" . clickX . ", " . clickY . ") || Retry")
 		return -1
+	}
 	verificationButton := Trim(button)
 	StringLower, verificationButton, verificationButton
 	redBaselineMask := (verifyRedClick && verificationButton != "right") ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0

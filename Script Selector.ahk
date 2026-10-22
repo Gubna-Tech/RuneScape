@@ -1,16 +1,18 @@
 ﻿#Requires AutoHotkey v1.1.37.02
 #SingleInstance Force
 
-; LLARS ships the pinned AutoHotInterception runtime. The optional include
-; keeps LLARS usable with standard AutoHotkey input if those files are removed.
+; LLARS ships the pinned AutoHotInterception runtime. The soft include keeps
+; first launch working before AHI setup is complete and preserves fallback input.
 #Include *i %A_ScriptDir%\Vendor\AutoHotInterception\Lib\AutoHotInterception.ahk
 #Include %A_ScriptDir%\Core\LLARS_AHI.ahk
+#Include %A_ScriptDir%\Core\LLARS_Update.ahk
 
 ; Confirms the complete LLARS project structure is available before the
 ; Script Selector attempts to use project folders or launch scripts.
 if (!FileExist(A_ScriptDir . "\Core")
 || !FileExist(A_ScriptDir . "\Scripts")
-|| !FileExist(A_ScriptDir . "\LLARS Config.ini"))
+|| !FileExist(A_ScriptDir . "\LLARS Config.ini")
+|| !FileExist(A_ScriptDir . "\VERSION"))
 {
 	Menu, Tray, NoIcon
 
@@ -39,9 +41,18 @@ if (!FileExist(A_ScriptDir . "\Core")
 	return
 }
 
-; Handles one-time AutoHotInterception setup before the selector opens.
-; If setup is declined or a restart is still pending, LLARS remains usable with
-; its standard AutoHotkey input backend for the current run.
+; Loads the local release version used by update checks and GUI titles.
+LLARS_GetVersion(A_ScriptDir)
+
+; Close an older LLARS/script-selector window before any update prompt or Save As dialog.
+CloseOtherLLARS()
+
+; Finish the bounded GitHub release check before the selector is displayed.
+; Selected scripts inherit the completed-check marker and do not check twice.
+LLARS_CheckForUpdates()
+
+; Applies AHI input-backend setup/readiness checks before the selector opens.
+; AHI is recommended; Standard AutoHotkey remains available as a fallback.
 LLARS_AHI_StartupGate(A_ScriptDir, true)
 
 ; =======================================================================
@@ -50,8 +61,6 @@ LLARS_AHI_StartupGate(A_ScriptDir, true)
 
 ; Root folder containing all selectable LLARS scripts.
 LLARS_SCRIPTS_DIR := A_ScriptDir . "\Scripts"
-
-CloseOtherLLARS()
 
 ; ===================================================================
 ; |     ARRAY SETUP     -     ARRAY SETUP     -     ARRAY SETUP     |

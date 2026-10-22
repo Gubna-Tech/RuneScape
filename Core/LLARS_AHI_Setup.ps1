@@ -231,10 +231,11 @@ try {
             throw 'Interception is still registered in keyboard/mouse UpperFilters after the official uninstall. LLARS stopped without manually editing the Windows input stack.'
         }
         Write-SetupLog 'Official Interception uninstall verified. One Windows restart is required to finish unloading/deleting pending driver remnants.'
-        Remove-LLARSAhiLocalState
-        New-Item -ItemType Directory -Force -Path $vendorRoot | Out-Null
+        # Keep the bundled runtime/installer in the LLARS folder. The files are inert
+        # without the Windows filter driver until AHI is installed again.
         Set-Content -LiteralPath $uninstallPendingMarker -Value (Get-CurrentBootStamp) -Encoding ASCII
-        Set-Content -LiteralPath $uninstalledMarker -Value 'AHI intentionally uninstalled from this LLARS copy.' -Encoding ASCII
+        Set-Content -LiteralPath $uninstalledMarker -Value 'Interception driver intentionally uninstalled; Windows restart required to finish unloading.' -Encoding ASCII
+        Remove-Item -LiteralPath $setupResultFile -Force -ErrorAction SilentlyContinue
         exit 3010
     }
 

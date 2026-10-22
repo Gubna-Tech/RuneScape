@@ -171,11 +171,11 @@ If you haven't installed AutoHotkey yet, download the required **v1.1.37.02** re
 >
 > AutoHotkey v2 is not a drop-in replacement for AutoHotkey v1 scripts.
 
-### AutoHotInterception input setup
+### Input backend
 
-LLARS strongly recommends **AutoHotInterception** for reliable mouse and keyboard input. Launch Script Selector **or any normal LLARS script**, choose **OK**, approve the Windows Administrator prompt, and restart once if requested.
+LLARS recommends **AutoHotInterception (AHI)** for mouse and keyboard input. The AHI runtime and Interception installer are bundled with LLARS, and a clean installation is offered automatically when AHI is not present. Installation requires an Administrator prompt and one Windows restart.
 
-LLARS bundles the pinned **AutoHotInterception v0.9.2** runtime and **Interception v1.0.1** installer, so normal setup does not depend on GitHub or an internet connection. LLARS installs only the Windows Interception driver when needed, detects input devices automatically, and keeps standard AutoHotkey input as the fallback if setup is declined or unavailable. LLARS uses AHI for input synthesis only and does not enable its input-blocking/subscription modes.
+**Standard AutoHotkey** remains available as a fallback under **Information > Input Settings**. The same screen can enable or repair AHI, show the current backend/driver state, or uninstall AHI/Interception when troubleshooting or performing a clean reinstall.
 
 ---
 
