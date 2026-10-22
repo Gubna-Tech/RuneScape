@@ -480,7 +480,7 @@ else if (DivinationState = "Wait Resource Gone")
 	; Preserve a spatial signature of the exact established normal resource. The
 	; broad yellow tracker can see nearby wisps and used to adopt one after the
 	; original node vanished at far zoom. Sustained loss of this original pattern
-	; now confirms depletion independently, matching the proven Eternal Tree model.
+	; Confirm depletion independently using the same completion check as Eternal Tree.
 	if (!resourceGone && DivinationTargetType != "Enriched" && DivinationResourceTrackingEstablished)
 	{
 		if !IsObject(DivinationResourceSignature)

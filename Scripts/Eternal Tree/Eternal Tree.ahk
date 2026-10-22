@@ -474,7 +474,7 @@ EternalTree_IsNormalTrackingColor(rgb)
 		&& red - blue >= -10)
 }
 
-; High Contrast mode keeps the proven cyan rules from the original detector.
+; High Contrast mode uses the established cyan detection rules.
 EternalTree_IsHighContrastTreeColor(rgb)
 {
 	red := (rgb >> 16) & 0xFF
