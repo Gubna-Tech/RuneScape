@@ -60,7 +60,7 @@ Run(ctx)
 		Random, y, %y1%, %y2%
 		if !LLARS_WaitForRuneScape("MouseMove")
 			return
-		MouseMove, %x%, %y%
+		LLARS_InputMouseMove(x, y)
 
 		LLARS_Sleep("Sleep Brief")
 
