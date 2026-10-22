@@ -58,7 +58,7 @@ Run(ctx)
 			Random, Scroll, 5, 10
 			if !LLARS_WaitForRuneScape("MouseMove")
 				return
-			MouseMove, %x%, %y%
+			LLARS_InputMouseMove(x, y)
 
 			LLARS_Sleep("Sleep Brief")
 
