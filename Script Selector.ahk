@@ -1,4 +1,10 @@
 ﻿#Requires AutoHotkey v1.1.37.02
+#SingleInstance Force
+
+; LLARS ships the pinned AutoHotInterception runtime. The optional include
+; keeps LLARS usable with standard AutoHotkey input if those files are removed.
+#Include *i %A_ScriptDir%\Vendor\AutoHotInterception\Lib\AutoHotInterception.ahk
+#Include %A_ScriptDir%\Core\LLARS_AHI.ahk
 
 ; Confirms the complete LLARS project structure is available before the
 ; Script Selector attempts to use project folders or launch scripts.
@@ -32,6 +38,11 @@ if (!FileExist(A_ScriptDir . "\Core")
 
 	return
 }
+
+; Handles one-time AutoHotInterception setup before the selector opens.
+; If setup is declined or a restart is still pending, LLARS remains usable with
+; its standard AutoHotkey input backend for the current run.
+LLARS_AHI_StartupGate(A_ScriptDir, true)
 
 ; =======================================================================
 ; |     LLARS PATH SETUP     -     LLARS PATH SETUP                     |

@@ -1155,6 +1155,9 @@ LLARS_CreatorPrepareKeyboardInput(action := "Keyboard")
 ; Dispatches keyboard input only while the exact RuneScape HWND captured by the focus gate is still the foreground window.
 LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 {
+	global LLARS_AHI_LAST_KEY_HOLD_MS
+	static explicitKeyHolds := {}
+
 	Loop
 	{
 		runeScapeHwnd := LLARS_CreatorPrepareKeyboardInput(action)
@@ -1194,15 +1197,30 @@ LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 			keyHold := LLARS_HumanizeTimingEnding(keyHold, keyHoldMinimum, keyHoldMaximum, "Keyboard.Hold")
 		}
 
-		previousKeyDelay := A_KeyDelay
-		previousKeyDuration := A_KeyDuration
-		SetKeyDelay, %keyDelay%, %keyHold%
-		SendEvent, %sendSequence%
-		SetKeyDelay, %previousKeyDelay%, %previousKeyDuration%
+		sentWithAHI := false
+		if IsFunc("LLARS_AHI_SendSequence")
+			sentWithAHI := LLARS_AHI_SendSequence(sendSequence, keyHold, keyDelay)
 
-		; Explicit key-down/key-up sends represent a real held state rather than a normal timed key press.
-		; fallback inside LLARS_DeveloperScriptKey().
-		if RegExMatch(sendSequence, "i)^\{([^{}]+)\s+(down|up)\}$", keyStateMatch)
+		; Preserve the established AutoHotkey path for unsupported send forms, raw
+		; text, machines awaiting their first reboot, or any AHI runtime failure.
+		if (!sentWithAHI)
+		{
+			previousKeyDelay := A_KeyDelay
+			previousKeyDuration := A_KeyDuration
+			SetKeyDelay, %keyDelay%, %keyHold%
+			SendEvent, %sendSequence%
+			SetKeyDelay, %previousKeyDelay%, %previousKeyDuration%
+		}
+
+		; Developer timing must be recorded at the send path. Interception-injected
+		; keys are not guaranteed to round-trip through LLARS' low-level keyboard
+		; hook, so relying on that hook can hide key hold duration from the log.
+		; Wheel events are mouse input and keep their existing Mouse Wheel logging.
+		if RegExMatch(sendSequence, "i)^\{(?:WheelUp|WheelDown|WheelLeft|WheelRight)\}$")
+		{
+			; No keyboard hold applies.
+		}
+		else if RegExMatch(sendSequence, "i)^\{([^{}]+)\s+(down|up)\}$", keyStateMatch)
 		{
 			stateKey := Trim(keyStateMatch1)
 			stateDirection := keyStateMatch2
@@ -1210,6 +1228,26 @@ LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 			stateVK := GetKeyVK(stateKey)
 			if (stateVK && IsFunc("LLARS_DeveloperScriptKey"))
 				LLARS_DeveloperScriptKey(stateVK, stateDirection = "up")
+
+			stateKeyId := stateKey
+			StringLower, stateKeyId, stateKeyId
+			if (stateDirection = "down")
+				explicitKeyHolds[stateKeyId] := {Tick:A_TickCount, Transport:(sentWithAHI ? "AHI" : "Standard AHK")}
+			else if explicitKeyHolds.HasKey(stateKeyId)
+			{
+				heldState := explicitKeyHolds[stateKeyId]
+				explicitKeyHolds.Delete(stateKeyId)
+				explicitHoldMs := A_TickCount - heldState.Tick
+				if (explicitHoldMs < 0)
+					explicitHoldMs += 4294967296
+				LLARS_DeveloperAction("Keyboard Timing || {" . stateKey . "} || Hold=" . explicitHoldMs . " ms || Explicit Down/Up || " . heldState.Transport)
+			}
+		}
+		else
+		{
+			timingName := (SubStr(sendSequence, 1, 5) = "{Raw}") ? action : sendSequence
+			actualKeyHold := (sentWithAHI && LLARS_AHI_LAST_KEY_HOLD_MS != "") ? LLARS_AHI_LAST_KEY_HOLD_MS : keyHold
+			LLARS_DeveloperAction("Keyboard Timing || " . timingName . " || Hold=" . actualKeyHold . " ms || Delay=" . keyDelay . " ms || " . (sentWithAHI ? "AHI" : "Standard AHK"))
 		}
 		return true
 	}

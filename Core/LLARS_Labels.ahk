@@ -1813,13 +1813,13 @@ developerScriptHotkeys := LLARS_DeveloperScriptHotkeys()
 if (developerScriptHotkeys != "")
 	developerHotkeys .= "`n`n" . developerScriptHotkeys
 
-developerActions := LLARS_DeveloperActions
-actionLineCount := 0
-Loop, Parse, developerActions, `n, `r
-	actionLineCount++
+developerActionSnapshot := LLARS_DeveloperActionSnapshot()
+developerActions := developerActionSnapshot.Text
+developerActionSerial := developerActionSnapshot.Serial
 if (developerActions = "")
 	developerActions := "No framework actions recorded yet."
 
+developerInputEngine := IsFunc("LLARS_AHI_DeveloperDisplay") ? LLARS_AHI_DeveloperDisplay(LLARS_ROOT) : "Input diagnostics unavailable"
 developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
 
 ; Compact two-row run summary.
@@ -1843,54 +1843,69 @@ Gui Dev: Font, s10 Norm cBlack
 Gui Dev: Add, Text, x290 y92 w88 h18 Right, Final Sleep:
 Gui Dev: Font, s10 Bold cBlack
 Gui Dev: Add, Text, x382 y92 w113 h18 vDeveloperFinalSleepText, %developerFinalSleep%
-Gui Dev: Add, Text, x20 y116 w520 h2 0x10
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x5 y113 w82 h18 Right, Input Engine:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x91 y113 w464 h18 -Wrap vDeveloperInputEngineText, %developerInputEngine%
+Gui Dev: Add, Text, x20 y139 w520 h2 0x10
 
 ; Top row: the entire Live Inspector scrolls as one pane, matching the
 ; Active Hotkeys pane while keeping normal LLARS label/value formatting.
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x20 y126 w250 h18 Center, Live Inspector
-Gui Dev: Add, GroupBox, x20 y147 w250 h198
+Gui Dev: Add, Text, x20 y149 w250 h18 Center, Live Inspector
+Gui Dev: Add, GroupBox, x20 y170 w250 h198
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x290 y126 w250 h18 Center, Active Hotkeys
-Gui Dev: Add, GroupBox, x290 y147 w250 h198
+Gui Dev: Add, Text, x290 y149 w250 h18 Center, Active Hotkeys
+Gui Dev: Add, GroupBox, x290 y170 w250 h198
 
-; Full-width diagnostics are easier to read than the previous narrow fourth box.
+; Full-width diagnostics keep this section easy to scan.
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x20 y355 w520 h18 Center, Configuration Diagnostics
-Gui Dev: Add, GroupBox, x20 y376 w520 h83
+Gui Dev: Add, Text, x20 y378 w520 h18 Center, Configuration Diagnostics
+Gui Dev: Add, GroupBox, x20 y399 w520 h83
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Edit, x30 y394 w500 h53 ReadOnly -TabStop +VScroll vDeveloperDiagnosticsText, %developerDiagnostics%
+Gui Dev: Add, Edit, x30 y417 w500 h53 ReadOnly -TabStop +VScroll +0x4 +0x40 -0x80 vDeveloperDiagnosticsText, %developerDiagnostics%
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x20 y464 w520 h18 Center, Recent Framework Actions
-Gui Dev: Add, GroupBox, x20 y484 w520 h156
+Gui Dev: Add, Text, x20 y487 w520 h18 Center, Recent Framework Actions
+Gui Dev: Add, GroupBox, x20 y507 w520 h156
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Edit, x30 y501 w500 h132 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+Gui Dev: Add, Edit, x30 y524 w500 h132 ReadOnly +VScroll -TabStop hwndDeveloperActionsHwnd vDeveloperActionsText
+LLARS_DeveloperConfigureActionControl(DeveloperActionsHwnd)
 
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Button, x35 y648 w155 h27 gToggleDeveloperLightweight, Lightweight Mode
-Gui Dev: Add, Button, x202 y648 w155 h27 gDeveloperTimingAudit, Timing Audit
-Gui Dev: Add, Button, x369 y648 w155 h27 gCloseDeveloperMode, Close
+Gui Dev: Add, Button, x20 y671 w125 h27 gToggleDeveloperLightweight, Lightweight
+Gui Dev: Add, Button, x152 y671 w125 h27 gDeveloperTimingAudit, Timing Audit
+Gui Dev: Add, Button, x284 y671 w125 h27 gCopyAHISupportReport, Copy AHI Report
+Gui Dev: Add, Button, x416 y671 w124 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
 ; Build the full dashboard while the parent is hidden so the hotkey toggle
 ; never exposes the unfinished Developer Mode shell before its child panes exist.
-Gui Dev: Show, Hide w560 h688, Developer Mode
+Gui Dev: Show, Hide w560 h711, Developer Mode
 LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd)
 LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd)
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
-	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h688, Developer Mode
+	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h711, Developer Mode
 else
-	Gui Dev: Show, Center w560 h688, Developer Mode
+	Gui Dev: Show, Center w560 h711, Developer Mode
+
+; Populate the console only after the final Show and mark a snapshot current
+; only after the read-only Edit control verifies the complete ordered text.
+LLARS_DeveloperLastActions := ""
+LLARS_DeveloperLastActionSerial := -1
+if LLARS_DeveloperRenderActions(DeveloperActionsHwnd, developerActions)
+{
+	LLARS_DeveloperLastActions := developerActions
+	LLARS_DeveloperLastActionSerial := developerActionSerial
+}
 
 LLARS_EnableDeveloperHotkey()
 LLARS_DeveloperLastHotkeys := developerHotkeys
 LLARS_DeveloperLastInspectorSignature := LLARS_DeveloperInspectorSignature(developerPixelTargets)
+LLARS_DeveloperLastInputEngine := developerInputEngine
 LLARS_DeveloperLastDiagnostics := developerDiagnostics
-LLARS_DeveloperLastActions := developerActions
-PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
-SetTimer, LLARS_DeveloperAutoRefresh, 750
+SetTimer, LLARS_DeveloperAutoRefresh, 250
 return
 
 DeveloperModeLightweightDashboard:
@@ -1900,9 +1915,20 @@ Gui Dev: Destroy
 DeveloperGuiHwnd := 0
 Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound +HwndDeveloperGuiHwnd
 
-developerActions := LLARS_DeveloperActions
+developerActionSnapshot := LLARS_DeveloperActionSnapshot()
+developerActions := developerActionSnapshot.Text
+developerActionSerial := developerActionSnapshot.Serial
 if (developerActions = "")
 	developerActions := "No framework actions recorded yet."
+developerLightweightDebug := LLARS_DeveloperLightweightDebugData()
+developerLWState := developerLightweightDebug.State
+developerLWRunType := developerLightweightDebug.RunType
+developerLWProgress := developerLightweightDebug.Progress
+developerLWElapsed := developerLightweightDebug.Elapsed
+developerLWFinalSleep := developerLightweightDebug.FinalSleep
+developerLWEngine := developerLightweightDebug.Engine
+developerLWMouseRoute := developerLightweightDebug.MouseRoute
+developerLWKeyboardRoute := developerLightweightDebug.KeyboardRoute
 
 Gui Dev: Font, s12 Bold cBlack
 Gui Dev: Add, Text, x5 y5 w550 h25 Center, LLARS
@@ -1911,25 +1937,93 @@ Gui Dev: Add, Text, x5 y29 w550 h18 Center, Developer Mode - Lightweight
 Gui Dev: Font, s11 Norm cGray
 Gui Dev: Add, Text, x5 y48 w550 h20 Center, %scriptname%
 Gui Dev: Add, Text, x130 y69 w300 h2 0x10
+
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, GroupBox, x20 y82 w520 h218, Recent Framework Actions
+Gui Dev: Add, GroupBox, x20 y82 w520 h108, Live Debug Snapshot
+
+; Keep Lightweight focused on the status a user needs at a glance.
 Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Edit, x30 y104 w500 h184 ReadOnly -TabStop +VScroll hwndDeveloperActionsHwnd vDeveloperActionsText, %developerActions%
+Gui Dev: Add, Text, x32 y102 w42 h18 Right, State:
 Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Button, x35 y312 w155 h27 gToggleDeveloperLightweight, Full Mode
-Gui Dev: Add, Button, x202 y312 w155 h27 gDeveloperTimingAudit, Timing Audit
-Gui Dev: Add, Button, x369 y312 w155 h27 gCloseDeveloperMode, Close
+Gui Dev: Add, Text, x80 y102 w78 h18 -Wrap vDeveloperLWStateText, %developerLWState%
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x170 y102 w68 h18 Right, Run Type:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x244 y102 w120 h18 -Wrap vDeveloperLWRunTypeText, %developerLWRunType%
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x370 y102 w65 h18 Right, Progress:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x441 y102 w85 h18 -Wrap vDeveloperLWProgressText, %developerLWProgress%
+
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x32 y123 w58 h18 Right, Elapsed:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x96 y123 w132 h18 -Wrap vDeveloperLWElapsedText, %developerLWElapsed%
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x246 y123 w82 h18 Right, Final Sleep:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x334 y123 w150 h18 -Wrap vDeveloperLWFinalSleepText, %developerLWFinalSleep%
+
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x32 y144 w92 h18 Right, Input Engine:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x130 y144 w396 h18 -Wrap vDeveloperLWEngineText, %developerLWEngine%
+
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x32 y165 w82 h18 Right, Mouse Route:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x120 y165 w145 h18 -Wrap vDeveloperLWMouseRouteText, %developerLWMouseRoute%
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Text, x274 y165 w104 h18 Right, Keyboard Route:
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Text, x384 y165 w142 h18 -Wrap vDeveloperLWKeyboardRouteText, %developerLWKeyboardRoute%
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, GroupBox, x20 y198 w520 h250, Recent Framework Actions
+Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Add, Edit, x30 y220 w500 h216 ReadOnly +VScroll -TabStop hwndDeveloperActionsHwnd vDeveloperActionsText
+LLARS_DeveloperConfigureActionControl(DeveloperActionsHwnd)
+
+Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Add, Button, x20 y460 w125 h27 gToggleDeveloperLightweight, Full Mode
+Gui Dev: Add, Button, x152 y460 w125 h27 gDeveloperTimingAudit, Timing Audit
+Gui Dev: Add, Button, x284 y460 w125 h27 gCopyAHISupportReport, Copy AHI Report
+Gui Dev: Add, Button, x416 y460 w124 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
-	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h350, Developer Mode
+	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h498, Developer Mode
 else
-	Gui Dev: Show, Center w560 h350, Developer Mode
+	Gui Dev: Show, Center w560 h498, Developer Mode
+
+LLARS_DeveloperLastActions := ""
+LLARS_DeveloperLastActionSerial := -1
+if LLARS_DeveloperRenderActions(DeveloperActionsHwnd, developerActions)
+{
+	LLARS_DeveloperLastActions := developerActions
+	LLARS_DeveloperLastActionSerial := developerActionSerial
+}
 
 LLARS_EnableDeveloperHotkey()
-LLARS_DeveloperLastActions := developerActions
-PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
-SetTimer, LLARS_DeveloperAutoRefresh, 750
+LLARS_DeveloperLastLightweightDebug := developerLightweightDebug.Signature
+SetTimer, LLARS_DeveloperAutoRefresh, 250
+return
+
+
+CopyAHISupportReport:
+if IsFunc("LLARS_AHI_CopySupportReport")
+{
+	reportPath := LLARS_AHI_CopySupportReport(LLARS_ROOT, "Manual Developer Mode copy")
+	if (reportPath != "")
+	{
+		LLARS_DeveloperAction("AHI Support || Report copied to clipboard")
+		MsgBox, 64, LLARS AHI Support Report, A sanitized AutoHotInterception support report was copied to your clipboard.`n`nPaste it directly to Gubna for troubleshooting.`n`nSaved at:`nVendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+	}
+	else
+		MsgBox, 48, LLARS AHI Support Report, LLARS could not create the AutoHotInterception support report.
+}
+else
+	MsgBox, 48, LLARS AHI Support Report, AutoHotInterception diagnostics are not available in this LLARS build.
 return
 
 DeveloperTimingAudit:
@@ -2200,7 +2294,19 @@ LLARS_DeveloperTimingAuditColumns(action, ByRef auditType, ByRef auditDetail, By
 	{
 		auditType := "Mouse Hold"
 		if (partCount >= 2)
-			auditValue := Trim(parts[2])
+			auditDetail := Trim(parts[2])
+		if (partCount >= 3)
+			auditValue := Trim(parts[3])
+		return
+	}
+
+	if (auditType = "Keyboard Timing")
+	{
+		auditType := "Key Hold"
+		if (partCount >= 2)
+			auditDetail := Trim(parts[2])
+		if (partCount >= 3)
+			auditValue := Trim(parts[3])
 		return
 	}
 
@@ -2238,14 +2344,42 @@ if !WinExist("Developer Mode ahk_class AutoHotkeyGUI")
 
 if (LLARS_DeveloperLightweight)
 {
-	developerActions := LLARS_DeveloperActions
+	developerActionSnapshot := LLARS_DeveloperActionSnapshot()
+	developerActions := developerActionSnapshot.Text
+	developerActionSerial := developerActionSnapshot.Serial
 	if (developerActions = "")
 		developerActions := "No framework actions recorded yet."
-	if (developerActions != LLARS_DeveloperLastActions)
+
+	developerLightweightDebug := LLARS_DeveloperLightweightDebugData()
+	if (developerLightweightDebug.Signature != LLARS_DeveloperLastLightweightDebug)
 	{
-		GuiControl, Dev:, DeveloperActionsText, %developerActions%
-		LLARS_DeveloperLastActions := developerActions
-		PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
+		developerLWState := developerLightweightDebug.State
+		developerLWRunType := developerLightweightDebug.RunType
+		developerLWProgress := developerLightweightDebug.Progress
+		developerLWElapsed := developerLightweightDebug.Elapsed
+		developerLWFinalSleep := developerLightweightDebug.FinalSleep
+		developerLWEngine := developerLightweightDebug.Engine
+		developerLWMouseRoute := developerLightweightDebug.MouseRoute
+		developerLWKeyboardRoute := developerLightweightDebug.KeyboardRoute
+
+		GuiControl, Dev:, DeveloperLWStateText, %developerLWState%
+		GuiControl, Dev:, DeveloperLWRunTypeText, %developerLWRunType%
+		GuiControl, Dev:, DeveloperLWProgressText, %developerLWProgress%
+		GuiControl, Dev:, DeveloperLWElapsedText, %developerLWElapsed%
+		GuiControl, Dev:, DeveloperLWFinalSleepText, %developerLWFinalSleep%
+		GuiControl, Dev:, DeveloperLWEngineText, %developerLWEngine%
+		GuiControl, Dev:, DeveloperLWMouseRouteText, %developerLWMouseRoute%
+		GuiControl, Dev:, DeveloperLWKeyboardRouteText, %developerLWKeyboardRoute%
+		LLARS_DeveloperLastLightweightDebug := developerLightweightDebug.Signature
+	}
+
+	if (developerActionSerial != LLARS_DeveloperLastActionSerial)
+	{
+		if LLARS_DeveloperRenderActions(DeveloperActionsHwnd, developerActions)
+		{
+			LLARS_DeveloperLastActions := developerActions
+			LLARS_DeveloperLastActionSerial := developerActionSerial
+		}
 	}
 	return
 }
@@ -2303,10 +2437,13 @@ developerScriptHotkeys := LLARS_DeveloperScriptHotkeys()
 if (developerScriptHotkeys != "")
 	developerHotkeys .= "`n`n" . developerScriptHotkeys
 
-developerActions := LLARS_DeveloperActions
+developerActionSnapshot := LLARS_DeveloperActionSnapshot()
+developerActions := developerActionSnapshot.Text
+developerActionSerial := developerActionSnapshot.Serial
 if (developerActions = "")
 	developerActions := "No framework actions recorded yet."
 
+developerInputEngine := IsFunc("LLARS_AHI_DeveloperDisplay") ? LLARS_AHI_DeveloperDisplay(LLARS_ROOT) : "Input diagnostics unavailable"
 developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
 
 GuiControl, Dev:, DeveloperRunningText, %developerRunning%
@@ -2331,12 +2468,21 @@ if (developerHotkeys != LLARS_DeveloperLastHotkeys)
 	LLARS_DeveloperLastHotkeys := developerHotkeys
 }
 
-if (developerActions != LLARS_DeveloperLastActions)
+if (developerActionSerial != LLARS_DeveloperLastActionSerial)
 {
-	GuiControl, Dev:, DeveloperActionsText, %developerActions%
-	LLARS_DeveloperLastActions := developerActions
-	PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
+	if LLARS_DeveloperRenderActions(DeveloperActionsHwnd, developerActions)
+	{
+		LLARS_DeveloperLastActions := developerActions
+		LLARS_DeveloperLastActionSerial := developerActionSerial
+	}
 }
+
+if (developerInputEngine != LLARS_DeveloperLastInputEngine)
+{
+	GuiControl, Dev:, DeveloperInputEngineText, %developerInputEngine%
+	LLARS_DeveloperLastInputEngine := developerInputEngine
+}
+
 
 if (developerDiagnostics != LLARS_DeveloperLastDiagnostics)
 {
@@ -2344,6 +2490,75 @@ if (developerDiagnostics != LLARS_DeveloperLastDiagnostics)
 	LLARS_DeveloperLastDiagnostics := developerDiagnostics
 }
 return
+
+; Builds the compact live snapshot used by Lightweight Developer Mode.
+; Keep every line intentionally short so the lightweight window remains stable
+; across Windows DPI/font metrics.
+LLARS_DeveloperLightweightDebugData()
+{
+	global LLARS_RUNNING, LLARS_PAUSED, LLARS_RUN_TYPE, LLARS_RunStartTick
+	global EstFinalSleepActive, count2, runcount3, endTime, LLARS_ROOT
+
+	if (LLARS_RUNNING)
+		stateText := LLARS_PAUSED ? "Paused" : "Running"
+	else
+		stateText := "Idle"
+
+	runTypeText := (LLARS_RUN_TYPE != "") ? LLARS_RUN_TYPE : "Not Started"
+
+	if (LLARS_RUNNING && LLARS_RunStartTick > 0)
+	{
+		elapsedMS := A_TickCount - LLARS_RunStartTick
+		elapsedHours := Floor(elapsedMS / 3600000)
+		elapsedMinutes := Floor(Mod(elapsedMS, 3600000) / 60000)
+		elapsedSeconds := Floor(Mod(elapsedMS, 60000) / 1000)
+		elapsedText := elapsedHours . "h " . elapsedMinutes . "m " . elapsedSeconds . "s"
+	}
+	else
+		elapsedText := "--"
+
+	if (runTypeText = "RunCount" && runcount3 != "")
+		progressText := count2 . " / " . runcount3
+	else if (runTypeText = "Timer" && LLARS_RUNNING)
+		progressText := LLARS_TimerRemainingText(endTime - A_TickCount)
+	else
+		progressText := "--"
+
+	finalSleepText := EstFinalSleepActive ? "Active" : "Inactive"
+
+	if IsFunc("LLARS_AHI_DeveloperSnapshot")
+	{
+		inputStatus := LLARS_AHI_DeveloperSnapshot(LLARS_ROOT)
+		engineText := inputStatus.Engine . " || " . inputStatus.Driver
+		mouseRoute := inputStatus.MouseRoute
+		keyboardRoute := inputStatus.KeyboardRoute
+	}
+	else
+	{
+		engineText := "Input diagnostics unavailable"
+		mouseRoute := "Unavailable"
+		keyboardRoute := "Unavailable"
+	}
+
+	signature := stateText
+		. "`n" . runTypeText
+		. "`n" . progressText
+		. "`n" . elapsedText
+		. "`n" . finalSleepText
+		. "`n" . engineText
+		. "`n" . mouseRoute
+		. "`n" . keyboardRoute
+
+	return {State:stateText
+		, RunType:runTypeText
+		, Progress:progressText
+		, Elapsed:elapsedText
+		, FinalSleep:finalSleepText
+		, Engine:engineText
+		, MouseRoute:mouseRoute
+		, KeyboardRoute:keyboardRoute
+		, Signature:signature}
+}
 
 ; Closes only the developer diagnostics window.
 CloseDeveloperMode:
@@ -2485,7 +2700,7 @@ LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor,
 	preservedScroll := preserveScroll ? LLARS_DeveloperGetInspectorScrollPos() : 0
 	LLARS_DeveloperDestroyInspectorPanel(false)
 
-	DeveloperInspectorViewHeight := 166
+	DeveloperInspectorViewHeight := 174
 	DeveloperInspectorScrollPos := 0
 	DeveloperInspectorActualHwnds := []
 	DeveloperInspectorTargetHwnds := []
@@ -2562,7 +2777,7 @@ LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor,
 	; Show the child GUI hidden first, then position it with SetWindowPos.
 	Gui DevInspector: Show, Hide w230 h%DeveloperInspectorViewHeight%
 	DllCall("SetWindowPos", "Ptr", DeveloperInspectorHwnd, "Ptr", 0
-		, "Int", 30, "Int", 166, "Int", 230, "Int", DeveloperInspectorViewHeight
+		, "Int", 30, "Int", 184, "Int", 230, "Int", DeveloperInspectorViewHeight
 		, "UInt", 0x0040)
 	DllCall("RedrawWindow", "Ptr", DeveloperInspectorHwnd, "Ptr", 0, "Ptr", 0, "UInt", 0x0085)
 	LLARS_DeveloperConfigureInspectorScroll()
@@ -2626,7 +2841,7 @@ LLARS_DeveloperCreateHotkeysPanel(hotkeysText, parentHwnd, preserveScroll := fal
 	preservedScroll := preserveScroll ? LLARS_DeveloperGetHotkeysScrollPos() : 0
 	LLARS_DeveloperDestroyHotkeysPanel(false)
 
-	DeveloperHotkeysViewHeight := 166
+	DeveloperHotkeysViewHeight := 174
 	DeveloperHotkeysScrollPos := 0
 
 	Gui DevHotkeys: +Parent%parentHwnd% -Caption -Border +ToolWindow +HwndDeveloperHotkeysHwnd +0x200000
@@ -2663,7 +2878,7 @@ LLARS_DeveloperCreateHotkeysPanel(hotkeysText, parentHwnd, preserveScroll := fal
 	DeveloperHotkeysContentHeight := Max(rowY, DeveloperHotkeysViewHeight)
 	Gui DevHotkeys: Show, Hide w230 h%DeveloperHotkeysViewHeight%
 	DllCall("SetWindowPos", "Ptr", DeveloperHotkeysHwnd, "Ptr", 0
-		, "Int", 300, "Int", 166, "Int", 230, "Int", DeveloperHotkeysViewHeight
+		, "Int", 300, "Int", 184, "Int", 230, "Int", DeveloperHotkeysViewHeight
 		, "UInt", 0x0040)
 	DllCall("RedrawWindow", "Ptr", DeveloperHotkeysHwnd, "Ptr", 0, "Ptr", 0, "UInt", 0x0085)
 	LLARS_DeveloperConfigureHotkeysScroll()
@@ -3211,9 +3426,9 @@ LLARS_DeveloperConfigDiagnostics()
 		{
 			IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
 			if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
-				diagnostics .= section . ": Hotkey missing`n`n"
+				diagnostics .= section . ": Hotkey missing`n"
 			else if (!LLARS_IsValidConfigHotkey(hotkeyValue))
-				diagnostics .= section . ": Hotkey invalid`n`n"
+				diagnostics .= section . ": Hotkey invalid`n"
 			continue
 		}
 
@@ -3252,7 +3467,7 @@ LLARS_DeveloperConfigDiagnostics()
 				coordinateInvalid := true
 
 			if (coordinateInvalid)
-				diagnostics .= section . ": Coordinates missing/invalid`n`n"
+				diagnostics .= section . ": Coordinates missing/invalid`n"
 			continue
 		}
 
@@ -3261,7 +3476,7 @@ LLARS_DeveloperConfigDiagnostics()
 			colorKey := LLARS_GetColorKey(ConfigPath, section)
 			IniRead, colorValue, %ConfigPath%, %section%, %colorKey%, ERROR
 			if (colorValue = "ERROR" || !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$"))
-				diagnostics .= section . ": Color missing/invalid`n`n"
+				diagnostics .= section . ": Color missing/invalid`n"
 		}
 	}
 

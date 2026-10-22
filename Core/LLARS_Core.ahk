@@ -672,13 +672,13 @@ LLARS_Initialize()
 {
 	global LLARS_ROOT, LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
 	global LLARS_RUNNING, LLARS_PAUSED, LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5, LLARS_CONTROLS_LOCKED, LLARS_CHECKPOS_DISABLED
-	global LLARS_DeveloperActions, LLARS_DeveloperAuditActions, LLARS_DeveloperLastHotkey, LLARS_RunStartTick, LLARS_RUN_TYPE
+	global LLARS_DeveloperActions, LLARS_DeveloperActionSerial, LLARS_DeveloperAuditActions, LLARS_DeveloperLastHotkey, LLARS_RunStartTick, LLARS_RUN_TYPE
 	global LLARS_DeveloperPixelWatchActive, LLARS_DeveloperDetectedPixelColor, LLARS_DeveloperPixelSource
 	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
 	global LLARS_DeveloperKeyboardHook, LLARS_DeveloperKeyboardCallback, LLARS_DeveloperMessageHwnd
 	global LLARS_DeveloperHotkeyMap, LLARS_DeveloperKeyStates, LLARS_DeveloperControlKeyStates
 	global LLARS_RunRuneScapeHwnd
-	global LLARS_DeveloperLightweight
+	global LLARS_DeveloperLightweight, LLARS_DeveloperLastInputEngine, LLARS_DeveloperLastLightweightDebug
 	global EstimationRunCount
 	global coordcount, frcount, LastClickTime, clickspot, scriptname, LLARS_GUIScriptName
 
@@ -693,6 +693,13 @@ LLARS_Initialize()
 		return false
 	}
 
+	; Supports both normal Script Selector launches and scripts opened directly.
+	; Keep first-run/restart handling early, but postpone the heavier CLR/AHI
+	; object initialization until after the main LLARS window is visible.
+	LLARS_AHI_GateStartTick := A_TickCount
+	LLARS_AHI_GateReady := LLARS_AHI_StartupGate(LLARS_ROOT, true)
+	LLARS_AHI_GateElapsed := A_TickCount - LLARS_AHI_GateStartTick
+
 	SetWorkingDir, %LLARS_SCRIPT_DIR%
 	LLARS_lhk1 := ""
 	LLARS_lhk2 := ""
@@ -705,6 +712,7 @@ LLARS_Initialize()
 	LLARS_RunRuneScapeHwnd := 0
 	LLARS_CHECKPOS_DISABLED := false
 	LLARS_DeveloperActions := ""
+	LLARS_DeveloperActionSerial := 0
 	LLARS_DeveloperAuditActions := []
 	LLARS_DeveloperLastHotkey := "None"
 	LLARS_DeveloperPixelWatchActive := false
@@ -719,6 +727,8 @@ LLARS_Initialize()
 	LLARS_DeveloperKeyStates := {}
 	LLARS_DeveloperControlKeyStates := {}
 	LLARS_DeveloperLightweight := false
+	LLARS_DeveloperLastInputEngine := ""
+	LLARS_DeveloperLastLightweightDebug := ""
 	LLARS_RunStartTick := 0
 	LLARS_RUN_TYPE := "Not Started"
 
@@ -746,6 +756,22 @@ LLARS_Initialize()
 		LLARS_GUIScriptName := scriptname
 	EstimationRunCount := 1000
 	LLARS_CreateMainGUI()
+
+	; The LLARS window is visible before CLR/AHI device initialization begins.
+	; LLARS_Initialize() still does not return until AHI is ready (or has safely
+	; fallen back), so automation cannot start against an uninitialized backend.
+	LLARS_AHI_InitStartTick := A_TickCount
+	LLARS_AHI_Initialize(LLARS_ROOT)
+	LLARS_AHI_InitElapsed := A_TickCount - LLARS_AHI_InitStartTick
+	LLARS_AHI_FullyReady := (LLARS_AHI_IsReady("mouse") && LLARS_AHI_IsReady("keyboard"))
+	; StartupGate already owns first-run/install/restart messaging. Only show an
+	; additional runtime warning when the gate was healthy but AHI initialization
+	; still failed or only one physical input route was available.
+	if (LLARS_AHI_GateReady && !LLARS_AHI_FullyReady && !LLARS_AHI_PendingRestart(LLARS_ROOT))
+		LLARS_AHI_ShowRuntimeProblem(LLARS_ROOT)
+	LLARS_AHI_LogDeveloperStatus(LLARS_ROOT)
+	LLARS_DeveloperAction("AHI Startup || Gate=" . LLARS_AHI_GateElapsed . " ms || Initialize=" . LLARS_AHI_InitElapsed . " ms")
+
 	OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
 	OnMessage(0x8001, "LLARS_DeveloperKeyboardMessage")
 	OnMessage(0x0201, "WM_LBUTTONDOWN")
@@ -962,7 +988,7 @@ LLARS_DeveloperScriptKey(vkCode, keyUp := false, eventTick := "")
 	}
 }
 
-; Backward-compatible entry point retained for any older internal callers.
+; Compatibility entry point for existing callers.
 LLARS_DeveloperKeyPressed(vkCode)
 {
 	LLARS_DeveloperScriptKey(vkCode, false)
@@ -970,7 +996,13 @@ LLARS_DeveloperKeyPressed(vkCode)
 
 LLARS_DeveloperAction(action, lightweight := true)
 {
-	global LLARS_DeveloperActions, LLARS_DeveloperLastActions, DeveloperActionsHwnd
+	global LLARS_DeveloperActions, LLARS_DeveloperActionSerial
+
+	; Keep timestamping and insertion atomic so simultaneous GUI/hotkey/timer
+	; events cannot be appended out of chronological order. Preserve an outer
+	; Critical section if the caller already owns one.
+	developerWasCritical := A_IsCritical
+	Critical, On
 
 	; Normalize legacy spaced separators in Developer Console actions.
 	action := StrReplace(action, " | ", " || ")
@@ -978,7 +1010,18 @@ LLARS_DeveloperAction(action, lightweight := true)
 
 	; Keep raw MouseMove audit-only while leaving useful input timing visible.
 	if RegExMatch(action, "i)^(?:Status|MouseMove) \|\|")
+	{
+		if (!developerWasCritical)
+			Critical, Off
 		return
+	}
+
+	; Preserve intentional multi-line diagnostics and indent continuation lines
+	; so wrapped blocks remain visually grouped under the first timestamp.
+	action := StrReplace(action, "`r`n", "`n")
+	action := StrReplace(action, "`r", "`n")
+	if InStr(action, "`n")
+		action := StrReplace(action, "`n", "`n              ")
 
 	FormatTime, developerActionTime,, HH:mm:ss
 	developerActionTime .= "." . Format("{:03}", A_MSec)
@@ -1001,13 +1044,110 @@ LLARS_DeveloperAction(action, lightweight := true)
 		developerActionCount--
 	}
 
-	; Push action updates immediately instead of waiting for dashboard refresh.
-	if (DeveloperActionsHwnd && WinExist("Developer Mode ahk_class AutoHotkeyGUI"))
+	; Every visible action advances a monotonic serial. Developer Mode renders
+	; one stable serial+text snapshot and only marks it current after verifying
+	; that the visible console accepted the complete snapshot.
+	LLARS_DeveloperActionSerial++
+	if (!developerWasCritical)
+		Critical, Off
+
+	; Event producers only update the authoritative action buffer. Developer
+	; Mode renders stable snapshots from that buffer; producers never write to
+	; the visible console directly.
+}
+
+LLARS_DeveloperActionSnapshot()
+{
+	global LLARS_DeveloperActions, LLARS_DeveloperActionSerial
+
+	; Avoid changing AHK thread Critical state just to take the snapshot. If an
+	; action lands between reads, retry until the serial is stable around the
+	; copied text. AHK executes event producers serially, so this converges fast.
+	Loop, 4
 	{
-		GuiControl, Dev:, DeveloperActionsText, %LLARS_DeveloperActions%
-		LLARS_DeveloperLastActions := LLARS_DeveloperActions
-		PostMessage, 0x115, 7, 0,, ahk_id %DeveloperActionsHwnd%
+		serialBefore := LLARS_DeveloperActionSerial + 0
+		textSnapshot := LLARS_DeveloperActions
+		serialAfter := LLARS_DeveloperActionSerial + 0
+		if (serialBefore = serialAfter)
+			return {Serial:serialAfter, Text:textSnapshot}
 	}
+
+	return {Serial:(LLARS_DeveloperActionSerial + 0), Text:LLARS_DeveloperActions}
+}
+
+
+LLARS_DeveloperConfigureActionControl(hwnd)
+{
+	if (!hwnd)
+		return false
+
+	; Standard multiline Edit controls default to a comparatively small text
+	; limit. LLARS keeps at most 500 action lines, so 1 MiB is ample headroom.
+	; EM_SETLIMITTEXT = 0x00C5.
+	DllCall("SendMessageW", "Ptr", hwnd, "UInt", 0x00C5, "Ptr", 1048576, "Ptr", 0)
+	return true
+}
+
+LLARS_DeveloperReadActionControl(hwnd)
+{
+	if (!hwnd)
+		return ""
+
+	textLength := DllCall("GetWindowTextLengthW", "Ptr", hwnd, "Int")
+	if (textLength <= 0)
+		return ""
+
+	VarSetCapacity(textBuffer, (textLength + 1) * 2, 0)
+	DllCall("GetWindowTextW", "Ptr", hwnd, "Ptr", &textBuffer, "Int", textLength + 1)
+	return StrGet(&textBuffer, textLength, "UTF-16")
+}
+
+LLARS_DeveloperNormalizeActionText(text)
+{
+	text := StrReplace(text, "`r`n", "`n")
+	return StrReplace(text, "`r", "`n")
+}
+
+LLARS_DeveloperActionRenderMatches(hwnd, expected)
+{
+	actual := LLARS_DeveloperReadActionControl(hwnd)
+	return (LLARS_DeveloperNormalizeActionText(actual) = LLARS_DeveloperNormalizeActionText(expected))
+}
+
+LLARS_DeveloperRenderActions(hwnd, actions)
+{
+	static rendering := false
+
+	if (!hwnd || rendering)
+		return false
+	if (actions = "")
+		actions := "No framework actions recorded yet."
+
+	; Content and ordering are more important than per-line styling. A normal
+	; read-only multiline Edit control receives the entire authoritative snapshot
+	; in one SetWindowText call, eliminating RichEdit selection/formatting races.
+	rendering := true
+	Critical, On
+	LLARS_DeveloperConfigureActionControl(hwnd)
+	plainText := StrReplace(LLARS_DeveloperNormalizeActionText(actions), "`n", "`r`n")
+	DllCall("SetWindowTextW", "Ptr", hwnd, "WStr", plainText)
+
+	renderVerified := LLARS_DeveloperActionRenderMatches(hwnd, actions)
+	if (renderVerified)
+	{
+		; Keep the newest action visible after each successful full snapshot.
+		; For a standard Edit control, -1/-1 does not reliably place the caret
+		; at the end. Use the actual text length, then force the vertical
+		; scrollbar to the bottom so live updates stay on the newest entry.
+		renderedLength := DllCall("GetWindowTextLengthW", "Ptr", hwnd, "Int")
+		DllCall("SendMessageW", "Ptr", hwnd, "UInt", 0x00B1, "Ptr", renderedLength, "Ptr", renderedLength) ; EM_SETSEL
+		DllCall("SendMessageW", "Ptr", hwnd, "UInt", 0x00B7, "Ptr", 0, "Ptr", 0) ; EM_SCROLLCARET
+		DllCall("SendMessageW", "Ptr", hwnd, "UInt", 0x0115, "Ptr", 7, "Ptr", 0) ; WM_VSCROLL / SB_BOTTOM
+	}
+
+	rendering := false
+	Critical, Off
+	return renderVerified
 }
 
 
@@ -1030,7 +1170,7 @@ LLARS_DeveloperCaptureAuditAction(action)
 ; Keeps only the timing/input events shown by Developer Timing Audit.
 LLARS_DeveloperAuditActionWanted(action)
 {
-	if RegExMatch(action, "i)^(KeyPress|Mouse Timing|MouseMove|NaturalClick(?: Timing| Movement)?) \|\|")
+	if RegExMatch(action, "i)^(KeyPress|Keyboard Timing|Mouse Timing|MouseMove|NaturalClick(?: Timing| Movement)?) \|\|")
 		return true
 
 	if RegExMatch(action, "i)^(Color Search|Color Click|Divination Color Audit) \|\|")
@@ -3181,20 +3321,10 @@ LLARS_HumanMouseClick(button := "left")
 
 	DllCall("QueryPerformanceFrequency", "Int64*", mouseHoldPerformanceFrequency)
 	DllCall("QueryPerformanceCounter", "Int64*", mouseHoldStartCounter)
-	if (button = "right")
-	{
-		Click, Right Down
-		Sleep, %holdTime%
-		DllCall("QueryPerformanceCounter", "Int64*", mouseHoldEndCounter)
-		Click, Right Up
-	}
-	else
-	{
-		Click, Down
-		Sleep, %holdTime%
-		DllCall("QueryPerformanceCounter", "Int64*", mouseHoldEndCounter)
-		Click, Up
-	}
+	LLARS_InputMouseButton(button, 1)
+	Sleep, %holdTime%
+	DllCall("QueryPerformanceCounter", "Int64*", mouseHoldEndCounter)
+	LLARS_InputMouseButton(button, 0)
 	actualHoldTime := Round(((mouseHoldEndCounter - mouseHoldStartCounter) * 1000.0) / mouseHoldPerformanceFrequency)
 
 	LLARS_DeveloperAction("Mouse Timing || " . button . " | Hold=" . actualHoldTime . " ms")
@@ -3419,7 +3549,7 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 	correctionDistance := Sqrt((correctionDX * correctionDX) + (correctionDY * correctionDY))
 	if (correctionDistance <= 1)
 	{
-		MouseMove, %targetX%, %targetY%, 0
+		LLARS_InputMouseMove(targetX, targetY, 0)
 		return 1
 	}
 
@@ -3569,7 +3699,7 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 		currentY := Round(point1.y + ((point2.y - point1.y) * blend))
 		if (currentX != previousX || currentY != previousY)
 		{
-			MouseMove, %currentX%, %currentY%, 0
+			LLARS_InputMouseMove(currentX, currentY, 0)
 			previousX := currentX
 			previousY := currentY
 		}
@@ -3585,7 +3715,7 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 		}
 	}
 
-	MouseMove, %targetX%, %targetY%, 0
+	LLARS_InputMouseMove(targetX, targetY, 0)
 	LLARS_DeveloperAction("NaturalClick Overshoot Correction || (" . missX . ", " . missY . ") > (" . targetX . ", " . targetY . ") || Arc=" . Round(totalLength) . " px || " . duration . " ms")
 	return 1
 }
@@ -3998,7 +4128,7 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	{
 		DllCall("QueryPerformanceFrequency", "Int64*", movementPerformanceFrequency)
 		DllCall("QueryPerformanceCounter", "Int64*", movementStartCounter)
-		MouseMove, %x%, %y%, 0
+		LLARS_InputMouseMove(x, y, 0)
 		DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
 		actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
 		LLARS_DeveloperAction("NaturalClick Movement || (" . startX . ", " . startY . ") > (" . x . ", " . y . ") || " . actualMovementElapsed . " ms")
@@ -4185,7 +4315,7 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		currentY := Round(currentY)
 		if (currentX != previousX || currentY != previousY)
 		{
-			MouseMove, %currentX%, %currentY%, 0
+			LLARS_InputMouseMove(currentX, currentY, 0)
 			previousX := currentX
 			previousY := currentY
 		}
@@ -4223,7 +4353,7 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		LLARS_NaturalMovementTimingEnd()
 		return -1
 	}
-	MouseMove, %movementX%, %movementY%, 0
+	LLARS_InputMouseMove(movementX, movementY, 0)
 	if IsObject(overshootPlan)
 	{
 		correctionResult := LLARS_NaturalClickCorrectOvershoot(movementX, movementY, x, y, runeScapeHwnd, runBound, startX, startY)
@@ -4236,7 +4366,7 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	}
 	else
 	{
-		MouseMove, %x%, %y%, 0
+		LLARS_InputMouseMove(x, y, 0)
 	}
 	DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
 	actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
@@ -4301,7 +4431,7 @@ AntiAFKNaturalClick(x, y)
 			return false
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before AntiAFKNaturalClick movement", runeScapeHwnd))
 			return false
-		MouseMove, %x%, %y%, 0
+		LLARS_InputMouseMove(x, y, 0)
 		return true
 	}
 
@@ -4468,7 +4598,7 @@ AntiAFKNaturalClick(x, y)
 
 		if (currentX != previousX || currentY != previousY)
 		{
-			MouseMove, %currentX%, %currentY%, 0
+			LLARS_InputMouseMove(currentX, currentY, 0)
 			previousX := currentX
 			previousY := currentY
 		}
@@ -4503,7 +4633,7 @@ AntiAFKNaturalClick(x, y)
 		LLARS_NaturalMovementTimingEnd()
 		return false
 	}
-	MouseMove, %x%, %y%, 0
+	LLARS_InputMouseMove(x, y, 0)
 	LLARS_NaturalMovementTimingEnd()
 	return true
 }
