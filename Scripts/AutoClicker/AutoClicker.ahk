@@ -85,7 +85,7 @@ RandomClick()
         TimeSinceClick := A_TickCount - LastClickTime " ms since previous click"
     LastClickTime := A_TickCount
 
-    ; Match the old script: start the next randomized interval before the tooltip delay, rather than waiting until this callback fully returns.
+    ; Start the next randomized interval before the tooltip delay so callback time does not extend the configured interval.
     AutoClickerTimerID := LLARS_TimerOnce("Timer", Func("RandomClick"))
 
     Loop, 100

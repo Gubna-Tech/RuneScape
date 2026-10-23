@@ -301,7 +301,7 @@ else if (EternalTreeState = "Wait Tree Gone")
 				LLARS_DeveloperAction("Eternal Tree || Canopy signature absent || Confirming")
 
 			; The broad tracker can occasionally attach to leftover tree-like colors after
-			; the canopy disappears. A sustained loss of the original canopy pattern is
+			; the canopy disappears. A sustained loss of the tracked canopy pattern is
 			; therefore accepted as depletion even if those residual colors remain.
 			if (EternalTreeSignatureAbsentChecks >= 6
 				&& EternalTreeSignatureAbsentStartTick

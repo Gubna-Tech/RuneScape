@@ -114,7 +114,7 @@ AFKCombat_HotkeyTimer(section, tooltipText)
     if !LLARS_RunActive()
         return
 
-    ; The original labels randomized and reset the next timer before performing the action.
+    ; Schedule the next randomized timer before performing the action so callback work does not extend the intended cadence.
     AFKCombat_ScheduleHotkey(section, tooltipText)
     DisableButton()
     LLARS_SetStatus("Fighting", section)
@@ -235,7 +235,7 @@ AFKCombat_CannonTimer()
 
 AFKCombat_SetupBindingContract()
 {
-    ; The old script schedules this option at startup but does not immediately consume/notepaper a contract.
+    ; Schedule this option at startup without immediately consuming or notepapering a contract.
     if !LLARS_ConfigReadBool("Binding Contract")
         return
 

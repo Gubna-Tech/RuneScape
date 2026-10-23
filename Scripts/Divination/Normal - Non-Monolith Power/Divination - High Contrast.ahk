@@ -126,6 +126,7 @@ if (DivinationState = "Find Resource")
 	if (!DivinationResourceSearchLogged)
 	{
 		LLARS_DeveloperAction("Divination || Searching || Enriched priority / Yellow resource")
+		LLARS_SetDetection("Divination Resource", "Searching", "", "", "Enriched priority")
 		DivinationResourceSearchLogged := true
 	}
 
@@ -211,6 +212,7 @@ if (DivinationState = "Find Resource")
 	{
 		LLARS_SetStatus("Clicking", "Divination Resource")
 		LLARS_DeveloperAction("Divination || " . DivinationTargetType . " resource found || (" . foundX . ", " . foundY . ") || Score=" . targetScore)
+		LLARS_SetDetection("Divination Resource", DivinationTargetType, targetScore, "", "(" . foundX . ", " . foundY . ")", false)
 
 		resourceClickOk := false
 		if (DivinationTargetType = "Normal" && normalWispFallback)
@@ -463,6 +465,7 @@ else if (DivinationState = "Wait Resource Gone")
 			if (DivinationResourceAbsentChecks >= 6 && absenceDuration >= 1250)
 			{
 				LLARS_DeveloperAction("Divination || Resource depleted || Missing " . absenceDuration . " ms || Find another resource")
+				LLARS_SetDetection("Divination Resource", "Depleted", "", "", "Missing " . absenceDuration . " ms", false)
 				Divination_ClearResourceTarget()
 				DivinationResourceSearchLogged := false
 				DivinationPostDepositEnrichedUntil := A_TickCount + 1250
@@ -479,7 +482,7 @@ else if (DivinationState = "Wait Resource Gone")
 
 	; Preserve a spatial signature of the exact established normal resource. The
 	; broad yellow tracker can see nearby wisps and used to adopt one after the
-	; original node vanished at far zoom. Sustained loss of this original pattern
+	; tracked node vanished at far zoom. Sustained loss of this tracked pattern
 	; Confirm depletion independently using the same completion check as Eternal Tree.
 	if (!resourceGone && DivinationTargetType != "Enriched" && DivinationResourceTrackingEstablished)
 	{
@@ -545,6 +548,7 @@ else if (DivinationState = "Wait Resource Gone")
 			{
 				LLARS_DeveloperAction("Divination || Enriched body verified live || Switching immediately || Score=" . enrichedScore
 					. " || Spread=" . enrichedBodyWidth . "x" . enrichedBodyHeight)
+				LLARS_SetDetection("Divination Resource", "Enriched live", enrichedScore, "", "Spread=" . enrichedBodyWidth . "x" . enrichedBodyHeight, false)
 
 				if LLARS_ColorClickDenseTarget(enrichedX, enrichedY, "Divination_IsResourceColor", "Divination Enriched Resource", "left", 30, 6, 6, 20, 4, true, true)
 				{
@@ -762,7 +766,7 @@ Divination_FindBestDepositCandidateFromCapture(capture, ByRef foundX, ByRef foun
 
 	; Deposit size changes substantially with camera zoom. Enumerate plausible
 	; connected white bodies and keep the largest body in this frame instead of
-	; enforcing the old close-zoom 66x62 contract.
+	; enforcing a fixed close-zoom 66x62 size.
 	attempt := 0
 	while (attempt < 8)
 	{
@@ -884,7 +888,7 @@ Divination_ClickDepositBackground(ByRef clientX, ByRef clientY)
 
 	if !resolved
 	{
-		; Never fall back to the old edge point. If the full deposit geometry cannot
+		; Do not use an edge-point fallback. If the full deposit geometry cannot
 		; be resolved on this frame, wait for the next Find Deposit pass instead.
 		LLARS_DeveloperAction("Divination || Deposit center unresolved || No edge fallback / no click")
 		return false
@@ -1367,9 +1371,9 @@ Divination_ResourcePresentAtClick(ByRef centerX, ByRef centerY, targetType, star
 	; Walking toward a clicked node can scroll the world under the fixed client view.
 	; Before tracking is established, normal resources may be globally reacquired so
 	; the initial walk/camera movement can settle. After establishment, however, the
-	; clicked normal node is locked to its last confirmed screen position. The old
-	; post-lock reacquisition was the zoomed-out depletion bug: when the node vanished
-	; it hopped to another nearby yellow wisp/resource and never became depleted.
+	; clicked normal node is locked to its last confirmed screen position. After
+	; lock-on, global reacquisition is disabled so depletion cannot jump tracking
+	; to another nearby yellow wisp/resource.
 	if (targetType != "Enriched" && !allowGlobalReacquire)
 	{
 		anyYellowVisible := Divination_CaptureHasResourceYellow(capture)
@@ -1707,7 +1711,7 @@ Divination_IsEnrichedConnectedBody(capture, centerX, centerY, clusterScore, ByRe
 	bodyToClusterRatio := bodySamples / clusterScore
 
 	; The real enriched wisp is consistently much larger than normal wisps in
-	; the supplied views. Keep the original ratio test, but reject compact normal
+	; the supported views. Keep the ratio test, but reject compact normal
 	; bodies that can occasionally satisfy that ratio because of animation.
 	minimumBodyWidth := 42
 	minimumBodyHeight := 42
@@ -1913,7 +1917,7 @@ Divination_IsSmallNormalWispArea(capture, centerX, centerY, ByRef sampleCount :=
 	minSpan := Min(bodyWidth, bodyHeight)
 
 	; Reject single-pixel/sparkle noise, while allowing the genuinely small
-	; pre-activation wisp body. Larger active nodes are handled by the original
+	; pre-activation wisp body. Larger active nodes are handled by the existing
 	; normal-resource detector before this fallback is reached.
 	return (maxSpan >= 6 && minSpan >= 3 && maxSpan <= 31)
 }

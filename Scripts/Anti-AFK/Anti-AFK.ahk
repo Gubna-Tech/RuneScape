@@ -63,7 +63,7 @@ AntiAFK()
     if !LLARS_RunActive()
         return
 
-    ; Preserve the old cadence by scheduling the next random activation before carrying out this movement/tooltip cycle.
+    ; Schedule the next random activation before carrying out this movement/tooltip cycle so callback time does not extend the interval.
     AntiAFKTimerID := LLARS_TimerOnce("AFK", Func("AntiAFK"))
 
     if !LLARS_WaitForRuneScape("Anti-AFK MouseMove")
