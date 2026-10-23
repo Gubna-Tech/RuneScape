@@ -129,6 +129,7 @@ if !LLARS_RunActive()
 	return
 
 LLARS_SetStatus("Monitoring", "Color Targets")
+LLARS_SetDetection("Color Target", "Monitoring")
 
 MatchedTarget := MultiColor_FindTrigger()
 if IsObject(MatchedTarget)

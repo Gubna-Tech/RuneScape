@@ -2,8 +2,10 @@
 ; |     LLARS AUTOHOTINTERCEPTION     -     INPUT BACKEND           |
 ; ================================================================
 ;
-; LLARS uses AutoHotInterception only for input synthesis. It does not
-; subscribe to, filter, or block the user's physical keyboard or mouse.
+; LLARS uses AutoHotInterception for input synthesis and non-blocking device
+; lifecycle subscriptions. Physical keyboard/mouse input is observed only for
+; lifecycle awareness; LLARS independently chooses the most reliable connected
+; AHI transport carriers and never blocks physical input.
 
 LLARS_AHI_LibraryReady(projectRoot := "")
 {
@@ -272,7 +274,7 @@ LLARS_AHI_ClearSetupResult(projectRoot)
 
 LLARS_AHI_LogDir(projectRoot)
 {
-    return projectRoot . "\Vendor\AutoHotInterception\Logs"
+    return projectRoot . "\Logs"
 }
 
 LLARS_AHI_CleanupLegacyLogs(projectRoot)
@@ -280,7 +282,9 @@ LLARS_AHI_CleanupLegacyLogs(projectRoot)
     if (projectRoot = "")
         return
 
-    legacyDir := projectRoot . "\Logs"
+    ; Runtime/support output belongs under the LLARS root Logs directory.
+    ; Move legacy AHI-specific Vendor logs there on first use.
+    legacyDir := projectRoot . "\Vendor\AutoHotInterception\Logs"
     if !FileExist(legacyDir)
         return
 
@@ -288,11 +292,10 @@ LLARS_AHI_CleanupLegacyLogs(projectRoot)
     if !FileExist(logDir)
         FileCreateDir, %logDir%
 
-    legacyPattern := legacyDir . "\AutoHotInterception-*"
+    legacyPattern := legacyDir . "\*"
     Loop, Files, %legacyPattern%, F
         FileMove, %A_LoopFileFullPath%, % logDir . "\" . A_LoopFileName, 1
 
-    ; Remove the old top-level Logs directory after AHI logs are migrated, if it is empty.
     FileRemoveDir, %legacyDir%
 }
 
@@ -312,7 +315,7 @@ LLARS_AHI_Trace(projectRoot, message)
 
 LLARS_AHI_SupportReportPath(projectRoot)
 {
-    return LLARS_AHI_LogDir(projectRoot) . "\AutoHotInterception-Support.txt"
+    return LLARS_AHI_LogDir(projectRoot) . "\LLARS-Support.txt"
 }
 
 LLARS_AHI_SanitizeSupportText(text, projectRoot := "")
@@ -425,7 +428,15 @@ LLARS_AHI_BuildSupportReport(projectRoot, trigger := "Manual")
     global LLARS_AHI_DRIVER_READY, LLARS_AHI_RUNTIME_READY
     global LLARS_AHI_LAST_MOUSE_TRANSPORT, LLARS_AHI_LAST_KEYBOARD_TRANSPORT
     global LLARS_AHI_HELD_KEYS, LLARS_AHI_HELD_MOUSE, LLARS_AHI_EXIT_REGISTERED
+    global LLARS_AHI_MOUSE_SUBSCRIBED_ID, LLARS_AHI_KEYBOARD_SUBSCRIBED_ID
+    global LLARS_AHI_MOUSE_ACTIVITY_ID, LLARS_AHI_MOUSE_ROUTE_VERIFIED
+    global LLARS_AHI_MOUSE_PREFERRED_ID, LLARS_AHI_MOUSE_PREFERRED_INFO, LLARS_AHI_MOUSE_ALTERNATE_ACTIVE
+    global LLARS_AHI_MOUSE_LAST_SEEN, LLARS_AHI_KEYBOARD_LAST_SEEN
+    global LLARS_AHI_MOUSE_EVENT_COUNT, LLARS_AHI_KEYBOARD_EVENT_COUNT
+    global LLARS_AHI_REBIND_COUNT, LLARS_AHI_LAST_REBIND
     global LLARS_DeveloperActions
+    global LLARS_RUNNING, LLARS_PAUSED, LLARS_RUN_TYPE, LLARS_RunStartTick
+    global LLARS_CONFIG_READY, LLARS_CONFIG_MISSING_COUNT, LLARS_DISABLE_SCRIPT_CONFIG
 
     FormatTime, reportTime,, yyyy-MM-dd HH:mm:ss
     RegRead, windowsBuild, HKEY_LOCAL_MACHINE, SOFTWARE\Microsoft\Windows NT\CurrentVersion, CurrentBuildNumber
@@ -455,21 +466,57 @@ LLARS_AHI_BuildSupportReport(projectRoot, trigger := "Manual")
     pendingState := LLARS_AHI_PendingRestart(projectRoot) ? "Yes" : "No"
     runtimeState := libraryReady ? "Ready" : "Missing"
     objectState := IsObject(LLARS_AHI_Object) ? "Initialized" : "Not initialized"
-    engineState := (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY) ? "AutoHotInterception" : "Standard AutoHotkey / fallback"
+    mode := LLARS_AHI_Mode(projectRoot)
+    if (mode = "ahi")
+        engineState := (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY) ? "AutoHotInterception" : "AutoHotInterception (route unavailable)"
+    else
+        engineState := "Standard AutoHotkey"
 
-    report := "LLARS AutoHotInterception Support Report`r`n"
-    report .= "Report Version: 1`r`n"
+    llarsVersion := LLARS_GetVersion(projectRoot)
+    runState := LLARS_RUNNING ? (LLARS_PAUSED ? "Paused" : "Running") : "Idle"
+    runType := (LLARS_RUN_TYPE = "" ? "Not Started" : LLARS_RUN_TYPE)
+    if (LLARS_RUNNING && LLARS_RunStartTick > 0)
+        runElapsed := Round((A_TickCount - LLARS_RunStartTick) / 1000) . " s"
+    else
+        runElapsed := "--"
+    if (LLARS_DISABLE_SCRIPT_CONFIG)
+        configState := "Not Required"
+    else if (LLARS_CONFIG_READY = "")
+        configState := "Unknown"
+    else
+        configState := LLARS_CONFIG_READY ? "Ready" : "Needs configuration"
+
+    diagnosticText := "Warnings=0 | Errors=0 | Recoveries=0 | Last=None"
+    if IsFunc("LLARS_DiagnosticSnapshot")
+    {
+        diagnosticFn := Func("LLARS_DiagnosticSnapshot")
+        diagnosticState := diagnosticFn.Call()
+        if IsObject(diagnosticState)
+            diagnosticText := "Warnings=" . diagnosticState.Warnings . " | Errors=" . diagnosticState.Errors . " | Recoveries=" . diagnosticState.Recoveries . " | Last=" . diagnosticState.Last
+    }
+
+    report := "LLARS Support Report`r`n"
+    report .= "Report Version: 2`r`n"
     report .= "Generated: " . reportTime . "`r`n"
     report .= "Trigger: " . trigger . "`r`n"
     report .= "Entry Point: " . A_ScriptName . "`r`n"
+    report .= "`r`n[LLARS State]`r`n"
+    report .= "Version: v" . llarsVersion . "`r`n"
+    report .= "Run State: " . runState . " | Type=" . runType . " | Elapsed=" . runElapsed . "`r`n"
+    report .= "Configuration: " . configState . " | Missing=" . (LLARS_CONFIG_MISSING_COUNT + 0) . "`r`n"
+    report .= "Diagnostics: " . diagnosticText . "`r`n"
+    detectionText := "None"
+    if IsFunc("LLARS_DetectionDisplay")
+        detectionText := Func("LLARS_DetectionDisplay").Call(false)
+    report .= "Detection: " . detectionText . "`r`n"
     report .= "`r`n[Environment]`r`n"
     report .= "AutoHotkey: " . A_AhkVersion . " | " . (A_PtrSize = 8 ? "64-bit" : "32-bit") . " | Unicode=" . (A_IsUnicode ? "Yes" : "No") . "`r`n"
     report .= "Windows: " . A_OSVersion . " | DisplayVersion=" . windowsDisplay . " | Build=" . windowsBuild . " | OS=" . (A_Is64bitOS ? "64-bit" : "32-bit") . "`r`n"
     report .= "LLARS process elevated: " . (A_IsAdmin ? "Yes" : "No") . "`r`n"
 
-    report .= "`r`n[AHI Status]`r`n"
+    report .= "`r`n[Input / AHI Status]`r`n"
     report .= "Input Engine: " . engineState . "`r`n"
-    report .= "Mouse behavior: LLARS keeps its original NaturalClick movement and timing; speed-0 movement points use AutoHotInterception across the Windows virtual desktop.`r`n"
+    report .= "Mouse behavior: LLARS keeps its original NaturalClick movement and timing; AHI mode keeps mouse transport on AutoHotInterception across the Windows virtual desktop.`r`n"
     report .= "AHI Runtime: " . runtimeState . "`r`n"
     report .= "Interception Functional: " . (functionalReady ? "Ready" : "Not ready") . "`r`n"
     report .= "Functional Detail: " . (functionalReason = "" ? "<none>" : functionalReason) . "`r`n"
@@ -486,6 +533,25 @@ LLARS_AHI_BuildSupportReport(projectRoot, trigger := "Manual")
     report .= LLARS_AHI_DeviceLogText("Keyboard", LLARS_AHI_KEYBOARD_INFO) . " | Ready=" . (LLARS_AHI_KEYBOARD_READY ? "Yes" : "No") . "`r`n"
     report .= "Last Mouse Transport: " . (LLARS_AHI_LAST_MOUSE_TRANSPORT = "" ? "<none>" : LLARS_AHI_LAST_MOUSE_TRANSPORT) . "`r`n"
     report .= "Last Keyboard Transport: " . (LLARS_AHI_LAST_KEYBOARD_TRANSPORT = "" ? "<none>" : LLARS_AHI_LAST_KEYBOARD_TRANSPORT) . "`r`n"
+    report .= "Subscriptions: Mouse buttons=" . LLARS_AHI_MouseSubscriptionText()
+        . " | Keyboard=" . (LLARS_AHI_KEYBOARD_SUBSCRIBED_ID ? "AHI #" . LLARS_AHI_KEYBOARD_SUBSCRIBED_ID : "Off") . " | Blocking=No`r`n"
+    activeMouseRole := LLARS_AHI_MOUSE_ALTERNATE_ACTIVE ? "Stable transport (separate physical pointer)" : "Stable AHI transport"
+    report .= "Active mouse route: " . (LLARS_AHI_MOUSE_ID ? "AHI #" . LLARS_AHI_MOUSE_ID : "Unavailable") . " | Role=" . activeMouseRole . "`r`n"
+    report .= "Transport reliability: Mouse=" . LLARS_AHI_DeviceReliabilityText(LLARS_AHI_MOUSE_INFO, true)
+        . " | Keyboard=" . LLARS_AHI_DeviceReliabilityText(LLARS_AHI_KEYBOARD_INFO, false) . "`r`n"
+    if LLARS_AHI_MOUSE_ROUTE_VERIFIED
+        physicalMouseRoute := "Learned AHI #" . LLARS_AHI_MOUSE_PREFERRED_ID
+    else if LLARS_AHI_MOUSE_ID
+        physicalMouseRoute := "Awaiting physical click; output AHI #" . LLARS_AHI_MOUSE_ID
+    else
+        physicalMouseRoute := "No mouse route"
+    if (LLARS_AHI_MOUSE_ACTIVITY_ID)
+        physicalMouseRoute .= " | Last event AHI #" . LLARS_AHI_MOUSE_ACTIVITY_ID
+    report .= "Physical mouse route: " . physicalMouseRoute . "`r`n"
+    report .= "Physical events observed: Mouse=" . (LLARS_AHI_MOUSE_EVENT_COUNT + 0) . " | Keyboard=" . (LLARS_AHI_KEYBOARD_EVENT_COUNT + 0) . "`r`n"
+    report .= "Last physical activity: Mouse=" . LLARS_AHI_TickAgeText(LLARS_AHI_MOUSE_LAST_SEEN)
+        . " | Keyboard=" . LLARS_AHI_TickAgeText(LLARS_AHI_KEYBOARD_LAST_SEEN) . "`r`n"
+    report .= "AHI route rebinds: " . (LLARS_AHI_REBIND_COUNT + 0) . " | Last=" . (LLARS_AHI_LAST_REBIND = "" ? "None" : LLARS_AHI_LAST_REBIND) . "`r`n"
 
     report .= "`r`n[Runtime Files]`r`n" . LLARS_AHI_RuntimeFileReport(projectRoot) . "`r`n"
 
@@ -556,7 +622,7 @@ LLARS_AHI_CopySupportReport(projectRoot, trigger := "Manual Developer Mode copy"
 LLARS_AHI_SupportHint(projectRoot, trigger := "Failure")
 {
     LLARS_AHI_WriteSupportReport(projectRoot, trigger)
-    return "Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt"
+    return "Logs\LLARS-Support.txt"
 }
 
 LLARS_AHI_ShowRuntimeProblem(projectRoot)
@@ -567,9 +633,14 @@ LLARS_AHI_ShowRuntimeProblem(projectRoot)
         return
     shown := true
 
-    LLARS_AHI_WriteSupportReport(projectRoot, "Runtime initialization unavailable")
     reason := (LLARS_AHI_STATUS_REASON = "") ? "Unknown AutoHotInterception initialization error" : LLARS_AHI_STATUS_REASON
-    MsgBox, 0x40030, LLARS AHI Issue, AutoHotInterception is selected as the recommended input backend, but it is not fully available.`n`nLLARS is using Standard AutoHotkey fallback for the affected input this run.`n`nStatus: %reason%`n`nA support report was saved automatically at:`nVendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt`n`nIf this continues after restarting LLARS/Windows, open Developer Mode > Copy AHI Report and paste it to Gubna.
+    if IsFunc("LLARS_DiagnosticRecord")
+    {
+        diagnosticFn := Func("LLARS_DiagnosticRecord")
+        diagnosticFn.Call("Warning", "AHI fallback active", reason)
+    }
+    LLARS_AHI_WriteSupportReport(projectRoot, "Runtime initialization unavailable")
+    MsgBox, 0x40030, LLARS AHI Issue, AutoHotInterception is selected as the recommended input backend, but it is not fully available.`n`nLLARS is using Standard AutoHotkey fallback for the affected input this run.`n`nStatus: %reason%`n`nA support report was saved automatically at:`nLogs\LLARS-Support.txt`n`nIf this continues after restarting LLARS/Windows, open Developer Mode > Copy Support Report and paste it to Gubna.
 }
 
 LLARS_AHI_ReadSetupResult(projectRoot)
@@ -763,6 +834,14 @@ LLARS_AHI_DisableForProcess(reason := "Standard AutoHotkey fallback selected")
 
     if IsFunc("LLARS_AHI_ReleaseAllInput")
         LLARS_AHI_ReleaseAllInput()
+    if IsFunc("LLARS_AHI_StopDeviceWatchdog")
+        LLARS_AHI_StopDeviceWatchdog()
+    if IsFunc("LLARS_AHI_UnsubscribeLifecycle")
+        LLARS_AHI_UnsubscribeLifecycle()
+    if (IsObject(LLARS_AHI_Object))
+    {
+        try LLARS_AHI_Object.Instance.Dispose()
+    }
     if IsFunc("LLARS_AHI_NativeTransportDispose")
         LLARS_AHI_NativeTransportDispose()
 
@@ -809,7 +888,7 @@ LLARS_AHI_RequestUninstall(projectRoot, interactive := true, reinstallAfter := f
     LLARS_AHI_SetMode(projectRoot, previousMode)
     LLARS_AHI_SupportHint(projectRoot, "Interception uninstall failed; exit=" . result)
     if (interactive)
-        MsgBox, 0x40030, LLARS Input Driver, LLARS could not verify that Interception was removed.`n`nDo not manually delete keyboard.sys or mouse.sys.`n`nUse Developer Mode > Copy AHI Report for troubleshooting.
+        MsgBox, 0x40030, LLARS Input Driver, LLARS could not verify that Interception was removed.`n`nDo not manually delete keyboard.sys or mouse.sys.`n`nUse Developer Mode > Copy Support Report for troubleshooting.
     return false
 }
 
@@ -943,7 +1022,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true, force := false, setupCon
         LLARS_AHI_Trace(projectRoot, "Bundled AHI runtime is incomplete; refusing driver changes")
         LLARS_AHI_SupportHint(projectRoot, "Bundled AHI runtime missing")
         if (interactive)
-            MsgBox, 0x40030, LLARS Input Files Missing, LLARS is missing one or more bundled AutoHotInterception runtime files.`n`nRe-extract or redownload the complete LLARS package. The Windows driver was not changed.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+            MsgBox, 0x40030, LLARS Input Files Missing, LLARS is missing one or more bundled AutoHotInterception runtime files.`n`nRe-extract or redownload the complete LLARS package. The Windows driver was not changed.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Logs\LLARS-Support.txt
         return false
     }
 
@@ -956,7 +1035,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true, force := false, setupCon
         LLARS_AHI_Trace(projectRoot, "Bundled AHI file security preparation failed: " . fileSecurityReason)
         LLARS_AHI_SupportHint(projectRoot, "Bundled AHI file security preparation failed")
         if (interactive)
-            MsgBox, 0x40030, LLARS Input Files, LLARS could not prepare the bundled AutoHotInterception files for Windows.`n`nMove or re-extract LLARS to a folder you can write to, then try again.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+            MsgBox, 0x40030, LLARS Input Files, LLARS could not prepare the bundled AutoHotInterception files for Windows.`n`nMove or re-extract LLARS to a folder you can write to, then try again.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Logs\LLARS-Support.txt
         return false
     }
 
@@ -977,7 +1056,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true, force := false, setupCon
         LLARS_AHI_Trace(projectRoot, "Interception is registered but not functional: " . functionalReason)
         LLARS_AHI_SupportHint(projectRoot, "Driver registered but not functional: " . functionalReason)
         if (interactive)
-            MsgBox, 0x40030, LLARS Input Driver, Interception is installed but is not active on this Windows boot.`n`nRestart Windows once and try LLARS again. If it still does not initialize, open Developer Mode and use Copy AHI Report for Gubna.`n`nLLARS will use standard AutoHotkey input for this run.
+            MsgBox, 0x40030, LLARS Input Driver, Interception is installed but is not active on this Windows boot.`n`nRestart Windows once and try LLARS again. If it still does not initialize, open Developer Mode and use Copy Support Report for Gubna.`n`nLLARS will use standard AutoHotkey input for this run.
         return false
     }
 
@@ -1046,7 +1125,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true, force := false, setupCon
     if (setupState = "BUNDLE_ERROR")
     {
         LLARS_AHI_SupportHint(projectRoot, "Setup failure: bundled payload missing/corrupt")
-        MsgBox, 0x40030, LLARS Input Setup, LLARS could not verify its bundled AutoHotInterception files.`n`nRe-extract or redownload the complete LLARS package. Nothing was downloaded and the Windows driver was not changed.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+        MsgBox, 0x40030, LLARS Input Setup, LLARS could not verify its bundled AutoHotInterception files.`n`nRe-extract or redownload the complete LLARS package. Nothing was downloaded and the Windows driver was not changed.`n`nSupport report: Logs\LLARS-Support.txt
         return false
     }
 
@@ -1059,7 +1138,7 @@ LLARS_AHI_StartupGate(projectRoot, interactive := true, force := false, setupCon
     {
         LLARS_AHI_Trace(projectRoot, "Setup did not report success; no restart prompt")
         LLARS_AHI_SupportHint(projectRoot, "Setup failure: state=" . setupState . "; exit=" . setupResult)
-        MsgBox, 0x40030, LLARS Input Setup, AutoHotInterception setup did not complete successfully.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt`nUse Developer Mode > Copy AHI Report to paste the details to Gubna.
+        MsgBox, 0x40030, LLARS Input Setup, AutoHotInterception setup did not complete successfully.`n`nLLARS will use standard AutoHotkey input for this run.`n`nSupport report: Logs\LLARS-Support.txt`nUse Developer Mode > Copy Support Report to paste the details to Gubna.
         return false
     }
 
@@ -1095,6 +1174,55 @@ LLARS_AHI_Initialize(projectRoot := "")
     global LLARS_AHI_MOUSE_INFO, LLARS_AHI_KEYBOARD_INFO, LLARS_AHI_STATUS_REASON, LLARS_AHI_STATUS_DETAIL
     global LLARS_AHI_DRIVER_READY, LLARS_AHI_RUNTIME_READY
     global LLARS_AHI_LAST_MOUSE_TRANSPORT, LLARS_AHI_LAST_KEYBOARD_TRANSPORT
+    global LLARS_AHI_PROJECT_ROOT, LLARS_AHI_MOUSE_SUBSCRIBED_ID, LLARS_AHI_KEYBOARD_SUBSCRIBED_ID
+    global LLARS_AHI_MOUSE_SUBSCRIPTIONS, LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS
+    global LLARS_AHI_MOUSE_ACTIVITY_ID, LLARS_AHI_MOUSE_ACTIVITY_TICK, LLARS_AHI_MOUSE_ACTIVITY_APPLIED_TICK
+    global LLARS_AHI_MOUSE_ACTIVITY_BY_ID, LLARS_AHI_MOUSE_ROUTE_VERIFIED
+    global LLARS_AHI_MOUSE_PREFERRED_ID, LLARS_AHI_MOUSE_PREFERRED_INFO, LLARS_AHI_MOUSE_ALTERNATE_ACTIVE
+    global LLARS_AHI_DEVICE_HISTORY_MOUSE, LLARS_AHI_DEVICE_HISTORY_KEYBOARD
+    global LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING, LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC
+    global LLARS_AHI_FAST_RECOVERY_FUNC, LLARS_AHI_FAST_RECOVERY_ACTIVE, LLARS_AHI_FAST_RECOVERY_UNTIL
+    global LLARS_AHI_MOUSE_LAST_SEEN, LLARS_AHI_KEYBOARD_LAST_SEEN
+    global LLARS_AHI_MOUSE_EVENT_COUNT, LLARS_AHI_KEYBOARD_EVENT_COUNT
+    global LLARS_AHI_REBIND_COUNT, LLARS_AHI_LAST_REBIND, LLARS_AHI_RECOVERY_ACTIVE
+    global LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED
+
+    LLARS_AHI_StopDeviceWatchdog()
+    LLARS_AHI_UnsubscribeLifecycle()
+    if IsObject(LLARS_AHI_Object)
+    {
+        try LLARS_AHI_Object.Instance.Dispose()
+    }
+    LLARS_AHI_NativeTransportDispose()
+
+    LLARS_AHI_PROJECT_ROOT := projectRoot
+    LLARS_AHI_MOUSE_SUBSCRIBED_ID := 0
+    LLARS_AHI_KEYBOARD_SUBSCRIBED_ID := 0
+    LLARS_AHI_MOUSE_SUBSCRIPTIONS := {}
+    LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS := {}
+    LLARS_AHI_MOUSE_ACTIVITY_ID := 0
+    LLARS_AHI_MOUSE_ACTIVITY_TICK := 0
+    LLARS_AHI_MOUSE_ACTIVITY_APPLIED_TICK := 0
+    LLARS_AHI_MOUSE_ACTIVITY_BY_ID := {}
+    LLARS_AHI_MOUSE_ROUTE_VERIFIED := false
+    LLARS_AHI_MOUSE_PREFERRED_ID := 0
+    LLARS_AHI_MOUSE_PREFERRED_INFO := ""
+    LLARS_AHI_MOUSE_ALTERNATE_ACTIVE := false
+    LLARS_AHI_DEVICE_HISTORY_MOUSE := {}
+    LLARS_AHI_DEVICE_HISTORY_KEYBOARD := {}
+    LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING := false
+    LLARS_AHI_FAST_RECOVERY_ACTIVE := false
+    LLARS_AHI_FAST_RECOVERY_UNTIL := 0
+    if !IsObject(LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC)
+        LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC := Func("LLARS_AHI_ProcessPendingMouseActivity")
+    LLARS_AHI_MOUSE_LAST_SEEN := 0
+    LLARS_AHI_KEYBOARD_LAST_SEEN := 0
+    LLARS_AHI_MOUSE_EVENT_COUNT := 0
+    LLARS_AHI_KEYBOARD_EVENT_COUNT := 0
+    LLARS_AHI_REBIND_COUNT := 0
+    LLARS_AHI_LAST_REBIND := ""
+    LLARS_AHI_RECOVERY_ACTIVE := false
+    LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED := false
 
     LLARS_AHI_Object := ""
     LLARS_AHI_READY := false
@@ -1180,24 +1308,21 @@ LLARS_AHI_Initialize(projectRoot := "")
     ; GetDeviceList confirms the higher-level AHI wrapper is also operational.
     LLARS_AHI_DRIVER_READY := true
 
-    ; Choose the first currently connected keyboard and mouse. LLARS only
-    ; synthesizes output, so users do not need to run Monitor.ahk or configure
-    ; VID/PID/device IDs manually.
-    for id, info in deviceList
+    ; Choose stable AHI transport carriers independently of the physical devices
+    ; the user happens to be touching. Built-in/internal routes are preferred;
+    ; stable low-ID USB/HID routes outrank devices that demonstrate reconnect
+    ; churn. Physical mouse observation below remains separate from this choice.
+    mouseTransport := LLARS_AHI_SelectStableTransport(deviceList, true)
+    if IsObject(mouseTransport)
     {
-        if (Trim(info.Handle) = "")
-            continue
-        numericId := id + 0
-        if (info.IsMouse && !LLARS_AHI_MOUSE_ID && numericId >= 11 && numericId <= 20)
-        {
-            LLARS_AHI_MOUSE_ID := numericId
-            LLARS_AHI_MOUSE_INFO := {ID: numericId, VID: info.VID + 0, PID: info.PID + 0, Handle: info.Handle}
-        }
-        else if (!info.IsMouse && !LLARS_AHI_KEYBOARD_ID && numericId >= 1 && numericId <= 10)
-        {
-            LLARS_AHI_KEYBOARD_ID := numericId
-            LLARS_AHI_KEYBOARD_INFO := {ID: numericId, VID: info.VID + 0, PID: info.PID + 0, Handle: info.Handle}
-        }
+        LLARS_AHI_MOUSE_ID := mouseTransport.ID
+        LLARS_AHI_MOUSE_INFO := mouseTransport
+    }
+    keyboardTransport := LLARS_AHI_SelectStableTransport(deviceList, false)
+    if IsObject(keyboardTransport)
+    {
+        LLARS_AHI_KEYBOARD_ID := keyboardTransport.ID
+        LLARS_AHI_KEYBOARD_INFO := keyboardTransport
     }
 
     LLARS_AHI_MOUSE_READY := (LLARS_AHI_MOUSE_ID >= 11 && LLARS_AHI_MOUSE_ID <= 20)
@@ -1205,6 +1330,12 @@ LLARS_AHI_Initialize(projectRoot := "")
     LLARS_AHI_READY := (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY)
     if (LLARS_AHI_MOUSE_READY)
         LLARS_AHI_NativeTransportInitialize(projectRoot)
+
+    ; Observe every connected mouse-button route non-blockingly so the physical
+    ; mouse can be learned instead of assuming the first enumerated mouse ID.
+    ; Keyboard observation remains on the selected keyboard route.
+    LLARS_AHI_SubscribeLifecycle(deviceList)
+    LLARS_AHI_StartDeviceWatchdog(projectRoot)
 
     if (LLARS_AHI_MOUSE_READY && LLARS_AHI_KEYBOARD_READY)
         LLARS_AHI_STATUS_REASON := "Ready"
@@ -1216,7 +1347,7 @@ LLARS_AHI_Initialize(projectRoot := "")
         LLARS_AHI_STATUS_REASON := "No connected Interception keyboard or mouse detected"
 
     ; Healthy startup stays disk-light. Full support reports are generated only
-    ; on failures/fallbacks or when the user presses Copy AHI Report.
+    ; on failures/fallbacks or when the user presses Copy Support Report.
     if (!LLARS_AHI_READY)
         LLARS_AHI_WriteSupportReport(projectRoot, "Initialization incomplete: no usable devices")
     return LLARS_AHI_READY
@@ -1233,6 +1364,761 @@ LLARS_AHI_IsReady(kind := "")
     return LLARS_AHI_READY
 }
 
+
+LLARS_AHI_TickAgeText(tick)
+{
+    if (!tick)
+        return "Not observed"
+    elapsed := A_TickCount - tick
+    if (elapsed < 0)
+        elapsed := 0
+    if (elapsed < 1000)
+        return elapsed . " ms ago"
+    return Round(elapsed / 1000) . " s ago"
+}
+
+; Subscription callbacks intentionally do almost no work. AHI's receive thread
+; should never be burdened with GUI updates, logging, enumeration, or recovery.
+LLARS_AHI_OnPhysicalKeyboard(code, state)
+{
+    global LLARS_AHI_KEYBOARD_LAST_SEEN, LLARS_AHI_KEYBOARD_EVENT_COUNT
+    LLARS_AHI_KEYBOARD_LAST_SEEN := A_TickCount
+    LLARS_AHI_KEYBOARD_EVENT_COUNT++
+}
+
+LLARS_AHI_OnPhysicalMouseButton(deviceId, code, state)
+{
+    global LLARS_AHI_MOUSE_ID, LLARS_AHI_MOUSE_ROUTE_VERIFIED, LLARS_AHI_MOUSE_PREFERRED_ID
+    global LLARS_AHI_MOUSE_LAST_SEEN, LLARS_AHI_MOUSE_EVENT_COUNT
+    global LLARS_AHI_MOUSE_ACTIVITY_ID, LLARS_AHI_MOUSE_ACTIVITY_TICK, LLARS_AHI_MOUSE_ACTIVITY_BY_ID
+    global LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING, LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC
+    LLARS_AHI_MOUSE_LAST_SEEN := A_TickCount
+    LLARS_AHI_MOUSE_EVENT_COUNT++
+    LLARS_AHI_MOUSE_ACTIVITY_ID := deviceId + 0
+    LLARS_AHI_MOUSE_ACTIVITY_TICK := A_TickCount
+    if !IsObject(LLARS_AHI_MOUSE_ACTIVITY_BY_ID)
+        LLARS_AHI_MOUSE_ACTIVITY_BY_ID := {}
+    LLARS_AHI_MOUSE_ACTIVITY_BY_ID[LLARS_AHI_MOUSE_ACTIVITY_ID] := A_TickCount
+    if (LLARS_AHI_MOUSE_ACTIVITY_ID = LLARS_AHI_MOUSE_ID)
+    {
+        LLARS_AHI_MOUSE_ROUTE_VERIFIED := true
+        ; The first physical event on the current output route still needs a
+        ; normal-thread refresh so LLARS records that device as preferred.
+        if (LLARS_AHI_MOUSE_PREFERRED_ID = LLARS_AHI_MOUSE_ACTIVITY_ID)
+            return
+    }
+
+    ; A physical event on a different subscribed AHI ID, or the first event
+    ; that establishes the preferred identity, is authoritative route
+    ; signal. Schedule recovery onto the normal AHK timer thread instead of
+    ; waiting up to five seconds for the lifecycle watchdog. The callback still
+    ; does no enumeration, logging, GUI work, or transport itself.
+    LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING := true
+    if !IsObject(LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC)
+        LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC := Func("LLARS_AHI_ProcessPendingMouseActivity")
+    SetTimer, % LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC, -10
+}
+
+LLARS_AHI_ProcessPendingMouseActivity()
+{
+    global LLARS_AHI_PROJECT_ROOT, LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING
+    if !LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING
+        return
+    LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING := false
+    if (LLARS_AHI_PROJECT_ROOT = "" || LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT) != "ahi")
+        return
+    LLARS_AHI_RefreshDeviceRoutes(LLARS_AHI_PROJECT_ROOT, "Physical mouse activity", "mouse")
+}
+
+LLARS_AHI_MouseSubscriptionText()
+{
+    global LLARS_AHI_MOUSE_SUBSCRIPTIONS
+    if !IsObject(LLARS_AHI_MOUSE_SUBSCRIPTIONS)
+        return "Off"
+
+    text := ""
+    Loop, 10
+    {
+        id := A_Index + 10
+        if LLARS_AHI_MOUSE_SUBSCRIPTIONS.HasKey(id)
+            text .= (text = "" ? "" : ",") . "AHI #" . id
+    }
+    return (text = "" ? "Off" : text)
+}
+
+LLARS_AHI_DeviceFromId(deviceList, id, isMouse)
+{
+    if !IsObject(deviceList)
+        return ""
+    numericId := id + 0
+    if !deviceList.HasKey(numericId)
+        return ""
+    return LLARS_AHI_DeviceCandidate(deviceList[numericId], numericId, isMouse)
+}
+
+LLARS_AHI_UnsubscribeLifecycle()
+{
+    global LLARS_AHI_Object, LLARS_AHI_MOUSE_SUBSCRIBED_ID, LLARS_AHI_KEYBOARD_SUBSCRIBED_ID
+    global LLARS_AHI_MOUSE_SUBSCRIPTIONS, LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS
+
+    if IsObject(LLARS_AHI_Object)
+    {
+        if IsObject(LLARS_AHI_MOUSE_SUBSCRIPTIONS)
+        {
+            for id, subscribed in LLARS_AHI_MOUSE_SUBSCRIPTIONS
+            {
+                if subscribed
+                {
+                    try LLARS_AHI_Object.UnsubscribeMouseButtons(id + 0)
+                }
+            }
+        }
+        if (LLARS_AHI_KEYBOARD_SUBSCRIBED_ID)
+        {
+            try LLARS_AHI_Object.UnsubscribeKeyboard(LLARS_AHI_KEYBOARD_SUBSCRIBED_ID)
+        }
+    }
+    LLARS_AHI_MOUSE_SUBSCRIPTIONS := {}
+    LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS := {}
+    LLARS_AHI_MOUSE_SUBSCRIBED_ID := 0
+    LLARS_AHI_KEYBOARD_SUBSCRIBED_ID := 0
+    return true
+}
+
+LLARS_AHI_SubscribeLifecycle(deviceList := "")
+{
+    global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_KEYBOARD_ID
+    global LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
+    global LLARS_AHI_MOUSE_SUBSCRIBED_ID, LLARS_AHI_KEYBOARD_SUBSCRIBED_ID
+    global LLARS_AHI_MOUSE_SUBSCRIPTIONS, LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS
+    global LLARS_AHI_STATUS_DETAIL
+
+    if !IsObject(LLARS_AHI_Object)
+        return false
+
+    if !IsObject(LLARS_AHI_MOUSE_SUBSCRIPTIONS)
+        LLARS_AHI_MOUSE_SUBSCRIPTIONS := {}
+    if !IsObject(LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS)
+        LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS := {}
+
+    if !IsObject(deviceList)
+    {
+        try
+            deviceList := LLARS_AHI_Object.GetDeviceList()
+        catch e
+        {
+            LLARS_AHI_STATUS_DETAIL := "Mouse lifecycle enumeration failed: " . e.Message
+            return false
+        }
+    }
+
+    subscriptionOk := true
+    currentMouseIds := {}
+
+    ; Subscribe to buttons/wheel on every connected Interception mouse. Each
+    ; callback is bound to its source ID, allowing LLARS to learn the physical
+    ; mouse without using the high-volume mouse-movement subscription path.
+    for id, info in deviceList
+    {
+        candidate := LLARS_AHI_DeviceCandidate(info, id, true)
+        if !IsObject(candidate)
+            continue
+
+        numericId := candidate.ID + 0
+        currentMouseIds[numericId] := true
+        if !LLARS_AHI_MOUSE_SUBSCRIPTIONS.HasKey(numericId)
+        {
+            callback := Func("LLARS_AHI_OnPhysicalMouseButton").Bind(numericId)
+            try
+            {
+                LLARS_AHI_Object.SubscribeMouseButtons(numericId, false, callback, false)
+                LLARS_AHI_MOUSE_SUBSCRIPTIONS[numericId] := true
+                LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS[numericId] := callback
+            }
+            catch e
+            {
+                subscriptionOk := false
+                LLARS_AHI_STATUS_DETAIL := "Mouse lifecycle subscription failed for AHI #" . numericId . ": " . e.Message
+            }
+        }
+    }
+
+    ; Retire subscriptions for device IDs no longer exposed by AHI.
+    staleMouseIds := []
+    for id, subscribed in LLARS_AHI_MOUSE_SUBSCRIPTIONS
+    {
+        if (subscribed && !currentMouseIds.HasKey(id + 0))
+            staleMouseIds.Push(id + 0)
+    }
+    for _, id in staleMouseIds
+    {
+        try LLARS_AHI_Object.UnsubscribeMouseButtons(id)
+        LLARS_AHI_MOUSE_SUBSCRIPTIONS.Delete(id)
+        if LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS.HasKey(id)
+            LLARS_AHI_MOUSE_SUBSCRIPTION_CALLBACKS.Delete(id)
+    }
+
+    LLARS_AHI_MOUSE_SUBSCRIBED_ID := (LLARS_AHI_MOUSE_ID && LLARS_AHI_MOUSE_SUBSCRIPTIONS.HasKey(LLARS_AHI_MOUSE_ID)) ? LLARS_AHI_MOUSE_ID : 0
+
+    if (LLARS_AHI_KEYBOARD_SUBSCRIBED_ID && LLARS_AHI_KEYBOARD_SUBSCRIBED_ID != LLARS_AHI_KEYBOARD_ID)
+    {
+        try LLARS_AHI_Object.UnsubscribeKeyboard(LLARS_AHI_KEYBOARD_SUBSCRIBED_ID)
+        LLARS_AHI_KEYBOARD_SUBSCRIBED_ID := 0
+    }
+
+    if (LLARS_AHI_KEYBOARD_READY && LLARS_AHI_KEYBOARD_ID && LLARS_AHI_KEYBOARD_SUBSCRIBED_ID != LLARS_AHI_KEYBOARD_ID)
+    {
+        try
+        {
+            LLARS_AHI_Object.SubscribeKeyboard(LLARS_AHI_KEYBOARD_ID, false, Func("LLARS_AHI_OnPhysicalKeyboard"), false)
+            LLARS_AHI_KEYBOARD_SUBSCRIBED_ID := LLARS_AHI_KEYBOARD_ID
+        }
+        catch e
+        {
+            subscriptionOk := false
+            LLARS_AHI_STATUS_DETAIL := "Keyboard lifecycle subscription failed: " . e.Message
+        }
+    }
+    return subscriptionOk
+}
+
+LLARS_AHI_DeviceCandidate(info, id, isMouse)
+{
+    if !IsObject(info)
+        return ""
+    numericId := id + 0
+    if (isMouse)
+    {
+        if (!info.IsMouse || numericId < 11 || numericId > 20)
+            return ""
+    }
+    else
+    {
+        if (info.IsMouse || numericId < 1 || numericId > 10)
+            return ""
+    }
+    if (Trim(info.Handle) = "")
+        return ""
+    return {ID:numericId, VID:info.VID + 0, PID:info.PID + 0, Handle:info.Handle}
+}
+
+
+LLARS_AHI_SameDeviceIdentity(leftInfo, rightInfo)
+{
+    if (!IsObject(leftInfo) || !IsObject(rightInfo))
+        return false
+    leftHandle := Trim(leftInfo.Handle)
+    rightHandle := Trim(rightInfo.Handle)
+    StringLower, leftHandle, leftHandle
+    StringLower, rightHandle, rightHandle
+    if (leftHandle != "" && rightHandle != "")
+        return (leftHandle = rightHandle)
+    return ((leftInfo.VID + 0) = (rightInfo.VID + 0) && (leftInfo.PID + 0) = (rightInfo.PID + 0))
+}
+
+LLARS_AHI_DeviceIdentityKey(candidate)
+{
+    if !IsObject(candidate)
+        return ""
+    handle := Trim(candidate.Handle)
+    StringLower, handle, handle
+    if (handle != "")
+        return handle
+    return (candidate.VID + 0) . ":" . (candidate.PID + 0)
+}
+
+LLARS_AHI_DeviceReliabilityClass(candidate, isMouse)
+{
+    if !IsObject(candidate)
+        return "Unavailable"
+
+    handle := Trim(candidate.Handle)
+    StringUpper, handle, handle
+    ; These markers describe buses/device families commonly used by built-in
+    ; laptop keyboards and precision/I2C/legacy touchpads. They are hints only;
+    ; the dynamic ID/churn score remains authoritative when metadata is vague.
+    if (InStr(handle, "I2C") || InStr(handle, "ACPI") || InStr(handle, "PNP0F")
+        || InStr(handle, "PNP0303") || InStr(handle, "ELAN") || InStr(handle, "SYNAPT")
+        || InStr(handle, "ALPS") || InStr(handle, "TOUCHPAD") || InStr(handle, "PRECISION")
+        || InStr(handle, "PS/2") || InStr(handle, "PS2"))
+        return "Built-in/internal"
+
+    if (InStr(handle, "BTH") || InStr(handle, "WIRELESS")
+        || InStr(handle, "RECEIVER") || InStr(handle, "UNIFY") || InStr(handle, "LIGHTSPEED")
+        || InStr(handle, "LOGI_BOLT") || InStr(handle, "BOLT"))
+        return "Wireless/receiver"
+
+    if (InStr(handle, "USB") || InStr(handle, "HID"))
+        return "USB/HID"
+    return "Connected AHI device"
+}
+
+LLARS_AHI_IsNewestIdentityCandidate(deviceList, candidate, isMouse)
+{
+    if (!IsObject(deviceList) || !IsObject(candidate))
+        return false
+    for otherId, otherInfo in deviceList
+    {
+        other := LLARS_AHI_DeviceCandidate(otherInfo, otherId, isMouse)
+        if !IsObject(other)
+            continue
+        if (other.ID > candidate.ID && LLARS_AHI_SameDeviceIdentity(other, candidate))
+            return false
+    }
+    return true
+}
+
+LLARS_AHI_UpdateDeviceHistory(deviceList, isMouse)
+{
+    global LLARS_AHI_DEVICE_HISTORY_MOUSE, LLARS_AHI_DEVICE_HISTORY_KEYBOARD
+    if !IsObject(deviceList)
+        return false
+    if (isMouse)
+    {
+        if !IsObject(LLARS_AHI_DEVICE_HISTORY_MOUSE)
+            LLARS_AHI_DEVICE_HISTORY_MOUSE := {}
+        history := LLARS_AHI_DEVICE_HISTORY_MOUSE
+    }
+    else
+    {
+        if !IsObject(LLARS_AHI_DEVICE_HISTORY_KEYBOARD)
+            LLARS_AHI_DEVICE_HISTORY_KEYBOARD := {}
+        history := LLARS_AHI_DEVICE_HISTORY_KEYBOARD
+    }
+
+    for id, info in deviceList
+    {
+        candidate := LLARS_AHI_DeviceCandidate(info, id, isMouse)
+        if !IsObject(candidate)
+            continue
+        if !LLARS_AHI_IsNewestIdentityCandidate(deviceList, candidate, isMouse)
+            continue
+        key := LLARS_AHI_DeviceIdentityKey(candidate)
+        if (key = "")
+            continue
+        if !history.HasKey(key)
+            history[key] := {LastID:candidate.ID, Churn:0, FirstSeen:A_TickCount, LastSeen:A_TickCount}
+        else
+        {
+            entry := history[key]
+            if (entry.LastID && entry.LastID != candidate.ID)
+                entry.Churn++
+            entry.LastID := candidate.ID
+            entry.LastSeen := A_TickCount
+            history[key] := entry
+        }
+    }
+    return true
+}
+
+LLARS_AHI_DeviceReliabilityScore(candidate, isMouse, currentInfo := "")
+{
+    global LLARS_AHI_DEVICE_HISTORY_MOUSE, LLARS_AHI_DEVICE_HISTORY_KEYBOARD
+    if !IsObject(candidate)
+        return -999999
+
+    class := LLARS_AHI_DeviceReliabilityClass(candidate, isMouse)
+    score := 1000
+    if (class = "Built-in/internal")
+        score += 500
+    else if (class = "USB/HID")
+        score += 150
+    else if (class = "Wireless/receiver")
+        score -= 250
+
+    ; Lower Interception IDs are normally older, continuously-present slots.
+    ; A multi-host/sleeping wireless device that repeatedly reconnects naturally
+    ; loses this bonus as its ID climbs toward the driver's fixed ceiling.
+    maxId := isMouse ? 20 : 10
+    score += (maxId - candidate.ID) * 15
+
+    key := LLARS_AHI_DeviceIdentityKey(candidate)
+    history := isMouse ? LLARS_AHI_DEVICE_HISTORY_MOUSE : LLARS_AHI_DEVICE_HISTORY_KEYBOARD
+    if (IsObject(history) && key != "" && history.HasKey(key))
+    {
+        entry := history[key]
+        score -= (entry.Churn + 0) * 300
+        age := A_TickCount - (entry.FirstSeen + 0)
+        if (age > 0)
+        {
+            ageBonus := Floor(age / 5000)
+            if (ageBonus > 60)
+                ageBonus := 60
+            score += ageBonus
+        }
+    }
+
+    ; Small stickiness avoids unnecessary carrier hopping when two stable
+    ; devices score nearly the same. It cannot outweigh built-in/churn evidence.
+    if (IsObject(currentInfo) && LLARS_AHI_SameDeviceIdentity(candidate, currentInfo))
+        score += 40
+    return score
+}
+
+LLARS_AHI_SelectStableTransport(deviceList, isMouse, currentInfo := "")
+{
+    if !IsObject(deviceList)
+        return ""
+    LLARS_AHI_UpdateDeviceHistory(deviceList, isMouse)
+
+    best := ""
+    bestScore := -999999
+    for id, info in deviceList
+    {
+        candidate := LLARS_AHI_DeviceCandidate(info, id, isMouse)
+        if !IsObject(candidate)
+            continue
+        ; Interception can leave older IDs for the same physical handle visible
+        ; after reconnect. Only the highest ID for that identity is considered
+        ; live; reliability ranking then compares distinct physical devices.
+        if !LLARS_AHI_IsNewestIdentityCandidate(deviceList, candidate, isMouse)
+            continue
+        score := LLARS_AHI_DeviceReliabilityScore(candidate, isMouse, currentInfo)
+        if (!IsObject(best) || score > bestScore
+            || (score = bestScore && IsObject(currentInfo) && LLARS_AHI_SameDeviceIdentity(candidate, currentInfo))
+            || (score = bestScore && candidate.ID < best.ID))
+        {
+            best := candidate
+            bestScore := score
+        }
+    }
+    if IsObject(best)
+    {
+        best.ReliabilityScore := bestScore
+        best.ReliabilityClass := LLARS_AHI_DeviceReliabilityClass(best, isMouse)
+    }
+    return best
+}
+
+LLARS_AHI_DeviceReliabilityText(info, isMouse)
+{
+    global LLARS_AHI_DEVICE_HISTORY_MOUSE, LLARS_AHI_DEVICE_HISTORY_KEYBOARD
+    if !IsObject(info)
+        return "Unavailable"
+    class := LLARS_AHI_DeviceReliabilityClass(info, isMouse)
+    score := LLARS_AHI_DeviceReliabilityScore(info, isMouse, info)
+    churn := 0
+    key := LLARS_AHI_DeviceIdentityKey(info)
+    history := isMouse ? LLARS_AHI_DEVICE_HISTORY_MOUSE : LLARS_AHI_DEVICE_HISTORY_KEYBOARD
+    if (IsObject(history) && key != "" && history.HasKey(key))
+        churn := history[key].Churn + 0
+    return class . " | Score=" . score . " | ID changes=" . churn
+}
+
+LLARS_AHI_StopFastMouseRecovery()
+{
+    global LLARS_AHI_FAST_RECOVERY_FUNC, LLARS_AHI_FAST_RECOVERY_ACTIVE, LLARS_AHI_FAST_RECOVERY_UNTIL
+    if IsObject(LLARS_AHI_FAST_RECOVERY_FUNC)
+        SetTimer, % LLARS_AHI_FAST_RECOVERY_FUNC, Off
+    LLARS_AHI_FAST_RECOVERY_ACTIVE := false
+    LLARS_AHI_FAST_RECOVERY_UNTIL := 0
+    return true
+}
+
+LLARS_AHI_StartFastMouseRecovery(projectRoot := "", durationMs := 10000)
+{
+    global LLARS_AHI_PROJECT_ROOT, LLARS_AHI_FAST_RECOVERY_FUNC, LLARS_AHI_FAST_RECOVERY_ACTIVE, LLARS_AHI_FAST_RECOVERY_UNTIL
+    if (projectRoot != "")
+        LLARS_AHI_PROJECT_ROOT := projectRoot
+    if (LLARS_AHI_PROJECT_ROOT = "" || LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT) != "ahi")
+        return false
+    if !IsObject(LLARS_AHI_FAST_RECOVERY_FUNC)
+        LLARS_AHI_FAST_RECOVERY_FUNC := Func("LLARS_AHI_FastMouseRecoveryTick")
+    if !LLARS_AHI_FAST_RECOVERY_ACTIVE
+    {
+        LLARS_AHI_FAST_RECOVERY_ACTIVE := true
+        LLARS_AHI_FAST_RECOVERY_UNTIL := A_TickCount + durationMs
+        SetTimer, % LLARS_AHI_FAST_RECOVERY_FUNC, 200
+    }
+    return true
+}
+
+LLARS_AHI_FastMouseRecoveryTick()
+{
+    global LLARS_AHI_PROJECT_ROOT, LLARS_AHI_FAST_RECOVERY_ACTIVE, LLARS_AHI_FAST_RECOVERY_UNTIL
+    global LLARS_AHI_MOUSE_READY, LLARS_AHI_MOUSE_ALTERNATE_ACTIVE
+    if !LLARS_AHI_FAST_RECOVERY_ACTIVE
+        return
+    if (LLARS_AHI_PROJECT_ROOT = "" || LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT) != "ahi")
+    {
+        LLARS_AHI_StopFastMouseRecovery()
+        return
+    }
+    if (A_TickCount >= LLARS_AHI_FAST_RECOVERY_UNTIL)
+    {
+        LLARS_AHI_StopFastMouseRecovery()
+        return
+    }
+
+    LLARS_AHI_RefreshDeviceRoutes(LLARS_AHI_PROJECT_ROOT, "Fast mouse recovery", "mouse")
+    ; Once any stable AHI transport route is available, normal operation can
+    ; resume. The 5-second watchdog continues observing physical-device changes.
+    if LLARS_AHI_MOUSE_READY
+        LLARS_AHI_StopFastMouseRecovery()
+}
+
+LLARS_AHI_RefreshDeviceRoutes(projectRoot := "", reason := "Device watchdog", kind := "")
+{
+    global LLARS_AHI_Object, LLARS_AHI_READY
+    global LLARS_AHI_MOUSE_ID, LLARS_AHI_KEYBOARD_ID
+    global LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
+    global LLARS_AHI_MOUSE_INFO, LLARS_AHI_KEYBOARD_INFO
+    global LLARS_AHI_STATUS_REASON, LLARS_AHI_STATUS_DETAIL
+    global LLARS_AHI_MOUSE_ACTIVITY_ID, LLARS_AHI_MOUSE_ACTIVITY_TICK, LLARS_AHI_MOUSE_ACTIVITY_APPLIED_TICK
+    global LLARS_AHI_MOUSE_ROUTE_VERIFIED, LLARS_AHI_MOUSE_PREFERRED_ID, LLARS_AHI_MOUSE_PREFERRED_INFO
+    global LLARS_AHI_MOUSE_ALTERNATE_ACTIVE
+    global LLARS_AHI_REBIND_COUNT, LLARS_AHI_LAST_REBIND, LLARS_AHI_RECOVERY_ACTIVE
+    global LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED
+
+    if (LLARS_AHI_RECOVERY_ACTIVE || !IsObject(LLARS_AHI_Object))
+        return false
+
+    LLARS_AHI_RECOVERY_ACTIVE := true
+    changed := false
+    restored := false
+    lost := false
+    learnedPhysicalRoute := false
+    detail := ""
+    StringLower, kind, kind
+
+    try
+        deviceList := LLARS_AHI_Object.GetDeviceList()
+    catch e
+    {
+        LLARS_AHI_STATUS_DETAIL := "AHI device re-enumeration failed: " . e.Message
+        LLARS_AHI_RECOVERY_ACTIVE := false
+        return false
+    }
+
+    if (kind = "" || kind = "mouse")
+    {
+        oldMouseId := LLARS_AHI_MOUSE_ID
+        wasMouseReady := LLARS_AHI_MOUSE_READY
+        oldAlternate := LLARS_AHI_MOUSE_ALTERNATE_ACTIVE
+        oldPreferredId := LLARS_AHI_MOUSE_PREFERRED_ID
+        mouseMatch := ""
+        newAlternate := false
+
+        ; Physical observation and LLARS transport selection are intentionally
+        ; separate. A real button event identifies what the user is touching,
+        ; but it does not force synthetic output onto a reconnect-prone device.
+        if (LLARS_AHI_MOUSE_ACTIVITY_ID && LLARS_AHI_MOUSE_ACTIVITY_TICK > LLARS_AHI_MOUSE_ACTIVITY_APPLIED_TICK)
+        {
+            activityMatch := LLARS_AHI_DeviceFromId(deviceList, LLARS_AHI_MOUSE_ACTIVITY_ID, true)
+            if IsObject(activityMatch)
+            {
+                LLARS_AHI_MOUSE_ACTIVITY_APPLIED_TICK := LLARS_AHI_MOUSE_ACTIVITY_TICK
+                learnedPhysicalRoute := (!LLARS_AHI_MOUSE_ROUTE_VERIFIED
+                    || !IsObject(LLARS_AHI_MOUSE_PREFERRED_INFO)
+                    || !LLARS_AHI_SameDeviceIdentity(activityMatch, LLARS_AHI_MOUSE_PREFERRED_INFO)
+                    || oldPreferredId != activityMatch.ID)
+                LLARS_AHI_MOUSE_ROUTE_VERIFIED := true
+                LLARS_AHI_MOUSE_PREFERRED_ID := activityMatch.ID
+                LLARS_AHI_MOUSE_PREFERRED_INFO := activityMatch
+            }
+        }
+
+        ; Select the most reliable AHI carrier independently of the physical
+        ; mouse. Built-in/internal and continuously-present low-ID routes win;
+        ; reconnect churn and high IDs reduce a route's score. The current
+        ; carrier receives only a small tie-breaking bonus to avoid flapping.
+        mouseMatch := LLARS_AHI_SelectStableTransport(deviceList, true, LLARS_AHI_MOUSE_INFO)
+        if IsObject(mouseMatch)
+        {
+            if (IsObject(LLARS_AHI_MOUSE_PREFERRED_INFO))
+                newAlternate := !LLARS_AHI_SameDeviceIdentity(mouseMatch, LLARS_AHI_MOUSE_PREFERRED_INFO)
+            else
+                newAlternate := false
+        }
+
+        if IsObject(mouseMatch)
+        {
+            LLARS_AHI_MOUSE_ID := mouseMatch.ID
+            LLARS_AHI_MOUSE_INFO := mouseMatch
+            LLARS_AHI_MOUSE_READY := true
+            LLARS_AHI_MOUSE_ALTERNATE_ACTIVE := newAlternate
+
+            routeChanged := (mouseMatch.ID != oldMouseId || !wasMouseReady)
+            roleChanged := (oldAlternate != newAlternate)
+            if routeChanged
+            {
+                restored := true
+                changed := true
+                if (newAlternate)
+                    detail .= (detail = "" ? "" : " | ") . "Stable transport M" . oldMouseId . "->M" . mouseMatch.ID . " (separate physical pointer)"
+                else
+                    detail .= (detail = "" ? "" : " | ") . "Stable transport M" . oldMouseId . "->M" . mouseMatch.ID
+                LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED := false
+                LLARS_AHI_NativeTransportInitialize(projectRoot)
+            }
+            else if (learnedPhysicalRoute)
+            {
+                detail .= (detail = "" ? "" : " | ") . "Physical mouse observed M" . LLARS_AHI_MOUSE_PREFERRED_ID
+                if (roleChanged)
+                    detail .= " | Transport role updated"
+            }
+        }
+        else
+        {
+            if (wasMouseReady)
+            {
+                lost := true
+                detail .= (detail = "" ? "" : " | ") . "Mouse M" . oldMouseId . "->Unavailable"
+            }
+            LLARS_AHI_MOUSE_READY := false
+            LLARS_AHI_MOUSE_ALTERNATE_ACTIVE := false
+        }
+    }
+
+    if (kind = "" || kind = "keyboard")
+    {
+        oldKeyboardId := LLARS_AHI_KEYBOARD_ID
+        wasKeyboardReady := LLARS_AHI_KEYBOARD_READY
+        keyboardMatch := LLARS_AHI_SelectStableTransport(deviceList, false, LLARS_AHI_KEYBOARD_INFO)
+        if IsObject(keyboardMatch)
+        {
+            LLARS_AHI_KEYBOARD_ID := keyboardMatch.ID
+            LLARS_AHI_KEYBOARD_INFO := keyboardMatch
+            LLARS_AHI_KEYBOARD_READY := true
+            if (keyboardMatch.ID != oldKeyboardId || !wasKeyboardReady)
+            {
+                changed := true
+                restored := true
+                detail .= (detail = "" ? "" : " | ") . "Keyboard K" . oldKeyboardId . "->K" . keyboardMatch.ID
+            }
+        }
+        else
+        {
+            if (wasKeyboardReady)
+            {
+                lost := true
+                detail .= (detail = "" ? "" : " | ") . "Keyboard K" . oldKeyboardId . "->Unavailable"
+            }
+            LLARS_AHI_KEYBOARD_READY := false
+        }
+    }
+
+    LLARS_AHI_READY := (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY)
+    LLARS_AHI_SubscribeLifecycle(deviceList)
+
+    if (LLARS_AHI_MOUSE_READY && LLARS_AHI_KEYBOARD_READY)
+        LLARS_AHI_STATUS_REASON := "Ready"
+    else if (LLARS_AHI_MOUSE_READY)
+        LLARS_AHI_STATUS_REASON := "Mouse ready; waiting for Interception keyboard route"
+    else if (LLARS_AHI_KEYBOARD_READY)
+        LLARS_AHI_STATUS_REASON := "Keyboard ready; waiting for Interception mouse route"
+    else
+        LLARS_AHI_STATUS_REASON := "Waiting for connected Interception keyboard and mouse routes"
+
+    if (learnedPhysicalRoute && detail != "" && !changed)
+    {
+        LLARS_AHI_STATUS_DETAIL := reason . " | " . detail
+        LLARS_AHI_DeveloperAction("AHI Device Discovery || " . LLARS_AHI_STATUS_DETAIL)
+    }
+
+    if (changed)
+    {
+        LLARS_AHI_REBIND_COUNT++
+        LLARS_AHI_LAST_REBIND := reason . (detail = "" ? "" : " | " . detail)
+        LLARS_AHI_STATUS_DETAIL := LLARS_AHI_LAST_REBIND
+        LLARS_AHI_DeveloperAction("AHI Device Recovery || " . LLARS_AHI_LAST_REBIND)
+    }
+    else if (lost)
+    {
+        LLARS_AHI_STATUS_DETAIL := "AHI lifecycle route unavailable" . (detail = "" ? "" : " | " . detail)
+        LLARS_AHI_DeveloperAction("AHI Device Recovery || " . LLARS_AHI_STATUS_DETAIL)
+    }
+
+    LLARS_AHI_RECOVERY_ACTIVE := false
+
+    ; Only total loss of a usable AHI pointer enters the short 200 ms scan.
+    ; Physical wireless devices can come and go without destabilizing a healthy
+    ; built-in/wired transport carrier.
+    if ((kind = "" || kind = "mouse"))
+    {
+        if !LLARS_AHI_MOUSE_READY
+            LLARS_AHI_StartFastMouseRecovery(projectRoot)
+        else
+            LLARS_AHI_StopFastMouseRecovery()
+    }
+
+    ; Route transitions are rare and important during wireless reconnect handling.
+    ; Refresh the existing support snapshot so troubleshooting state survives a later reboot.
+    if ((changed || lost || learnedPhysicalRoute) && projectRoot != "")
+    {
+        if learnedPhysicalRoute
+            supportTrigger := "AHI physical mouse route learned"
+        else
+            supportTrigger := changed ? "AHI lifecycle route rebound" : "AHI lifecycle route unavailable"
+        LLARS_AHI_WriteSupportReport(projectRoot, supportTrigger)
+    }
+
+    return restored || LLARS_AHI_READY
+}
+
+LLARS_AHI_AttemptTransportRecovery(kind, reason, detail := "")
+{
+    global LLARS_AHI_PROJECT_ROOT, LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
+    global LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED
+
+    recoveryReason := reason
+    if (detail != "")
+        recoveryReason .= " | " . detail
+    LLARS_AHI_RefreshDeviceRoutes(LLARS_AHI_PROJECT_ROOT, recoveryReason, kind)
+
+    StringLower, kind, kind
+    if (kind = "mouse")
+    {
+        if (LLARS_AHI_MOUSE_READY)
+        {
+            ; A route can remain on the same Interception ID while the native
+            ; user-mode context becomes stale. Refresh that context before the
+            ; one allowed AHI retry on a transport failure.
+            LLARS_AHI_NativeTransportInitialize(LLARS_AHI_PROJECT_ROOT)
+            LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED := false
+        }
+        if !LLARS_AHI_MOUSE_READY
+            LLARS_AHI_StartFastMouseRecovery(LLARS_AHI_PROJECT_ROOT)
+        return LLARS_AHI_MOUSE_READY
+    }
+    if (kind = "keyboard")
+        return LLARS_AHI_KEYBOARD_READY
+    return false
+}
+
+LLARS_AHI_DeviceWatchdogTick()
+{
+    global LLARS_AHI_PROJECT_ROOT
+    if (LLARS_AHI_PROJECT_ROOT = "" || LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT) != "ahi")
+        return
+    LLARS_AHI_RefreshDeviceRoutes(LLARS_AHI_PROJECT_ROOT, "Device watchdog")
+}
+
+LLARS_AHI_StartDeviceWatchdog(projectRoot := "")
+{
+    global LLARS_AHI_PROJECT_ROOT, LLARS_AHI_WATCHDOG_FUNC
+    if (projectRoot != "")
+        LLARS_AHI_PROJECT_ROOT := projectRoot
+    if (LLARS_AHI_PROJECT_ROOT = "")
+        return false
+    if !IsObject(LLARS_AHI_WATCHDOG_FUNC)
+        LLARS_AHI_WATCHDOG_FUNC := Func("LLARS_AHI_DeviceWatchdogTick")
+    SetTimer, % LLARS_AHI_WATCHDOG_FUNC, 5000
+    return true
+}
+
+LLARS_AHI_StopDeviceWatchdog()
+{
+    global LLARS_AHI_WATCHDOG_FUNC, LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC
+    global LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING
+    if IsObject(LLARS_AHI_WATCHDOG_FUNC)
+        SetTimer, % LLARS_AHI_WATCHDOG_FUNC, Off
+    if IsObject(LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC)
+        SetTimer, % LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC, Off
+    LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING := false
+    LLARS_AHI_StopFastMouseRecovery()
+    return true
+}
 
 LLARS_AHI_ServiceStateText(state)
 {
@@ -1266,6 +2152,169 @@ LLARS_AHI_DeviceLogText(kind, info)
     return text
 }
 
+LLARS_AHI_StatusSnapshot(projectRoot := "")
+{
+    global LLARS_AHI_MOUSE_ID, LLARS_AHI_KEYBOARD_ID
+    global LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
+    global LLARS_AHI_MOUSE_INFO, LLARS_AHI_KEYBOARD_INFO
+    global LLARS_AHI_STATUS_REASON, LLARS_AHI_STATUS_DETAIL
+    global LLARS_AHI_LAST_MOUSE_TRANSPORT, LLARS_AHI_LAST_KEYBOARD_TRANSPORT
+    global LLARS_AHI_GateElapsed, LLARS_AHI_InitElapsed
+
+    mode := LLARS_AHI_Mode(projectRoot)
+    configured := (mode = "ahi") ? "AutoHotInterception (Recommended)" : "Standard AutoHotkey (Fallback)"
+
+    mouseReady := LLARS_AHI_MOUSE_READY ? true : false
+    keyboardReady := LLARS_AHI_KEYBOARD_READY ? true : false
+
+    if (mode != "ahi")
+        active := "Standard AutoHotkey"
+    else if (mouseReady && keyboardReady)
+        active := "AutoHotInterception"
+    else if (mouseReady || keyboardReady)
+        active := "AutoHotInterception (partial route)"
+    else
+        active := "AutoHotInterception (route unavailable)"
+
+    driverPresent := LLARS_AHI_DriverPresent()
+    driverRegistered := LLARS_AHI_DriverRegistered()
+    restartPending := LLARS_AHI_UninstallPending(projectRoot) && LLARS_AHI_UninstallStillPending(projectRoot)
+    if (restartPending)
+        driver := "Restart required"
+    else if (driverRegistered)
+        driver := "Installed"
+    else if (driverPresent)
+        driver := "Repair required"
+    else
+        driver := "Not installed"
+
+    if (mouseReady)
+    {
+        mouseRoute := "AHI #" . LLARS_AHI_MOUSE_ID
+        if IsObject(LLARS_AHI_MOUSE_INFO)
+        {
+            if (LLARS_AHI_MOUSE_INFO.VID || LLARS_AHI_MOUSE_INFO.PID)
+                mouseRoute .= " | " . Format("{:04X}:{:04X}", LLARS_AHI_MOUSE_INFO.VID, LLARS_AHI_MOUSE_INFO.PID)
+            else if (Trim(LLARS_AHI_MOUSE_INFO.Handle) != "")
+                mouseRoute .= " | Connected HID"
+        }
+    }
+    else
+        mouseRoute := (mode = "ahi") ? "AHI route unavailable" : "Standard AutoHotkey"
+
+    if (keyboardReady)
+    {
+        keyboardRoute := "AHI #" . LLARS_AHI_KEYBOARD_ID
+        if IsObject(LLARS_AHI_KEYBOARD_INFO)
+        {
+            if (LLARS_AHI_KEYBOARD_INFO.VID || LLARS_AHI_KEYBOARD_INFO.PID)
+                keyboardRoute .= " | " . Format("{:04X}:{:04X}", LLARS_AHI_KEYBOARD_INFO.VID, LLARS_AHI_KEYBOARD_INFO.PID)
+            else if (Trim(LLARS_AHI_KEYBOARD_INFO.Handle) != "")
+                keyboardRoute .= " | Connected HID"
+        }
+    }
+    else
+        keyboardRoute := (mode = "ahi") ? "AHI route unavailable" : "Standard AutoHotkey"
+
+    if (mode != "ahi")
+        fallback := "Standard mode selected"
+    else if (mouseReady && keyboardReady)
+        fallback := "None"
+    else
+        fallback := "Disabled in AHI mode; unavailable routes fail closed"
+
+    gateText := (LLARS_AHI_GateElapsed = "") ? "n/a" : (LLARS_AHI_GateElapsed . " ms")
+    initText := (LLARS_AHI_InitElapsed = "") ? "n/a" : (LLARS_AHI_InitElapsed . " ms")
+    startup := "Gate " . gateText . " | Initialize " . initText
+
+    if (mode != "ahi")
+        compact := "Standard mode"
+    else if (mouseReady && keyboardReady)
+        compact := "AHI M" . LLARS_AHI_MOUSE_ID . " K" . LLARS_AHI_KEYBOARD_ID
+    else if (mouseReady)
+        compact := "AHI M" . LLARS_AHI_MOUSE_ID . " | K unavailable"
+    else if (keyboardReady)
+        compact := "AHI K" . LLARS_AHI_KEYBOARD_ID . " | M unavailable"
+    else
+        compact := "AHI unavailable"
+
+    return {Configured: configured
+        , Active: active
+        , Driver: driver
+        , MouseRoute: mouseRoute
+        , KeyboardRoute: keyboardRoute
+        , MouseLast: (LLARS_AHI_LAST_MOUSE_TRANSPORT = "" ? "<none>" : LLARS_AHI_LAST_MOUSE_TRANSPORT)
+        , KeyboardLast: (LLARS_AHI_LAST_KEYBOARD_TRANSPORT = "" ? "<none>" : LLARS_AHI_LAST_KEYBOARD_TRANSPORT)
+        , Startup: startup
+        , Fallback: fallback
+        , Compact: compact
+        , StatusReason: LLARS_AHI_STATUS_REASON
+        , StatusDetail: LLARS_AHI_STATUS_DETAIL}
+}
+
+; Non-invasive health test used by Input Settings. It does not send input or
+; change subscription state; normal AHI initialization owns the non-blocking
+; lifecycle subscriptions.
+LLARS_AHI_SelfTest(projectRoot := "", ByRef summary := "")
+{
+    global LLARS_AHI_Object, LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
+    global LLARS_AHI_MOUSE_ID, LLARS_AHI_KEYBOARD_ID
+    global LLARS_AHI_MOUSE_SUBSCRIBED_ID, LLARS_AHI_KEYBOARD_SUBSCRIBED_ID
+    global LLARS_AHI_MOUSE_ACTIVITY_ID, LLARS_AHI_MOUSE_ROUTE_VERIFIED
+    global LLARS_AHI_MOUSE_PREFERRED_ID, LLARS_AHI_MOUSE_ALTERNATE_ACTIVE
+
+    summary := ""
+    if !LLARS_AHI_LibraryReady(projectRoot)
+    {
+        summary := "Bundled AHI runtime files are missing."
+        return false
+    }
+
+    functionalReason := ""
+    if !LLARS_AHI_FunctionalReady(projectRoot, functionalReason)
+    {
+        summary := "Interception is not ready on this Windows session.`n`n" . functionalReason
+        return false
+    }
+
+    if (LLARS_AHI_Mode(projectRoot) != "ahi")
+    {
+        summary := "AHI runtime and driver checks passed.`n`nStandard AutoHotkey fallback is currently selected."
+        return true
+    }
+
+    if !IsObject(LLARS_AHI_Object)
+    {
+        summary := "The AHI driver is available, but the LLARS AHI object is not initialized in this process."
+        return false
+    }
+
+    if (!LLARS_AHI_MOUSE_READY || !LLARS_AHI_KEYBOARD_READY)
+    {
+        missing := ""
+        if !LLARS_AHI_MOUSE_READY
+            missing .= "mouse"
+        if !LLARS_AHI_KEYBOARD_READY
+            missing .= (missing = "" ? "" : " and ") . "keyboard"
+        summary := "AHI is running, but LLARS could not resolve the " . missing . " route."
+        return false
+    }
+
+    mousePhysical := LLARS_AHI_MOUSE_ROUTE_VERIFIED ? "Learned AHI #" . LLARS_AHI_MOUSE_PREFERRED_ID : "Awaiting a physical mouse click"
+    if (LLARS_AHI_MOUSE_ACTIVITY_ID)
+        mousePhysical .= " | Last event AHI #" . LLARS_AHI_MOUSE_ACTIVITY_ID
+    routeRole := LLARS_AHI_MOUSE_ALTERNATE_ACTIVE ? "Stable transport (separate physical pointer)" : "Stable AHI transport"
+    summary := "AHI health check passed.`n`nMouse output route: AHI #" . LLARS_AHI_MOUSE_ID . " | " . routeRole
+        . "`nMouse transport reliability: " . LLARS_AHI_DeviceReliabilityText(LLARS_AHI_MOUSE_INFO, true)
+        . "`nPhysical mouse route: " . mousePhysical
+        . "`nMouse button discovery subscriptions: " . LLARS_AHI_MouseSubscriptionText()
+        . "`nKeyboard route: AHI #" . LLARS_AHI_KEYBOARD_ID
+        . " | " . LLARS_AHI_DeviceReliabilityText(LLARS_AHI_KEYBOARD_INFO, false)
+        . "`nKeyboard lifecycle subscription: " . (LLARS_AHI_KEYBOARD_SUBSCRIBED_ID ? "AHI #" . LLARS_AHI_KEYBOARD_SUBSCRIBED_ID : "Not active")
+        . "`n`nSubscriptions are non-blocking. No input was sent during this test."
+    return true
+}
+
 LLARS_AHI_DeveloperSnapshot(projectRoot := "")
 {
     global LLARS_AHI_MOUSE_ID, LLARS_AHI_KEYBOARD_ID
@@ -1283,17 +2332,18 @@ LLARS_AHI_DeveloperSnapshot(projectRoot := "")
 
     runtimeText := LLARS_AHI_RUNTIME_READY ? "AHI Runtime Ready" : "AHI Runtime Missing"
 
+    mode := LLARS_AHI_Mode(projectRoot)
     if (LLARS_AHI_MOUSE_READY)
         mouseRoute := "AHI Device " . LLARS_AHI_MOUSE_ID
     else
-        mouseRoute := "Standard AutoHotkey"
+        mouseRoute := (mode = "ahi") ? "AHI Route Unavailable" : "Standard AutoHotkey"
 
     if (LLARS_AHI_KEYBOARD_READY)
         keyboardRoute := "AHI Device " . LLARS_AHI_KEYBOARD_ID
     else
-        keyboardRoute := "Standard AutoHotkey"
+        keyboardRoute := (mode = "ahi") ? "AHI Route Unavailable" : "Standard AutoHotkey"
 
-    if (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY)
+    if (mode = "ahi")
         engineText := "AutoHotInterception"
     else
         engineText := "Standard AutoHotkey"
@@ -1375,8 +2425,9 @@ LLARS_AHI_LogDeveloperStatus(projectRoot)
     global LLARS_AHI_MOUSE_INFO, LLARS_AHI_KEYBOARD_INFO, LLARS_AHI_STATUS_REASON, LLARS_AHI_STATUS_DETAIL
     global LLARS_AHI_DRIVER_READY
 
-    mouseBackend := LLARS_AHI_MOUSE_READY ? "AutoHotInterception (ID " . LLARS_AHI_MOUSE_ID . ")" : "Standard AutoHotkey"
-    keyboardBackend := LLARS_AHI_KEYBOARD_READY ? "AutoHotInterception (ID " . LLARS_AHI_KEYBOARD_ID . ")" : "Standard AutoHotkey"
+    mode := LLARS_AHI_Mode(projectRoot)
+    mouseBackend := LLARS_AHI_MOUSE_READY ? "AutoHotInterception (ID " . LLARS_AHI_MOUSE_ID . ")" : ((mode = "ahi") ? "AutoHotInterception (route unavailable)" : "Standard AutoHotkey")
+    keyboardBackend := LLARS_AHI_KEYBOARD_READY ? "AutoHotInterception (ID " . LLARS_AHI_KEYBOARD_ID . ")" : ((mode = "ahi") ? "AutoHotInterception (route unavailable)" : "Standard AutoHotkey")
     LLARS_AHI_DeveloperAction("Input Backend || Mouse=" . mouseBackend . " || Keyboard=" . keyboardBackend)
     LLARS_AHI_DeveloperAction("Mouse Behavior || Original LLARS NaturalClick movement and timing preserved || Sent through AutoHotInterception")
 
@@ -1399,29 +2450,29 @@ LLARS_AHI_LogDeveloperStatus(projectRoot)
         LLARS_AHI_DeveloperAction("AHI Detail || " . LLARS_AHI_STATUS_DETAIL)
 
     ; Do not generate the full support report on a healthy normal launch.
-    ; Copy AHI Report regenerates it live; failures still write it automatically.
+    ; Copy Support Report regenerates it live; failures still write it automatically.
 }
 
-LLARS_AHI_LogRuntimeFallback(kind, reason, detail := "")
+LLARS_AHI_LogTransportFailure(kind, reason, detail := "")
 {
     static logged := {}
     global LLARS_AHI_READY, LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
     global LLARS_AHI_STATUS_REASON, LLARS_AHI_STATUS_DETAIL, LLARS_ROOT
 
     LLARS_AHI_READY := (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY)
-    LLARS_AHI_STATUS_REASON := kind . " AHI transport failed; using Standard AutoHotkey fallback"
+    LLARS_AHI_STATUS_REASON := kind . " AHI transport unavailable"
     LLARS_AHI_STATUS_DETAIL := detail
-    LLARS_AHI_RecordTransport(kind, "Fallback AHK | " . reason)
+    LLARS_AHI_RecordTransport(kind, "AHI unavailable | " . reason)
     key := kind . "|" . reason
     if logged.HasKey(key)
         return
     logged[key] := true
 
-    LLARS_AHI_DeveloperAction("Input Backend || " . kind . " AHI failed || Fallback=Standard AutoHotkey || " . reason)
+    LLARS_AHI_DeveloperAction("Input Backend || " . kind . " AHI unavailable || " . reason)
     if (LLARS_ROOT != "")
     {
-        LLARS_AHI_WriteSupportReport(LLARS_ROOT, "Runtime fallback: " . kind . " - " . reason)
-        LLARS_AHI_DeveloperAction("AHI Support || Report updated || Vendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt")
+        LLARS_AHI_WriteSupportReport(LLARS_ROOT, "AHI transport unavailable: " . kind . " - " . reason)
+        LLARS_AHI_DeveloperAction("Support || Report updated || Logs\LLARS-Support.txt")
     }
 }
 
@@ -1502,29 +2553,64 @@ LLARS_AHI_SendVirtualAbsolute(mouseId, absoluteX, absoluteY)
     return (sent = 1)
 }
 
+
+LLARS_AHI_SendAbsolutePoint(absoluteX, absoluteY, ByRef transportText, ByRef errorDetail)
+{
+    global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_MOUSE_READY
+
+    transportText := ""
+    errorDetail := ""
+    if (!LLARS_AHI_MOUSE_READY || !IsObject(LLARS_AHI_Object))
+    {
+        errorDetail := "AHI mouse route is not ready"
+        return false
+    }
+
+    try
+    {
+        if LLARS_AHI_SendVirtualAbsolute(LLARS_AHI_MOUSE_ID, absoluteX, absoluteY)
+        {
+            transportText := "AHI Virtual Desktop Move | #" . LLARS_AHI_MOUSE_ID
+            return true
+        }
+
+        ; The AHI wrapper's absolute path is valid when the Windows virtual
+        ; desktop is exactly the primary display.
+        SysGet, virtualLeft, 76
+        SysGet, virtualTop, 77
+        SysGet, virtualWidth, 78
+        SysGet, virtualHeight, 79
+        if (virtualLeft = 0 && virtualTop = 0 && virtualWidth = A_ScreenWidth && virtualHeight = A_ScreenHeight)
+        {
+            LLARS_AHI_Object.SendMouseMoveAbsolute(LLARS_AHI_MOUSE_ID, absoluteX, absoluteY)
+            transportText := "AHI Absolute Move | #" . LLARS_AHI_MOUSE_ID
+            return true
+        }
+        errorDetail := "Virtual-desktop Interception transport is unavailable"
+    }
+    catch e
+    {
+        errorDetail := e.Message
+    }
+    return false
+}
+
 LLARS_AHI_TransportName(kind := "")
 {
     global LLARS_AHI_MOUSE_READY, LLARS_AHI_KEYBOARD_READY
     global LLARS_AHI_LAST_MOUSE_TRANSPORT, LLARS_AHI_LAST_KEYBOARD_TRANSPORT
+    global LLARS_AHI_PROJECT_ROOT
+
+    mode := (LLARS_AHI_PROJECT_ROOT = "") ? "ahi" : LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT)
+    if (mode = "ahi")
+        return "AutoHotInterception"
 
     StringLower, kind, kind
     if (kind = "mouse")
-    {
-        if (SubStr(LLARS_AHI_LAST_MOUSE_TRANSPORT, 1, 4) = "AHI ")
-            return "AutoHotInterception"
-        if (SubStr(LLARS_AHI_LAST_MOUSE_TRANSPORT, 1, 2) = "No")
-            return LLARS_AHI_MOUSE_READY ? "AutoHotInterception" : "Standard AutoHotkey"
         return "Standard AutoHotkey"
-    }
     if (kind = "keyboard")
-    {
-        if (SubStr(LLARS_AHI_LAST_KEYBOARD_TRANSPORT, 1, 4) = "AHI ")
-            return "AutoHotInterception"
-        if (SubStr(LLARS_AHI_LAST_KEYBOARD_TRANSPORT, 1, 2) = "No")
-            return LLARS_AHI_KEYBOARD_READY ? "AutoHotInterception" : "Standard AutoHotkey"
         return "Standard AutoHotkey"
-    }
-    return (LLARS_AHI_MOUSE_READY || LLARS_AHI_KEYBOARD_READY) ? "AutoHotInterception" : "Standard AutoHotkey"
+    return "Standard AutoHotkey"
 }
 
 LLARS_AHI_KeyHeld(keyName)
@@ -1620,7 +2706,14 @@ LLARS_AHI_ReleaseAllInput()
 
 LLARS_AHI_OnExit(exitReason := "", exitCode := 0)
 {
+    global LLARS_AHI_Object
     LLARS_AHI_ReleaseAllInput()
+    LLARS_AHI_StopDeviceWatchdog()
+    LLARS_AHI_UnsubscribeLifecycle()
+    if IsObject(LLARS_AHI_Object)
+    {
+        try LLARS_AHI_Object.Instance.Dispose()
+    }
     LLARS_AHI_NativeTransportDispose()
 }
 
@@ -1666,20 +2759,19 @@ LLARS_AHI_ClientPointToAbsolute(x, y, ByRef absoluteX, ByRef absoluteY)
 ; Shared mouse movement backend.
 ;
 ; Fidelity rule:
-;   * speed=0 is LLARS' own NaturalClick/curve transport. Send exactly one AHI
-;     absolute stroke for each point LLARS already calculated.
-;   * omitted/nonzero speed keeps AutoHotkey's native MouseMove speed behavior.
-;     Keep that original behavior exactly rather than silently changing its
-;     speed/profile while adding AHI.
+;   * NaturalClick/curve points remain exactly the points LLARS already calculated.
+;   * When AHI is active, every requested endpoint is transported through AHI.
+;     The legacy speed argument is retained for caller compatibility/diagnostics;
+;     LLARS never falls through to native MouseMove while AHI mode is active.
 LLARS_InputMouseMove(x, y, speed := "")
 {
-    static absoluteTransportFailed := false
     global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_MOUSE_READY
-    global LLARS_AHI_STATUS_DETAIL
+    global LLARS_AHI_STATUS_DETAIL, LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED
+    global LLARS_AHI_PROJECT_ROOT
 
-    ; Native/default-speed MouseMove is retained only where LLARS originally
-    ; relied on AutoHotkey's own speed profile. NaturalClick always passes 0.
-    if (speed = "" || speed != 0)
+    ; Explicit Standard mode keeps the legacy transport. When AHI is selected,
+    ; every movement stays on AHI: route recovery + one retry, then fail closed.
+    if (LLARS_AHI_PROJECT_ROOT != "" && LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT) != "ahi")
     {
         if (speed = "")
             MouseMove, %x%, %y%
@@ -1689,50 +2781,55 @@ LLARS_InputMouseMove(x, y, speed := "")
         return true
     }
 
-    if (!absoluteTransportFailed && LLARS_AHI_MOUSE_READY && IsObject(LLARS_AHI_Object))
+    if (!LLARS_AHI_MOUSE_READY || !IsObject(LLARS_AHI_Object))
     {
-        if LLARS_AHI_ClientPointToAbsolute(x, y, absoluteX, absoluteY)
+        if !LLARS_AHI_AttemptTransportRecovery("mouse", "Movement route recovery")
         {
-            try
-            {
-                if LLARS_AHI_SendVirtualAbsolute(LLARS_AHI_MOUSE_ID, absoluteX, absoluteY)
-                {
-                    LLARS_AHI_RecordTransport("mouse", "AHI Virtual Desktop Move | #" . LLARS_AHI_MOUSE_ID)
-                    return true
-                }
-
-                ; If the direct virtual-desktop transport is unavailable, the
-                ; AHI wrapper still provides a safe primary-display fallback.
-                SysGet, virtualLeft, 76
-                SysGet, virtualTop, 77
-                SysGet, virtualWidth, 78
-                SysGet, virtualHeight, 79
-                if (virtualLeft = 0 && virtualTop = 0 && virtualWidth = A_ScreenWidth && virtualHeight = A_ScreenHeight)
-                {
-                    LLARS_AHI_Object.SendMouseMoveAbsolute(LLARS_AHI_MOUSE_ID, absoluteX, absoluteY)
-                    LLARS_AHI_RecordTransport("mouse", "AHI Absolute Move | #" . LLARS_AHI_MOUSE_ID)
-                    return true
-                }
-                throw Exception("Virtual-desktop Interception transport is unavailable")
-            }
-            catch e
-            {
-                absoluteTransportFailed := true
-                LLARS_AHI_STATUS_DETAIL := e.Message
-                LLARS_AHI_DeveloperAction("Input Backend || AHI movement transport failed || Compatibility movement enabled")
-            }
+            LLARS_AHI_LogTransportFailure("Mouse", "Movement route unavailable")
+            return false
         }
     }
 
-    MouseMove, %x%, %y%, 0
-    LLARS_AHI_RecordTransport("mouse", "Standard AHK compatibility move | Speed=0")
-    return true
+    if !LLARS_AHI_ClientPointToAbsolute(x, y, absoluteX, absoluteY)
+    {
+        LLARS_AHI_LogTransportFailure("Mouse", "Movement coordinate conversion failed")
+        return false
+    }
+
+    errorDetail := ""
+    if LLARS_AHI_SendAbsolutePoint(absoluteX, absoluteY, transportText, errorDetail)
+    {
+        if (speed != "" && speed != 0)
+            transportText .= " | Requested speed=" . speed
+        LLARS_AHI_RecordTransport("mouse", transportText)
+        return true
+    }
+
+    if LLARS_AHI_AttemptTransportRecovery("mouse", "Movement transport recovery", errorDetail)
+    {
+        retryDetail := ""
+        if LLARS_AHI_SendAbsolutePoint(absoluteX, absoluteY, retryTransport, retryDetail)
+        {
+            if (speed != "" && speed != 0)
+                retryTransport .= " | Requested speed=" . speed
+            LLARS_AHI_RecordTransport("mouse", retryTransport . " | Rebound")
+            return true
+        }
+        if (retryDetail != "")
+            errorDetail .= (errorDetail = "" ? "" : " | ") . "Retry=" . retryDetail
+    }
+
+    LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED := true
+    LLARS_AHI_STATUS_DETAIL := errorDetail
+    LLARS_AHI_MOUSE_READY := false
+    LLARS_AHI_LogTransportFailure("Mouse", "Movement transport error", errorDetail)
+    return false
 }
 
 LLARS_InputMouseButton(button := "left", state := 1)
 {
     global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_MOUSE_READY
-    global LLARS_AHI_HELD_MOUSE
+    global LLARS_AHI_HELD_MOUSE, LLARS_AHI_PROJECT_ROOT
 
     button := Trim(button)
     StringLower, button, button
@@ -1758,71 +2855,100 @@ LLARS_InputMouseButton(button := "left", state := 1)
     if (!state && !LLARS_AHI_HELD_MOUSE.HasKey(button))
         return true
 
-    if (LLARS_AHI_MOUSE_READY && IsObject(LLARS_AHI_Object))
+    if (LLARS_AHI_PROJECT_ROOT != "" && LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT) != "ahi")
     {
-        try
+        if (button = "right")
         {
-            LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, state)
             if (state)
-                LLARS_AHI_HELD_MOUSE[button] := {Code:code}
+                Click, Right Down
             else
-                LLARS_AHI_HELD_MOUSE.Delete(button)
-            LLARS_AHI_RecordTransport("mouse", "AHI " . button . (state ? " down" : " up") . " | #" . LLARS_AHI_MOUSE_ID)
-            return true
+                Click, Right Up
         }
-        catch e
+        else if (button = "middle")
         {
             if (state)
-            {
-                try LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, 0)
-            }
+                Click, Middle Down
+            else
+                Click, Middle Up
+        }
+        else if (button = "xbutton1")
+        {
+            if (state)
+                Click, X1 Down
+            else
+                Click, X1 Up
+        }
+        else if (button = "xbutton2")
+        {
+            if (state)
+                Click, X2 Down
+            else
+                Click, X2 Up
+        }
+        else
+        {
+            if (state)
+                Click, Down
+            else
+                Click, Up
+        }
+        if (state)
+            LLARS_AHI_HELD_MOUSE[button] := {Code:code}
+        else
             LLARS_AHI_HELD_MOUSE.Delete(button)
-            LLARS_AHI_MOUSE_READY := false
-            LLARS_AHI_LogRuntimeFallback("Mouse", "Button transport error", e.Message)
+        LLARS_AHI_RecordTransport("mouse", "Standard AHK " . button . (state ? " down" : " up"))
+        return true
+    }
+
+    if (!LLARS_AHI_MOUSE_READY || !IsObject(LLARS_AHI_Object))
+    {
+        if !LLARS_AHI_AttemptTransportRecovery("mouse", "Button route recovery")
+        {
+            LLARS_AHI_LogTransportFailure("Mouse", "Button route unavailable")
+            return false
         }
     }
 
-    if (button = "right")
+    try
     {
+        LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, state)
         if (state)
-            Click, Right Down
+            LLARS_AHI_HELD_MOUSE[button] := {Code:code}
         else
-            Click, Right Up
+            LLARS_AHI_HELD_MOUSE.Delete(button)
+        LLARS_AHI_RecordTransport("mouse", "AHI " . button . (state ? " down" : " up") . " | #" . LLARS_AHI_MOUSE_ID)
+        return true
     }
-    else if (button = "middle")
+    catch e
     {
+        firstError := e.Message
+        if LLARS_AHI_AttemptTransportRecovery("mouse", "Button transport recovery", firstError)
+        {
+            try
+            {
+                LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, state)
+                if (state)
+                    LLARS_AHI_HELD_MOUSE[button] := {Code:code}
+                else
+                    LLARS_AHI_HELD_MOUSE.Delete(button)
+                LLARS_AHI_RecordTransport("mouse", "AHI " . button . (state ? " down" : " up") . " | #" . LLARS_AHI_MOUSE_ID . " | Rebound")
+                return true
+            }
+            catch retryError
+            {
+                firstError .= " | Retry=" . retryError.Message
+            }
+        }
+
         if (state)
-            Click, Middle Down
-        else
-            Click, Middle Up
-    }
-    else if (button = "xbutton1")
-    {
-        if (state)
-            Click, X1 Down
-        else
-            Click, X1 Up
-    }
-    else if (button = "xbutton2")
-    {
-        if (state)
-            Click, X2 Down
-        else
-            Click, X2 Up
-    }
-    else
-    {
-        if (state)
-            Click, Down
-        else
-            Click, Up
-    }
-    if (state)
-        LLARS_AHI_HELD_MOUSE[button] := {Code:code}
-    else
+        {
+            try LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, 0)
+        }
         LLARS_AHI_HELD_MOUSE.Delete(button)
-    LLARS_AHI_RecordTransport("mouse", "Standard AHK " . button . (state ? " down" : " up"))
-    return true
+        LLARS_AHI_MOUSE_READY := false
+        LLARS_AHI_LogTransportFailure("Mouse", "Button transport error", firstError)
+        return false
+    }
 }
 
 ; Centralized drag transport for future LLARS drag actions. It uses the same
@@ -1868,8 +2994,22 @@ LLARS_AHI_SendWheel(keyName)
     }
     catch e
     {
+        firstError := e.Message
+        if LLARS_AHI_AttemptTransportRecovery("mouse", "Wheel transport recovery", firstError)
+        {
+            try
+            {
+                LLARS_AHI_Object.SendMouseButtonEvent(LLARS_AHI_MOUSE_ID, code, state)
+                LLARS_AHI_RecordTransport("mouse", "AHI " . keyName . " | #" . LLARS_AHI_MOUSE_ID . " | Rebound")
+                return true
+            }
+            catch retryError
+            {
+                firstError .= " | Retry=" . retryError.Message
+            }
+        }
         LLARS_AHI_MOUSE_READY := false
-        LLARS_AHI_LogRuntimeFallback("Mouse", "Wheel transport error", e.Message)
+        LLARS_AHI_LogTransportFailure("Mouse", "Wheel transport error", firstError)
         return false
     }
 }
@@ -1955,13 +3095,32 @@ LLARS_AHI_SendKeyState(keyName, state)
     }
     catch e
     {
+        firstError := e.Message
+        if LLARS_AHI_AttemptTransportRecovery("keyboard", "Key transport recovery", firstError)
+        {
+            try
+            {
+                LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, scanCode, state)
+                if (state)
+                    LLARS_AHI_HELD_KEYS[keyId] := {Name:keyName, Scan:scanCode}
+                else
+                    LLARS_AHI_HELD_KEYS.Delete(keyId)
+                LLARS_AHI_RecordTransport("keyboard", "AHI " . keyName . (state ? " down" : " up") . " | #" . LLARS_AHI_KEYBOARD_ID . " | Rebound")
+                return true
+            }
+            catch retryError
+            {
+                firstError .= " | Retry=" . retryError.Message
+            }
+        }
+
         if (state)
         {
             try LLARS_AHI_Object.SendKeyEvent(LLARS_AHI_KEYBOARD_ID, scanCode, 0)
         }
         LLARS_AHI_HELD_KEYS.Delete(keyId)
         LLARS_AHI_KEYBOARD_READY := false
-        LLARS_AHI_LogRuntimeFallback("Keyboard", "Key transport error", e.Message)
+        LLARS_AHI_LogTransportFailure("Keyboard", "Key transport error", firstError)
         return false
     }
 }
@@ -2084,7 +3243,7 @@ LLARS_AHI_SendSequence(sendSequence, keyHold := 60, keyDelay := 20)
         if (!wasCritical)
             Critical, Off
         LLARS_AHI_KEYBOARD_READY := false
-        LLARS_AHI_LogRuntimeFallback("Keyboard", "Sequence transport error", e.Message)
+        LLARS_AHI_LogTransportFailure("Keyboard", "Sequence transport error", e.Message)
         return false
     }
 }

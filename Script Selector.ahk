@@ -43,6 +43,8 @@ if (!FileExist(A_ScriptDir . "\Core")
 
 ; Loads the local release version used by update checks and GUI titles.
 LLARS_GetVersion(A_ScriptDir)
+if !LLARS_CheckConfigCompatibility(A_ScriptDir)
+	ExitApp
 
 ; Close an older LLARS/script-selector window before any update prompt or Save As dialog.
 CloseOtherLLARS()
@@ -71,12 +73,22 @@ scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Arrow
 ; Calculates the total number of scripts.
 ScriptTotal := StrSplit(scriptArray, "|").Length()
 
+; Selector preferences reuse LLARS Config.ini so Favorites/Recent participate in
+; the existing backup/restore workflow without introducing another state file.
+LLARS_SelectorFavorites := ""
+LLARS_SelectorRecent := ""
+LLARS_SelectorFilteredCount := ScriptTotal
+LLARS_SelectorLoadPreferences()
+
 ; ======================================================================
 ; |     HOTKEY SETUP     -     HOTKEY SETUP     -     HOTKEY SETUP     |
 ; ======================================================================
 
 ; Enter selects the highlighted script.
 Hotkey, Enter, Select
+
+; Ctrl+F jumps directly to selector search.
+Hotkey, ^f, SelectorFocusSearch
 
 ; Escape closes the selector.
 Hotkey, Esc, Exit
@@ -88,16 +100,213 @@ Hotkey, Esc, Exit
 ; Creates the script selector GUI.
 Gui +LastFound +OwnDialogs +AlwaysOnTop -caption
 Gui, Font, s12 Bold cBlue
-Gui, Add, Text, Center w410 x5, Select a script from the list below and`n click 'Select Script' or press Enter
+Gui, Add, Text, Center w410 x5 y10 h40, Select a script from the list below and`nclick 'Select Script' or press Enter
 Gui, Font, cGreen
-Gui, Add, Text, Center w410 x5 vTS, Total Scripts: %ScriptTotal%
+Gui, Add, Text, Center w410 x5 y52 h22 vTS, Showing: %ScriptTotal% of %ScriptTotal%
+Gui, Font, s10 Norm cBlack
+Gui, Add, Edit, x12 y80 w250 h24 vSelectorSearch gSelectorFilterChanged hwndLLARSSelectorSearchHwnd
+DllCall("SendMessageW", "Ptr", LLARSSelectorSearchHwnd, "UInt", 0x1501, "Ptr", 1, "WStr", "Search scripts...")
+Gui, Add, DropDownList, x270 y80 w138 vSelectorView gSelectorFilterChanged Choose1, All Scripts|Favorites|Recent
 Gui, Font, s11 Bold cBlack
-Gui, Add, ListBox, Sort vScriptListBox gScriptSelect x12 w395 r15, %scriptArray%
-Gui, Add, Button, gSelect w120 x150 Center, Select Script
-Gui, Add, Button, gClear w120 x150 Center, Clear Selection
-Gui, Add, Button, gExit w120 x150 Center, Close Selector
-Gui, Show, w420 h460 Center, Script Selector
+Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y112 w396 h250, %scriptArray%
+Gui, Font, s10 Bold cBlack
+Gui, Add, Button, gSelect w120 h28 x12 y372 Center, Select Script
+Gui, Add, Button, gSelectorToggleFavorite w140 h28 x140 y372 vSelectorFavoriteButton Center, Add Favorite
+Gui, Add, Button, gSelectorClearFilters w120 h28 x288 y372 Center, Clear Filters
+Gui, Add, Button, gExit w140 h28 x140 y408 Center, Close Selector
+Gui, Show, w420 h450 Center, Script Selector
 Gui, +ToolWindow
+LLARS_SelectorApplyFilter()
+GuiControl, Focus, ScriptListBox
+
+; Loads persistent selector Favorites/Recent from the existing LLARS Config.ini.
+LLARS_SelectorLoadPreferences()
+{
+	global LLARS_SelectorFavorites, LLARS_SelectorRecent
+	configPath := A_ScriptDir . "\LLARS Config.ini"
+
+	IniRead, favorites, %configPath%, Script Selector, favorites,
+	IniRead, recent, %configPath%, Script Selector, recent,
+
+	LLARS_SelectorFavorites := LLARS_SelectorSanitizePreferenceList(favorites, 0)
+	LLARS_SelectorRecent := LLARS_SelectorSanitizePreferenceList(recent, 5)
+	return true
+}
+
+; Keeps only current selector names and removes duplicates from persisted lists.
+LLARS_SelectorSanitizePreferenceList(listText, maxItems := 0)
+{
+	if (listText = "" || listText = "ERROR")
+		return ""
+
+	clean := ""
+	count := 0
+	for _, item in StrSplit(listText, "|")
+	{
+		item := Trim(item)
+		if (item = "" || !LLARS_SelectorScriptExists(item) || LLARS_SelectorListContains(clean, item))
+			continue
+		clean .= (clean = "" ? "" : "|") . item
+		count++
+		if (maxItems > 0 && count >= maxItems)
+			break
+	}
+	return clean
+}
+
+LLARS_SelectorScriptExists(scriptName)
+{
+	global scriptArray
+	for _, candidate in StrSplit(scriptArray, "|")
+	{
+		if (candidate = scriptName)
+			return true
+	}
+	return false
+}
+
+LLARS_SelectorListContains(listText, scriptName)
+{
+	if (listText = "" || scriptName = "")
+		return false
+	for _, item in StrSplit(listText, "|")
+	{
+		if (item = scriptName)
+			return true
+	}
+	return false
+}
+
+; Stores only selector preferences in the existing root LLARS Config.ini.
+LLARS_SelectorSavePreferences()
+{
+	global LLARS_SelectorFavorites, LLARS_SelectorRecent
+	configPath := A_ScriptDir . "\LLARS Config.ini"
+	IniWrite, %LLARS_SelectorFavorites%, %configPath%, Script Selector, favorites
+	IniWrite, %LLARS_SelectorRecent%, %configPath%, Script Selector, recent
+	return !ErrorLevel
+}
+
+; Records the last five successfully selected scripts, newest first.
+LLARS_SelectorRememberRecent(scriptName)
+{
+	global LLARS_SelectorRecent
+	if (scriptName = "" || !LLARS_SelectorScriptExists(scriptName))
+		return false
+
+	updated := scriptName
+	count := 1
+	for _, item in StrSplit(LLARS_SelectorRecent, "|")
+	{
+		if (item = "" || item = scriptName)
+			continue
+		updated .= "|" . item
+		count++
+		if (count >= 5)
+			break
+	}
+	LLARS_SelectorRecent := updated
+	LLARS_SelectorSavePreferences()
+	return true
+}
+
+; Applies live Search plus All/Favorites/Recent without maintaining a second script catalog.
+LLARS_SelectorApplyFilter()
+{
+	global scriptArray, ScriptTotal, LLARS_SelectorFavorites, LLARS_SelectorRecent
+	global LLARS_SelectorFilteredCount
+
+	GuiControlGet, searchText, , SelectorSearch
+	GuiControlGet, selectorView, , SelectorView
+	searchText := Trim(searchText)
+
+	if (selectorView = "Recent")
+		baseList := LLARS_SelectorRecent
+	else
+		baseList := scriptArray
+
+	filtered := ""
+	count := 0
+	for _, scriptName in StrSplit(baseList, "|")
+	{
+		if (scriptName = "")
+			continue
+		if (selectorView = "Favorites" && !LLARS_SelectorListContains(LLARS_SelectorFavorites, scriptName))
+			continue
+		if (searchText != "" && !InStr(scriptName, searchText, false))
+			continue
+		filtered .= (filtered = "" ? "" : "|") . scriptName
+		count++
+	}
+
+	; All/Favorites stay alphabetical; Recent deliberately preserves launch order.
+	if (selectorView != "Recent" && filtered != "")
+		Sort, filtered, D|
+
+	LLARS_SelectorFilteredCount := count
+	GuiControl, , ScriptListBox, |%filtered%
+	GuiControl, , TS, % "Showing: " . count . " of " . ScriptTotal
+	if (count > 0)
+		GuiControl, Choose, ScriptListBox, 1
+
+	GuiReset()
+	LLARS_SelectorUpdateFavoriteButton()
+	return count
+}
+
+LLARS_SelectorUpdateFavoriteButton()
+{
+	global LLARS_SelectorFavorites
+	GuiControlGet, selectedScript, , ScriptListBox
+	if (selectedScript != "" && LLARS_SelectorListContains(LLARS_SelectorFavorites, selectedScript))
+		buttonText := "Remove Favorite"
+	else
+		buttonText := "Add Favorite"
+	GuiControl, , SelectorFavoriteButton, %buttonText%
+	return true
+}
+
+SelectorFilterChanged:
+LLARS_SelectorApplyFilter()
+return
+
+SelectorFocusSearch:
+GuiControl, Focus, SelectorSearch
+return
+
+SelectorToggleFavorite:
+GuiControlGet, selectedScript, , ScriptListBox
+if (selectedScript = "")
+	return
+if LLARS_SelectorListContains(LLARS_SelectorFavorites, selectedScript)
+{
+	updated := ""
+	for _, item in StrSplit(LLARS_SelectorFavorites, "|")
+	{
+		if (item = "" || item = selectedScript)
+			continue
+		updated .= (updated = "" ? "" : "|") . item
+	}
+	LLARS_SelectorFavorites := updated
+}
+else
+{
+	LLARS_SelectorFavorites .= (LLARS_SelectorFavorites = "" ? "" : "|") . selectedScript
+}
+LLARS_SelectorSavePreferences()
+GuiControlGet, selectorView, , SelectorView
+if (selectorView = "Favorites")
+	LLARS_SelectorApplyFilter()
+else
+	LLARS_SelectorUpdateFavoriteButton()
+return
+
+SelectorClearFilters:
+GuiControl, , SelectorSearch,
+GuiControl, ChooseString, SelectorView, All Scripts
+LLARS_SelectorApplyFilter()
+GuiControl, Focus, SelectorSearch
+return
 
 ; ==================================================================================
 ; |     FUNCTION STORAGE     -     FUNCTION STORAGE     -     FUNCTION STORAGE     |
@@ -260,6 +469,7 @@ if (A_GuiEvent = "DoubleClick")
 if A_GuiEvent = Normal
 {
 	GuiControlGet, selectedScript, , ScriptListBox
+	LLARS_SelectorUpdateFavoriteButton()
 	Switch selectedScript
 	{	
 		Case "AFK Combat":
@@ -1894,7 +2104,7 @@ Switch selectedScript
 		return
 }
 
-if !LaunchSelectedScript(scriptDir, scriptFile)
+if !LaunchSelectedScript(scriptDir, scriptFile, selectedScript)
 	return
 Goto, exit
 return
@@ -1926,7 +2136,7 @@ ValidateSelectedScript(ScriptDirectory, ScriptFile, ByRef FullDiskPath, ByRef Di
 }
 
 ; Launches a validated script using its own directory as the working directory.
-LaunchSelectedScript(ScriptDirectory, ScriptFile)
+LaunchSelectedScript(ScriptDirectory, ScriptFile, ScriptDisplayName := "")
 {
 	if (ScriptDirectory = "" || ScriptFile = "")
 		return false
@@ -1936,6 +2146,8 @@ LaunchSelectedScript(ScriptDirectory, ScriptFile)
 		Reload
 		return false
 	}
+
+	LLARS_SelectorRememberRecent(ScriptDisplayName)
 
 	Gui, TopGUI:Destroy
 	Gui, BottomGUI:Destroy
@@ -1951,10 +2163,7 @@ LaunchSelectedScript(ScriptDirectory, ScriptFile)
 }
 
 Clear:
-GuiReset()
-GuiControl, Choose, ScriptListBox, 1
-GuiControl, Choose, ScriptListBox, 0
-GuiControl, Focus, ScriptListBox
+Gosub, SelectorClearFilters
 return
 
 Exit:

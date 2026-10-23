@@ -67,6 +67,7 @@ LLARS is designed for both:
   - [Setup Guide](#setup-guide)
   - [Script Creator Documentation](#script-creator-documentation)
   - [Config.ini Instructions](#configini-instructions)
+  - [Configuration Backup & Restore](#configuration-backup--restore)
 - [Requirements](#requirements)
 - [Support](#support)
 
@@ -84,7 +85,7 @@ The scripts in this repository are specifically designed for **RuneScape 3 (RS3)
 
 Make sure to use these scripts only with the appropriate version of the game and understand the risks and responsibilities associated with game automation.
 
-Before using LLARS, please read the **[LLARS Usage & Safety Tip](LLARS%20Usage%20%26%20Safety%20Tip.md)**.
+Before using LLARS, please read the **[LLARS Usage & Safety Tip](Documentation/LLARS%20Usage%20%26%20Safety%20Tip.md)**.
 
 The project disclaimer is included at the bottom of that file.
 
@@ -144,6 +145,10 @@ Different scripts can require different configurations—or no script-local conf
 
 For normal setup, use the **LLARS GUI whenever possible** rather than manually editing configuration files.
 
+### Configuration Backup & Restore
+
+LLARS includes the existing backup and restore tools under the **[Backup](Backup/Config%20Backup%20%26%20Restore.md)** folder. They protect the shared `LLARS Config.ini` and script-local `Config.ini` files, and the same backup tool is used automatically before an LLARS update download begins.
+
 ---
 
 ## Requirements
@@ -175,7 +180,7 @@ If you haven't installed AutoHotkey yet, download the required **v1.1.37.02** re
 
 LLARS recommends **AutoHotInterception (AHI)** for mouse and keyboard input. The AHI runtime and Interception installer are bundled with LLARS, and a clean installation is offered automatically when AHI is not present. Installation requires an Administrator prompt and one Windows restart.
 
-**Standard AutoHotkey** remains available as a fallback under **Information > Input Settings**. The same screen can enable or repair AHI, show the current backend/driver state, or uninstall AHI/Interception when troubleshooting or performing a clean reinstall.
+**Standard AutoHotkey** remains available as a fallback under **Information > Input Settings**. Input Settings shows the configured backend, active input route, AHI driver/device routes, last mouse/keyboard transport, startup timing, and fallback state. It also provides a non-invasive **Test AHI** health check plus the existing enable/repair and uninstall controls.
 
 ---
 

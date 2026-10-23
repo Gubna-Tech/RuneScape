@@ -76,6 +76,9 @@ if LLARS_PixelMatches("Pixel Coordinate", "Target Color")
 	; ========================================================
 
 	; Standard creator API examples:
+	; LLARS_LogEvent("Reached state", "Optional detail")
+	; LLARS_SetDetection("Target", "Searching")
+	; LLARS_Warn("Script Warning", "What happened", "What LLARS did", "What the user should do", "Optional detail", false)
 	LLARS_Sleep("Sleep Timer")
 
 	; A timer may finish while the sleep is running.

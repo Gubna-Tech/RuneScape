@@ -28,7 +28,8 @@ echo LLARS verified the Interception keyboard/mouse filter registrations are gon
 echo.
 echo Windows must restart once to finish unloading/deleting any pending driver remnants.
 echo After that restart, uninstall is complete.
-echo This LLARS copy will use standard AutoHotkey input afterward.
+echo After the restart, reopen LLARS. If AHI is not installed, LLARS can offer
+echo the bundled AHI setup again from its normal input setup flow.
 echo.
 choice /C YN /N /M "Restart Windows now? [Y/N]: "
 if errorlevel 2 (
@@ -46,8 +47,8 @@ echo AutoHotInterception / Interception uninstall could not be verified.
 echo Do NOT manually delete keyboard.sys or mouse.sys.
 echo.
 echo Copy/paste these files to Gubna:
-echo   Vendor\AutoHotInterception\Logs\AutoHotInterception-Setup.log
-echo   Vendor\AutoHotInterception\Logs\AutoHotInterception-Setup-Error.txt
+echo   Logs\AutoHotInterception-Setup.log
+echo   Logs\AutoHotInterception-Setup-Error.txt
 echo.
 pause
 exit /b %RC%

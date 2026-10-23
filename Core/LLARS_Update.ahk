@@ -36,6 +36,126 @@ LLARS_WindowTitle()
     return "LLARS - v" . LLARS_GetVersion()
 }
 
+
+LLARS_ConfigSchemaCurrent()
+{
+    return 1
+}
+
+; Reads the framework-wide configuration schema. Existing LLARS configurations
+; that predate the schema key are treated as schema 1 without rewriting them.
+LLARS_GetConfigSchema(root := "", ByRef schemaExplicit := false, ByRef errorDetail := "")
+{
+    global LLARS_ROOT
+
+    schemaExplicit := false
+    errorDetail := ""
+    if (root = "")
+        root := LLARS_ROOT
+    if (root = "")
+        root := A_ScriptDir
+
+    configPath := root . "\LLARS Config.ini"
+    if !FileExist(configPath)
+    {
+        errorDetail := "LLARS Config.ini is missing."
+        return 0
+    }
+
+    IniRead, schemaValue, %configPath%, LLARS, config_schema, __LLARS_SCHEMA_MISSING__
+    if (schemaValue = "__LLARS_SCHEMA_MISSING__")
+        return 1
+
+    schemaExplicit := true
+    schemaValue := Trim(schemaValue)
+    if !RegExMatch(schemaValue, "^\d+$") || (schemaValue + 0) < 1
+    {
+        errorDetail := "The [LLARS] config_schema value is invalid."
+        return 0
+    }
+
+    return schemaValue + 0
+}
+
+; Refuse configuration written by a newer schema. Configurations without an
+; explicit schema are treated as schema 1 for compatibility.
+LLARS_CheckConfigCompatibility(root := "")
+{
+    currentSchema := LLARS_ConfigSchemaCurrent()
+    explicitSchema := false
+    schemaError := ""
+    configSchema := LLARS_GetConfigSchema(root, explicitSchema, schemaError)
+    if (configSchema < 1)
+    {
+        MsgBox, 262192, LLARS Configuration, LLARS could not validate the shared configuration.`n`n%schemaError%`n`nRestore a known-good LLARS Config.ini before continuing.
+        return false
+    }
+
+    if (configSchema > currentSchema)
+    {
+        MsgBox, 262192, LLARS Configuration, This LLARS Config.ini was created by a newer configuration schema.`n`nConfig schema: %configSchema%`nSupported schema: %currentSchema%`n`nUse the matching/newer LLARS version or restore an older configuration backup.
+        return false
+    }
+
+    return true
+}
+
+; Runs the existing public configuration tools. Automatic mode is hidden and
+; non-interactive so update-time backup can complete before Save As appears.
+LLARS_RunConfigTool(root, action, automatic := true, ByRef errorDetail := "")
+{
+    errorDetail := ""
+    root := RTrim(root, "\/")
+    if (root = "")
+    {
+        errorDetail := "LLARS project root is unavailable."
+        return false
+    }
+
+    if (action = "backup")
+        toolName := "Config Backup.bat"
+    else if (action = "restore")
+        toolName := "Config Restore.bat"
+    else
+    {
+        errorDetail := "Unknown configuration tool action."
+        return false
+    }
+
+    toolPath := root . "\Backup\" . toolName
+    if !FileExist(toolPath)
+    {
+        errorDetail := toolName . " is missing."
+        return false
+    }
+
+    quote := Chr(34)
+    command := quote . A_ComSpec . quote . " /d /c " . quote . quote . toolPath . quote
+    if (automatic)
+        command .= " --auto"
+    command .= quote
+    runOptions := automatic ? "Hide UseErrorLevel" : "UseErrorLevel"
+    RunWait, %command%, %root%, %runOptions%
+    exitCode := ErrorLevel
+    if (exitCode = "ERROR" || exitCode != 0)
+    {
+        errorDetail := toolName . " returned exit code " . exitCode . "."
+        return false
+    }
+
+    return true
+}
+
+LLARS_RunConfigBackup(root, automatic := true, ByRef errorDetail := "")
+{
+    return LLARS_RunConfigTool(root, "backup", automatic, errorDetail)
+}
+
+LLARS_RunConfigRestore(root, automatic := true, ByRef errorDetail := "")
+{
+    return LLARS_RunConfigTool(root, "restore", automatic, errorDetail)
+}
+
 ; Captures the LLARS-owned window that was active when an update check began.
 ; Only that window is hidden during an accepted download flow.
 LLARS_GetUpdateOwnerHwnd()
@@ -182,7 +302,7 @@ LLARS_CheckForUpdates(showCurrentMessage := false)
         return false
     }
 
-    MsgBox, 262212, LLARS Update Available, A newer LLARS release is available.`n`nCurrent version: v%currentVersion%`nNewest release: %latestTag%`n`nRecommended: Always use the most up-to-date version of LLARS and back up your config files for an easy update transition.`n`nDownload the newest release now?
+    MsgBox, 262212, LLARS Update Available, A newer LLARS release is available.`n`nCurrent version: v%currentVersion%`nNewest release: %latestTag%`n`nLLARS will automatically back up your current configuration before downloading.`n`nDownload the newest release now?
     IfMsgBox, Yes
         return LLARS_DownloadRelease(latestTag, updateOwnerHwnd)
     return false
@@ -219,6 +339,19 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
         tag := "v" . tag
 
     defaultName := A_Desktop . "\LLARS-" . tag . ".zip"
+
+    ; Protect both the shared LLARS config and script-local configs before the
+    ; update download begins. A failed backup leaves the running copy untouched.
+    global LLARS_ROOT
+    backupRoot := LLARS_ROOT
+    if (backupRoot = "")
+        backupRoot := A_ScriptDir
+    backupError := ""
+    if !LLARS_RunConfigBackup(backupRoot, true, backupError)
+    {
+        MsgBox, 262192, LLARS Update, LLARS could not back up your configuration, so the update was not started.`n`n%backupError%`n`nYour current LLARS files are unchanged. You can run Backup\Config Backup.bat manually and try again.
+        return false
+    }
 
     ; Keep the current LLARS window out of the way while Windows asks where
     ; to save the update. Cancel/failure restores it; success exits LLARS.

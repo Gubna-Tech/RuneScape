@@ -4,7 +4,7 @@
 
 ; Calculates the pre-run RunCount estimate. New scripts are modeled from the
 ; standardized timing API (LLARS_Sleep / LLARS_RandomSleep) plus ctx.IsFirst;
-; legacy IniRead/Sleep patterns remain supported only during migration.
+; direct IniRead/Sleep patterns remain supported for compatible existing scripts.
 CalculateScriptRuntime()
 {
 	global EstConfiguredLoopMin
@@ -333,7 +333,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		OptionBlocks.Push(OptionBlock)
 	}
 
-	; Locate first-loop branches. Legacy scripts may use firstrun while the new
+	; Locate first-loop branches. Existing scripts may use firstrun while the
 	; callback lifecycle uses ctx.IsFirst. Both are reduced to the same internal
 	; FirstEnabled/FollowingEnabled branch model for the 1000-run estimate.
 	BranchBlocks := []

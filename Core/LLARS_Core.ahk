@@ -486,18 +486,24 @@ LLARS_ConfigSectionEnabled(ConfigPath, section)
 LLARS_UpdateConfigStatus()
 {
 	global LLARS_SCRIPT_DIR, LLARS_DISABLE_SCRIPT_CONFIG
+	global LLARS_CONFIG_READY, LLARS_CONFIG_MISSING_COUNT, LLARS_CONFIG_REQUIRED_COUNT
+
+	LLARS_CONFIG_READY := false
+	LLARS_CONFIG_MISSING_COUNT := 0
+	LLARS_CONFIG_REQUIRED_COUNT := 0
 
 	if (LLARS_DISABLE_SCRIPT_CONFIG)
 	{
 		LLARS_SetConfigStatusText("ConfigStatusHotkeys", "ConfigStatusHotkeysLabel", 0, 0)
 		LLARS_SetConfigStatusText("ConfigStatusCoordinates", "ConfigStatusCoordinatesLabel", 0, 0)
 		LLARS_SetConfigStatusText("ConfigStatusColors", "ConfigStatusColorsLabel", 0, 0)
-		return
+		LLARS_CONFIG_READY := true
+		return true
 	}
 
 	ConfigPath := LLARS_SCRIPT_DIR "\Config.ini"
 	if !FileExist(ConfigPath)
-		return
+		return false
 
 	hotkeyRequired := 0
 	hotkeyMissing := 0
@@ -579,9 +585,14 @@ LLARS_UpdateConfigStatus()
 		}
 	}
 
+	LLARS_CONFIG_REQUIRED_COUNT := hotkeyRequired + coordinateRequired + colorRequired
+	LLARS_CONFIG_MISSING_COUNT := hotkeyMissing + coordinateMissing + colorMissing
+	LLARS_CONFIG_READY := (LLARS_CONFIG_MISSING_COUNT = 0)
+
 	LLARS_SetConfigStatusText("ConfigStatusHotkeys", "ConfigStatusHotkeysLabel", hotkeyRequired, hotkeyMissing)
 	LLARS_SetConfigStatusText("ConfigStatusCoordinates", "ConfigStatusCoordinatesLabel", coordinateRequired, coordinateMissing)
 	LLARS_SetConfigStatusText("ConfigStatusColors", "ConfigStatusColorsLabel", colorRequired, colorMissing)
+	return LLARS_CONFIG_READY
 }
 
  ; Formats one main-GUI configuration status category.
@@ -677,12 +688,15 @@ LLARS_Initialize()
 	global LLARS_ROOT, LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
 	global LLARS_RUNNING, LLARS_PAUSED, LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5, LLARS_CONTROLS_LOCKED, LLARS_CHECKPOS_DISABLED
 	global LLARS_DeveloperActions, LLARS_DeveloperActionSerial, LLARS_DeveloperAuditActions, LLARS_DeveloperLastHotkey, LLARS_RunStartTick, LLARS_RUN_TYPE
-	global LLARS_DeveloperPixelWatchActive, LLARS_DeveloperDetectedPixelColor, LLARS_DeveloperPixelSource
 	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
 	global LLARS_DeveloperKeyboardHook, LLARS_DeveloperKeyboardCallback, LLARS_DeveloperMessageHwnd
 	global LLARS_DeveloperHotkeyMap, LLARS_DeveloperKeyStates, LLARS_DeveloperControlKeyStates
 	global LLARS_RunRuneScapeHwnd
 	global LLARS_DeveloperLightweight, LLARS_DeveloperLastInputEngine, LLARS_DeveloperLastLightweightDebug
+	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
+global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLARS_DetectionThreshold, LLARS_DetectionDetail, LLARS_DetectionTick, LLARS_DetectionSignature
+	global LLARS_AHI_GateStartTick, LLARS_AHI_GateReady, LLARS_AHI_GateElapsed
+	global LLARS_AHI_InitStartTick, LLARS_AHI_InitElapsed, LLARS_AHI_FullyReady
 	global EstimationRunCount
 	global coordcount, frcount, LastClickTime, clickspot, scriptname, LLARS_GUIScriptName
 
@@ -700,6 +714,8 @@ LLARS_Initialize()
 	SetWorkingDir, %LLARS_SCRIPT_DIR%
 	CloseOtherLLARS()
 	if (!LLARS_CheckStartupFiles())
+		return false
+	if (!LLARS_CheckConfigCompatibility(LLARS_ROOT))
 		return false
 
 	; Complete the bounded GitHub release check before input-backend checks or the script GUI.
@@ -726,9 +742,6 @@ LLARS_Initialize()
 	LLARS_DeveloperActionSerial := 0
 	LLARS_DeveloperAuditActions := []
 	LLARS_DeveloperLastHotkey := "None"
-	LLARS_DeveloperPixelWatchActive := false
-	LLARS_DeveloperDetectedPixelColor := ""
-	LLARS_DeveloperPixelSource := ""
 	LLARS_DeveloperLastSleepValue := ""
 	LLARS_DeveloperLastSleepName := ""
 	LLARS_DeveloperKeyboardHook := 0
@@ -740,6 +753,17 @@ LLARS_Initialize()
 	LLARS_DeveloperLightweight := false
 	LLARS_DeveloperLastInputEngine := ""
 	LLARS_DeveloperLastLightweightDebug := ""
+	LLARS_DiagnosticWarnings := 0
+	LLARS_DiagnosticErrors := 0
+	LLARS_DiagnosticRecoveries := 0
+	LLARS_LastDiagnostic := "None"
+	LLARS_DetectionName := "None"
+	LLARS_DetectionState := "Idle"
+	LLARS_DetectionConfidence := ""
+	LLARS_DetectionThreshold := ""
+	LLARS_DetectionDetail := ""
+	LLARS_DetectionTick := 0
+	LLARS_DetectionSignature := ""
 	LLARS_RunStartTick := 0
 	LLARS_RUN_TYPE := "Not Started"
 
@@ -1062,6 +1086,165 @@ LLARS_DeveloperAction(action, lightweight := true)
 	; Event producers only update the authoritative action buffer. Developer
 	; Mode renders stable snapshots from that buffer; producers never write to
 	; the visible console directly.
+}
+
+; Records framework warning/error/recovery state in the existing Developer Action stream.
+; This is intentionally lightweight: no additional log file or persistent telemetry store is created.
+LLARS_DiagnosticRecord(kind, summary, detail := "")
+{
+	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
+
+	kind := Trim(kind)
+	summary := Trim(summary)
+	detail := Trim(detail)
+	if (kind = "")
+		kind := "Info"
+	if (summary = "")
+		summary := "Framework diagnostic"
+
+	kindLower := kind
+	StringLower, kindLower, kindLower
+	if (kindLower = "warning" || kindLower = "blocked")
+		LLARS_DiagnosticWarnings++
+	else if (kindLower = "error")
+		LLARS_DiagnosticErrors++
+	else if (kindLower = "recovery" || kindLower = "recovered")
+		LLARS_DiagnosticRecoveries++
+
+	LLARS_LastDiagnostic := kind . ": " . summary
+	action := "Diagnostic || " . kind . " || " . summary
+	if (detail != "")
+		action .= " || " . detail
+	LLARS_DeveloperAction(action)
+	return true
+}
+
+; Returns the compact diagnostic state consumed by Developer/support reporting.
+LLARS_DiagnosticSnapshot()
+{
+	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
+	return {Warnings:(LLARS_DiagnosticWarnings + 0)
+		, Errors:(LLARS_DiagnosticErrors + 0)
+		, Recoveries:(LLARS_DiagnosticRecoveries + 0)
+		, Last:(LLARS_LastDiagnostic = "" ? "None" : LLARS_LastDiagnostic)}
+}
+
+; Tracks the latest shared detection state for Developer Mode and support reporting.
+; This is process-local diagnostic state only; scripts keep their own gameplay state machines.
+LLARS_DetectionRecord(name, state, confidence := "", threshold := "", detail := "", logChange := true)
+{
+	global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLARS_DetectionThreshold
+	global LLARS_DetectionDetail, LLARS_DetectionTick, LLARS_DetectionSignature
+
+	name := Trim(name)
+	state := Trim(state)
+	detail := Trim(detail)
+	if (name = "")
+		name := "Detection"
+	if (state = "")
+		state := "Unknown"
+
+	LLARS_DetectionName := name
+	LLARS_DetectionState := state
+	LLARS_DetectionConfidence := confidence
+	LLARS_DetectionThreshold := threshold
+	LLARS_DetectionDetail := detail
+	LLARS_DetectionTick := A_TickCount
+
+	signature := name . "|" . state . "|" . confidence . "|" . threshold . "|" . detail
+	if (logChange && signature != LLARS_DetectionSignature)
+	{
+		action := "Detection || " . name . " || " . state
+		if (confidence != "")
+			action .= " || Confidence=" . confidence
+		if (threshold != "")
+			action .= " || Threshold=" . threshold
+		if (detail != "")
+			action .= " || " . detail
+		LLARS_DeveloperAction(action)
+	}
+	LLARS_DetectionSignature := signature
+	return true
+}
+
+LLARS_DetectionSnapshot()
+{
+	global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLARS_DetectionThreshold
+	global LLARS_DetectionDetail, LLARS_DetectionTick
+	return {Name:(LLARS_DetectionName = "" ? "None" : LLARS_DetectionName)
+		, State:(LLARS_DetectionState = "" ? "Idle" : LLARS_DetectionState)
+		, Confidence:LLARS_DetectionConfidence
+		, Threshold:LLARS_DetectionThreshold
+		, Detail:LLARS_DetectionDetail
+		, Tick:(LLARS_DetectionTick + 0)}
+}
+
+LLARS_DetectionDisplay(short := false)
+{
+	state := LLARS_DetectionSnapshot()
+	if !IsObject(state)
+		return "None"
+	text := short ? state.State : (state.Name . " " . state.State)
+	if (state.Confidence != "")
+	{
+		text .= " " . state.Confidence
+		if (state.Threshold != "")
+			text .= "/" . state.Threshold
+	}
+	if (!short && state.Detail != "")
+		text .= " | " . state.Detail
+	return text
+}
+
+; Standard user-facing issue format: what happened, what LLARS did, and what to do next.
+LLARS_ReportIssue(severity, title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+{
+	severity := Trim(severity)
+	title := Trim(title)
+	whatHappened := Trim(whatHappened)
+	whatLLARSDid := Trim(whatLLARSDid)
+	whatUserShouldDo := Trim(whatUserShouldDo)
+	if (title = "")
+		title := "LLARS"
+	if (whatHappened = "")
+		whatHappened := "An unexpected framework condition occurred."
+
+	LLARS_DiagnosticRecord(severity, whatHappened, detail)
+	if (!showMessage)
+		return false
+
+	message := "What happened:`n" . whatHappened
+	if (whatLLARSDid != "")
+		message .= "`n`nWhat LLARS did:`n" . whatLLARSDid
+	if (whatUserShouldDo != "")
+		message .= "`n`nWhat you should do:`n" . whatUserShouldDo
+
+	severityLower := severity
+	StringLower, severityLower, severityLower
+	if (severityLower = "error")
+		options := 0x40010
+	else if (severityLower = "warning" || severityLower = "blocked")
+		options := 0x40030
+	else
+		options := 0x40040
+	MsgBox, %options%, %title%, %message%
+	return false
+}
+
+LLARS_ReportWarning(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+{
+	return LLARS_ReportIssue("Warning", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
+}
+
+LLARS_ReportError(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+{
+	return LLARS_ReportIssue("Error", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
+}
+
+; Recovery events stay non-modal and flow into the same existing Developer/support stream.
+LLARS_ReportRecovery(summary, detail := "")
+{
+	return LLARS_DiagnosticRecord("Recovery", summary, detail)
 }
 
 LLARS_DeveloperActionSnapshot()
@@ -1429,7 +1612,7 @@ LLARS_StartRun()
 		GuiControl,, EstRunRemaining, Estimate Error
 		Gui, Show
 		Sleep, 250
-		MsgBox, 48, LLARS Estimate Error, Unable to calculate the estimated loop/run time.`n`nThe automation loop will not start.
+		MsgBox, 48, LLARS Estimate Error, Unable to calculate the estimated loop/run time.`n`nRunCount scripts need at least one enabled LLARS_Sleep("Sleep Section") or LLARS_RandomSleep() call inside the editable script section so LLARS can estimate the loop safely.`n`nThe automation loop will not start.
 		LLARS_RUNNING := false
 		EnableButton()
 		return false
@@ -2136,7 +2319,10 @@ LLARS_ShowConfigError(file, message, logDetails)
 		Run, %A_ScriptDir%\%file%
 	GuiControl,, ScriptRed, CONFIG
 	GuiControl,, State2, ERROR
-	MsgBox, 4112, Config Error, %message%
+	LLARS_ReportError("Config Error", message
+		, "Opened the affected configuration file and stopped normal startup."
+		, "Enter a valid value, save the file, then allow LLARS to reload."
+		, logDetails)
 	Reload
 }
 
@@ -2384,6 +2570,9 @@ CheckConfigFile(file)
 				continue
 			if (value = "")
 			{
+				; Script Selector Favorites/Recent are optional preference lists and may be empty.
+				if (ConfigPath = LLARS_CONFIG_FILE && section = "Script Selector" && (key = "favorites" || key = "recent"))
+					continue
 				ConfigErrorMessage(file, section, key)
 				return true
 			}
@@ -2930,59 +3119,6 @@ LLARS_DeveloperColorConfigAction(Details)
 		LLARS_DeveloperAction("Color Config || " . colorSection . " || " . colorValue, false)
 	else
 		LLARS_DeveloperAction("Color Config || " . colorSection, false)
-}
-
-LLARS_DeveloperPixelDetectedAction()
-{
-	global color, currentColor
-	global LLARS_DeveloperPixelWatchActive, LLARS_DeveloperDetectedPixelColor, LLARS_DeveloperPixelSource
-
-	LLARS_DeveloperPixelWatchActive := true
-	LLARS_DeveloperDetectedPixelColor := ""
-	LLARS_DeveloperPixelSource := ""
-
-	if (currentColor != "")
-	{
-		LLARS_DeveloperDetectedPixelColor := currentColor
-		LLARS_DeveloperPixelSource := "currentColor"
-	}
-	else if (color != "")
-	{
-		LLARS_DeveloperDetectedPixelColor := color
-		LLARS_DeveloperPixelSource := "color"
-	}
-
-	LLARS_DeveloperAction("Pixel Detected")
-}
-
-LLARS_DeveloperCheckPixelReset()
-{
-	global color, currentColor
-	global LLARS_DeveloperPixelWatchActive, LLARS_DeveloperDetectedPixelColor, LLARS_DeveloperPixelSource
-
-	if (!LLARS_DeveloperPixelWatchActive)
-		return
-
-	if (LLARS_DeveloperDetectedPixelColor = "")
-		return
-
-	if (LLARS_DeveloperPixelSource = "currentColor")
-		developerCurrentPixel := currentColor
-	else if (LLARS_DeveloperPixelSource = "color")
-		developerCurrentPixel := color
-	else
-		return
-
-	if (developerCurrentPixel = "")
-		return
-
-	if (developerCurrentPixel = LLARS_DeveloperDetectedPixelColor)
-		return
-
-	LLARS_DeveloperPixelWatchActive := false
-	LLARS_DeveloperDetectedPixelColor := ""
-	LLARS_DeveloperPixelSource := ""
-	LLARS_DeveloperAction("Pixel Search Reset")
 }
 
 LLARS_DeveloperStatusOnly(Event, Details := "")
@@ -3846,7 +3982,7 @@ LLARS_RedClickArmPresent(centerX, centerY, signX, signY, clientWidth, clientHeig
 
 	; Calibrated against the recorded solid-core red. A small variation allows
 	; minor render/anti-alias differences while remaining far tighter than the
-	; earlier generic "red" search.
+	; generic "red" search.
 	PixelSearch, redX, redY, %x1%, %y1%, %x2%, %y2%, 0x9C0906, 18, Fast RGB
 	return !ErrorLevel
 }
@@ -3937,6 +4073,7 @@ LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, baselineMask 
 			if (consecutive >= 2)
 			{
 				LLARS_DeveloperAction("RedClick || Calibrated red X confirmed || Mask=" . mask . " || Arms=" . arms . " || " . (A_TickCount - startTick) . " ms")
+				LLARS_DetectionRecord("RedClick", "Confirmed", arms, 3, "Mask=" . mask, false)
 				return true
 			}
 		}
@@ -3949,6 +4086,7 @@ LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, baselineMask 
 	}
 
 	LLARS_DeveloperAction("RedClick || Calibrated red X not detected || BestMask=" . bestMask . " || BestArms=" . bestArms . " || BaselineMask=" . baselineMask . " || Timeout=" . timeoutMs . " ms")
+	LLARS_DetectionRecord("RedClick", "Not confirmed", bestArms, 3, "BestMask=" . bestMask, false)
 	return false
 }
 
@@ -3998,6 +4136,7 @@ LLARS_WaitForRightClickConfirmation(centerX, centerY, runeScapeHwnd, timeoutMs :
 		if (state = 1)
 		{
 			LLARS_DeveloperAction("RedClick || Right-click context menu confirmed || " . (A_TickCount - startTick) . " ms")
+			LLARS_DetectionRecord("RightClick", "Confirmed", "", "", "Context menu", false)
 			return true
 		}
 		if (state < 0)
@@ -4010,6 +4149,7 @@ LLARS_WaitForRightClickConfirmation(centerX, centerY, runeScapeHwnd, timeoutMs :
 	}
 
 	LLARS_DeveloperAction("RedClick || Right-click context menu not detected || CaptureFailures=" . captureFailures . " || Timeout=" . timeoutMs . " ms")
+	LLARS_DetectionRecord("RightClick", "Not confirmed", "", "", "CaptureFailures=" . captureFailures, false)
 	return false
 }
 
@@ -4084,7 +4224,11 @@ LLARS_AbortRunForMisclick(x, y, clickTarget := "")
 	}
 
 	SoundBeep, 880, 180
-	MsgBox, 16, LLARS Misclick Detected, % "LLARS stopped this run because the expected RuneScape interaction confirmation was not detected.`n`nTarget: " . clickTarget . "`nCoordinate: (" . x . ", " . y . ")`n`nThe run has been halted. Check RuneScape and start the run again when ready."
+	misclickWhat := "The expected RuneScape interaction confirmation was not detected.`nTarget: " . clickTarget . "`nCoordinate: (" . x . ", " . y . ")"
+	LLARS_ReportError("LLARS Misclick Detected", misclickWhat
+		, "Stopped this run, stopped run timers, and released LLARS-held input."
+		, "Check RuneScape and start the run again when ready."
+		, "Target=" . clickTarget . " || Coordinate=(" . x . ", " . y . ")")
 	return false
 }
 

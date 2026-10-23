@@ -37,7 +37,14 @@ Run(ctx)
 	; |     SCRIPT CODE GOES HERE                                |
 	; ============================================================
 	
+	; RunCount requirement: include at least one enabled LLARS_Sleep() or
+	; LLARS_RandomSleep() call in this editable section so LLARS can calculate
+	; a safe loop/run estimate before starting. Example: LLARS_Sleep("Sleep Short")
+	;
 	; Standard creator API examples:
+	; LLARS_LogEvent("Reached state", "Optional detail")
+	; LLARS_SetDetection("Target", "Searching")
+	; LLARS_Warn("Script Warning", "What happened", "What LLARS did", "What the user should do", "Optional detail", false)
 	; LLARS_SetStatus("Banking", "Bank")
 	; LLARS_Click("Example Coordinate")
 	; LLARS_PressHotkey("Example Hotkey")

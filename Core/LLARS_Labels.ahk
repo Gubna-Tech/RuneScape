@@ -1627,7 +1627,9 @@ resourceDividerY := createdY + 27
 resourceTitleY := resourceDividerY + 8
 llarsConfigY := resourceTitleY + 23
 scriptConfigY := llarsConfigY + 29
-developerModeY := scriptConfigY + 29
+backupConfigY := scriptConfigY + 29
+restoreConfigY := backupConfigY
+developerModeY := backupConfigY + 29
 inputSettingsY := developerModeY + 29
 discordY := inputSettingsY + 29
 closeDividerY := discordY + 32
@@ -1676,6 +1678,8 @@ Gui 20: Font, s10 Bold cBlack
 Gui 20: Add, Text, x10 y%resourceTitleY% w270 h20 Center, Resources
 Gui 20: Add, Button, x60 y%llarsConfigY% w170 h25 gInfoLLARS, LLARS Config
 Gui 20: Add, Button, x60 y%scriptConfigY% w170 h25 gInfoConfig, Script Config
+Gui 20: Add, Button, x20 y%backupConfigY% w120 h25 gInfoBackupConfig, Backup Config
+Gui 20: Add, Button, x150 y%restoreConfigY% w120 h25 gInfoRestoreConfig, Restore Config
 Gui 20: Add, Button, x60 y%developerModeY% w170 h25 gDeveloperMode, Developer Mode
 Gui 20: Add, Button, x60 y%inputSettingsY% w170 h25 gInputSettings, Input Settings
 Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
@@ -1737,6 +1741,31 @@ EnableHotkey()
 Run %LLARS_CONFIG_FILE%
 return
 
+; Uses the existing Backup\Config Backup.bat in automatic mode and keeps all backup
+; behavior centralized in the same public tool used by update-time protection.
+InfoBackupConfig:
+backupError := ""
+if LLARS_RunConfigBackup(LLARS_ROOT, true, backupError)
+	MsgBox, 0x40040, LLARS Configuration, Configuration backup complete.`n`nThe shared LLARS Config.ini and script-local Config.ini files are saved under Backup\Config Backup.
+else
+	MsgBox, 0x40010, LLARS Configuration, Configuration backup failed.`n`n%backupError%
+return
+
+; Restore is intentionally explicit because it overwrites current configuration.
+InfoRestoreConfig:
+MsgBox, 0x40034, LLARS Configuration, Restore the saved LLARS configuration now?`n`nThis overwrites the current shared LLARS Config.ini and any script-local Config.ini files present in the backup.
+IfMsgBox, No
+	return
+restoreError := ""
+if !LLARS_RunConfigRestore(LLARS_ROOT, true, restoreError)
+{
+	MsgBox, 0x40010, LLARS Configuration, Configuration restore failed.`n`n%restoreError%
+	return
+}
+MsgBox, 0x40040, LLARS Configuration, Configuration restored successfully.`n`nLLARS will reload now so the restored settings take effect.
+Reload
+return
+
 ; Opens LLARS input-backend controls. AutoHotInterception is the recommended
 ; backend; Standard AutoHotkey remains available as a fallback.
 InputSettings:
@@ -1745,61 +1774,70 @@ Gui 20: Hide
 Gui 21: Destroy
 Gui 21: +AlwaysOnTop +OwnDialogs +LastFound +ToolWindow -caption
 Gui 21: Font, s12 Bold cBlack
-Gui 21: Add, Text, x5 y5 w400 h25 Center, LLARS
+Gui 21: Add, Text, x5 y5 w490 h25 Center, LLARS
 Gui 21: Font, s11 Bold cBlack
-Gui 21: Add, Text, x5 y30 w400 h20 Center, Input Settings
-Gui 21: Add, Text, x12 y55 w386 h2 0x10
+Gui 21: Add, Text, x5 y30 w490 h20 Center, Input Settings
+Gui 21: Add, Text, x12 y55 w476 h2 0x10
 Gui 21: Font, s10 Norm cBlack
-Gui 21: Add, Text, x20 y67 w370 h50 Center, AutoHotInterception (AHI) is the recommended LLARS input backend.`nStandard AutoHotkey remains available as a fallback.
+Gui 21: Add, Text, x20 y67 w460 h42 Center, AutoHotInterception (AHI) is the recommended LLARS input backend.`nStandard AutoHotkey remains available as a fallback.
 Gui 21: Font, s10 Bold cBlack
-Gui 21: Add, Text, x15 y126 w380 h20 Center vInputBackendStatus
-Gui 21: Add, Text, x15 y150 w380 h20 Center vInputActiveStatus
-Gui 21: Add, Text, x15 y174 w380 h20 Center vInputDriverStatus
-Gui 21: Add, Button, x65 y208 w280 h30 gInputEnableAHI, Enable / Repair AHI
-Gui 21: Add, Button, x65 y244 w280 h30 gInputUseStandard, Use Standard AutoHotkey
-Gui 21: Add, Button, x65 y280 w280 h30 gInputUninstallAHI vInputUninstallButton, Uninstall AHI / Interception
-Gui 21: Add, Text, x12 y321 w386 h2 0x10
-Gui 21: Add, Button, x90 y333 w230 h31 gCloseInputSettings, Close Input Settings
+Gui 21: Add, Text, x20 y115 w460 h20 Center, Current Input Status
+Gui 21: Add, Text, x15 y140 w470 h20 Center vInputBackendStatus
+Gui 21: Add, Text, x15 y164 w470 h20 Center vInputActiveStatus
+Gui 21: Add, Text, x15 y188 w470 h20 Center vInputDriverStatus
+Gui 21: Add, Text, x12 y214 w476 h2 0x10
+Gui 21: Font, s10 Norm cBlack
+Gui 21: Add, Text, x20 y225 w460 h20 vInputMouseRoute
+Gui 21: Add, Text, x20 y249 w460 h20 vInputKeyboardRoute
+Gui 21: Add, Text, x20 y273 w460 h20 vInputLastMouse
+Gui 21: Add, Text, x20 y297 w460 h20 vInputLastKeyboard
+Gui 21: Add, Text, x20 y321 w460 h20 vInputStartupTiming
+Gui 21: Add, Text, x20 y345 w460 h20 vInputFallbackStatus
+Gui 21: Add, Text, x12 y373 w476 h2 0x10
+Gui 21: Font, s10 Bold cBlack
+Gui 21: Add, Button, x20 y385 w220 h31 gInputTestAHI, Test AHI
+Gui 21: Add, Button, x260 y385 w220 h31 gInputEnableAHI, Enable / Repair AHI
+Gui 21: Add, Button, x20 y421 w220 h31 gInputUseStandard, Use Standard AutoHotkey
+Gui 21: Add, Button, x260 y421 w220 h31 gInputUninstallAHI vInputUninstallButton, Uninstall AHI / Interception
+Gui 21: Add, Text, x12 y462 w476 h2 0x10
+Gui 21: Add, Button, x135 y475 w230 h31 gCloseInputSettings, Close Input Settings
 Gosub, RefreshInputSettings
-Gui 21: Show, Center w410 h374, Input Settings
+Gui 21: Show, Center w500 h516, Input Settings
 return
 
 RefreshInputSettings:
-inputMode := IsFunc("LLARS_AHI_Mode") ? LLARS_AHI_Mode(LLARS_ROOT) : "ahi"
-if (inputMode = "ahi")
-	inputBackendText := "Backend: AutoHotInterception (Recommended)"
+if IsFunc("LLARS_AHI_StatusSnapshot")
+	inputSnapshot := LLARS_AHI_StatusSnapshot(LLARS_ROOT)
 else
-	inputBackendText := "Backend: Standard AutoHotkey (Fallback)"
+	inputSnapshot := {Configured:"Unknown", Active:"Unknown", Driver:"Unknown", MouseRoute:"Unknown", KeyboardRoute:"Unknown", MouseLast:"<none>", KeyboardLast:"<none>", Startup:"n/a", Fallback:"Unknown"}
 
-inputMouseAHIReady := IsFunc("LLARS_AHI_IsReady") ? LLARS_AHI_IsReady("mouse") : false
-inputKeyboardAHIReady := IsFunc("LLARS_AHI_IsReady") ? LLARS_AHI_IsReady("keyboard") : false
-if (inputMode != "ahi")
-	inputActiveText := "Active input: Standard AutoHotkey"
-else if (inputMouseAHIReady && inputKeyboardAHIReady)
-	inputActiveText := "Active input: AutoHotInterception"
-else if (inputMouseAHIReady || inputKeyboardAHIReady)
-	inputActiveText := "Active input: Mixed (AHI + Standard fallback)"
-else
-	inputActiveText := "Active input: Standard AutoHotkey (AHI fallback)"
+GuiControl, 21:, InputBackendStatus, % "Backend: " . inputSnapshot.Configured
+GuiControl, 21:, InputActiveStatus, % "Active input: " . inputSnapshot.Active
+GuiControl, 21:, InputDriverStatus, % "AHI driver: " . inputSnapshot.Driver
+GuiControl, 21:, InputMouseRoute, % "Mouse route: " . inputSnapshot.MouseRoute
+GuiControl, 21:, InputKeyboardRoute, % "Keyboard route: " . inputSnapshot.KeyboardRoute
+GuiControl, 21:, InputLastMouse, % "Last mouse transport: " . inputSnapshot.MouseLast
+GuiControl, 21:, InputLastKeyboard, % "Last keyboard transport: " . inputSnapshot.KeyboardLast
+GuiControl, 21:, InputStartupTiming, % "AHI startup: " . inputSnapshot.Startup
+GuiControl, 21:, InputFallbackStatus, % "Fallback state: " . inputSnapshot.Fallback
 
 inputDriverInstalled := IsFunc("LLARS_AHI_DriverPresent") ? LLARS_AHI_DriverPresent() : false
-inputDriverRegistered := IsFunc("LLARS_AHI_DriverRegistered") ? LLARS_AHI_DriverRegistered() : false
-inputUninstallPending := IsFunc("LLARS_AHI_UninstallPending") ? LLARS_AHI_UninstallPending(LLARS_ROOT) : false
-if (inputUninstallPending && IsFunc("LLARS_AHI_UninstallStillPending") && LLARS_AHI_UninstallStillPending(LLARS_ROOT))
-	inputDriverText := "AHI driver: Restart required"
-else if (inputDriverRegistered)
-	inputDriverText := "AHI driver: Installed"
-else if (inputDriverInstalled)
-	inputDriverText := "AHI driver: Repair required"
-else
-	inputDriverText := "AHI driver: Not installed"
-GuiControl, 21:, InputBackendStatus, %inputBackendText%
-GuiControl, 21:, InputActiveStatus, %inputActiveText%
-GuiControl, 21:, InputDriverStatus, %inputDriverText%
 if (inputDriverInstalled)
 	GuiControl, 21:Enable, InputUninstallButton
 else
 	GuiControl, 21:Disable, InputUninstallButton
+return
+
+InputTestAHI:
+inputTestSummary := ""
+inputTestPassed := IsFunc("LLARS_AHI_SelfTest") ? LLARS_AHI_SelfTest(LLARS_ROOT, inputTestSummary) : false
+if (inputTestSummary = "")
+	inputTestSummary := "AHI health test is unavailable."
+if (inputTestPassed)
+	MsgBox, 0x40040, LLARS AHI Test, %inputTestSummary%
+else
+	MsgBox, 0x40030, LLARS AHI Test, %inputTestSummary%
+Gosub, RefreshInputSettings
 return
 
 InputUseStandard:
@@ -1913,7 +1951,6 @@ else
 	developerProgress := "--"
 
 LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor, developerInspectorStatus)
-LLARS_DeveloperCheckPixelReset()
 developerPixelTargets := LLARS_DeveloperPixelTargets()
 
 developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
@@ -1998,7 +2035,7 @@ LLARS_DeveloperConfigureActionControl(DeveloperActionsHwnd)
 Gui Dev: Font, s10 Bold cBlack
 Gui Dev: Add, Button, x20 y671 w125 h27 gToggleDeveloperLightweight, Lightweight
 Gui Dev: Add, Button, x152 y671 w125 h27 gDeveloperTimingAudit, Timing Audit
-Gui Dev: Add, Button, x284 y671 w125 h27 gCopyAHISupportReport, Copy AHI Report
+Gui Dev: Add, Button, x284 y671 w125 h27 gCopyAHISupportReport, Copy Support
 Gui Dev: Add, Button, x416 y671 w124 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
@@ -2109,7 +2146,7 @@ LLARS_DeveloperConfigureActionControl(DeveloperActionsHwnd)
 Gui Dev: Font, s10 Bold cBlack
 Gui Dev: Add, Button, x20 y460 w125 h27 gToggleDeveloperLightweight, Full Mode
 Gui Dev: Add, Button, x152 y460 w125 h27 gDeveloperTimingAudit, Timing Audit
-Gui Dev: Add, Button, x284 y460 w125 h27 gCopyAHISupportReport, Copy AHI Report
+Gui Dev: Add, Button, x284 y460 w125 h27 gCopyAHISupportReport, Copy Support
 Gui Dev: Add, Button, x416 y460 w124 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
@@ -2138,14 +2175,14 @@ if IsFunc("LLARS_AHI_CopySupportReport")
 	reportPath := LLARS_AHI_CopySupportReport(LLARS_ROOT, "Manual Developer Mode copy")
 	if (reportPath != "")
 	{
-		LLARS_DeveloperAction("AHI Support || Report copied to clipboard")
-		MsgBox, 64, LLARS AHI Support Report, A sanitized AutoHotInterception support report was copied to your clipboard.`n`nPaste it directly to Gubna for troubleshooting.`n`nSaved at:`nVendor\AutoHotInterception\Logs\AutoHotInterception-Support.txt
+		LLARS_DeveloperAction("Support || Report copied to clipboard")
+		MsgBox, 0x40040, LLARS Support Report, A sanitized LLARS support report was copied to your clipboard.`n`nIt includes current run/config/input health plus recent framework actions and AHI diagnostics.`n`nSaved at:`nLogs\LLARS-Support.txt
 	}
 	else
-		MsgBox, 48, LLARS AHI Support Report, LLARS could not create the AutoHotInterception support report.
+		MsgBox, 0x40030, LLARS Support Report, LLARS could not create the support report.
 }
 else
-	MsgBox, 48, LLARS AHI Support Report, AutoHotInterception diagnostics are not available in this LLARS build.
+	MsgBox, 0x40030, LLARS Support Report, Support diagnostics are not available in this LLARS build.
 return
 
 DeveloperTimingAudit:
@@ -2731,9 +2768,15 @@ return
 ; Builds Developer Mode pixel-target data from active typed Config.ini color sections.
 LLARS_DeveloperPixelTargets()
 {
-	global LLARS_SCRIPT_DIR
+	global LLARS_SCRIPT_DIR, LLARS_DISABLE_SCRIPT_CONFIG
 
 	targets := []
+	if (LLARS_DISABLE_SCRIPT_CONFIG)
+	{
+		targets.Push({Message: "Script Config.ini: Not Required"})
+		return targets
+	}
+
 	ConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
 	if !FileExist(ConfigPath)
 	{
@@ -2843,7 +2886,7 @@ LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor,
 	static inspectorMessagesRegistered := false
 	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
 	global DeveloperInspectorScrollPos, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
-	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd
+	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd, DeveloperInspectorDetectionHwnd
 	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
 
 	preservedScroll := preserveScroll ? LLARS_DeveloperGetInspectorScrollPos() : 0
@@ -2865,6 +2908,9 @@ LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor,
 	LLARS_DeveloperAddInspectorRow("Mouse POS Y", mouseY, rowY, DeveloperInspectorMouseYHwnd)
 	rowY += 21
 	LLARS_DeveloperAddInspectorRow("Mouse RGB", mouseColor, rowY, DeveloperInspectorMouseColorHwnd)
+	rowY += 21
+	detectionText := IsFunc("LLARS_DetectionDisplay") ? LLARS_DetectionDisplay(true) : "None"
+	LLARS_DeveloperAddInspectorRow("Detection", detectionText, rowY, DeveloperInspectorDetectionHwnd)
 	rowY += 29
 
 	if (!IsObject(targets) || targets.Length() = 0)
@@ -2953,7 +2999,7 @@ LLARS_DeveloperAddInspectorRow(labelText, valueText, rowY, ByRef valueHwnd)
 LLARS_DeveloperRefreshInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor, targets)
 {
 	global DeveloperInspectorHwnd, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
-	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd
+	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd, DeveloperInspectorDetectionHwnd
 	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
 
 	if (!DeveloperInspectorHwnd)
@@ -2963,6 +3009,8 @@ LLARS_DeveloperRefreshInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor
 	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseXHwnd, mouseX)
 	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseYHwnd, mouseY)
 	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseColorHwnd, mouseColor)
+	detectionText := IsFunc("LLARS_DetectionDisplay") ? LLARS_DetectionDisplay(true) : "None"
+	LLARS_DeveloperSetInspectorText(DeveloperInspectorDetectionHwnd, detectionText)
 
 	if (!IsObject(targets) || targets.Length() = 0 || targets[1].HasKey("Message"))
 		return
@@ -3317,30 +3365,6 @@ LLARS_DeveloperInspectorVScroll(wParam, lParam, msg, hWnd)
 	return 0
 }
 
-LLARS_DeveloperInspectorMouseWheel(wParam, lParam, msg, hWnd)
-{
-	global DeveloperInspectorHwnd, DeveloperInspectorScrollPos
-
-	if (!DeveloperInspectorHwnd)
-		return
-
-	MouseGetPos,,, hoveredWindow, hoveredControl, 2
-	isOverInspector := (hoveredWindow = DeveloperInspectorHwnd || hoveredControl = DeveloperInspectorHwnd)
-	if (!isOverInspector && hoveredControl != "")
-		isOverInspector := DllCall("IsChild", "Ptr", DeveloperInspectorHwnd, "Ptr", hoveredControl)
-	if (!isOverInspector)
-		return
-
-	wheelDelta := (wParam >> 16) & 0xFFFF
-	if (wheelDelta > 32767)
-		wheelDelta -= 65536
-	if (wheelDelta = 0)
-		return 0
-
-	LLARS_DeveloperSetInspectorScroll(DeveloperInspectorScrollPos - ((wheelDelta / 120) * 42))
-	return 0
-}
-
 LLARS_DeveloperDestroyInspectorPanel(resetScroll := true)
 {
 	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
@@ -3536,7 +3560,10 @@ LLARS_DeveloperScriptHotkeys()
 
 LLARS_DeveloperConfigDiagnostics()
 {
-	global LLARS_SCRIPT_DIR
+	global LLARS_SCRIPT_DIR, LLARS_DISABLE_SCRIPT_CONFIG
+
+	if (LLARS_DISABLE_SCRIPT_CONFIG)
+		return "Script Config.ini: Not Required"
 
 	ConfigPath := LLARS_SCRIPT_DIR "\Config.ini"
 	if !FileExist(ConfigPath)

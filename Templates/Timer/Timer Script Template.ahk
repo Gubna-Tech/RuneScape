@@ -82,6 +82,9 @@ ScriptTimer()
 	; ============================================================
 	;
 	; Standard creator API examples:
+	; LLARS_LogEvent("Reached state", "Optional detail")
+	; LLARS_SetDetection("Target", "Searching")
+	; LLARS_Warn("Script Warning", "What happened", "What LLARS did", "What the user should do", "Optional detail", false)
 	; LLARS_SetStatus("Working", "Timer Action")
 	; LLARS_Click("Example Coordinate")
 	; LLARS_PressHotkey("Example Hotkey")

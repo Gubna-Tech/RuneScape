@@ -12,6 +12,7 @@ LLARS_CreatorConfigError(message)
 	if (message = "")
 		message := "Unknown creator API configuration error"
 
+	LLARS_DiagnosticRecord("Error", "Creator API configuration", message)
 	return false
 }
 
@@ -25,6 +26,7 @@ LLARS_CreatorInputBlocked(action, reason)
 	if (reason = "")
 		reason := "Input safety check failed"
 
+	LLARS_DiagnosticRecord("Warning", "Input blocked: " . action, reason)
 	return false
 }
 
@@ -555,17 +557,16 @@ LLARS_ActivateRuneScapeAtRunStart()
 	return LLARS_WaitForRuneScape("Run start")
 }
 
-; Framework focus gate for every game-facing action.
-LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
+; Resolves and validates the RuneScape window bound to the current run.
+; Shared by active-focus and passive pixel-read gates so disappearance handling stays consistent.
+LLARS_RuntimeRuneScapeWindow(action := "Automation", requireRun := true)
 {
-	global LLARS_RUNNING, LLARS_PAUSED, LLARS_RunRuneScapeHwnd
-	global LLARS_CreatorCurrentStatus, LLARS_CreatorCurrentActivity
-	global LLARS_lhk5
+	global LLARS_RUNNING, LLARS_RunRuneScapeHwnd
 
 	if (requireRun && !LLARS_RUNNING)
 	{
 		LLARS_CreatorInputBlocked(action, "No active LLARS run")
-		return false
+		return 0
 	}
 
 	runeScapeHwnd := LLARS_RunRuneScapeHwnd
@@ -574,19 +575,31 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 		if (!DllCall("IsWindow", "Ptr", runeScapeHwnd) || !LLARS_IsRuneScapeWindow(runeScapeHwnd))
 		{
 			LLARS_CreatorInputBlocked(action, "The RuneScape window selected for this run is no longer available")
-			return false
+			return 0
 		}
+		return runeScapeHwnd
 	}
-	else
+
+	runeScapeHwnd := LLARS_FindRuneScapeWindow()
+	if (!runeScapeHwnd)
 	{
-		runeScapeHwnd := LLARS_FindRuneScapeWindow()
-		if (!runeScapeHwnd)
-		{
-			LLARS_CreatorInputBlocked(action, "RuneScape window was not found")
-			return false
-		}
-		LLARS_RunRuneScapeHwnd := runeScapeHwnd
+		LLARS_CreatorInputBlocked(action, "RuneScape window was not found")
+		return 0
 	}
+	LLARS_RunRuneScapeHwnd := runeScapeHwnd
+	return runeScapeHwnd
+}
+
+; Framework focus gate for every game-facing action.
+LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
+{
+	global LLARS_RUNNING, LLARS_PAUSED, LLARS_RunRuneScapeHwnd
+	global LLARS_CreatorCurrentStatus, LLARS_CreatorCurrentActivity
+	global LLARS_lhk5
+
+	runeScapeHwnd := LLARS_RuntimeRuneScapeWindow(action, requireRun)
+	if (!runeScapeHwnd)
+		return false
 
 	if (DllCall("GetForegroundWindow", "Ptr") = runeScapeHwnd)
 		return true
@@ -647,6 +660,7 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 	LLARS_CreatorCurrentActivity := previousActivity
 	GuiControl, 1:, State3, %previousStatus%
 	LLARS_DeveloperAction("Focus || RuneScape reclaimed || " . action)
+	LLARS_ReportRecovery("RuneScape focus restored", action)
 	return true
 }
 
@@ -656,28 +670,9 @@ LLARS_WaitForRuneScapePixelRead(action := "Pixel read", requireRun := true)
 {
 	global LLARS_RUNNING, LLARS_PAUSED, LLARS_RunRuneScapeHwnd
 
-	if (requireRun && !LLARS_RUNNING)
+	runeScapeHwnd := LLARS_RuntimeRuneScapeWindow(action, requireRun)
+	if (!runeScapeHwnd)
 		return false
-
-	runeScapeHwnd := LLARS_RunRuneScapeHwnd
-	if (runeScapeHwnd)
-	{
-		if (!DllCall("IsWindow", "Ptr", runeScapeHwnd) || !LLARS_IsRuneScapeWindow(runeScapeHwnd))
-		{
-			LLARS_CreatorInputBlocked(action, "The RuneScape window selected for this run is no longer available")
-			return false
-		}
-	}
-	else
-	{
-		runeScapeHwnd := LLARS_FindRuneScapeWindow()
-		if (!runeScapeHwnd)
-		{
-			LLARS_CreatorInputBlocked(action, "RuneScape window was not found")
-			return false
-		}
-		LLARS_RunRuneScapeHwnd := runeScapeHwnd
-	}
 
 	Loop
 	{
@@ -794,7 +789,7 @@ LLARS_CreatorRunError(error, iteration := "", totalRuns := "")
 	if IsLabel(legacyCountdownLabel)
 		SetTimer, %legacyCountdownLabel%, Off
 
-	; Keep estimator cleanup safe even if this API file is included without the shared label library during isolated creator/API testing.
+	; Keep estimator cleanup safe even when this API file is included without the shared label library.
 	estimatorTimerLabel := "UpdateEstimatedTime"
 	if IsLabel(estimatorTimerLabel)
 		SetTimer, %estimatorTimerLabel%, Off
@@ -1157,7 +1152,7 @@ LLARS_CreatorPrepareKeyboardInput(action := "Keyboard")
 ; Dispatches keyboard input only while the exact RuneScape HWND captured by the focus gate is still the foreground window.
 LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 {
-	global LLARS_AHI_LAST_KEY_HOLD_MS, LLARS_CreatorExplicitKeyHolds
+	global LLARS_AHI_LAST_KEY_HOLD_MS, LLARS_CreatorExplicitKeyHolds, LLARS_ROOT
 	if !IsObject(LLARS_CreatorExplicitKeyHolds)
 		LLARS_CreatorExplicitKeyHolds := {}
 
@@ -1211,10 +1206,19 @@ LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 		if IsFunc("LLARS_AHI_SendSequence")
 			sentWithAHI := LLARS_AHI_SendSequence(sendSequence, keyHold, keyDelay)
 
-		; Preserve the established AutoHotkey path for unsupported send forms, raw
-		; text, machines awaiting their first reboot, or any AHI runtime failure.
+		; AHI mode fails closed: unsupported forms or an unavailable AHI route do
+		; not bypass Interception through SendEvent. Explicit Standard mode retains
+		; the legacy compatibility path for installations that intentionally chose it.
 		if (!sentWithAHI)
 		{
+			ahiMode := IsFunc("LLARS_AHI_Mode") ? LLARS_AHI_Mode(LLARS_ROOT) : "ahi"
+			if (ahiMode = "ahi")
+			{
+				if IsFunc("LLARS_AHI_LogTransportFailure")
+					LLARS_AHI_LogTransportFailure("Keyboard", "Creator send unavailable", sendSequence)
+				return false
+			}
+
 			previousKeyDelay := A_KeyDelay
 			previousKeyDuration := A_KeyDuration
 			SetKeyDelay, %keyDelay%, %keyHold%
@@ -1494,6 +1498,49 @@ LLARS_SetStatus(status, activity := "")
 }
 
 ; ================================================================
+; |     CREATOR DIAGNOSTICS     -     CREATOR DIAGNOSTICS       |
+; ================================================================
+; Records a creator-defined event in the existing Developer Mode/support stream.
+; Use this for meaningful script state changes that are useful during troubleshooting.
+LLARS_LogEvent(summary, detail := "")
+{
+	summary := Trim(summary)
+	detail := Trim(detail)
+	if (summary = "")
+		return false
+
+	action := "Creator || " . summary
+	if (detail != "")
+		action .= " || " . detail
+	LLARS_DeveloperAction(action)
+	return true
+}
+
+; Creator-facing warning/error/recovery helpers use the same structured
+; diagnostics and support-report counters as LLARS framework events.
+LLARS_Warn(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+{
+	return LLARS_ReportWarning(title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
+}
+
+LLARS_Error(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+{
+	return LLARS_ReportError(title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
+}
+
+LLARS_Recovered(summary, detail := "")
+{
+	return LLARS_ReportRecovery(summary, detail)
+}
+
+; Publishes creator detection state to the existing Live Inspector/support report.
+; This is diagnostic-only and does not alter the script's gameplay state machine.
+LLARS_SetDetection(name, state, confidence := "", threshold := "", detail := "", logChange := true)
+{
+	return LLARS_DetectionRecord(name, state, confidence, threshold, detail, logChange)
+}
+
+; ================================================================
 ; |     PIXEL / COLOR     -     PIXEL / COLOR                    |
 ; ================================================================
 ; Reads the current RGB color at an exact configured x/y pixel coordinate.
@@ -1585,7 +1632,10 @@ LLARS_CreatorPixelSearchAction(coordinateSection, colorSections, currentColor, m
 			LLARS_DeveloperAction("Pixel Watch || " . coordinateSection . " || Waiting for " . colorDisplay)
 
 		if (state.LastMatch != matchedSection)
+		{
 			LLARS_DeveloperAction("Pixel Match || " . coordinateSection . " || " . matchedSection . " || Actual=" . currentColor)
+			LLARS_DetectionRecord("Pixel " . coordinateSection, "Match", "", "", matchedSection . " " . currentColor, false)
+		}
 
 		state.LastMatch := matchedSection
 		state.SearchShown := true
@@ -1594,7 +1644,10 @@ LLARS_CreatorPixelSearchAction(coordinateSection, colorSections, currentColor, m
 	{
 		; Report only the initial watch. A cleared match silently rearms it.
 		if (!state.SearchShown)
+		{
 			LLARS_DeveloperAction("Pixel Watch || " . coordinateSection . " || Waiting for " . colorDisplay)
+			LLARS_DetectionRecord("Pixel " . coordinateSection, "Searching", "", "", colorDisplay, false)
+		}
 
 		state.LastMatch := ""
 		state.SearchShown := true
@@ -1842,7 +1895,7 @@ LLARS_PixelMatchesWithinTolerance(coordinateSection, colorSection, tolerance := 
 	return matched
 }
 
-; Prototype trigger reader for Alt1/RuneApps overlay pixels.
+; Reads a configured pixel from a compatible Alt1/RuneApps overlay window when available.
 LLARS_PixelMatchesWithinTolerancePrintWindow(coordinateSection, colorSection, tolerance := 0, scope := "script")
 {
 	global LLARS_RunRuneScapeHwnd, LLARS_RunStartTick
@@ -1950,7 +2003,7 @@ LLARS_PixelMatchesWithinTolerancePrintWindow(coordinateSection, colorSection, to
 	}
 	else
 	{
-		; Make an unsupported/unavailable Alt1 capture obvious during prototype testing.
+		; Report an unavailable overlay capture once per watched state, then use the visible fallback when safe.
 		stateKey := (LLARS_RunStartTick + 0) . "|" . scope . "|" . coordinateSection . "|" . colorSection
 		observedToken := "UNAVAILABLE"
 		if (!observedStates.HasKey(stateKey) || observedStates[stateKey] != observedToken)

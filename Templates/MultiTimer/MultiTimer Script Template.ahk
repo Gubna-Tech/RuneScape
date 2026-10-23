@@ -78,6 +78,7 @@ TimerOne()
 
 	; WRITE TIMER ONE ACTION HERE Example:
 	; LLARS_SetStatus("Working", "Timer One")
+	; LLARS_LogEvent("Timer One", "Callback started")
 	; LLARS_Click("Action Location One")
 }
 
