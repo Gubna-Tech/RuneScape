@@ -42,10 +42,16 @@ Else IfWinActive, Developer Mode ahk_class AutoHotkeyGUI
 	GoSub, CloseDeveloperMode
 }
 
-Else IfWinActive, Combo ahk_class AutoHotkeyGUI
+Else IfWinActive, Setup ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
 	GoSub, closecombo
+}
+
+Else IfWinActive, Config Settings ahk_class AutoHotkeyGUI
+{
+	EnableHotkey()
+	GoSub, CloseConfigSettings
 }
 
 Else IfWinActive, Colors ahk_class AutoHotkeyGUI
@@ -112,9 +118,7 @@ return
 ; Formats a millisecond countdown as minutes and seconds for the GUI.
 RandomSleepAmountToMinutesSeconds(time)
 {
-	minutes := Floor(time / 60000)
-	seconds := Mod(Floor(time / 1000), 60)
-	return minutes . "m " . seconds . "s"
+	return LLARS_TimerRemainingText(time)
 }
 
 ; =========================================================================
@@ -131,7 +135,7 @@ LLARS_UpdateEstimatedTimeNow()
 	global LLARS_RUNNING, EstCompletedLoops, EstConfiguredFirstLoopAverage
 	global EstFollowingCompletedLoops, EstFollowingAverageLoopTime
 	global EstConfiguredFollowingLoopAverage, EstConfiguredLoopAverage
-	global EstLoopStartTick, EstRandomSleepAdjustment, EstFinalSleepActive, EstFinalSleepEndTick
+	global EstLoopStartTick, EstRandomSleepAdjustment, EstConfiguredSleepAdjustment, EstFinalSleepActive, EstFinalSleepEndTick
 	global runcount3, count
 	if (!LLARS_RUNNING)
 		return
@@ -167,12 +171,12 @@ LLARS_UpdateEstimatedTimeNow()
 	if (EstLoopStartTick > 0)
 	{
 		ElapsedLoopTime := A_TickCount - EstLoopStartTick
-		PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment - ElapsedLoopTime
+		PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment + EstConfiguredSleepAdjustment - ElapsedLoopTime
 	}
 
 	else
 	{
-		PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment
+		PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment + EstConfiguredSleepAdjustment
 	}
 
 	if (PredictiveLoopRemainingTime < 0)
@@ -219,62 +223,104 @@ LLARS_UpdateEstimatedTimeNow()
 }
 
 ; =====================================================================
-; |     COMBO BUTTON     -     COMBO BUTTON     -     COMBO BUTTON    |
+; |     SETUP GUI     -     SETUP GUI     -     SETUP GUI             |
 ; =====================================================================
 
-; Handles normal LLARS shutdown, saves the GUI position, closes the
+; Opens the shared Setup window for script/input setup controls.
 Combo:
-LLARS_DeveloperHotkey("Configuration")
+LLARS_DeveloperHotkey("Setup")
 Gui 1: Hide
 DisableHotkey()
 Menu, Tray, NoIcon
+Gui Combo: Destroy
 Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop
 Gui Combo: Font, s12 Bold cBlack
 Gui Combo: Add, Text, x5 y5 w210 h25 Center, LLARS
 Gui Combo: Font, s10 Bold cGray
-Gui Combo: Add, Text, x5 y29 w210 h18 Center, Configuration
+Gui Combo: Add, Text, x5 y29 w210 h18 Center, Setup
 Gui Combo: Add, Text, x5 y49 w210 h2 0x10
 Gui Combo: Font, s10 Bold cBlack
 Gui Combo: Add, Button, x25 y57 w170 h25 gColor, Colors
 Gui Combo: Add, Button, x25 y86 w170 h25 gCoordinates, Coordinates
 Gui Combo: Add, Button, x25 y115 w170 h25 gHotkey, Hotkeys
 
-; Scripts may optionally add one script-specific configuration button.
+; Scripts may optionally add one script-specific setup button.
 if (LLARS_COMBO_TIMER_LABEL != "")
 {
 	Gui Combo: Add, Button, x25 y144 w170 h25 gLLARS_CustomComboTimer, Timer
-	Gui Combo: Add, Text, x5 y176 w210 h2 0x10
-	Gui Combo: Add, Button, x25 y184 w170 h29 gCloseCombo, Close
-	comboHeight := 220
+	Gui Combo: Add, Button, x25 y173 w170 h25 gInputSettings, Input Settings
+	Gui Combo: Add, Text, x5 y205 w210 h2 0x10
+	Gui Combo: Add, Button, x25 y213 w170 h29 gCloseCombo, Close Setup
+	comboHeight := 249
 }
-
 else
 {
-	Gui Combo: Add, Text, x5 y147 w210 h2 0x10
-	Gui Combo: Add, Button, x25 y155 w170 h29 gCloseCombo, Close
-	comboHeight := 191
+	Gui Combo: Add, Button, x25 y144 w170 h25 gInputSettings, Input Settings
+	Gui Combo: Add, Text, x5 y176 w210 h2 0x10
+	Gui Combo: Add, Button, x25 y184 w170 h29 gCloseCombo, Close Setup
+	comboHeight := 220
 }
 
 Gui Combo: +ToolWindow
 Gui Combo: -caption
-Gui Combo: Show, center w220 h%comboHeight%, Combo
-LLARS_DeveloperUIAction("Configuration")
+Gui Combo: Show, center w220 h%comboHeight%, Setup
+LLARS_DeveloperUIAction("Setup")
 return
 
-; Opens the optional script-owned Timer/configuration editor.
+; Opens the optional script-owned Timer/setup editor.
 LLARS_CustomComboTimer:
 if (LLARS_COMBO_TIMER_LABEL != "")
 {
-	LLARS_DeveloperUIAction("Configuration", "Closed")
+	LLARS_DeveloperUIAction("Setup", "Closed")
 	LLARS_DeveloperUIAction("Timer Configuration")
 	GoSub, %LLARS_COMBO_TIMER_LABEL%
 }
 return
 
-; Returns from the Combo menu to the main LLARS window.
+; Returns from Setup to the main LLARS window.
 closecombo:
-LLARS_DeveloperUIAction("Configuration", "Closed")
+LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
+Gui 1: Show
+EnableHotkey()
+return
+
+; =====================================================================
+; |     CONFIG SETTINGS GUI     -     CONFIG SETTINGS GUI              |
+; =====================================================================
+
+; Keeps file/backup/reset operations separate from gameplay setup.
+ConfigSettings:
+LLARS_DeveloperHotkey("Config Settings")
+LLARS_MainSavePosition()
+Gui 1: Hide
+DisableHotkey()
+Gui ConfigSettings: Destroy
+Gui ConfigSettings: +LastFound +OwnDialogs +AlwaysOnTop
+Gui ConfigSettings: Font, s12 Bold cBlack
+Gui ConfigSettings: Add, Text, x5 y5 w210 h25 Center, LLARS
+Gui ConfigSettings: Font, s10 Bold cGray
+Gui ConfigSettings: Add, Text, x5 y29 w210 h18 Center, Config Settings
+Gui ConfigSettings: Add, Text, x5 y49 w210 h2 0x10
+Gui ConfigSettings: Font, s10 Bold cBlack
+Gui ConfigSettings: Add, Button, x25 y57 w170 h25 gInfoLLARS, LLARS Config
+Gui ConfigSettings: Add, Button, x25 y86 w170 h25 gInfoConfig vConfigSettingsScriptButton, Script Config
+if !FileExist(LLARS_SCRIPT_DIR . "\Config.ini")
+	GuiControl, ConfigSettings:Disable, ConfigSettingsScriptButton
+Gui ConfigSettings: Add, Button, x25 y115 w170 h25 gInfoBackupConfig, Backup Config
+Gui ConfigSettings: Add, Button, x25 y144 w170 h25 gInfoRestoreConfig, Restore Config
+Gui ConfigSettings: Add, Button, x25 y173 w170 h25 gResetConfig, Reset Config
+Gui ConfigSettings: Add, Text, x5 y205 w210 h2 0x10
+Gui ConfigSettings: Add, Button, x25 y213 w170 h29 gCloseConfigSettings, Close Config Settings
+Gui ConfigSettings: +ToolWindow
+Gui ConfigSettings: -caption
+Gui ConfigSettings: Show, center w220 h249, Config Settings
+LLARS_DeveloperUIAction("Config Settings")
+return
+
+CloseConfigSettings:
+LLARS_DeveloperUIAction("Config Settings", "Closed")
+Gui ConfigSettings: Destroy
 Gui 1: Show
 EnableHotkey()
 return
@@ -289,7 +335,7 @@ return
 ResetConfig:
 LLARS_MainSavePosition()
 Gui 1: Hide
-Gui Combo: Destroy
+Gui ConfigSettings: Destroy
 DisableHotkey()
 Gui Reset: Destroy
 Gui Reset: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSResetGuiHwnd
@@ -367,8 +413,7 @@ Gui Reset: Destroy
 if !LLARS_ResetConfigItem("Config.ini", resetSection, resetType)
 {
 	MsgBox, 48, Reset Configuration, The selected configuration value could not be reset.
-	Gui 1: Show
-	EnableHotkey()
+	GoSub, ConfigSettings
 	return
 }
 
@@ -396,8 +441,7 @@ WinMove, TopGUI,, , %topPOS%
 Sleep 1500
 Gui 13u: Destroy
 Gui 13: Destroy
-Gui 1: Show
-EnableHotkey()
+GoSub, ConfigSettings
 return
 
 
@@ -416,8 +460,7 @@ Gui Reset: Destroy
 MsgBox, 36, Reset Configuration, Clear all saved Hotkeys, Coordinates, and Colors?`n`nOffsets, timers, options, ranges, and all other settings will remain unchanged.
 IfMsgBox, No
 {
-	Gui 1: Show
-	EnableHotkey()
+	GoSub, ConfigSettings
 	return
 }
 
@@ -433,8 +476,7 @@ for resetDisplay, resetItem in resetConfigItems
 if !resetChanged
 {
 	MsgBox, 48, Reset Configuration, No saved Hotkeys, Coordinates, or Colors could be reset.
-	Gui 1: Show
-	EnableHotkey()
+	GoSub, ConfigSettings
 	return
 }
 
@@ -462,16 +504,14 @@ WinMove, TopGUI,, , %topPOS%
 Sleep 1500
 Gui 13u: Destroy
 Gui 13: Destroy
-Gui 1: Show
-EnableHotkey()
+GoSub, ConfigSettings
 return
 
 ; Cancels the reset workflow without changing Config.ini.
 CloseResetConfig:
 LLARS_DeveloperUIAction("Reset Configuration", "Closed")
 Gui Reset: Destroy
-Gui 1: Show
-EnableHotkey()
+GoSub, ConfigSettings
 return
 
 ; ===============================================================================
@@ -484,7 +524,7 @@ return
 Coordinates:
 LLARS_MainSavePosition()
 Gui 1: Hide
-LLARS_DeveloperUIAction("Configuration", "Closed")
+LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSConfigGuiHwnd
 Gui 2: Font, s12 Bold cBlack
@@ -495,8 +535,8 @@ Gui 2: Add, Text, x10 y49 w270 h2 0x10
 Gui 2: Font, s10 Bold cBlack
 DisableHotkey()
 scriptHotkeyConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
-IniRead, allContents, %scriptHotkeyConfigFile%
-IniRead, llarsContents, %LLARS_CONFIG_FILE%
+allContents := LLARS_ConfigSectionList(scriptHotkeyConfigFile)
+llarsContents := LLARS_ConfigSectionList(LLARS_CONFIG_FILE)
 sectionList := " ***** Make a Selection ***** | "
 configCoordinatesFound := false
 coordinateConfigFiles := {}
@@ -508,7 +548,7 @@ sectionList .= "| ---- Script Coordinates ---- "
 ; as coordinates.
 Loop, Parse, allContents, `n, `r
 {
-	currentSection := Trim(A_LoopField)
+	currentSection := LLARS_NormalizeConfigSectionName(A_LoopField)
 	if (currentSection = "")
 		continue
 	StringReplace, currentSection, currentSection, [, , All
@@ -533,7 +573,7 @@ sectionList .= "| ---- LLARS Coordinates ---- "
 ; as coordinates.
 Loop, Parse, llarsContents, `n, `r
 {
-	currentSection := Trim(A_LoopField)
+	currentSection := LLARS_NormalizeConfigSectionName(A_LoopField)
 	if (currentSection = "")
 		continue
 	StringReplace, currentSection, currentSection, [, , All
@@ -653,7 +693,6 @@ else
     Gui 11: Show, NoActivate xcenter y9999, TopGUI
     wingetpos,,,,bottomH, BottomGUI
     wingetpos,,,,topH, TopGUI
-    topPOS := (bottomH - topH) / 2
     topPOS := (bottomH - topH) / 2
     Gui, TopGUI: +LabelTopGUI
     WinMove, TopGUI,, , %topPOS%
@@ -1010,7 +1049,7 @@ LLARS_HideCoordinatePreview()
 Color:
 LLARS_MainSavePosition()
 Gui 1: Hide
-LLARS_DeveloperUIAction("Configuration", "Closed")
+LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSConfigGuiHwnd
 Gui 2: Font, s12 Bold cBlack
@@ -1021,13 +1060,13 @@ Gui 2: Add, Text, x10 y49 w270 h2 0x10
 Gui 2: Font, s10 Bold cBlack
 DisableHotkey()
 colorConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
-IniRead, allContents, %colorConfigFile%
+allContents := LLARS_ConfigSectionList(colorConfigFile)
 sectionList := " ***** Make a Selection ***** "
 
 ; Only add sections that are explicitly categorized as colors.
 Loop, Parse, allContents, `n, `r
 {
-	currentSection := Trim(A_LoopField)
+	currentSection := LLARS_NormalizeConfigSectionName(A_LoopField)
 	if (currentSection = "")
 		continue
 	StringReplace, currentSection, currentSection, [, , All
@@ -1144,11 +1183,11 @@ LLARS_ColorMatchingPointSection(configFile, colorSection)
 	if (colorToken = "")
 		return ""
 
-	IniRead, sections, %configFile%
+	sections := LLARS_ConfigSectionList(configFile)
 	matchedSection := ""
 	Loop, Parse, sections, `n, `r
 	{
-		section := Trim(A_LoopField)
+		section := LLARS_NormalizeConfigSectionName(A_LoopField)
 		if (section = "" || GetConfigType(configFile, section) != "coordinate")
 			continue
 
@@ -1260,10 +1299,10 @@ LLARS_ColorDuplicateSections(configFile, selectedSection, selectedColor)
 	selectedColor := Trim(selectedColor)
 	StringUpper, selectedColor, selectedColor
 	duplicates := ""
-	IniRead, colorSections, %configFile%
+	colorSections := LLARS_ConfigSectionList(configFile)
 	Loop, Parse, colorSections, `n, `r
 	{
-		section := Trim(A_LoopField)
+		section := LLARS_NormalizeConfigSectionName(A_LoopField)
 		StringReplace, section, section, [, , All
 		StringReplace, section, section, ], , All
 		section := Trim(section)
@@ -1297,7 +1336,7 @@ LLARS_ColorDuplicateSections(configFile, selectedSection, selectedColor)
 Hotkey:
 LLARS_MainSavePosition()
 Gui 1: Hide
-LLARS_DeveloperUIAction("Configuration", "Closed")
+LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSHotkeyGuiHwnd
 Gui 3: Font, s12 Bold cBlack
@@ -1308,8 +1347,8 @@ Gui 3: Add, Text, x10 y49 w270 h2 0x10
 Gui 3: Font, s10 Bold cBlack
 DisableHotkey()
 scriptHotkeyConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
-IniRead, allContents, %scriptHotkeyConfigFile%
-IniRead, llarsContents, %LLARS_CONFIG_FILE%
+allContents := LLARS_ConfigSectionList(scriptHotkeyConfigFile)
+llarsContents := LLARS_ConfigSectionList(LLARS_CONFIG_FILE)
 sectionList := " ***** Make a Selection ***** | "
 hotkeyConfigFiles := {}
 configHotkeysFound := false
@@ -1320,7 +1359,7 @@ sectionList .= "| ---- Script Hotkeys ---- "
 ; Add sections from Config.ini that are explicitly categorized as hotkeys.
 Loop, Parse, allContents, `n
 {
-	currentSection := Trim(A_LoopField)
+	currentSection := LLARS_NormalizeConfigSectionName(A_LoopField)
 	if (currentSection = "")
 		continue
 	StringReplace, currentSection, currentSection, [, , All
@@ -1344,7 +1383,7 @@ sectionList .= "| ---- LLARS Hotkeys ---- "
 ; Add sections from LLARS Config.ini that are explicitly categorized as hotkeys.
 Loop, Parse, llarsContents, `n
 {
-	currentSection := Trim(A_LoopField)
+	currentSection := LLARS_NormalizeConfigSectionName(A_LoopField)
 	if (currentSection = "")
 		continue
 	StringReplace, currentSection, currentSection, [, , All
@@ -1548,7 +1587,7 @@ ExitApp
 ; ===================================================================
 
 ; Builds the Information window with current LLARS/script hotkeys,
-; shared options, configuration shortcuts, and project links.
+; shared options, developer/community resources, and project details.
 Info:
 LLARS_DeveloperHotkey("Information")
 IniRead, logout, %LLARS_CONFIG_FILE%, Logout, option
@@ -1562,7 +1601,7 @@ if (LLARS_lhk1 != "")
 if (LLARS_lhk2 != "")
 	scriptHotkeys .= "Information: " . LLARS_lhk2 . "`n"
 if (LLARS_lhk3 != "")
-	scriptHotkeys .= "Color/Coordinate/Hotkey: " . LLARS_lhk3 . "`n"
+	scriptHotkeys .= "Setup: " . LLARS_lhk3 . "`n"
 if (LLARS_lhk4 != "")
 	scriptHotkeys .= "Exit: " . LLARS_lhk4 . "`n"
 if (LLARS_lhk5 != "")
@@ -1625,13 +1664,8 @@ mitY := projectDividerY + 8
 createdY := mitY + 22
 resourceDividerY := createdY + 27
 resourceTitleY := resourceDividerY + 8
-llarsConfigY := resourceTitleY + 23
-scriptConfigY := llarsConfigY + 29
-backupConfigY := scriptConfigY + 29
-restoreConfigY := backupConfigY
-developerModeY := backupConfigY + 29
-inputSettingsY := developerModeY + 29
-discordY := inputSettingsY + 29
+developerModeY := resourceTitleY + 23
+discordY := developerModeY + 29
 closeDividerY := discordY + 32
 closeInfoY := closeDividerY + 8
 informationHeight := closeInfoY + 39
@@ -1665,7 +1699,7 @@ Gui 20: Font, s10 Bold cBlack
 Gui 20: Add, GroupBox, x20 y%notesBoxY% w250 h%notesBoxHeight%, Script Notes
 notesTextY := notesBoxY + 23
 Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, Text, x32 y%notesTextY% w226 h62 Center, Additional notes/comments can be found in the Config.ini file or by pressing the Script Config button below.
+Gui 20: Add, Text, x32 y%notesTextY% w226 h62 Center, Additional notes/comments can be found in the script Config.ini file, available from Config Settings.
 Gui 20: Add, Text, x10 y%projectDividerY% w270 h2 0x10
 Gui 20: Font, s10 Bold cBlue underline
 Gui 20: Add, Text, x10 y%mitY% w270 h20 Center gMIT, MIT License
@@ -1676,12 +1710,7 @@ Gui 20: Add, Text, x163 y%createdY% w45 h20, Gubna
 Gui 20: Add, Text, x10 y%resourceDividerY% w270 h2 0x10
 Gui 20: Font, s10 Bold cBlack
 Gui 20: Add, Text, x10 y%resourceTitleY% w270 h20 Center, Resources
-Gui 20: Add, Button, x60 y%llarsConfigY% w170 h25 gInfoLLARS, LLARS Config
-Gui 20: Add, Button, x60 y%scriptConfigY% w170 h25 gInfoConfig, Script Config
-Gui 20: Add, Button, x20 y%backupConfigY% w120 h25 gInfoBackupConfig, Backup Config
-Gui 20: Add, Button, x150 y%restoreConfigY% w120 h25 gInfoRestoreConfig, Restore Config
 Gui 20: Add, Button, x60 y%developerModeY% w170 h25 gDeveloperMode, Developer Mode
-Gui 20: Add, Button, x60 y%inputSettingsY% w170 h25 gInputSettings, Input Settings
 Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
 Gui 20: Add, Text, x10 y%closeDividerY% w270 h2 0x10
 Gui 20: Add, Button, x60 y%closeInfoY% w170 h29 gCloseInfo, Close Information
@@ -1746,14 +1775,14 @@ return
 InfoBackupConfig:
 backupError := ""
 if LLARS_RunConfigBackup(LLARS_ROOT, true, backupError)
-	MsgBox, 0x40040, LLARS Configuration, Configuration backup complete.`n`nThe shared LLARS Config.ini and script-local Config.ini files are saved under Backup\Config Backup.
+	MsgBox, 0x40040, LLARS Configuration, Configuration backup complete.`n`nLatest snapshot: Backup\Config Backup`nPrevious successful snapshots: Config Backup 1 and Config Backup 2.
 else
 	MsgBox, 0x40010, LLARS Configuration, Configuration backup failed.`n`n%backupError%
 return
 
 ; Restore is intentionally explicit because it overwrites current configuration.
 InfoRestoreConfig:
-MsgBox, 0x40034, LLARS Configuration, Restore the saved LLARS configuration now?`n`nThis overwrites the current shared LLARS Config.ini and any script-local Config.ini files present in the backup.
+MsgBox, 0x40034, LLARS Configuration, Restore the latest LLARS configuration backup now?`n`nSource: Backup\Config Backup`n`nThis overwrites the current shared LLARS Config.ini and any script-local Config.ini files present in that snapshot. Two previous successful snapshots are retained as Config Backup 1 and Config Backup 2.
 IfMsgBox, No
 	return
 restoreError := ""
@@ -1770,7 +1799,7 @@ return
 ; backend; Standard AutoHotkey remains available as a fallback.
 InputSettings:
 EnableHotkey()
-Gui 20: Hide
+Gui Combo: Hide
 Gui 21: Destroy
 Gui 21: +AlwaysOnTop +OwnDialogs +LastFound +ToolWindow -caption
 Gui 21: Font, s12 Bold cBlack
@@ -1880,8 +1909,8 @@ return
 
 CloseInputSettings:
 Gui 21: Destroy
-if WinExist("Information ahk_class AutoHotkeyGUI")
-	Gui 20: Show
+if WinExist("Setup ahk_class AutoHotkeyGUI")
+	Gui Combo: Show
 else
 	Gui 1: Show
 return
@@ -1958,7 +1987,7 @@ developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 developerConfigState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 
 developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
-developerConfigName := LLARS_RUNNING ? "Resume" : "Configuration"
+developerConfigName := LLARS_RUNNING ? "Resume" : "Setup"
 
 developerHotkeys := ""
 developerHotkeys .= "Start: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk1) . " (" . developerStartState . ")`n"
@@ -2609,7 +2638,7 @@ developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 developerConfigState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 
 developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
-developerConfigName := LLARS_RUNNING ? "Resume" : "Configuration"
+developerConfigName := LLARS_RUNNING ? "Resume" : "Setup"
 
 developerHotkeys := ""
 developerHotkeys .= "Start: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk1) . " (" . developerStartState . ")`n"
@@ -2784,7 +2813,7 @@ LLARS_DeveloperPixelTargets()
 		return targets
 	}
 
-	IniRead, sections, %ConfigPath%
+	sections := LLARS_ConfigSectionList(ConfigPath)
 	if (sections = "ERROR")
 	{
 		targets.Push({Message: "Unable to read Config.ini"})
@@ -2796,7 +2825,7 @@ LLARS_DeveloperPixelTargets()
 
 	Loop, Parse, sections, `n, `r
 	{
-		section := Trim(A_LoopField)
+		section := LLARS_NormalizeConfigSectionName(A_LoopField)
 		if (section = "")
 			continue
 
@@ -3518,13 +3547,13 @@ LLARS_DeveloperScriptHotkeys()
 		return ""
 
 	hotkeys := ""
-	IniRead, sections, %ConfigPath%
+	sections := LLARS_ConfigSectionList(ConfigPath)
 	if (sections = "ERROR")
 		return ""
 
 	Loop, Parse, sections, `n, `r
 	{
-		section := Trim(A_LoopField)
+		section := LLARS_NormalizeConfigSectionName(A_LoopField)
 		if (section = "")
 			continue
 
@@ -3570,13 +3599,13 @@ LLARS_DeveloperConfigDiagnostics()
 		return "Config.ini not found"
 
 	diagnostics := ""
-	IniRead, sections, %ConfigPath%
+	sections := LLARS_ConfigSectionList(ConfigPath)
 	if (sections = "ERROR")
 		return "Unable to read Config.ini"
 
 	Loop, Parse, sections, `n, `r
 	{
-		section := Trim(A_LoopField)
+		section := LLARS_NormalizeConfigSectionName(A_LoopField)
 		if (section = "")
 			continue
 

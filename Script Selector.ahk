@@ -41,6 +41,10 @@ if (!FileExist(A_ScriptDir . "\Core")
 	return
 }
 
+LLARS_SelectorIconPath := A_ScriptDir . "\Assets\Logo\LLARS\LLARS Logo.ico"
+if FileExist(LLARS_SelectorIconPath)
+	Menu, Tray, Icon, %LLARS_SelectorIconPath%
+
 ; Loads the local release version used by update checks and GUI titles.
 LLARS_GetVersion(A_ScriptDir)
 if !LLARS_CheckConfigCompatibility(A_ScriptDir)
@@ -68,10 +72,21 @@ LLARS_SCRIPTS_DIR := A_ScriptDir . "\Scripts"
 ; |     ARRAY SETUP     -     ARRAY SETUP     -     ARRAY SETUP     |
 ; ===================================================================
 
-; List of available scripts.
-scriptArray := "AFK Combat|Alchemy|Amulet Stringer|Anti-AFK|Armour Crafter|Arrow Fletcher|Ash to Incense|AutoClicker|AutoTele|Bake Pie - Lunar Spell|Bar Smelter|Bar Smelter - Smelting Gloves|Agility - Barbarian - Advanced|Agility - Barbarian - Basic|Bones 2 Bananas|Bow Cutter|Bow Stringer|Brick Maker - Fort Forinthry|Agility - Burthorpe|Candle Crafter|Herb Cleaner - Skillcape|Cooking - Burthorpe|Cooking - Fort Forinthry|Fire Urn - Lunar Spell|Frame Maker - Fort Forinthry|Gem Cutter|Glassblowing|Agility - Gnome - Advanced|Agility - Gnome - Basic|Herb to Incense|Herb Cleaner|Agility - Het's Oasis|Incense Crafter|Ink Crafter|Jewellery Crafter - Lumbridge|Jewellery Crafter - Fort Forinthry|Jewellery Enchanter|Jewellery Stringer - Lunar Spell|Plank + Refined - Fort Forinthry|Plank Maker - Fort Forinthry|Potion Mixer|Prayer|Pyre Crafter|Refined Plank - Fort Forinthry|Rituals - Communion & Material - Focus Storage|Rituals - Communion & Material - Without Storage|Rituals - Ectoplasm - Focus Storage|Rituals - Ectoplasm - Without Storage|Rituals - Essence & Necroplasm - Focus Storage|Rituals - Essence & Necroplasm - Without Storage|Sift Soil - Lunar Spell|Slime Collector|Smithing|Stone Wall - Fort Forinthry|Tele Grind - Lunar Spell - No Banking|Tele Grind - Lunar Spell - With Banking|Agility - Watchtower Shortcut|Agility - Wilderness|Wine Maker|Contract Binding|Fletching - Corrupted Magic Logs|Prifddinas - Cooking|Prifddinas - Firemaking|Spinning Wheel - Fort Forinthry|Spinning Wheel - Fungal Bowstring - Fort Forinthry|Disassembly - Invention|Sharp Shell Burning|Archaeology - Excavate|Croesus Front|Eternal Tree|Waterfall Fishing|Divination - Divine Conversion - Monolith Power|Divination - Normal - Non-Monolith Power"
-; Calculates the total number of scripts.
-ScriptTotal := StrSplit(scriptArray, "|").Length()
+; Authoritative Selector registry. Every display name, info-panel title, setup
+; difficulty, description, and launch target is defined exactly once here.
+LLARS_SelectorRegistry := LLARS_SelectorBuildRegistry()
+LLARS_SelectorRegistryError := ""
+if !LLARS_SelectorValidateRegistry(LLARS_SelectorRegistry, LLARS_SelectorRegistryError)
+{
+	MsgBox, 262192, Script Selector Registry, The Script Selector registry is invalid.`n`n%LLARS_SelectorRegistryError%
+	ExitApp
+}
+
+; Compatibility list generated from the registry for existing filter/preferences logic.
+scriptArray := LLARS_SelectorRegistryNameList(LLARS_SelectorRegistry)
+ScriptTotal := LLARS_SelectorRegistry.Entries.Length()
+LLARS_SelectorCategoryList := LLARS_SelectorRegistryCategoryList(LLARS_SelectorRegistry)
+LLARS_SelectorCategoryOptions := "All Categories" . (LLARS_SelectorCategoryList = "" ? "" : "|" . LLARS_SelectorCategoryList)
 
 ; Selector preferences reuse LLARS Config.ini so Favorites/Recent participate in
 ; the existing backup/restore workflow without introducing another state file.
@@ -99,6 +114,15 @@ Hotkey, Esc, Exit
 
 ; Creates the script selector GUI.
 Gui +LastFound +OwnDialogs +AlwaysOnTop -caption
+Gui, +HwndLLARSSelectorHwnd
+LLARS_SelectorMoving := false
+; Register borderless-window movement before the first handler label so these
+; callbacks are active during the Selector's entire lifetime. Display changes
+; are handled separately so normal dragging can cross monitor boundaries.
+OnMessage(0x0201, "WM_LBUTTONDOWN")
+OnMessage(0x0231, "WM_ENTERSIZEMOVE")
+OnMessage(0x0232, "WM_EXITSIZEMOVE")
+OnMessage(0x007E, "WM_DISPLAYCHANGE")
 Gui, Font, s12 Bold cBlue
 Gui, Add, Text, Center w410 x5 y10 h40, Select a script from the list below and`nclick 'Select Script' or press Enter
 Gui, Font, cGreen
@@ -107,17 +131,237 @@ Gui, Font, s10 Norm cBlack
 Gui, Add, Edit, x12 y80 w250 h24 vSelectorSearch gSelectorFilterChanged hwndLLARSSelectorSearchHwnd
 DllCall("SendMessageW", "Ptr", LLARSSelectorSearchHwnd, "UInt", 0x1501, "Ptr", 1, "WStr", "Search scripts...")
 Gui, Add, DropDownList, x270 y80 w138 vSelectorView gSelectorFilterChanged Choose1, All Scripts|Favorites|Recent
+Gui, Add, DropDownList, x12 y112 w194 vSelectorCategory gSelectorFilterChanged Choose1, %LLARS_SelectorCategoryOptions%
+Gui, Add, DropDownList, x214 y112 w194 vSelectorDifficulty gSelectorFilterChanged Choose1, All Difficulties|Easy|Intermediate|Hard
 Gui, Font, s11 Bold cBlack
-Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y112 w396 h250, %scriptArray%
+Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y144 w396 h250, %scriptArray%
 Gui, Font, s10 Bold cBlack
-Gui, Add, Button, gSelect w120 h28 x12 y372 Center, Select Script
-Gui, Add, Button, gSelectorToggleFavorite w140 h28 x140 y372 vSelectorFavoriteButton Center, Add Favorite
-Gui, Add, Button, gSelectorClearFilters w120 h28 x288 y372 Center, Clear Filters
-Gui, Add, Button, gExit w140 h28 x140 y408 Center, Close Selector
-Gui, Show, w420 h450 Center, Script Selector
+Gui, Add, Button, gSelect w120 h28 x12 y404 Center, Select Script
+Gui, Add, Button, gSelectorToggleFavorite w140 h28 x140 y404 vSelectorFavoriteButton Center, Add Favorite
+Gui, Add, Button, gSelectorClearFilters w120 h28 x288 y404 Center, Clear Filters
+Gui, Add, Button, gExit w140 h28 x140 y440 Center, Close Selector
+if LLARS_SelectorLoadWindowPosition(selectorX, selectorY)
+	selectorShowOptions := "w420 h482 x" . selectorX . " y" . selectorY
+else
+	selectorShowOptions := "w420 h482 Center"
+Gui, Show, %selectorShowOptions%, Script Selector
 Gui, +ToolWindow
+if FileExist(LLARS_SelectorIconPath)
+{
+	hIcon := DllCall("LoadImage", uint, 0, str, LLARS_SelectorIconPath, uint, 1, int, 0, int, 0, uint, 0x10)
+	SendMessage, 0x80, 0, hIcon,, ahk_id %LLARSSelectorHwnd%
+	SendMessage, 0x80, 1, hIcon,, ahk_id %LLARSSelectorHwnd%
+}
+CheckPOS(LLARSSelectorHwnd)
+LLARS_SelectorSavePosition(LLARSSelectorHwnd)
 LLARS_SelectorApplyFilter()
 GuiControl, Focus, ScriptListBox
+
+; Builds the single authoritative in-code catalog used by list, info, and launch paths.
+LLARS_SelectorBuildRegistry()
+{
+	registry := {Entries: [], ByName: {}}
+	LLARS_SelectorRegistryAdd(registry, "AFK Combat", "AFK Combat", "Intermediate", "Uses Agro pots/flasks to stay in combat for a predetermined length of time. Other pots/flasks can be used by changing the Config.ini", "AFK Combat", "AFK Combat.ahk", "Combat", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Alchemy", "Alchemy", "Easy", "Low/High Alchs a selected item(s) in your inventory for a predetermined amount of times.", "Alchemy", "Alchemy.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Amulet Stringer", "Amulet Stringer", "Easy", "Strings amulets by using in-game bank preset to make a predetermined amount of inventories of jewellery.", "Amulet Stringer", "Amulet Stringer.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Anti-AFK", "Anti-AFK", "Easy", "Moves the mouse within the RuneScape client border, based on a random timer configured through Config.ini", "Anti-AFK", "Anti-AFK.ahk", "Utility", "Timer", true)
+	LLARS_SelectorRegistryAdd(registry, "Armour Crafter", "Armour Crafter", "Intermediate", "Crafts your selected armour for a predetermined amount of runs.", "Armour Crafter", "Armour Crafter.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Arrow Fletcher", "Arrow Fletcher", "Easy", "Adds the tip to a headless arrow. Can be used for darts and/or bolts.", "Arrow Fletcher", "Arrow Fletcher.ahk", "Fletching", "Hotkey", true)
+	LLARS_SelectorRegistryAdd(registry, "Ash to Incense", "Ash to Incense", "Easy", "Adds ash to an already crafted incense stick. Use this after 'Incense Crafter' and before 'Herb to Incense'.", "Incense\Ash to Incense", "Ash to Incense.ahk", "Firemaking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "AutoClicker", "AutoClicker", "Easy", "Clicks randomly within a predetermined coordinate range set by the user. Timer for the clicks can be changed in the Config.ini", "AutoClicker", "AutoClicker.ahk", "Utility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "AutoTele", "AutoTele", "Easy", "Casts the same Teleportation spell a set number of times using hotkeys.", "AutoTele", "AutoTele.ahk", "Magic", "Hotkey", true)
+	LLARS_SelectorRegistryAdd(registry, "Bake Pie - Lunar Spell", "Bake Pie", "Easy", "Bakes all uncooked pies in your inventory.", "Lunar Spells\Bake Pie", "Bake Pie.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Bar Smelter", "Bar Smelter", "Intermediate", "Creates metal bars, type of bar is set by the user as is the run count.", "Bar Smelter", "Bar Smelter.ahk", "Smithing", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Bar Smelter - Smelting Gloves", "Smelting Glove", "Intermediate", "Uses the Smelting Gauntlets from Family Crest Quest to make Gold Bars. Smelted Gold Bars go to metal bank and not inventory.", "Bar Smelter", "Smelting Glove.ahk", "Smithing", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Barbarian - Advanced", "Barbarian Course", "Hard", "Runs laps of the Barbarian - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Barbarian\Advanced", "Barbarian Course.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Barbarian - Basic", "Barbarian Course", "Hard", "Runs laps of the Barbarian - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Barbarian\Basic", "Barbarian Course.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Bones 2 Bananas", "Bones 2 Bananas", "Easy", "Turns all normal bones, big bones and monkey bones in your inventory into bananas.", "Bones 2 Bananas", "Bones 2 Bananas.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Bow Cutter", "Bow Cutter", "Intermediate", "Cuts logs into unstrung bows. Use 'Bow Stringer' to string the bows after.", "Bow Cutter", "Bow Cutter.ahk", "Fletching", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Bow Stringer", "Bow Stringer", "Easy", "Combines bowstring with unstrung bows using the in-game bank preset hotkey.", "Bow Stringer", "Bow Stringer.ahk", "Fletching", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Brick Maker - Fort Forinthry", "Limestone Brick", "Hard", "Cuts limtestone into limestone bricks using the stonecutter.", "Fort Forinthry\Limestone Brick", "Brick Maker.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Burthorpe", "Burthorpe", "Hard", "Runs laps of the Burthorpe agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Burthorpe", "Burthorpe.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Candle Crafter", "Candle Crafter", "Easy", "Crafts candles for the Necromancy skill.", "Necromancy\Candle Crafter", "Candle Crafter.ahk", "Necromancy", "Hotkey", true)
+	LLARS_SelectorRegistryAdd(registry, "Herb Cleaner - Skillcape", "Skillcape Cleaner", "Easy", "Uses the 99/120 Herblore Skillcape to instantly clean a full inventory of dirty herbs. Requires the Skillcape to be worn.", "Herb Cleaner - Skillcape", "Skillcape Cleaner.ahk", "Herblore", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Cooking - Burthorpe", "Cooking", "Hard", "Walks between the Range and main bank in Burthorpe to cook an inventory of food. Fort Forinthry cooking is recommended over this script.", "Cooking", "Cooking.ahk", "Cooking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Cooking - Fort Forinthry", "Cooking", "Hard", "Cooks food at the Fort using the bank chest next to the Range.", "Fort Forinthry\Cooking", "Cooking.ahk", "Cooking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Fire Urn - Lunar Spell", "Fire Urn", "Easy", "Uses the Lunar Spell 'Fire Urn' to fire an inventory of unfired urns.", "Lunar Spells\Fire Urn", "Fire Urn.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Frame Maker - Fort Forinthry", "Frame Maker", "Hard", "Walks between the bank chest and woodworking bench to make frames.", "Fort Forinthry\Frame Maker", "Frame Maker.ahk", "Construction", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Gem Cutter", "Gem Cutter", "Easy", "Cuts an inventory of uncut gems, opens the bank, withdraws more, and repeats.", "Gem Cutter", "Gem Cutter.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Glassblowing", "Glassblowing", "Intermediate", "Turns molten glass into your selected glass item. Crafts full inventories, banks, and repeats.", "Glassblowing", "Glassblowing.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Gnome - Advanced", "Gnome Course", "Hard", "Runs laps of the Gnome - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Gnome\Advanced", "Gnome Course.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Gnome - Basic", "Gnome Course", "Hard", "Runs laps of the Gnome - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Gnome\Basic", "Gnome Course.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Herb to Incense", "Herb to Incense", "Easy", "Adds a herb to an ashy incense stick. Use 'Ash to Incense' first or ashy incense sticks from the Grand Exchange.", "Incense\Herb to Incense", "Herb to Incense.ahk", "Firemaking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Herb Cleaner", "Herb Cleaner", "Easy", "Cleans full inventories of dirty herbs.", "Herb Cleaner", "Herb Cleaner.ahk", "Herblore", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Het's Oasis", "Het's Oasis", "Hard", "Runs laps of the Het's Oasis agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Het's Oasis", "Het's Oasis.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Incense Crafter", "Incense Crafter", "Easy", "Cuts logs into incense sticks. Use this before 'Ash to Incense'.", "Incense\Incense Crafter", "Incense Crafter.ahk", "Firemaking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Ink Crafter", "Ink Crafter", "Easy", "Crafts ink for the Necromancy skill.", "Necromancy\Ink Crafter", "Ink Crafter.ahk", "Necromancy", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Lumbridge", "Jewellery Crafter", "Hard", "Runs between the Combat Academy bank chest and Lumbridge Furnace to craft your selected Jewellery. Config.ini needs manual setup to work.", "Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Fort Forinthry", "Jewellery Crafter", "Hard", "Runs between the bank chest and furnace at the Fort to craft your selected Jewellery. Config.ini needs manual setup to work.", "Fort Forinthry\Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Enchanter", "Jewel Enchant", "Easy", "Casts the selected 'Enchanted Cast' spell to enchant jewellery in your inventory.", "Jewellery Enchant", "Jewel Enchant.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Stringer - Lunar Spell", "String Jewellery", "Easy", "String an inventory of jewellery using the Lunar Spell.", "Lunar Spells\String Jewellery", "Jewel Stringer.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Plank + Refined - Fort Forinthry", "Plank + Refined", "Hard", "Cuts and refines the plank at the Fort.", "Fort Forinthry\Plank + Refined", "Plank + Refined.ahk", "Construction", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Plank Maker - Fort Forinthry", "Plank Maker", "Hard", "Cuts logs into planks using the sawmill at the Fort.", "Fort Forinthry\Plank Maker", "Plank Maker.ahk", "Construction", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Potion Mixer", "Potion Mixer", "Easy", "Combines an inventory of ingredients to make potions.", "Potion Mixer", "Potion Mixer.ahk", "Herblore", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Prayer", "Prayer", "Easy", "Buries an inventory of bones or scatters an inventory of ashes. This is a bank-standing script and does not work with altars.", "Prayer", "Prayer.ahk", "Prayer", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Pyre Crafter", "Pyre Crafter", "Easy", "Adds Sacred Oil to logs to craft Pyre Logs.", "Pyre Crafter", "Pyre Crafter.ahk", "Firemaking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Refined Plank - Fort Forinthry", "Refined Planks", "Hard", "Refines planks at the sawmill so they can be used to make frames.", "Fort Forinthry\Refined Plank", "Refined Plank.ahk", "Construction", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Communion & Material - Focus Storage", "Rituals", "Hard", "Performs the Communion && Material ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Communion & Material\Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Communion & Material - Without Storage", "Rituals", "Hard", "Performs the Communion && Material ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Communion & Material\Without Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Ectoplasm - Focus Storage", "Rituals", "Hard", "Performs the Ectoplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Ectoplasm\Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Ectoplasm - Without Storage", "Rituals", "Hard", "Performs the Ectoplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Ectoplasm\Without Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Essence & Necroplasm - Focus Storage", "Rituals", "Hard", "Performs the Essence && Necroplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Essence & Necroplasm\Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Essence & Necroplasm - Without Storage", "Rituals", "Hard", "Performs the Essence && Necroplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Essence & Necroplasm\Without Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Sift Soil - Lunar Spell", "Sift Soil", "Easy", "Uses the Lunar Spell Sift Soil to screen various soils.", "Lunar Spells\Sift Soil", "Sift Soil.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Slime Collector", "Slime Collector", "Easy", "Collects Buckets of Slime and uses them on magic/enchanted notepaper to note them before collecting more slime.", "Necromancy\Slime Collector - Notepaper", "Slime Collector.ahk", "Necromancy", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Smithing", "Smithing", "Intermediate", "An underpowered smithing script best used for making arrowheads and dart tips. Can be used to smith any item, but does not currently support reheating the forge.", "Smithing", "Smithing.ahk", "Smithing", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Stone Wall - Fort Forinthry", "Stone Wall", "Hard", "Turns limestone bricks into wall segments at the stonecutter in the Fort.", "Fort Forinthry\Stone Wall", "Stone Wall.ahk", "Construction", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Tele Grind - Lunar Spell - No Banking", "Tele Grind", "Easy", "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory.", "Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking", "Tele Grind.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Tele Grind - Lunar Spell - With Banking", "Tele Grind", "Easy", "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory. Does not support banking, assumes items stack in inventory.", "Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking", "Tele Grind.ahk", "Magic", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Watchtower Shortcut", "Watchtower Shortcut", "Hard", "Runs laps of the Watchtower Shortcut. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Watchtower Shortcut", "Watchtower.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Agility - Wilderness", "Wilderness", "Hard", "Runs laps of the Wilderness agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Wilderness", "Wilderness.ahk", "Agility", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Wine Maker", "Wine Maker", "Easy", "Combines jugs of water with grapes with make jugs of wine.", "Wine Maker", "Wine Maker.ahk", "Cooking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Contract Binding", "Contract Binding", "Hard", "Creates Binding Contracts at the obelisk in Taverly.", "Contract Binding", "Contract Binding.ahk", "Summoning", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Fletching - Corrupted Magic Logs", "Fletching", "Easy", "Fletches corrupted magic logs. This method 'destroys' the log and leaves the inventory empty.", "Fletching - Corrupted Magic Logs", "Fletching.ahk", "Fletching", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Prifddinas - Cooking", "Cooking", "Hard", "Uses the bonfire in the Tower of Voices to cook.", "Prifddinas\Cooking", "Cooking.ahk", "Cooking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Prifddinas - Firemaking", "Firemaking", "Hard", "Uses the bonfire in the Tower of Voices to burn logs.", "Prifddinas\Firemaking", "Firemaking.ahk", "Firemaking", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Spinning Wheel - Fort Forinthry", "Spinning Wheel", "Hard", "Crafts various items using the spinning wheel in the Rangers Workshop.", "Fort Forinthry\Spinning Wheel", "Spinning Wheel.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Spinning Wheel - Fungal Bowstring - Fort Forinthry", "Fungal Bowstring", "Easy", "Creates fungal bowstrings using the spinning wheel in the Rangers Workshop.", "Fort Forinthry\Spinning Wheel", "Fungal Bowstring.ahk", "Crafting", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Disassembly - Invention", "Disassembly", "Easy", "Disassembles items using a hotkey to gather materials for the Invention skill.", "Invention\Disassembly", "Disassembly.ahk", "Invention", "Mixed", true)
+	LLARS_SelectorRegistryAdd(registry, "Sharp Shell Burning", "Sharp Shell Burning", "Easy", "Uses the Right-Click Ignite option on Sharp Shell Shards for Firemaking XP.", "Sharp Shell Burning", "Shell Burning.ahk", "Firemaking", "Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Archaeology - Excavate", "Archaeology - Excavate", "Hard", "Monitors Archaeology XP through ALT1 AfkWarden and reacts when XP gains stop. ALT1 with AfkWarden is required.", "Archaeology\Excavate", "Excavate.ahk", "Archaeology", "Color+Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Croesus Front", "Croesus Front", "Hard", "Monitors XP through ALT1 AfkWarden and clicks the configured Decaying Guard location when XP gains stop. ALT1 with AfkWarden is required.", "Croesus Front", "Croesus Front.ahk", "Hunter", "Color+Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Eternal Tree", "Eternal Tree", "Easy", "Finds and cuts Eternal Trees using built-in color detection, then tracks the selected tree until it is depleted before finding the next one.", "Eternal Tree", "Eternal Tree.ahk", "Woodcutting", "None", false)
+	LLARS_SelectorRegistryAdd(registry, "Waterfall Fishing", "Waterfall Fishing", "Hard", "Monitors Waterfall Fishing XP through ALT1 AfkWarden and clicks the configured fishing spot when XP gains stop. ALT1 with AfkWarden is required.", "Waterfall Fishing", "Waterfall Fishing.ahk", "Fishing", "Color+Coordinate", true)
+	LLARS_SelectorRegistryAdd(registry, "Divination - Divine Conversion - Monolith Power", "Divination - Divine Conversion - Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Divine Conversion - Monolith Power.", "Divination\Divine Conversion - Monolith Power", "Divination - High Contrast.ahk", "Divination", "None", false)
+	LLARS_SelectorRegistryAdd(registry, "Divination - Normal - Non-Monolith Power", "Divination - Normal - Non-Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Normal - Non-Monolith Power.", "Divination\Normal - Non-Monolith Power", "Divination - High Contrast.ahk", "Divination", "None", false)
+	return registry
+}
+
+LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Description, RelativeDirectory, FileName, Category, SetupType, RequiresLocalConfig)
+{
+	record := {Name: Name, InfoTitle: InfoTitle, Difficulty: Difficulty, Description: Description, RelativeDirectory: RelativeDirectory, FileName: FileName, Category: Category, SetupType: SetupType, RequiresLocalConfig: RequiresLocalConfig}
+	registry.Entries.Push(record)
+	registry.ByName[Name] := record
+	return record
+}
+
+LLARS_SelectorValidateRegistry(registry, ByRef errorDetail := "")
+{
+	errorDetail := ""
+	if !IsObject(registry) || !IsObject(registry.Entries) || !IsObject(registry.ByName)
+	{
+		errorDetail := "Registry container is unavailable."
+		return false
+	}
+
+	seenNames := {}
+	seenTargets := {}
+	for index, record in registry.Entries
+	{
+		if !IsObject(record)
+		{
+			errorDetail := "Registry entry " . index . " is not an object."
+			return false
+		}
+
+		if (record.Name = "" || record.InfoTitle = "" || record.Description = "" || record.RelativeDirectory = "" || record.FileName = "")
+		{
+			errorDetail := "Registry entry " . index . " has an empty required field."
+			return false
+		}
+
+		if (record.Difficulty != "Easy" && record.Difficulty != "Intermediate" && record.Difficulty != "Hard")
+		{
+			errorDetail := "Registry entry " . record.Name . " has an invalid setup difficulty."
+			return false
+		}
+
+		if (record.Category = "")
+		{
+			errorDetail := "Registry entry " . record.Name . " has an empty category."
+			return false
+		}
+
+		if (record.SetupType != "None" && record.SetupType != "Hotkey" && record.SetupType != "Coordinate" && record.SetupType != "Color" && record.SetupType != "Color+Coordinate" && record.SetupType != "Mixed" && record.SetupType != "Timer")
+		{
+			errorDetail := "Registry entry " . record.Name . " has an invalid setup type."
+			return false
+		}
+
+		if (record.RequiresLocalConfig != true && record.RequiresLocalConfig != false)
+		{
+			errorDetail := "Registry entry " . record.Name . " has an invalid local-config flag."
+			return false
+		}
+
+		nameKey := record.Name
+		StringLower, nameKey, nameKey
+		if seenNames.HasKey(nameKey)
+		{
+			errorDetail := "Duplicate Selector display name: " . record.Name
+			return false
+		}
+		seenNames[nameKey] := true
+
+		targetPath := A_ScriptDir . "\Scripts\" . record.RelativeDirectory . "\" . record.FileName
+		if !FileExist(targetPath)
+		{
+			errorDetail := "Missing Selector target: " . record.Name . " -> " . targetPath
+			return false
+		}
+
+		targetKey := targetPath
+		StringLower, targetKey, targetKey
+		if seenTargets.HasKey(targetKey)
+		{
+			errorDetail := "Duplicate Selector target: " . record.Name
+			return false
+		}
+		seenTargets[targetKey] := true
+	}
+
+	return true
+}
+
+LLARS_SelectorRegistryNameList(registry)
+{
+	names := ""
+	if !IsObject(registry) || !IsObject(registry.Entries)
+		return names
+
+	for _, record in registry.Entries
+		names .= (names = "" ? "" : "|") . record.Name
+	return names
+}
+
+LLARS_SelectorRegistryCategoryList(registry)
+{
+	categories := ""
+	seen := {}
+	if !IsObject(registry) || !IsObject(registry.Entries)
+		return categories
+
+	for _, record in registry.Entries
+	{
+		if (record.Category = "" || seen.HasKey(record.Category))
+			continue
+		seen[record.Category] := true
+		categories .= (categories = "" ? "" : "|") . record.Category
+	}
+	if (categories != "")
+		Sort, categories, D|
+	return categories
+}
+
+LLARS_SelectorGetRecord(scriptName)
+{
+	global LLARS_SelectorRegistry
+	if (scriptName = "" || !IsObject(LLARS_SelectorRegistry) || !IsObject(LLARS_SelectorRegistry.ByName))
+		return ""
+	if !LLARS_SelectorRegistry.ByName.HasKey(scriptName)
+		return ""
+	return LLARS_SelectorRegistry.ByName[scriptName]
+}
 
 ; Loads persistent selector Favorites/Recent from the existing LLARS Config.ini.
 LLARS_SelectorLoadPreferences()
@@ -131,6 +375,29 @@ LLARS_SelectorLoadPreferences()
 	LLARS_SelectorFavorites := LLARS_SelectorSanitizePreferenceList(favorites, 0)
 	LLARS_SelectorRecent := LLARS_SelectorSanitizePreferenceList(recent, 5)
 	return true
+}
+
+LLARS_SelectorLoadWindowPosition(ByRef x, ByRef y)
+{
+	configPath := A_ScriptDir . "\LLARS Config.ini"
+	IniRead, x, %configPath%, Script Selector, window_x,
+	IniRead, y, %configPath%, Script Selector, window_y,
+	return RegExMatch(x, "^-?\d+$") && RegExMatch(y, "^-?\d+$")
+}
+
+LLARS_SelectorSavePosition(hwnd)
+{
+	if (!hwnd)
+		return false
+	WinGetPos, x, y,,, ahk_id %hwnd%
+	if (x = "" || y = "")
+		return false
+	configPath := A_ScriptDir . "\LLARS Config.ini"
+	IniWrite, %x%, %configPath%, Script Selector, window_x
+	if ErrorLevel
+		return false
+	IniWrite, %y%, %configPath%, Script Selector, window_y
+	return !ErrorLevel
 }
 
 ; Keeps only current selector names and removes duplicates from persisted lists.
@@ -156,13 +423,7 @@ LLARS_SelectorSanitizePreferenceList(listText, maxItems := 0)
 
 LLARS_SelectorScriptExists(scriptName)
 {
-	global scriptArray
-	for _, candidate in StrSplit(scriptArray, "|")
-	{
-		if (candidate = scriptName)
-			return true
-	}
-	return false
+	return IsObject(LLARS_SelectorGetRecord(scriptName))
 }
 
 LLARS_SelectorListContains(listText, scriptName)
@@ -218,6 +479,8 @@ LLARS_SelectorApplyFilter()
 
 	GuiControlGet, searchText, , SelectorSearch
 	GuiControlGet, selectorView, , SelectorView
+	GuiControlGet, selectorCategory, , SelectorCategory
+	GuiControlGet, selectorDifficulty, , SelectorDifficulty
 	searchText := Trim(searchText)
 
 	if (selectorView = "Recent")
@@ -232,6 +495,13 @@ LLARS_SelectorApplyFilter()
 		if (scriptName = "")
 			continue
 		if (selectorView = "Favorites" && !LLARS_SelectorListContains(LLARS_SelectorFavorites, scriptName))
+			continue
+		record := LLARS_SelectorGetRecord(scriptName)
+		if !IsObject(record)
+			continue
+		if (selectorCategory != "All Categories" && record.Category != selectorCategory)
+			continue
+		if (selectorDifficulty != "All Difficulties" && record.Difficulty != selectorDifficulty)
 			continue
 		if (searchText != "" && !InStr(scriptName, searchText, false))
 			continue
@@ -304,6 +574,8 @@ return
 SelectorClearFilters:
 GuiControl, , SelectorSearch,
 GuiControl, ChooseString, SelectorView, All Scripts
+GuiControl, ChooseString, SelectorCategory, All Categories
+GuiControl, ChooseString, SelectorDifficulty, All Difficulties
 LLARS_SelectorApplyFilter()
 GuiControl, Focus, SelectorSearch
 return
@@ -312,48 +584,112 @@ return
 ; |     FUNCTION STORAGE     -     FUNCTION STORAGE     -     FUNCTION STORAGE     |
 ; ==================================================================================
 
-; Registers Windows message handlers used to keep the custom LLARS
-; windows movable and to monitor window position changes.
-OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
-OnMessage(0x0201, "WM_LBUTTONDOWN")
-WM_LBUTTONDOWN() {
-	If (A_Gui)
-		PostMessage, 0xA1, 2
-}
-WM_WINDOWPOSCHANGED() {
-	CheckPOS()
+; Allows the borderless Selector to be dragged from its background/header
+; without stealing clicks from interactive controls. The move is intentionally
+; unclamped until Windows ends the drag so crossing monitor boundaries works.
+WM_LBUTTONDOWN(wParam := 0, lParam := 0, msg := 0, hwnd := 0) {
+	global LLARSSelectorHwnd, LLARS_SelectorMoving
+	if (!LLARSSelectorHwnd || !hwnd)
+		return
+
+	rootHwnd := DllCall("GetAncestor", "Ptr", hwnd, "UInt", 2, "Ptr")
+	if (rootHwnd != LLARSSelectorHwnd)
+		return
+
+	WinGetClass, clickedClass, ahk_id %hwnd%
+	if (hwnd != LLARSSelectorHwnd && clickedClass != "Static")
+		return
+
+	LLARS_SelectorMoving := true
+	PostMessage, 0xA1, 2,,, ahk_id %LLARSSelectorHwnd%
 }
 
-; Keeps supported LLARS windows inside the visible screen area when
-; their position changes or they are moved partially off-screen.
-CheckPOS()
+WM_ENTERSIZEMOVE(wParam := 0, lParam := 0, msg := 0, hwnd := 0) {
+	global LLARSSelectorHwnd, LLARS_SelectorMoving
+	if (hwnd = LLARSSelectorHwnd)
+		LLARS_SelectorMoving := true
+}
+
+WM_EXITSIZEMOVE(wParam := 0, lParam := 0, msg := 0, hwnd := 0) {
+	global LLARSSelectorHwnd, LLARS_SelectorMoving
+	if (hwnd = LLARSSelectorHwnd)
+	{
+		LLARS_SelectorMoving := false
+		CheckPOS(hwnd)
+		LLARS_SelectorSavePosition(hwnd)
+	}
+}
+
+; Recover the Selector after monitor attach/detach or desktop topology changes
+; without continuously clamping the window during a user drag.
+WM_DISPLAYCHANGE(wParam := 0, lParam := 0, msg := 0, hwnd := 0) {
+	global LLARSSelectorHwnd, LLARS_SelectorMoving
+	if (!LLARS_SelectorMoving && LLARSSelectorHwnd)
+	{
+		CheckPOS(LLARSSelectorHwnd)
+		LLARS_SelectorSavePosition(LLARSSelectorHwnd)
+	}
+}
+
+; Keeps the Selector inside the work area of the monitor nearest the window.
+; This supports negative desktop coordinates and monitor removal without assuming
+; the primary display dimensions.
+CheckPOS(hwnd := "")
 {
-	IfWinNotActive, LLARS
-	return
-	
-	WinGetPos, GUIx, GUIy, GUIw, GUIh, LLARS
-	
-	xmin := GUIx
-	xmax := GUIw + GUIx
-	ymin := GUIy
-	ymax := GUIh + GUIy
-	xadj := A_ScreenWidth - GUIw
-	yadj := A_ScreenHeight - GUIh
-	
+	global LLARSSelectorHwnd
+	if (hwnd = "")
+		hwnd := LLARSSelectorHwnd
+	if (!hwnd || hwnd != LLARSSelectorHwnd)
+		return
+
+	WinGetPos, GUIx, GUIy, GUIw, GUIh, ahk_id %hwnd%
+	if (GUIw = "" || GUIh = "")
+		return
+
+	hMonitor := DllCall("MonitorFromWindow", "Ptr", hwnd, "UInt", 2, "Ptr")
+	if (hMonitor)
+	{
+		VarSetCapacity(monitorInfo, 40, 0)
+		NumPut(40, monitorInfo, 0, "UInt")
+		if DllCall("GetMonitorInfo", "Ptr", hMonitor, "Ptr", &monitorInfo)
+		{
+			workLeft := NumGet(monitorInfo, 20, "Int")
+			workTop := NumGet(monitorInfo, 24, "Int")
+			workRight := NumGet(monitorInfo, 28, "Int")
+			workBottom := NumGet(monitorInfo, 32, "Int")
+		}
+	}
+
+	if (workRight = "" || workBottom = "")
+	{
+		SysGet, workLeft, 76
+		SysGet, workTop, 77
+		SysGet, virtualWidth, 78
+		SysGet, virtualHeight, 79
+		workRight := workLeft + virtualWidth
+		workBottom := workTop + virtualHeight
+	}
+
 	X := GUIx
 	Y := GUIy
-	
-	if (xmin < 0)
-		X := 0
-	if (ymin < 0)
-		Y := 0
-	if (xmax > A_ScreenWidth)
-		X := xadj
-	if (ymax > A_ScreenHeight)
-		Y := yadj
-	
+	maxX := workRight - GUIw
+	maxY := workBottom - GUIh
+	if (maxX < workLeft)
+		maxX := workLeft
+	if (maxY < workTop)
+		maxY := workTop
+
+	if (X < workLeft)
+		X := workLeft
+	if (Y < workTop)
+		Y := workTop
+	if (X > maxX)
+		X := maxX
+	if (Y > maxY)
+		Y := maxY
+
 	if (X != GUIx || Y != GUIy)
-		WinMove, LLARS,, X, Y
+		WinMove, ahk_id %hwnd%,, X, Y
 }
 
 ; Finds existing LLARS AutoHotkey windows and closes them
@@ -415,7 +751,7 @@ GuiBorderHard()
 	Gui Border: +ToolWindow
 	
 	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
+	Gui Border: Show, NoActivate xcenter y0 w505 h205, BottomGUI
 }
 
 ; Green border for scripts that are easy to configure.
@@ -427,7 +763,7 @@ GuiBorderEasy()
 	Gui Border: +ToolWindow
 	
 	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
+	Gui Border: Show, NoActivate xcenter y0 w505 h205, BottomGUI
 }
 
 ; Orange border for scripts with intermediate setup difficulty.
@@ -439,7 +775,7 @@ GuiBorderIntermediate()
 	Gui Border: +ToolWindow
 	
 	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w505 h165, BottomGUI
+	Gui Border: Show, NoActivate xcenter y0 w505 h205, BottomGUI
 }
 
 GuiReset()
@@ -470,1639 +806,68 @@ if A_GuiEvent = Normal
 {
 	GuiControlGet, selectedScript, , ScriptListBox
 	LLARS_SelectorUpdateFavoriteButton()
-	Switch selectedScript
-	{	
-		Case "AFK Combat":
-		script := "AFK Combat"
-		scriptinfo := "Uses Agro pots/flasks to stay in combat for a predetermined length of time. Other pots/flasks can be used by changing the Config.ini"
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Alchemy":
-		script := "Alchemy"
-		scriptinfo := "Low/High Alchs a selected item(s) in your inventory for a predetermined amount of times."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Amulet Stringer":
-		script := "Amulet Stringer"
-		scriptinfo := "Strings amulets by using in-game bank preset to make a predetermined amount of inventories of jewellery."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Anti-AFK":
-		script := "Anti-AFK"
-		scriptinfo := "Moves the mouse within the RuneScape client border, based on a random timer configured through Config.ini"
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Armour Crafter":
-		script := "Armour Crafter"
-		scriptinfo := "Crafts your selected armour for a predetermined amount of runs."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Arrow Fletcher":
-		script := "Arrow Fletcher"
-		scriptinfo := "Adds the tip to a headless arrow. Can be used for darts and/or bolts."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Ash to Incense":
-		script := "Ash to Incense"
-		scriptinfo := "Adds ash to an already crafted incense stick. Use this after 'Incense Crafter' and before 'Herb to Incense'."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "AutoClicker":
-		script := "AutoClicker"
-		scriptinfo := "Clicks randomly within a predetermined coordinate range set by the user. Timer for the clicks can be changed in the Config.ini"
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "AutoTele":
-		script := "AutoTele"
-		scriptinfo := "Casts the same Teleportation spell a set number of times using hotkeys."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bake Pie - Lunar Spell":
-		script := "Bake Pie"
-		scriptinfo := "Bakes all uncooked pies in your inventory."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Bake Pie - Lunar Spell
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bar Smelter":
-		script := "Bar Smelter"
-		scriptinfo := "Creates metal bars, type of bar is set by the user as is the run count."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bar Smelter - Smelting Gloves":
-		script := "Smelting Glove"
-		scriptinfo := "Uses the Smelting Gauntlets from Family Crest Quest to make Gold Bars. Smelted Gold Bars go to metal bank and not inventory."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Bar Smelter - Smelting Gloves
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Barbarian - Advanced":
-		script := "Barbarian Course"
-		scriptinfo := "Runs laps of the Barbarian - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Barbarian - Advanced
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Barbarian - Basic":
-		script := "Barbarian Course"
-		scriptinfo := "Runs laps of the Barbarian - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Barbarian - Basic
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bones 2 Bananas":
-		script := "Bones 2 Bananas"
-		scriptinfo := "Turns all normal bones, big bones and monkey bones in your inventory into bananas."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bow Cutter":
-		script := "Bow Cutter"
-		scriptinfo := "Cuts logs into unstrung bows. Use 'Bow Stringer' to string the bows after."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Bow Stringer":
-		script := "Bow Stringer"
-		scriptinfo := "Combines bowstring with unstrung bows using the in-game bank preset hotkey."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Brick Maker - Fort Forinthry":
-		script := "Limestone Brick"
-		scriptinfo := "Cuts limtestone into limestone bricks using the stonecutter."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Brick Maker - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Burthorpe":
-		script := "Burthorpe"
-		scriptinfo := "Runs laps of the Burthorpe agility course. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Burthorpe
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Candle Crafter":
-		script := "Candle Crafter"
-		scriptinfo := "Crafts candles for the Necromancy skill."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Herb Cleaner - Skillcape":
-		script := "Skillcape Cleaner"
-		scriptinfo := "Uses the 99/120 Herblore Skillcape to instantly clean a full inventory of dirty herbs. Requires the Skillcape to be worn."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Herb Cleaner - Skillcape
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Cooking - Burthorpe":
-		script := "Cooking"
-		scriptinfo := "Walks between the Range and main bank in Burthorpe to cook an inventory of food. Fort Forinthry cooking is recommended over this script."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Cooking - Burthorpe
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Cooking - Fort Forinthry":
-		script := "Cooking"
-		scriptinfo := "Cooks food at the Fort using the bank chest next to the Range."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Cooking - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Fire Urn - Lunar Spell":
-		script := "Fire Urn"
-		scriptinfo := "Uses the Lunar Spell 'Fire Urn' to fire an inventory of unfired urns."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Fire Urn - Lunar Spell
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Fletching - Corrupted Magic Logs":
-		script := "Fletching"
-		scriptinfo := "Fletches corrupted magic logs. This method 'destroys' the log and leaves the inventory empty."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Frame Maker - Fort Forinthry":
-		script := "Frame Maker"
-		scriptinfo := "Walks between the bank chest and woodworking bench to make frames."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Frame Maker - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Gem Cutter":
-		script := "Gem Cutter"
-		scriptinfo := "Cuts an inventory of uncut gems, opens the bank, withdraws more, and repeats."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Glassblowing":
-		script := "Glassblowing"
-		scriptinfo := "Turns molten glass into your selected glass item. Crafts full inventories, banks, and repeats."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Gnome - Advanced":
-		script := "Gnome Course"
-		scriptinfo := "Runs laps of the Gnome - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Gnome - Advanced
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Gnome - Basic":
-		script := "Gnome Course"
-		scriptinfo := "Runs laps of the Gnome - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Gnome - Basic
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Herb to Incense":
-		script := "Herb to Incense"
-		scriptinfo := "Adds a herb to an ashy incense stick. Use 'Ash to Incense' first or ashy incense sticks from the Grand Exchange."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Herb Cleaner":
-		script := "Herb Cleaner"
-		scriptinfo := "Cleans full inventories of dirty herbs."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Het's Oasis":
-		script := "Het's Oasis"
-		scriptinfo := "Runs laps of the Het's Oasis agility course. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Het's Oasis
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Incense Crafter":
-		script := "Incense Crafter"
-		scriptinfo := "Cuts logs into incense sticks. Use this before 'Ash to Incense'."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Ink Crafter":
-		script := "Ink Crafter"
-		scriptinfo := "Crafts ink for the Necromancy skill."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Jewellery Crafter - Lumbridge":
-		script := "Jewellery Crafter"
-		scriptinfo := "Runs between the Combat Academy bank chest and Lumbridge Furnace to craft your selected Jewellery. Config.ini needs manual setup to work."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Jewellery Crafter - Lumbridge
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Jewellery Crafter - Fort Forinthry":
-		script := "Jewellery Crafter"
-		scriptinfo := "Runs between the bank chest and furnace at the Fort to craft your selected Jewellery. Config.ini needs manual setup to work."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Jewellery Crafter - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Jewellery Enchanter":
-		script := "Jewel Enchant"
-		scriptinfo := "Casts the selected 'Enchanted Cast' spell to enchant jewellery in your inventory."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Jewellery Stringer - Lunar Spell":
-		script := "String Jewellery"
-		scriptinfo := "String an inventory of jewellery using the Lunar Spell."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Jewellery Stringer - Lunar Spell
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Plank + Refined - Fort Forinthry":
-		script := "Plank + Refined"
-		scriptinfo := "Cuts and refines the plank at the Fort."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Plank + Refined - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Plank Maker - Fort Forinthry":
-		script := "Plank Maker"
-		scriptinfo := "Cuts logs into planks using the sawmill at the Fort."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Plank Maker - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Potion Mixer":
-		script := "Potion Mixer"
-		scriptinfo := "Combines an inventory of ingredients to make potions."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Prayer":
-		script := "Prayer"
-		scriptinfo := "Buries an inventory of bones or scatters an inventory of ashes. This is a bank-standing script and does not work with altars."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Pyre Crafter":
-		script := "Pyre Crafter"
-		scriptinfo := "Adds Sacred Oil to logs to craft Pyre Logs."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Refined Plank - Fort Forinthry":
-		script := "Refined Planks"
-		scriptinfo := "Refines planks at the sawmill so they can be used to make frames."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Refined Plank - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Rituals - Communion & Material - Focus Storage":
-		script := "Rituals"
-		scriptinfo := "Performs the Communion && Material ritual using the focus storage for material. Place materials for rituals into focus storage for this to work."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Rituals - Communion && Material - Focus Storage
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Rituals - Communion & Material - Without Storage":
-		script := "Rituals"
-		scriptinfo := "Performs the Communion && Material ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Rituals - Communion && Material - Without Storage
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Rituals - Ectoplasm - Focus Storage":
-		script := "Rituals"
-		scriptinfo := "Performs the Ectoplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Rituals - Ectoplasm - Focus Storage
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Rituals - Ectoplasm - Without Storage":
-		script := "Rituals"
-		scriptinfo := "Performs the Ectoplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Rituals - Ectoplasm - Without Storage
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Rituals - Essence & Necroplasm - Focus Storage":
-		script := "Rituals"
-		scriptinfo := "Performs the Essence && Necroplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Rituals - Essence && Necroplasm - Focus Storage
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Rituals - Essence & Necroplasm - Without Storage":
-		script := "Rituals"
-		scriptinfo := "Performs the Essence && Necroplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Rituals - Essence && Necroplasm - Without Storage
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Sift Soil - Lunar Spell":
-		script := "Sift Soil"
-		scriptinfo := "Uses the Lunar Spell Sift Soil to screen various soils."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Sift Soil - Lunar Spell
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Slime Collector":
-		script := "Slime Collector"
-		scriptinfo := "Collects Buckets of Slime and uses them on magic/enchanted notepaper to note them before collecting more slime."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Slime Collector
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Smithing":
-		script := "Smithing"
-		scriptinfo := "An underpowered smithing script best used for making arrowheads and dart tips. Can be used to smith any item, but does not currently support reheating the forge."
-		GuiReset()
-		SetSetupDifficulty("Intermediate")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold c0xCC5500
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Intermediate
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Stone Wall - Fort Forinthry":
-		script := "Stone Wall"
-		scriptinfo := "Turns limestone bricks into wall segments at the stonecutter in the Fort."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Stone Wall - Fort Forinthry
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Tele Grind - Lunar Spell - No Banking":
-		script := "Tele Grind"
-		scriptinfo := "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Tele Grind - Lunar Spell - No Banking
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Tele Grind - Lunar Spell - With Banking":
-		script := "Tele Grind"
-		scriptinfo := "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory. Does not support banking, assumes items stack in inventory."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Tele Grind - Lunar Spell - With Banking
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Watchtower Shortcut":
-		script := "Watchtower Shortcut"
-		scriptinfo := "Runs laps of the Watchtower Shortcut. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Watchtower Shortcut
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Agility - Wilderness":
-		script := "Wilderness"
-		scriptinfo := "Runs laps of the Wilderness agility course. Can be tricky to configure coordinates due to large amounts of walking."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, Agility - Wilderness
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Wine Maker":
-		script := "Wine Maker"
-		scriptinfo := "Combines jugs of water with grapes with make jugs of wine."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Contract Binding":
-		script := "Contract Binding"
-		scriptinfo := "Creates Binding Contracts at the obelisk in Taverly."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Prifddinas - Cooking":
-		script := "Cooking"
-		scriptinfo := "Uses the bonfire in the Tower of Voices to cook."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Prifddinas - Firemaking":
-		script := "Firemaking"
-		scriptinfo := "Uses the bonfire in the Tower of Voices to burn logs."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Spinning Wheel - Fort Forinthry":
-		script := "Spinning Wheel"
-		scriptinfo := "Crafts various items using the spinning wheel in the Rangers Workshop."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Spinning Wheel - Fungal Bowstring - Fort Forinthry":
-		script := "Fungal Bowstring"
-		scriptinfo := "Creates fungal bowstrings using the spinning wheel in the Rangers Workshop."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Disassembly - Invention":
-		script := "Disassembly"
-		scriptinfo := "Disassembles items using a hotkey to gather materials for the Invention skill."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-		
-		Case "Sharp Shell Burning":
-		script := "Sharp Shell Burning"
-		scriptinfo := "Uses the Right-Click Ignite option on Sharp Shell Shards for Firemaking XP."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
-		Case "Archaeology - Excavate":
-		script := "Archaeology - Excavate"
-		scriptinfo := "Monitors Archaeology XP through ALT1 AfkWarden and reacts when XP gains stop. ALT1 with AfkWarden is required."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
-		Case "Croesus Front":
-		script := "Croesus Front"
-		scriptinfo := "Monitors XP through ALT1 AfkWarden and clicks the configured Decaying Guard location when XP gains stop. ALT1 with AfkWarden is required."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
-		Case "Eternal Tree":
-		script := "Eternal Tree"
-		scriptinfo := "Finds and cuts Eternal Trees using built-in color detection, then tracks the selected tree until it is depleted before finding the next one."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
-		Case "Waterfall Fishing":
-		script := "Waterfall Fishing"
-		scriptinfo := "Monitors Waterfall Fishing XP through ALT1 AfkWarden and clicks the configured fishing spot when XP gains stop. ALT1 with AfkWarden is required."
-		GuiReset()
-		SetSetupDifficulty("Hard")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cRed
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Hard
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
-		Case "Divination - Divine Conversion - Monolith Power":
-		script := "Divination - Divine Conversion - Monolith Power"
-		scriptinfo := "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Divine Conversion - Monolith Power."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
-		Case "Divination - Normal - Non-Monolith Power":
-		script := "Divination - Normal - Non-Monolith Power"
-		scriptinfo := "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Normal - Non-Monolith Power."
-		GuiReset()
-		SetSetupDifficulty("Easy")
-		Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-		Gui Info: Color, White
-		Gui Info: Font, s14 bold underline cBlue
-		Gui Info: Add, Text, center x5 w480, %Script%
-		Gui Info: Font, s13 normal bold cGreen
-		Gui Info: Add, Text, center x5 w480, Setup Difficulty: Easy
-		Gui Info: Font, S12 cBlack
-		Gui Info: Add, Text, center x5 w480, %scriptinfo%
-		Gui Info: +ToolWindow
-		Gui Info: -caption
-		Gui Info: Show, NoActivate xcenter y9999 w490 h150, TopGUI
-		GuiBalance()
-
+	record := LLARS_SelectorGetRecord(selectedScript)
+	if !IsObject(record)
+	{
+		GuiReset()
+		return
 	}
-	return
+
+	script := record.InfoTitle
+	scriptinfo := record.Description
+	difficulty := record.Difficulty
+	category := record.Category
+	setupType := record.SetupType
+	localConfigText := record.RequiresLocalConfig ? "Yes" : "No"
+	GuiReset()
+	SetSetupDifficulty(difficulty)
+	Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
+	Gui Info: Color, White
+	Gui Info: Font, s14 bold underline cBlue
+	Gui Info: Add, Text, center x5 w480, %Script%
+	LLARS_SelectorSetDifficultyFont(difficulty)
+	Gui Info: Add, Text, center x5 w480, Setup Difficulty: %difficulty%
+	Gui Info: Font, s11 norm c0x303030
+	Gui Info: Add, Text, center x5 w480, Category: %category%   |   Setup: %setupType%   |   Local config required: %localConfigText%
+	Gui Info: Font, S12 cBlack
+	Gui Info: Add, Text, center x5 w480, %scriptinfo%
+	Gui Info: +ToolWindow
+	Gui Info: -caption
+	Gui Info: Show, NoActivate xcenter y9999 w490 h190, TopGUI
+	GuiBalance()
+}
+return
+
+LLARS_SelectorSetDifficultyFont(Difficulty)
+{
+	if (Difficulty = "Easy")
+		Gui Info: Font, s13 normal bold cGreen
+	else if (Difficulty = "Intermediate")
+		Gui Info: Font, s13 normal bold c0xCC5500
+	else
+		Gui Info: Font, s13 normal bold cRed
 }
 
 ; =================================================================
 ; |     SCRIPT LAUNCH MAPPING     -     SCRIPT LAUNCH MAPPING     |
 ; =================================================================
 
-; Existing selector entries now resolve from the single LLARS Scripts root.
+; Selection, information, and launch all resolve from the same registry record.
 Select:
 GuiControlGet, selectedScript, , ScriptListBox
 
 if (selectedScript = "")
 	return
 
-scriptDir := ""
-scriptFile := ""
-
-Switch selectedScript
+record := LLARS_SelectorGetRecord(selectedScript)
+if !IsObject(record)
 {
-	Case "AFK Combat":
-		scriptDir := LLARS_SCRIPTS_DIR . "\AFK Combat"
-		scriptFile := "AFK Combat.ahk"
-
-	Case "Alchemy":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Alchemy"
-		scriptFile := "Alchemy.ahk"
-
-	Case "Amulet Stringer":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Amulet Stringer"
-		scriptFile := "Amulet Stringer.ahk"
-
-	Case "Anti-AFK":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Anti-AFK"
-		scriptFile := "Anti-AFK.ahk"
-
-	Case "Armour Crafter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Armour Crafter"
-		scriptFile := "Armour Crafter.ahk"
-
-	Case "Arrow Fletcher":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Arrow Fletcher"
-		scriptFile := "Arrow Fletcher.ahk"
-
-	Case "Ash to Incense":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Incense\Ash to Incense"
-		scriptFile := "Ash to Incense.ahk"
-
-	Case "AutoClicker":
-		scriptDir := LLARS_SCRIPTS_DIR . "\AutoClicker"
-		scriptFile := "AutoClicker.ahk"
-
-	Case "AutoTele":
-		scriptDir := LLARS_SCRIPTS_DIR . "\AutoTele"
-		scriptFile := "AutoTele.ahk"
-
-	Case "Bake Pie - Lunar Spell":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Bake Pie"
-		scriptFile := "Bake Pie.ahk"
-
-	Case "Bar Smelter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Bar Smelter"
-		scriptFile := "Bar Smelter.ahk"
-
-	Case "Bar Smelter - Smelting Gloves":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Bar Smelter"
-		scriptFile := "Smelting Glove.ahk"
-
-	Case "Agility - Barbarian - Advanced":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Barbarian\Advanced"
-		scriptFile := "Barbarian Course.ahk"
-
-	Case "Agility - Barbarian - Basic":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Barbarian\Basic"
-		scriptFile := "Barbarian Course.ahk"
-
-	Case "Bones 2 Bananas":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Bones 2 Bananas"
-		scriptFile := "Bones 2 Bananas.ahk"
-
-	Case "Bow Cutter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Bow Cutter"
-		scriptFile := "Bow Cutter.ahk"
-
-	Case "Bow Stringer":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Bow Stringer"
-		scriptFile := "Bow Stringer.ahk"
-
-	Case "Brick Maker - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Limestone Brick"
-		scriptFile := "Brick Maker.ahk"
-
-	Case "Agility - Burthorpe":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Burthorpe"
-		scriptFile := "Burthorpe.ahk"
-
-	Case "Candle Crafter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Candle Crafter"
-		scriptFile := "Candle Crafter.ahk"
-
-	Case "Herb Cleaner - Skillcape":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Herb Cleaner - Skillcape"
-		scriptFile := "Skillcape Cleaner.ahk"
-
-	Case "Cooking - Burthorpe":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Cooking"
-		scriptFile := "Cooking.ahk"
-
-	Case "Cooking - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Cooking"
-		scriptFile := "Cooking.ahk"
-
-	Case "Fire Urn - Lunar Spell":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Fire Urn"
-		scriptFile := "Fire Urn.ahk"
-
-	Case "Frame Maker - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Frame Maker"
-		scriptFile := "Frame Maker.ahk"
-
-	Case "Gem Cutter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Gem Cutter"
-		scriptFile := "Gem Cutter.ahk"
-
-	Case "Glassblowing":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Glassblowing"
-		scriptFile := "Glassblowing.ahk"
-
-	Case "Agility - Gnome - Advanced":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Gnome\Advanced"
-		scriptFile := "Gnome Course.ahk"
-
-	Case "Agility - Gnome - Basic":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Gnome\Basic"
-		scriptFile := "Gnome Course.ahk"
-
-	Case "Herb to Incense":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Incense\Herb to Incense"
-		scriptFile := "Herb to Incense.ahk"
-
-	Case "Herb Cleaner":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Herb Cleaner"
-		scriptFile := "Herb Cleaner.ahk"
-
-	Case "Agility - Het's Oasis":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Het's Oasis"
-		scriptFile := "Het's Oasis.ahk"
-
-	Case "Incense Crafter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Incense\Incense Crafter"
-		scriptFile := "Incense Crafter.ahk"
-
-	Case "Ink Crafter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Ink Crafter"
-		scriptFile := "Ink Crafter.ahk"
-
-	Case "Jewellery Crafter - Lumbridge":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Jewellery Crafter"
-		scriptFile := "Jewellery Crafter.ahk"
-
-	Case "Jewellery Crafter - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Jewellery Crafter"
-		scriptFile := "Jewellery Crafter.ahk"
-
-	Case "Jewellery Enchanter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Jewellery Enchant"
-		scriptFile := "Jewel Enchant.ahk"
-
-	Case "Jewellery Stringer - Lunar Spell":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\String Jewellery"
-		scriptFile := "Jewel Stringer.ahk"
-
-	Case "Plank + Refined - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Plank + Refined"
-		scriptFile := "Plank + Refined.ahk"
-
-	Case "Plank Maker - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Plank Maker"
-		scriptFile := "Plank Maker.ahk"
-
-	Case "Potion Mixer":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Potion Mixer"
-		scriptFile := "Potion Mixer.ahk"
-
-	Case "Prayer":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Prayer"
-		scriptFile := "Prayer.ahk"
-
-	Case "Pyre Crafter":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Pyre Crafter"
-		scriptFile := "Pyre Crafter.ahk"
-
-	Case "Refined Plank - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Refined Plank"
-		scriptFile := "Refined Plank.ahk"
-
-	Case "Rituals - Communion & Material - Focus Storage":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Rituals\Communion & Material\Focus Storage"
-		scriptFile := "Rituals.ahk"
-
-	Case "Rituals - Communion & Material - Without Storage":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Rituals\Communion & Material\Without Focus Storage"
-		scriptFile := "Rituals.ahk"
-
-	Case "Rituals - Ectoplasm - Focus Storage":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Rituals\Ectoplasm\Focus Storage"
-		scriptFile := "Rituals.ahk"
-
-	Case "Rituals - Ectoplasm - Without Storage":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Rituals\Ectoplasm\Without Focus Storage"
-		scriptFile := "Rituals.ahk"
-
-	Case "Rituals - Essence & Necroplasm - Focus Storage":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Rituals\Essence & Necroplasm\Focus Storage"
-		scriptFile := "Rituals.ahk"
-
-	Case "Rituals - Essence & Necroplasm - Without Storage":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Rituals\Essence & Necroplasm\Without Focus Storage"
-		scriptFile := "Rituals.ahk"
-
-	Case "Sift Soil - Lunar Spell":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Sift Soil"
-		scriptFile := "Sift Soil.ahk"
-
-	Case "Slime Collector":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Necromancy\Slime Collector - Notepaper"
-		scriptFile := "Slime Collector.ahk"
-
-	Case "Smithing":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Smithing"
-		scriptFile := "Smithing.ahk"
-
-	Case "Stone Wall - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Stone Wall"
-		scriptFile := "Stone Wall.ahk"
-
-	Case "Tele Grind - Lunar Spell - No Banking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking"
-		scriptFile := "Tele Grind.ahk"
-
-	Case "Tele Grind - Lunar Spell - With Banking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking"
-		scriptFile := "Tele Grind.ahk"
-
-	Case "Agility - Watchtower Shortcut":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Watchtower Shortcut"
-		scriptFile := "Watchtower.ahk"
-
-	Case "Agility - Wilderness":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Agility\Wilderness"
-		scriptFile := "Wilderness.ahk"
-
-	Case "Wine Maker":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Wine Maker"
-		scriptFile := "Wine Maker.ahk"
-
-	Case "Contract Binding":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Contract Binding"
-		scriptFile := "Contract Binding.ahk"
-
-	Case "Fletching - Corrupted Magic Logs":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fletching - Corrupted Magic Logs"
-		scriptFile := "Fletching.ahk"
-
-	Case "Prifddinas - Cooking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Prifddinas\Cooking"
-		scriptFile := "Cooking.ahk"
-
-	Case "Prifddinas - Firemaking":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Prifddinas\Firemaking"
-		scriptFile := "Firemaking.ahk"
-
-	Case "Spinning Wheel - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Spinning Wheel"
-		scriptFile := "Spinning Wheel.ahk"
-
-	Case "Spinning Wheel - Fungal Bowstring - Fort Forinthry":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Fort Forinthry\Spinning Wheel"
-		scriptFile := "Fungal Bowstring.ahk"
-
-	Case "Disassembly - Invention":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Invention\Disassembly"
-		scriptFile := "Disassembly.ahk"
-
-	Case "Sharp Shell Burning":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Sharp Shell Burning"
-		scriptFile := "Shell Burning.ahk"
-
-
-	Case "Archaeology - Excavate":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Archaeology\Excavate"
-		scriptFile := "Excavate.ahk"
-
-	Case "Croesus Front":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Croesus Front"
-		scriptFile := "Croesus Front.ahk"
-
-	Case "Eternal Tree":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Eternal Tree"
-		scriptFile := "Eternal Tree.ahk"
-
-	Case "Waterfall Fishing":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Waterfall Fishing"
-		scriptFile := "Waterfall Fishing.ahk"
-
-	Case "Divination - Divine Conversion - Monolith Power":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Divination\Divine Conversion - Monolith Power"
-		scriptFile := "Divination - High Contrast.ahk"
-
-	Case "Divination - Normal - Non-Monolith Power":
-		scriptDir := LLARS_SCRIPTS_DIR . "\Divination\Normal - Non-Monolith Power"
-		scriptFile := "Divination - High Contrast.ahk"
-
-	Default:
-		MsgBox, 48, Script Missing, No launch location is configured for:`n%selectedScript%
-		return
+	MsgBox, 48, Script Missing, No registry entry is configured for:`n%selectedScript%
+	return
 }
+
+scriptDir := LLARS_SCRIPTS_DIR . "\" . record.RelativeDirectory
+scriptFile := record.FileName
 
 if !LaunchSelectedScript(scriptDir, scriptFile, selectedScript)
 	return

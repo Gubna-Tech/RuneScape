@@ -1,4 +1,4 @@
-﻿; ================================================================
+; ================================================================
 ; |     LLARS AUTOHOTINTERCEPTION     -     INPUT BACKEND           |
 ; ================================================================
 ;
@@ -2262,6 +2262,7 @@ LLARS_AHI_SelfTest(projectRoot := "", ByRef summary := "")
     global LLARS_AHI_MOUSE_SUBSCRIBED_ID, LLARS_AHI_KEYBOARD_SUBSCRIBED_ID
     global LLARS_AHI_MOUSE_ACTIVITY_ID, LLARS_AHI_MOUSE_ROUTE_VERIFIED
     global LLARS_AHI_MOUSE_PREFERRED_ID, LLARS_AHI_MOUSE_ALTERNATE_ACTIVE
+    global LLARS_AHI_MOUSE_INFO, LLARS_AHI_KEYBOARD_INFO
 
     summary := ""
     if !LLARS_AHI_LibraryReady(projectRoot)
@@ -2605,11 +2606,6 @@ LLARS_AHI_TransportName(kind := "")
     if (mode = "ahi")
         return "AutoHotInterception"
 
-    StringLower, kind, kind
-    if (kind = "mouse")
-        return "Standard AutoHotkey"
-    if (kind = "keyboard")
-        return "Standard AutoHotkey"
     return "Standard AutoHotkey"
 }
 

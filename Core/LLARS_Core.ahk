@@ -462,9 +462,20 @@ LLARS_CheckHotkeyConfig()
 	LLARS_EnableDeveloperHotkey(lhk5)
 }
 
+; Normalizes an individual section name supplied by config enumeration or callers.
+LLARS_NormalizeConfigSectionName(section)
+{
+	section := Trim(section)
+	section := StrReplace(section, Chr(0xFEFF))
+	section := StrReplace(section, "[")
+	section := StrReplace(section, "]")
+	return Trim(section)
+}
+
 ; Filters disabled sections for status/diagnostics; validation stays in CheckConfigFile().
 LLARS_ConfigSectionEnabled(ConfigPath, section)
 {
+	section := LLARS_NormalizeConfigSectionName(section)
 	IniRead, option, %ConfigPath%, %section%, option, true
 	option := Trim(option)
 	StringLower, optionLower, option
@@ -512,7 +523,7 @@ LLARS_UpdateConfigStatus()
 	colorRequired := 0
 	colorMissing := 0
 
-	IniRead, sections, %ConfigPath%
+	sections := LLARS_ConfigSectionList(ConfigPath)
 	if (sections = "ERROR")
 		return
 
@@ -909,7 +920,7 @@ LLARS_DeveloperRefreshHotkeyMap(force := false)
 	if !FileExist(ConfigPath)
 		return
 
-	IniRead, sections, %ConfigPath%
+	sections := LLARS_ConfigSectionList(ConfigPath)
 	if (sections = "ERROR")
 		return
 
@@ -1773,10 +1784,14 @@ LLARS_EndTimerRun()
 ; Converts remaining milliseconds into the timer text shown in the GUI.
 LLARS_TimerRemainingText(time)
 {
-	if (time < 0)
-		time := 0
-	minutes := Floor(time / 60000)
-	seconds := Mod(Floor(time / 1000), 60)
+	if (time <= 0)
+		return "0m 0s"
+
+	; Countdown text represents time still remaining, so retain a partial
+	; final second instead of displaying zero before the timer is actually due.
+	totalSeconds := Ceil(time / 1000)
+	minutes := Floor(totalSeconds / 60)
+	seconds := Mod(totalSeconds, 60)
 	return minutes . "m " . seconds . "s"
 }
 
@@ -1789,13 +1804,14 @@ LLARS_ResetRunState()
 	global LLARS_DeveloperKeyStates
 	global LLARS_RandomSleepPending, LLARS_RandomSleepPendingRun
 	global LLARS_RandomSleepPendingChance, LLARS_RandomSleepPendingRoll
-	global EstRandomSleepAdjustment
+	global EstRandomSleepAdjustment, EstConfiguredSleepAdjustment
 
 	if IsFunc("LLARS_TimerStopAll")
 		LLARS_TimerStopAll()
 	LLARS_RunRuneScapeHwnd := 0
 	LLARS_DeveloperKeyStates := {}
 	EstRandomSleepAdjustment := 0
+	EstConfiguredSleepAdjustment := 0
 	LLARS_RandomSleepPending := false
 	LLARS_RandomSleepPendingRun := false
 	LLARS_RandomSleepPendingChance := ""
@@ -1817,12 +1833,14 @@ LLARS_BeginLoop()
 	global EstFinalSleepActive, EstFinalSleepEndTick
 	global LLARS_RandomSleepPending, LLARS_RandomSleepPendingRun
 	global LLARS_RandomSleepPendingChance, LLARS_RandomSleepPendingRoll
-	global EstRandomSleepAdjustment
+	global EstRandomSleepAdjustment, EstConfiguredSleepAdjustment
 	global scriptname
 
-	; Each loop starts from the normal probability-weighted Random Sleep estimate.
-	; LLARS_RandomSleep() replaces that expected contribution with the actual result.
+	; Each loop starts from configured averages. Individual LLARS_Sleep calls
+	; replace their average contribution with the actual randomized duration as
+	; soon as that duration is chosen. Random Sleep is adjusted independently.
 	EstRandomSleepAdjustment := 0
+	EstConfiguredSleepAdjustment := 0
 
 	; A prepared Random Sleep roll is valid for one RunCount loop only.
 	LLARS_RandomSleepPending := false
@@ -1860,7 +1878,7 @@ LLARS_DeveloperTimerInfo(time, ByRef timerName, ByRef timerMin, ByRef timerMax)
 	if !FileExist(configFile)
 		return false
 
-	IniRead, developerSections, %configFile%
+	developerSections := LLARS_ConfigSectionList(configFile)
 	bestRange := ""
 
 	Loop, Parse, developerSections, `n, `r
@@ -2387,7 +2405,7 @@ CheckConfigFile(file)
 	global LLARS_CONFIG_FILE
 
 	ConfigPath := InStr(file, ":\") ? file : LLARS_SCRIPT_DIR "\" file
-	IniRead, sections, %ConfigPath%
+	sections := LLARS_ConfigSectionList(ConfigPath)
 	Loop, Parse, sections, `n, `r
 	{
 		section := Trim(A_LoopField)
@@ -2857,12 +2875,7 @@ LLARS_ResetConfigItem(file, section, configType)
 ; Returns color, coordinate, or hotkey for recognized editor sections.
 GetConfigType(file, section)
 {
-	section := Trim(section)
-
-	; Remove brackets if brackets are present in the section name.
-	StringReplace, section, section, [, , All
-	StringReplace, section, section, ], , All
-	section := Trim(section)
+	section := LLARS_NormalizeConfigSectionName(section)
 
 	; Read the type value.
 	IniRead, sectionType, %file%, %section%, type, ERROR
@@ -3141,7 +3154,7 @@ LLARS_DeveloperClickTarget(x, y)
 	if !FileExist(ConfigPath)
 		return ""
 
-	IniRead, sections, %ConfigPath%
+	sections := LLARS_ConfigSectionList(ConfigPath)
 	if (sections = "ERROR")
 		return ""
 
@@ -3615,7 +3628,12 @@ LLARS_NaturalMovementProfile(distance, stream := "NaturalClick")
 	fineTimingJitter := LLARS_HumanRandomInt(-fineTimingRange, fineTimingRange, stream . ".FineTiming", 10)
 	duration += fineTimingJitter
 
-	durationCap := (stream = "NaturalClick") ? 3000 : 6500
+	if (stream = "AntiAFKShortMove")
+		durationCap := 1600
+	else if (stream = "NaturalClick")
+		durationCap := 3000
+	else
+		durationCap := 6500
 	if (duration < 55)
 		duration := 55
 	if (duration > durationCap)
@@ -4632,7 +4650,7 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 }
 
 ; Moves the mouse naturally without clicking for anti-AFK activity.
-AntiAFKNaturalClick(x, y)
+AntiAFKNaturalClick(x, y, movementStream := "AntiAFKNaturalClick")
 {
 	global LLARS_RUNNING
 
@@ -4658,7 +4676,7 @@ AntiAFKNaturalClick(x, y)
 		return true
 	}
 
-	movementProfile := LLARS_NaturalMovementProfile(distance, "AntiAFKNaturalClick")
+	movementProfile := LLARS_NaturalMovementProfile(distance, movementStream)
 	duration := movementProfile.duration
 	steps := movementProfile.steps
 	timingExponent := movementProfile.timingExponent

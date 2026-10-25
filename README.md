@@ -10,21 +10,21 @@
   <img
     width="250"
     height="250"
-    src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/LLARS/LLARS%20Logo.png"
+    src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/Logo/LLARS/LLARS%20Logo.png"
     alt="LLARS Logo"
   >
   <a href="https://www.autohotkey.com">
     <img
       width="250"
       height="250"
-      src="https://github.com/Gubna-Tech/RuneScape/blob/main/Assets/Logo/LLARS/AHK%20Logo.png"
+      src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/Logo/LLARS/AHK%20Logo.png"
       alt="AutoHotkey Logo"
     >
   </a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/Gubna-Tech/RuneScape/archive/main.zip">
+  <a href="https://github.com/Gubna-Tech/RuneScape/releases/latest">
     <img
       src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/LLARS%20Download.png"
       alt="Download LLARS"

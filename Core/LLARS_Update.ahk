@@ -42,23 +42,22 @@ LLARS_ConfigSchemaCurrent()
     return 1
 }
 
-; Reads the framework-wide configuration schema. Existing LLARS configurations
-; that predate the schema key are treated as schema 1 without rewriting them.
-LLARS_GetConfigSchema(root := "", ByRef schemaExplicit := false, ByRef errorDetail := "")
+; Reads the schema directly from a root LLARS configuration file. Configs that
+; predate config_schema are schema 1 without being rewritten.
+LLARS_GetConfigSchemaFromFile(configPath, ByRef schemaExplicit := false, ByRef errorDetail := "")
 {
-    global LLARS_ROOT
-
     schemaExplicit := false
     errorDetail := ""
-    if (root = "")
-        root := LLARS_ROOT
-    if (root = "")
-        root := A_ScriptDir
-
-    configPath := root . "\LLARS Config.ini"
     if !FileExist(configPath)
     {
         errorDetail := "LLARS Config.ini is missing."
+        return 0
+    }
+
+    FileGetSize, configSize, %configPath%
+    if (ErrorLevel || configSize <= 0)
+    {
+        errorDetail := "LLARS Config.ini is empty or unreadable."
         return 0
     }
 
@@ -77,8 +76,196 @@ LLARS_GetConfigSchema(root := "", ByRef schemaExplicit := false, ByRef errorDeta
     return schemaValue + 0
 }
 
-; Refuse configuration written by a newer schema. Configurations without an
-; explicit schema are treated as schema 1 for compatibility.
+; Reads the framework-wide configuration schema from the LLARS project root.
+LLARS_GetConfigSchema(root := "", ByRef schemaExplicit := false, ByRef errorDetail := "")
+{
+    global LLARS_ROOT
+
+    if (root = "")
+        root := LLARS_ROOT
+    if (root = "")
+        root := A_ScriptDir
+    return LLARS_GetConfigSchemaFromFile(RTrim(root, "\/") . "\LLARS Config.ini", schemaExplicit, errorDetail)
+}
+
+; Returns normalized INI section names without relying on the Windows profile API
+; section-list behavior. Reading the headers directly keeps the first section
+; visible even when a UTF-8 BOM is present.
+LLARS_ConfigSectionList(ConfigPath)
+{
+	if !FileExist(ConfigPath)
+		return "ERROR"
+
+	FileRead, configContents, %ConfigPath%
+	if ErrorLevel
+		return "ERROR"
+
+	sectionList := ""
+	Loop, Parse, configContents, `n, `r
+	{
+		line := Trim(A_LoopField)
+		line := StrReplace(line, Chr(0xFEFF))
+		if !RegExMatch(line, "^\[(.*)\]$", sectionMatch)
+			continue
+
+		section := Trim(sectionMatch1)
+		if (section = "")
+			continue
+
+		if (sectionList != "")
+			sectionList .= "`n"
+		sectionList .= section
+	}
+
+	return (sectionList = "") ? "ERROR" : sectionList
+}
+
+; Lightweight root-config validation used before backup/migration/restore.
+; Script-local Config.ini files intentionally do not use this schema contract.
+LLARS_ValidateRootConfigFile(configPath, ByRef schema := 0, ByRef errorDetail := "", expectedSchema := 0)
+{
+    schemaExplicit := false
+    schemaError := ""
+    schema := LLARS_GetConfigSchemaFromFile(configPath, schemaExplicit, schemaError)
+    if (schema < 1)
+    {
+        errorDetail := schemaError
+        return false
+    }
+
+    if (expectedSchema > 0 && schema != expectedSchema)
+    {
+        errorDetail := "Expected config schema " . expectedSchema . " but found " . schema . "."
+        return false
+    }
+
+    sectionList := LLARS_ConfigSectionList(configPath)
+    if (ErrorLevel || sectionList = "ERROR" || sectionList = "")
+    {
+        errorDetail := "LLARS Config.ini does not contain readable sections."
+        return false
+    }
+
+    sectionEnvelope := "`n" . StrReplace(sectionList, "`r") . "`n"
+    if (!InStr(sectionEnvelope, "`nStart Hotkey`n") || !InStr(sectionEnvelope, "`nExit Hotkey`n"))
+    {
+        errorDetail := "LLARS Config.ini is missing required root configuration sections."
+        return false
+    }
+
+    errorDetail := ""
+    return true
+}
+
+; Migration edges are added only when an actual incompatible root-config
+; change requires them. Schema 1 remains current until then.
+LLARS_ApplyConfigMigrationStep(configPath, fromSchema, toSchema, ByRef errorDetail := "")
+{
+    errorDetail := "No LLARS config migration exists from schema " . fromSchema . " to schema " . toSchema . "."
+    return false
+}
+
+; Transaction-like migration dispatcher. The original config is backed up and a
+; temporary copy is migrated/validated before the live file is replaced.
+LLARS_MigrateConfig(oldSchema, targetSchema, root := "", ByRef errorDetail := "")
+{
+    global LLARS_ROOT
+
+    errorDetail := ""
+    if (root = "")
+        root := LLARS_ROOT
+    if (root = "")
+        root := A_ScriptDir
+    root := RTrim(root, "\/")
+
+    if (oldSchema < 1 || targetSchema < 1 || oldSchema > targetSchema)
+    {
+        errorDetail := "Invalid LLARS config migration range."
+        return false
+    }
+    if (oldSchema = targetSchema)
+        return true
+
+    currentSchema := LLARS_ConfigSchemaCurrent()
+    if (targetSchema > currentSchema)
+    {
+        errorDetail := "The requested migration target is newer than this LLARS build supports."
+        return false
+    }
+
+    configPath := root . "\LLARS Config.ini"
+    sourceSchema := 0
+    sourceError := ""
+    if !LLARS_ValidateRootConfigFile(configPath, sourceSchema, sourceError, oldSchema)
+    {
+        errorDetail := sourceError
+        return false
+    }
+
+    backupError := ""
+    if !LLARS_RunConfigBackup(root, true, backupError)
+    {
+        errorDetail := "Pre-migration backup failed: " . backupError
+        return false
+    }
+
+    tempPath := configPath . ".migration.tmp"
+    rollbackPath := configPath . ".migration.rollback"
+    FileDelete, %tempPath%
+    FileDelete, %rollbackPath%
+    FileCopy, %configPath%, %tempPath%, 1
+    if (ErrorLevel || !FileExist(tempPath))
+    {
+        errorDetail := "Could not create the temporary migration copy."
+        return false
+    }
+
+    schemaCursor := oldSchema
+    while (schemaCursor < targetSchema)
+    {
+        nextSchema := schemaCursor + 1
+        stepError := ""
+        if !LLARS_ApplyConfigMigrationStep(tempPath, schemaCursor, nextSchema, stepError)
+        {
+            FileDelete, %tempPath%
+            errorDetail := stepError
+            return false
+        }
+        schemaCursor := nextSchema
+    }
+
+    migratedSchema := 0
+    migratedError := ""
+    if !LLARS_ValidateRootConfigFile(tempPath, migratedSchema, migratedError, targetSchema)
+    {
+        FileDelete, %tempPath%
+        errorDetail := "Migrated config validation failed: " . migratedError
+        return false
+    }
+
+    FileMove, %configPath%, %rollbackPath%, 1
+    if (ErrorLevel)
+    {
+        FileDelete, %tempPath%
+        errorDetail := "Could not stage the original config for replacement."
+        return false
+    }
+
+    FileMove, %tempPath%, %configPath%, 1
+    if (ErrorLevel)
+    {
+        FileMove, %rollbackPath%, %configPath%, 1
+        FileDelete, %tempPath%
+        errorDetail := "Could not commit the migrated config; the original was restored."
+        return false
+    }
+
+    FileDelete, %rollbackPath%
+    return true
+}
+
+; Refuse malformed/future configuration. When a real older schema exists, run
+; the sequential backup-first migration dispatcher before startup continues.
 LLARS_CheckConfigCompatibility(root := "")
 {
     currentSchema := LLARS_ConfigSchemaCurrent()
@@ -95,6 +282,16 @@ LLARS_CheckConfigCompatibility(root := "")
     {
         MsgBox, 262192, LLARS Configuration, This LLARS Config.ini was created by a newer configuration schema.`n`nConfig schema: %configSchema%`nSupported schema: %currentSchema%`n`nUse the matching/newer LLARS version or restore an older configuration backup.
         return false
+    }
+
+    if (configSchema < currentSchema)
+    {
+        migrationError := ""
+        if !LLARS_MigrateConfig(configSchema, currentSchema, root, migrationError)
+        {
+            MsgBox, 262192, LLARS Configuration, LLARS could not safely migrate the shared configuration.`n`n%migrationError%`n`nThe original configuration was left recoverable and startup has stopped.
+            return false
+        }
     }
 
     return true
@@ -148,11 +345,39 @@ LLARS_RunConfigTool(root, action, automatic := true, ByRef errorDetail := "")
 
 LLARS_RunConfigBackup(root, automatic := true, ByRef errorDetail := "")
 {
+    root := RTrim(root, "\/")
+    configPath := root . "\LLARS Config.ini"
+    schema := 0
+    validationError := ""
+    if !LLARS_ValidateRootConfigFile(configPath, schema, validationError)
+    {
+        errorDetail := validationError
+        return false
+    }
+    if (schema > LLARS_ConfigSchemaCurrent())
+    {
+        errorDetail := "The root config uses unsupported future schema " . schema . "."
+        return false
+    }
     return LLARS_RunConfigTool(root, "backup", automatic, errorDetail)
 }
 
 LLARS_RunConfigRestore(root, automatic := true, ByRef errorDetail := "")
 {
+    root := RTrim(root, "\/")
+    backupConfig := root . "\Backup\Config Backup\LLARS Config.ini"
+    schema := 0
+    validationError := ""
+    if !LLARS_ValidateRootConfigFile(backupConfig, schema, validationError)
+    {
+        errorDetail := "Latest backup is not restorable: " . validationError
+        return false
+    }
+    if (schema > LLARS_ConfigSchemaCurrent())
+    {
+        errorDetail := "Latest backup uses unsupported future schema " . schema . "."
+        return false
+    }
     return LLARS_RunConfigTool(root, "restore", automatic, errorDetail)
 }
 
@@ -217,6 +442,64 @@ LLARS_VersionCompare(leftVersion, rightVersion)
     return (leftPre > rightPre) ? 1 : -1
 }
 
+LLARS_NormalizeReleaseTag(tag)
+{
+    tag := Trim(tag)
+    if !RegExMatch(tag, "i)^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
+        return ""
+    if (SubStr(tag, 1, 1) != "v")
+        tag := "v" . tag
+    return tag
+}
+
+LLARS_ReleaseAssetName(tag)
+{
+    tag := LLARS_NormalizeReleaseTag(tag)
+    if (tag = "")
+        return ""
+    return "LLARS-" . tag . ".zip"
+}
+
+LLARS_ReleaseAssetUrl(tag)
+{
+    tag := LLARS_NormalizeReleaseTag(tag)
+    if (tag = "")
+        return ""
+    return "https://github.com/Gubna-Tech/RuneScape/releases/download/" . tag . "/" . LLARS_ReleaseAssetName(tag)
+}
+
+LLARS_ReleaseAssetAvailable(downloadUrl, ByRef errorDetail := "")
+{
+    errorDetail := ""
+    if (downloadUrl = "")
+    {
+        errorDetail := "The release asset URL was empty."
+        return false
+    }
+
+    try
+    {
+        request := ComObjCreate("WinHttp.WinHttpRequest.5.1")
+        request.SetTimeouts(600, 1000, 1000, 1500)
+        request.Open("HEAD", downloadUrl, false)
+        request.Option(6) := false
+        request.SetRequestHeader("User-Agent", "LLARS-v" . LLARS_GetVersion())
+        request.Send()
+
+        status := request.Status + 0
+        if (status = 200 || (status >= 300 && status < 400))
+            return true
+
+        errorDetail := "GitHub returned HTTP " . status . " for the expected release asset."
+        return false
+    }
+    catch error
+    {
+        errorDetail := error.Message
+        return false
+    }
+}
+
 LLARS_GetLatestReleaseTag(ByRef latestTag, ByRef errorDetail := "")
 {
     latestTag := ""
@@ -261,6 +544,27 @@ LLARS_GetLatestReleaseTag(ByRef latestTag, ByRef errorDetail := "")
     }
 }
 
+LLARS_ShowUpdateCheckSplash()
+{
+    version := LLARS_GetVersion()
+    Gui, LLARSUpdateSplash:Destroy
+    Gui, LLARSUpdateSplash:New, +AlwaysOnTop +ToolWindow -Caption +Border +HwndLLARSUpdateSplashHwnd
+    Gui, LLARSUpdateSplash:Color, F5F7FA
+    Gui, LLARSUpdateSplash:Font, s13 Bold c152039, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y14 w284 h24 Center, LLARS v%version%
+    Gui, LLARSUpdateSplash:Font, s12 Bold c3D4A5C, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y41 w284 h26 Center, Checking for updates...
+    Gui, LLARSUpdateSplash:Show, w320 h82 Center NoActivate, LLARS Update Check
+    ; Yield once so the splash paints before the bounded WinHTTP request blocks.
+    Sleep, 20
+    return LLARSUpdateSplashHwnd
+}
+
+LLARS_HideUpdateCheckSplash()
+{
+    Gui, LLARSUpdateSplash:Destroy
+}
+
 ; Updater MsgBox options include MB_TOPMOST (0x40000 / 262144) so they stay above LLARS GUIs.
 LLARS_CheckForUpdates(showCurrentMessage := false)
 {
@@ -282,13 +586,16 @@ LLARS_CheckForUpdates(showCurrentMessage := false)
     checkRunning := true
     updateOwnerHwnd := LLARS_GetUpdateOwnerHwnd()
     currentVersion := LLARS_GetVersion()
+    LLARS_ShowUpdateCheckSplash()
     if !LLARS_GetLatestReleaseTag(latestTag, updateError)
     {
+        LLARS_HideUpdateCheckSplash()
         checkRunning := false
         checkComplete := true
         EnvSet, LLARS_UPDATE_CHECKED, 1
         return false
     }
+    LLARS_HideUpdateCheckSplash()
 
     latestVersion := RegExReplace(latestTag, "i)^v")
     checkRunning := false
@@ -329,16 +636,22 @@ LLARS_IsZipArchive(filePath)
 
 LLARS_DownloadRelease(tag, ownerHwnd := 0)
 {
-    tag := Trim(tag)
-    if !RegExMatch(tag, "i)^v?\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
+    tag := LLARS_NormalizeReleaseTag(tag)
+    if (tag = "")
     {
         MsgBox, 262192, LLARS Update, LLARS could not determine a valid release tag to download.
         return false
     }
-    if (SubStr(tag, 1, 1) != "v")
-        tag := "v" . tag
 
-    defaultName := A_Desktop . "\LLARS-" . tag . ".zip"
+    assetName := LLARS_ReleaseAssetName(tag)
+    downloadUrl := LLARS_ReleaseAssetUrl(tag)
+    if (assetName = "" || downloadUrl = "")
+    {
+        MsgBox, 262192, LLARS Update, LLARS could not resolve the official release asset for %tag%.
+        return false
+    }
+
+    defaultName := A_Desktop . "\" . assetName
 
     ; Protect both the shared LLARS config and script-local configs before the
     ; update download begins. A failed backup leaves the running copy untouched.
@@ -350,6 +663,13 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
     if !LLARS_RunConfigBackup(backupRoot, true, backupError)
     {
         MsgBox, 262192, LLARS Update, LLARS could not back up your configuration, so the update was not started.`n`n%backupError%`n`nYour current LLARS files are unchanged. You can run Backup\Config Backup.bat manually and try again.
+        return false
+    }
+
+    assetError := ""
+    if !LLARS_ReleaseAssetAvailable(downloadUrl, assetError)
+    {
+        MsgBox, 262192, LLARS Update, The official release asset %assetName% is not available, so the update was not started.`n`n%assetError%`n`nYour current LLARS files are unchanged.`n`nRelease page:`nhttps://github.com/Gubna-Tech/RuneScape/releases/latest
         return false
     }
 
@@ -365,7 +685,6 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
     if !RegExMatch(savePath, "i)\.zip$")
         savePath .= ".zip"
 
-    downloadUrl := "https://github.com/Gubna-Tech/RuneScape/archive/refs/tags/" . tag . ".zip"
     partialPath := savePath . ".part"
     FileDelete, %partialPath%
 
@@ -374,7 +693,7 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
     if (ErrorLevel || !FileExist(partialPath))
     {
         FileDelete, %partialPath%
-        MsgBox, 262192, LLARS Update, LLARS could not download %tag%.`n`nCheck your internet connection and try again.`n`nRelease page:`nhttps://github.com/Gubna-Tech/RuneScape/releases/latest
+        MsgBox, 262192, LLARS Update, LLARS could not download the official release asset %assetName%.`n`nThe release may be missing the expected asset, or the network request may have failed.`n`nRelease page:`nhttps://github.com/Gubna-Tech/RuneScape/releases/latest
         LLARS_SetUpdateOwnerVisible(ownerHwnd, true)
         return false
     }

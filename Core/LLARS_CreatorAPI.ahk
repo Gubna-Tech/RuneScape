@@ -58,7 +58,7 @@ LLARS_ConfigSectionExists(section, scope := "script")
 	if !FileExist(configFile)
 		return false
 
-	IniRead, sections, %configFile%
+	sections := LLARS_ConfigSectionList(configFile)
 	Loop, Parse, sections, `n, `r
 	{
 		if (Trim(A_LoopField) = section)
@@ -106,6 +106,36 @@ LLARS_ConfigRead(section, key, default := "ERROR", scope := "script")
 
 	IniRead, value, %configFile%, %section%, %key%, %default%
 	return value
+}
+
+; Writes one configuration value through the shared path resolver.
+LLARS_ConfigWrite(section, key, value, scope := "script")
+{
+	section := Trim(section)
+	key := Trim(key)
+	if (section = "" || key = "")
+		return LLARS_CreatorConfigError("Config write requires a section and key")
+
+	configFile := LLARS_ConfigPath(scope)
+	IniWrite, %value%, %configFile%, %section%, %key%
+	if ErrorLevel
+		return LLARS_CreatorConfigError("Unable to write " . section . " " . key . " to " . configFile)
+
+	return true
+}
+
+; Returns the normalized newline-delimited section list used by LLARS config discovery.
+LLARS_ConfigSections(scope := "script", default := "ERROR")
+{
+	configFile := LLARS_ConfigPath(scope)
+	if !FileExist(configFile)
+		return default
+
+	sections := LLARS_ConfigSectionList(configFile)
+	if (sections = "ERROR")
+		return default
+
+	return sections
 }
 
 ; Reads a trimmed text value. Set required=true when an empty/missing value
@@ -810,6 +840,23 @@ LLARS_CreatorRunError(error, iteration := "", totalRuns := "")
 ; ================================================================
 ; |     TIMING     -     TIMING     -     TIMING                  |
 ; ================================================================
+; Replaces one configured LLARS_Sleep average with the actual randomized
+; duration selected for the current RunCount loop. This improves the live
+; estimate before the final exact-countdown sleep begins.
+LLARS_AdjustConfiguredSleepEstimate(section, actualSleep, scope := "script")
+{
+	global LLARS_RUNNING, LLARS_RUN_TYPE, EstConfiguredSleepAdjustment
+
+	if (!LLARS_RUNNING || LLARS_RUN_TYPE != "RunCount")
+		return
+	if !LLARS_ConfigReadRange(section, minValue, maxValue, scope)
+		return
+
+	expectedSleep := (minValue + maxValue) / 2
+	EstConfiguredSleepAdjustment += (actualSleep - expectedSleep)
+	Gosub, UpdateEstimatedTime
+}
+
 ; Reads a configured timer, randomizes it, records the exact framework action,
 ; and sleeps. Set final=true for the final deterministic sleep in a RunCount
 ; loop so LLARS can hand the estimate display to an exact countdown.
@@ -830,6 +877,7 @@ LLARS_Sleep(section, final := false, scope := "script")
 	LLARS_DeveloperAction(section . " || " . minValue . "-" . maxValue . " ms || " . sleepAmount . " ms")
 	LLARS_DeveloperLastSleepValue := sleepAmount
 	LLARS_DeveloperLastSleepName := section
+	LLARS_AdjustConfiguredSleepEstimate(section, sleepAmount, scope)
 
 	if (final)
 	{
@@ -907,6 +955,7 @@ LLARS_CreatorTimerScheduleCallback(section, callback, repeat := false, scope := 
 		, Callback: callbackFn
 		, Handler: timerHandler
 		, Interval: interval
+		, EndTick: A_TickCount + interval
 		, Repeat: repeat
 		, Scope: scope}
 
@@ -965,11 +1014,30 @@ LLARS_CreatorTimerDispatch(timerId)
 	}
 
 	timerInfo.Interval := interval
+	timerInfo.EndTick := A_TickCount + interval
 	LLARS_CreatorTimers[timerKey] := timerInfo
 	timerHandler := timerInfo.Handler
 	timerPeriod := -interval
 	SetTimer, %timerHandler%, %timerPeriod%
 	LLARS_DeveloperAction("Timer Rescheduled || #" . timerId . " || " . timerInfo.Section . " || " . interval . " ms")
+}
+
+; Internal helper for LLARS-owned timer GUIs that need to display the exact
+; remaining time of an already-scheduled callback without re-randomizing it.
+LLARS_CreatorTimerRemaining(timerId)
+{
+	global LLARS_CreatorTimers
+
+	timerKey := "Callback:" . timerId
+	if (!IsObject(LLARS_CreatorTimers) || !LLARS_CreatorTimers.HasKey(timerKey))
+		return -1
+
+	timerInfo := LLARS_CreatorTimers[timerKey]
+	if (!timerInfo.HasKey("EndTick"))
+		return -1
+
+	remaining := timerInfo.EndTick - A_TickCount
+	return (remaining > 0) ? remaining : 0
 }
 
 ; Compatibility API for existing label-based scripts. New creator code should

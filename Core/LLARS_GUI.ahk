@@ -8,6 +8,10 @@
 ; Creates the main LLARS control window.
 LLARS_CreateMainGUI()
 {
+	; Always rebuild the primary LLARS window as GUI 1. Configuration/info dialogs
+	; can change AutoHotkey's default GUI context; an explicit reset prevents the
+	; setup GUI from surviving when a runtime GUI replaces it.
+	Gui, 1:Default
 	global value, scriptname, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_SCRIPT_TYPE
 	global Counter, State3, State2, ScriptBlue, ScriptRed
 	global ConfigStatusHotkeys, ConfigStatusCoordinates, ConfigStatusColors
@@ -25,8 +29,8 @@ LLARS_CreateMainGUI()
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x10 y57 w145 h25 gStart , Start
 	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
-	Gui, Add, Button, x10 y86 w295 h25 gCombo, Configuration
-	Gui, Add, Button, x10 y115 w295 h25 gResetConfig, Reset Config
+	Gui, Add, Button, x10 y86 w295 h25 gCombo, Setup
+	Gui, Add, Button, x10 y115 w295 h25 gConfigSettings, Config Settings
 	Gui, Add, Text, x5 y146 w305 h2 0x10
 	Gui, Font, s10 Bold
 	if (LLARS_SCRIPT_TYPE = "UntilDone")
@@ -56,7 +60,7 @@ LLARS_CreateMainGUI()
 	Gui, Add, Text, x10 y176 w145 h20, %displayScriptName%
 	Gui, Add, Text, x5 y200 w305 h2 0x10
 	Gui, Font, s10 Bold cBlack
-	Gui, Add, Text, x10 y207 w295 h20 Center, Configuration Status
+	Gui, Add, Text, x10 y207 w295 h20 Center, Setup Status
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x15 y230 w140 h18 vConfigStatusHotkeysLabel, Hotkeys
 	Gui, Add, Text, x160 y230 w145 h18 Center vConfigStatusHotkeys, Checking
@@ -67,9 +71,9 @@ LLARS_CreateMainGUI()
 	Gui, Add, Text, x5 y293 w305 h2 0x10
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x73 y301 w170 h29 gExitb , Exit LLARS
-	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
-		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
+		Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
@@ -81,9 +85,9 @@ LLARS_CreateMainGUI()
 	CheckPOS(LLARSMainGuiHwnd)
 
 	; Loads the custom LLARS icon into the main GUI when available.
-	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
-		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_SCRIPT_DIR "\LLARS Logo.ico"
+		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico"
 	   	, uint, 1, int, 0, int, 0, uint, 0x10)
 		SendMessage, 0x80, 0, hIcon
 		SendMessage, 0x80, 1, hIcon
@@ -97,6 +101,10 @@ LLARS_CreateMainGUI()
 ; Creates the LLARS running window for scripts controlled by a run count.
 LLARS_CreateRunCountGUI()
 {
+	; Always rebuild the primary LLARS window as GUI 1. Configuration/info dialogs
+	; can change AutoHotkey's default GUI context; an explicit reset prevents the
+	; setup GUI from surviving when a runtime GUI replaces it.
+	Gui, 1:Default
 	global scriptname, value, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
 	global Counter, Counter2, EstLoopRemaining, EstRunRemaining, State1, State3, State2, ScriptGreen, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
@@ -151,9 +159,9 @@ LLARS_CreateRunCountGUI()
 	GuiControl,, State2, ** OFF **
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x73 y239 w170 h29 gExitb, Exit LLARS
-	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
-	Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
+	Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
@@ -173,6 +181,10 @@ LLARS_CreateRunCountGUI()
 ; Creates the LLARS control window used by duration-based scripts.
 LLARS_CreateTimerGUI()
 {
+	; Always rebuild the primary LLARS window as GUI 1. Configuration/info dialogs
+	; can change AutoHotkey's default GUI context; an explicit reset prevents the
+	; setup GUI from surviving when a runtime GUI replaces it.
+	Gui, 1:Default
 	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
 	global TimerCount, State3, State2, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
@@ -211,9 +223,9 @@ LLARS_CreateTimerGUI()
 	GuiControl,, State2, ** OFF **
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x73 y176 w170 h29 gExitb, Exit LLARS
-	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
-		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
+		Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
@@ -222,9 +234,9 @@ LLARS_CreateTimerGUI()
 	else
 		Gui, Show, w315 h212, %windowTitle%
 	CheckPOS(LLARSMainGuiHwnd)
-	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
-		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_SCRIPT_DIR "\LLARS Logo.ico"
+		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico"
 			, uint, 1, int, 0, int, 0, uint, 0x10)
 		SendMessage, 0x80, 0, hIcon
 		SendMessage, 0x80, 1, hIcon
@@ -238,6 +250,10 @@ LLARS_CreateTimerGUI()
 ; Creates the LLARS running window for scripts that stop only when their own completion condition is reached.
 LLARS_CreateUntilDoneGUI()
 {
+	; Always rebuild the primary LLARS window as GUI 1. Configuration/info dialogs
+	; can change AutoHotkey's default GUI context; an explicit reset prevents the
+	; setup GUI from surviving when a runtime GUI replaces it.
+	Gui, 1:Default
 	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_CONFIG_FILE
 	global State3, State2, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
@@ -271,9 +287,9 @@ LLARS_CreateUntilDoneGUI()
 	GuiControl,, State2, ** OFF **
 	Gui, Font, s10 Bold
 	Gui, Add, Button, x73 y148 w170 h29 gExitb, Exit LLARS
-	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
-		Menu, Tray, Icon, %LLARS_SCRIPT_DIR%\LLARS Logo.ico
+		Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
@@ -282,9 +298,9 @@ LLARS_CreateUntilDoneGUI()
 	else
 		Gui, Show, w315 h184, %windowTitle%
 	CheckPOS(LLARSMainGuiHwnd)
-	if FileExist(LLARS_SCRIPT_DIR "\LLARS Logo.ico")
+	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
-		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_SCRIPT_DIR "\LLARS Logo.ico"
+		hIcon := DllCall("LoadImage", uint, 0, str, LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico"
 			, uint, 1, int, 0, int, 0, uint, 0x10)
 		SendMessage, 0x80, 0, hIcon
 		SendMessage, 0x80, 1, hIcon

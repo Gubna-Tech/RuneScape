@@ -79,7 +79,7 @@ MultiColor_Setup()
 	MultiColorGroups := []
 	groupIndexByCoordinate := {}
 
-	IniRead, sectionList, Config.ini
+	sectionList := LLARS_ConfigSections()
 	if (sectionList = "ERROR")
 		return false
 
@@ -89,14 +89,14 @@ MultiColor_Setup()
 		if (section = "")
 			continue
 
-		IniRead, sectionType, Config.ini, %section%, type, ERROR
+		sectionType := LLARS_ConfigRead(section, "type", "ERROR")
 		sectionType := Trim(sectionType)
 		StringLower, sectionType, sectionType
 		if (sectionType != "color")
 			continue
 
-		IniRead, coordinateSection, Config.ini, %section%, coordinate, ERROR
-		IniRead, actionSection, Config.ini, %section%, action, ERROR
+		coordinateSection := LLARS_ConfigRead(section, "coordinate", "ERROR")
+		actionSection := LLARS_ConfigRead(section, "action", "ERROR")
 		coordinateSection := Trim(coordinateSection)
 		actionSection := Trim(actionSection)
 

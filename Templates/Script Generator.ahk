@@ -11,8 +11,9 @@ GeneratorOutputParent := GeneratorScriptsRoot
 GeneratorTemplateChoice := "RunCount - Basic Loop"
 GeneratorMainLLARSHWND := Generator_FindMainLLARS()
 
-if FileExist(A_ScriptDir . "\RunCount\Basic Loop\LLARS Logo.ico")
-	Menu, Tray, Icon, % A_ScriptDir . "\RunCount\Basic Loop\LLARS Logo.ico"
+GeneratorIconPath := GeneratorRoot . "\Assets\Logo\LLARS\LLARS Logo.ico"
+if FileExist(GeneratorIconPath)
+	Menu, Tray, Icon, %GeneratorIconPath%
 
 Generator_GetTemplate(GeneratorTemplateChoice, GeneratorSourceFolder, GeneratorSourceScript, GeneratorDescription)
 
@@ -46,7 +47,7 @@ Gui, Font, s10 Norm cBlack
 Gui, Add, Text, x34 y228 w472 h18 vGeneratorDescription, %GeneratorDescription%
 
 Gui, Font, s11 Norm cBlack
-Gui, Add, Text, x25 y260 w490 h44 Center, Generated scripts include the template, Config.ini, and LLARS Logo.ico.`nThey stay inside LLARS\Scripts so the shared Core remains available.
+Gui, Add, Text, x25 y260 w490 h44 Center, Generated scripts include the template and Config.ini.`nThey stay inside LLARS\Scripts so shared Core and the central LLARS icon remain available.
 
 Gui, Font, s11 Bold cBlack
 Gui, Add, Button, x92 y314 w165 h34 gGeneratorCreate, Create Script
@@ -136,7 +137,6 @@ Generator_GetTemplate(GeneratorTemplateChoice, GeneratorSourceFolder, GeneratorS
 GeneratorSourcePath := A_ScriptDir . "\" . GeneratorSourceFolder
 GeneratorSourceAHK := GeneratorSourcePath . "\" . GeneratorSourceScript
 GeneratorSourceConfig := GeneratorSourcePath . "\Config.ini"
-GeneratorSourceIcon := GeneratorSourcePath . "\LLARS Logo.ico"
 GeneratorDestination := GeneratorOutputParent . "\" . GeneratorScriptName
 GeneratorDestinationAHK := GeneratorDestination . "\" . GeneratorScriptName . ".ahk"
 
@@ -175,8 +175,6 @@ if (ErrorLevel)
 	return
 }
 
-if FileExist(GeneratorSourceIcon)
-	FileCopy, %GeneratorSourceIcon%, %GeneratorDestination%\LLARS Logo.ico, 0
 
 Gui, Destroy
 MsgBox, 68, LLARS Script Generator, Script created successfully.`n`n%GeneratorDestinationAHK%`n`nOpen the generated folder now?
