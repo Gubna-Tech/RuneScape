@@ -42,6 +42,11 @@ Else IfWinActive, Developer Mode ahk_class AutoHotkeyGUI
 	GoSub, CloseDeveloperMode
 }
 
+Else IfWinActive, Check Setup ahk_class AutoHotkeyGUI
+{
+	GoSub, CloseSetupCheck
+}
+
 Else IfWinActive, Setup ahk_class AutoHotkeyGUI
 {
 	EnableHotkey()
@@ -107,7 +112,7 @@ return
 
 ; Updates the temporary Random Sleep countdown shown in the status area.
 UpdateCountdown:
-RemainingTime := EndTime - A_TickCount
+RemainingTime := EndTime - LLARS_NowMS()
 if (RemainingTime > 0)
 	GuiControl, 1:, State3, % RandomSleepAmountToMinutesSeconds(RemainingTime)
 else
@@ -170,7 +175,7 @@ LLARS_UpdateEstimatedTimeNow()
 
 	if (EstLoopStartTick > 0)
 	{
-		ElapsedLoopTime := A_TickCount - EstLoopStartTick
+		ElapsedLoopTime := LLARS_NowMS() - EstLoopStartTick
 		PredictiveLoopRemainingTime := EstimatedLoopTime + EstRandomSleepAdjustment + EstConfiguredSleepAdjustment - ElapsedLoopTime
 	}
 
@@ -182,7 +187,7 @@ LLARS_UpdateEstimatedTimeNow()
 	if (PredictiveLoopRemainingTime < 0)
 		PredictiveLoopRemainingTime := 0
 	if (EstFinalSleepActive && EstFinalSleepEndTick > 0)
-		EstLoopRemainingTime := EstFinalSleepEndTick - A_TickCount
+		EstLoopRemainingTime := EstFinalSleepEndTick - LLARS_NowMS()
 	else
 		EstLoopRemainingTime := PredictiveLoopRemainingTime
 	if (EstLoopRemainingTime < 0)
@@ -226,7 +231,9 @@ LLARS_UpdateEstimatedTimeNow()
 ; |     SETUP GUI     -     SETUP GUI     -     SETUP GUI             |
 ; =====================================================================
 
-; Opens the shared Setup window for script/input setup controls.
+; Opens the shared Setup window for script/input setup controls. Mechanical
+; script capabilities come from the same Config.ini-derived object used by the
+; Selector and preflight. Global LLARS Hotkeys remain available for every script.
 Combo:
 LLARS_DeveloperHotkey("Setup")
 Gui 1: Hide
@@ -240,31 +247,59 @@ Gui Combo: Font, s10 Bold cGray
 Gui Combo: Add, Text, x5 y29 w210 h18 Center, Setup
 Gui Combo: Add, Text, x5 y49 w210 h2 0x10
 Gui Combo: Font, s10 Bold cBlack
-Gui Combo: Add, Button, x25 y57 w170 h25 gColor, Colors
-Gui Combo: Add, Button, x25 y86 w170 h25 gCoordinates, Coordinates
-Gui Combo: Add, Button, x25 y115 w170 h25 gHotkey, Hotkeys
+setupCaps := LLARS_GetScriptCapabilities()
 
-; Scripts may optionally add one script-specific setup button.
-if (LLARS_COMBO_TIMER_LABEL != "")
+setupY := 57
+Gui Combo: Add, Button, x25 y%setupY% w170 h25 gColor vSetupColorsButton, Colors
+if (!setupCaps.Colors)
+	GuiControl, Combo:Disable, SetupColorsButton
+setupY += 29
+Gui Combo: Add, Button, x25 y%setupY% w170 h25 gCoordinates vSetupCoordinatesButton, Coordinates
+if (!setupCaps.Coordinates)
+	GuiControl, Combo:Disable, SetupCoordinatesButton
+setupY += 29
+
+; Hotkeys also owns LLARS-wide Start/Info/Setup/Exit bindings, so this editor
+; stays reachable even when the selected script has no local hotkey section.
+Gui Combo: Add, Button, x25 y%setupY% w170 h25 gHotkey vSetupHotkeysButton, Hotkeys
+setupY += 29
+
+if (setupCaps.Timer && LLARS_COMBO_TIMER_LABEL != "")
 {
-	Gui Combo: Add, Button, x25 y144 w170 h25 gLLARS_CustomComboTimer, Timer
-	Gui Combo: Add, Button, x25 y173 w170 h25 gInputSettings, Input Settings
-	Gui Combo: Add, Text, x5 y205 w210 h2 0x10
-	Gui Combo: Add, Button, x25 y213 w170 h29 gCloseCombo, Close Setup
-	comboHeight := 249
+	Gui Combo: Add, Button, x25 y%setupY% w170 h25 gLLARS_CustomComboTimer vSetupTimerButton, Timer
+	setupY += 29
 }
-else
-{
-	Gui Combo: Add, Button, x25 y144 w170 h25 gInputSettings, Input Settings
-	Gui Combo: Add, Text, x5 y176 w210 h2 0x10
-	Gui Combo: Add, Button, x25 y184 w170 h29 gCloseCombo, Close Setup
-	comboHeight := 220
-}
+
+Gui Combo: Add, Button, x25 y%setupY% w170 h25 gSetupOpenScriptConfig vSetupScriptConfigButton, Script Config
+if (!setupCaps.ScriptConfig)
+	GuiControl, Combo:Disable, SetupScriptConfigButton
+setupY += 29
+
+Gui Combo: Add, Button, x25 y%setupY% w170 h25 gInputSettings, Input Settings
+setupY += 29
+Gui Combo: Add, Button, x25 y%setupY% w170 h25 gCheckSetup, Check Setup
+setupY += 32
+Gui Combo: Add, Text, x5 y%setupY% w210 h2 0x10
+setupY += 8
+Gui Combo: Add, Button, x25 y%setupY% w170 h29 gCloseCombo, Close Setup
+comboHeight := setupY + 37
 
 Gui Combo: +ToolWindow
 Gui Combo: -caption
 Gui Combo: Show, center w220 h%comboHeight%, Setup
 LLARS_DeveloperUIAction("Setup")
+return
+
+; Opens the local script Config.ini without changing the active Setup window.
+SetupOpenScriptConfig:
+if FileExist(LLARS_SCRIPT_DIR . "\Config.ini")
+	Run, %LLARS_SCRIPT_DIR%\Config.ini
+return
+
+; Runs the shared setup preflight and shows the actionable result window.
+CheckSetup:
+Gui Combo: Hide
+LLARS_ShowSetupPreflight()
 return
 
 ; Opens the optional script-owned Timer/setup editor.
@@ -281,8 +316,79 @@ return
 closecombo:
 LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
+Gui SetupCheck: Destroy
 Gui 1: Show
 EnableHotkey()
+return
+
+; Returns from Check Setup to the shared Setup window.
+CloseSetupCheck:
+Gui SetupCheck: Destroy
+Gui Combo: Show
+return
+
+; Action buttons from the preflight result reuse the existing editors.
+SetupCheckHotkeys:
+Gui SetupCheck: Destroy
+GoSub, Hotkey
+return
+
+SetupCheckCoordinates:
+Gui SetupCheck: Destroy
+GoSub, Coordinates
+return
+
+SetupCheckColors:
+Gui SetupCheck: Destroy
+GoSub, Color
+return
+
+SetupCheckTimer:
+Gui SetupCheck: Destroy
+GoSub, LLARS_CustomComboTimer
+return
+
+SetupCheckInput:
+Gui SetupCheck: Destroy
+GoSub, InputSettings
+return
+
+; Main Setup Status rows are quick-open links whenever that capability belongs
+; to the active script. Ready rows stay clickable for fast edits; Not Required
+; rows are inert so users cannot enter script-inactive setup surfaces by mistake.
+SetupStatusHotkeys:
+LLARS_UpdateConfigStatus()
+if LLARS_SetupItemIsAvailable("Hotkeys")
+	GoSub, Hotkey
+return
+
+SetupStatusCoordinates:
+LLARS_UpdateConfigStatus()
+if LLARS_SetupItemIsAvailable("Coordinates")
+	GoSub, Coordinates
+return
+
+SetupStatusColors:
+LLARS_UpdateConfigStatus()
+if LLARS_SetupItemIsAvailable("Colors")
+	GoSub, Color
+return
+
+SetupStatusTimer:
+LLARS_UpdateConfigStatus()
+if (LLARS_SetupItemIsAvailable("Timer") && LLARS_COMBO_TIMER_LABEL != "")
+	GoSub, LLARS_CustomComboTimer
+return
+
+SetupStatusScriptConfig:
+LLARS_UpdateConfigStatus()
+if LLARS_SetupItemIsAvailable("Script Config")
+{
+	if FileExist(LLARS_SCRIPT_DIR . "\Config.ini")
+		GoSub, SetupOpenScriptConfig
+	else
+		MsgBox, 48, LLARS Setup, The required script Config.ini is missing.`n`nRe-extract or redownload the complete LLARS package.
+}
 return
 
 ; =====================================================================
@@ -342,7 +448,7 @@ Gui Reset: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSResetGuiHwnd
 Gui Reset: Font, s10 Bold
 resetConfigItems := {}
 resetSectionList := " ***** Make a Selection ***** "
-IniRead, resetSections, Config.ini
+resetSections := LLARS_ConfigSectionList("Config.ini")
 
 if (resetSections != "ERROR")
 {
@@ -617,12 +723,12 @@ return
 ButtonClicked:
 coordinateConfigFile := coordinateConfigFiles.HasKey(selectedSection) ? coordinateConfigFiles[selectedSection] : "Config.ini"
 missingCoordinateKey := "__LLARS_COORDINATE_KEY_MISSING__"
-IniRead, pointXKey, %coordinateConfigFile%, %selectedSection%, x, %missingCoordinateKey%
-IniRead, pointYKey, %coordinateConfigFile%, %selectedSection%, y, %missingCoordinateKey%
-IniRead, rectangleXMinKey, %coordinateConfigFile%, %selectedSection%, xmin, %missingCoordinateKey%
-IniRead, rectangleXMaxKey, %coordinateConfigFile%, %selectedSection%, xmax, %missingCoordinateKey%
-IniRead, rectangleYMinKey, %coordinateConfigFile%, %selectedSection%, ymin, %missingCoordinateKey%
-IniRead, rectangleYMaxKey, %coordinateConfigFile%, %selectedSection%, ymax, %missingCoordinateKey%
+pointXKey := LLARS_ConfigReadFile(coordinateConfigFile, selectedSection, "x", missingCoordinateKey)
+pointYKey := LLARS_ConfigReadFile(coordinateConfigFile, selectedSection, "y", missingCoordinateKey)
+rectangleXMinKey := LLARS_ConfigReadFile(coordinateConfigFile, selectedSection, "xmin", missingCoordinateKey)
+rectangleXMaxKey := LLARS_ConfigReadFile(coordinateConfigFile, selectedSection, "xmax", missingCoordinateKey)
+rectangleYMinKey := LLARS_ConfigReadFile(coordinateConfigFile, selectedSection, "ymin", missingCoordinateKey)
+rectangleYMaxKey := LLARS_ConfigReadFile(coordinateConfigFile, selectedSection, "ymax", missingCoordinateKey)
 hasAnyPointCoordinateKeys := (pointXKey != missingCoordinateKey || pointYKey != missingCoordinateKey)
 hasPointCoordinateKeys := (pointXKey != missingCoordinateKey && pointYKey != missingCoordinateKey)
 hasAnyRectangleCoordinateKeys := (rectangleXMinKey != missingCoordinateKey || rectangleXMaxKey != missingCoordinateKey || rectangleYMinKey != missingCoordinateKey || rectangleYMaxKey != missingCoordinateKey)
@@ -745,10 +851,10 @@ if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 		LLARS_ShowCoordinatePreview(xmin, ymin, xmax, ymax)
 		SetTimer, CheckClicks, Off
 		configFile := (coordinateConfigFile != "") ? coordinateConfigFile : ((ButtonText = "Logout") ? LLARS_CONFIG_FILE : "Config.ini")
-		IniWrite, %xmin%, %configFile%, %ButtonText%, xmin
-		IniWrite, %xmax%, %configFile%, %ButtonText%, xmax
-		IniWrite, %ymin%, %configFile%, %ButtonText%, ymin
-		IniWrite, %ymax%, %configFile%, %ButtonText%, ymax
+		LLARS_ConfigWriteFile(configFile, ButtonText, "xmin", xmin)
+		LLARS_ConfigWriteFile(configFile, ButtonText, "xmax", xmax)
+		LLARS_ConfigWriteFile(configFile, ButtonText, "ymin", ymin)
+		LLARS_ConfigWriteFile(configFile, ButtonText, "ymax", ymax)
 		LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . xmin . "-" . xmax . " || Y=" . ymin . "-" . ymax, false)
 		if (ButtonText = "Logout")
 		{
@@ -839,12 +945,12 @@ if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 	SetTimer, CheckClicksPixel, Off
 	configFile := (coordinateConfigFile != "") ? coordinateConfigFile : "Config.ini"
 	; Point sections are authoritative single X/Y coordinates.
-	IniDelete, %configFile%, %ButtonText%, xmin
-	IniDelete, %configFile%, %ButtonText%, xmax
-	IniDelete, %configFile%, %ButtonText%, ymin
-	IniDelete, %configFile%, %ButtonText%, ymax
-	IniWrite, %x%, %configFile%, %ButtonText%, x
-	IniWrite, %y%, %configFile%, %ButtonText%, y
+	LLARS_ConfigDeleteFile(configFile, ButtonText, "xmin")
+	LLARS_ConfigDeleteFile(configFile, ButtonText, "xmax")
+	LLARS_ConfigDeleteFile(configFile, ButtonText, "ymin")
+	LLARS_ConfigDeleteFile(configFile, ButtonText, "ymax")
+	LLARS_ConfigWriteFile(configFile, ButtonText, "x", x)
+	LLARS_ConfigWriteFile(configFile, ButtonText, "y", y)
 	LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . x . " || Y=" . y, false)
 	Sleep, 1500
 	Gui 13: Destroy
@@ -947,10 +1053,10 @@ LLARS_DeveloperCoordinateOverlay(x, y, section := "", scope := "script")
 	if (section = "" || !FileExist(configPath))
 		return false
 
-	IniRead, xmin, %configPath%, %section%, xmin, ERROR
-	IniRead, xmax, %configPath%, %section%, xmax, ERROR
-	IniRead, ymin, %configPath%, %section%, ymin, ERROR
-	IniRead, ymax, %configPath%, %section%, ymax, ERROR
+	xmin := LLARS_ConfigReadFile(configPath, section, "xmin", "ERROR")
+	xmax := LLARS_ConfigReadFile(configPath, section, "xmax", "ERROR")
+	ymin := LLARS_ConfigReadFile(configPath, section, "ymin", "ERROR")
+	ymax := LLARS_ConfigReadFile(configPath, section, "ymax", "ERROR")
 
 	if (xmin != "ERROR" && xmax != "ERROR" && ymin != "ERROR" && ymax != "ERROR")
 	{
@@ -967,8 +1073,8 @@ LLARS_DeveloperCoordinateOverlay(x, y, section := "", scope := "script")
 		}
 	}
 
-	IniRead, fixedX, %configPath%, %section%, x, ERROR
-	IniRead, fixedY, %configPath%, %section%, y, ERROR
+	fixedX := LLARS_ConfigReadFile(configPath, section, "x", "ERROR")
+	fixedY := LLARS_ConfigReadFile(configPath, section, "y", "ERROR")
 	if (fixedX = "ERROR" || fixedY = "ERROR")
 		return false
 
@@ -1111,7 +1217,7 @@ y := ""
 ButtonText := selectedSection
 colorConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
 Sleep, 350
-IniRead, colorCoordinateSection, %colorConfigFile%, %ButtonText%, coordinate, ERROR
+colorCoordinateSection := LLARS_ConfigReadFile(colorConfigFile, ButtonText, "coordinate", "ERROR")
 colorCoordinateSection := Trim(colorCoordinateSection)
 if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 	colorCoordinateSection := LLARS_ColorMatchingPointSection(colorConfigFile, ButtonText)
@@ -1119,8 +1225,8 @@ if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 {
 	; Preserve legacy LLARS scripts that intentionally use [Pixel Coordinate]
 	; as their shared color sample point.
-	IniRead, legacyColorX, %colorConfigFile%, Pixel Coordinate, x, ERROR
-	IniRead, legacyColorY, %colorConfigFile%, Pixel Coordinate, y, ERROR
+	legacyColorX := LLARS_ConfigReadFile(colorConfigFile, "Pixel Coordinate", "x", "ERROR")
+	legacyColorY := LLARS_ConfigReadFile(colorConfigFile, "Pixel Coordinate", "y", "ERROR")
 	if legacyColorX is number
 	{
 		if legacyColorY is number
@@ -1155,8 +1261,8 @@ if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 	return
 }
 
-IniRead, x, %colorConfigFile%, %colorCoordinateSection%, x, ERROR
-IniRead, y, %colorConfigFile%, %colorCoordinateSection%, y, ERROR
+x := LLARS_ConfigReadFile(colorConfigFile, colorCoordinateSection, "x", "ERROR")
+y := LLARS_ConfigReadFile(colorConfigFile, colorCoordinateSection, "y", "ERROR")
 if x is not number
 {
 	LLARS_CreatorConfigError(ButtonText . " references an invalid color coordinate section: " . colorCoordinateSection)
@@ -1191,8 +1297,8 @@ LLARS_ColorMatchingPointSection(configFile, colorSection)
 		if (section = "" || GetConfigType(configFile, section) != "coordinate")
 			continue
 
-		IniRead, pointX, %configFile%, %section%, x, ERROR
-		IniRead, pointY, %configFile%, %section%, y, ERROR
+		pointX := LLARS_ConfigReadFile(configFile, section, "x", "ERROR")
+		pointY := LLARS_ConfigReadFile(configFile, section, "y", "ERROR")
 		if pointX is not number
 			continue
 		if pointY is not number
@@ -1245,7 +1351,7 @@ return
 SaveColorSelection:
 StringUpper, color, color
 colorKey := LLARS_GetColorKey(colorConfigFile, ButtonText)
-IniWrite, %color%, %colorConfigFile%, %ButtonText%, %colorKey%
+LLARS_ConfigWriteFile(colorConfigFile, ButtonText, colorKey, color)
 duplicateColors := LLARS_ColorDuplicateSections(colorConfigFile, ButtonText, color)
 if (duplicateColors = "")
 	colorResultText := ButtonText . " = " . color . " | Unique"
@@ -1311,7 +1417,7 @@ LLARS_ColorDuplicateSections(configFile, selectedSection, selectedColor)
 		if (GetConfigType(configFile, section) != "color")
 			continue
 		otherKey := LLARS_GetColorKey(configFile, section)
-		IniRead, otherColor, %configFile%, %section%, %otherKey%, ERROR
+		otherColor := LLARS_ConfigReadFile(configFile, section, otherKey, "ERROR")
 		otherColor := Trim(otherColor)
 		StringUpper, otherColor, otherColor
 		if (otherColor = selectedColor)
@@ -1453,7 +1559,7 @@ if (configFile = "")
 ; from the dropdown selection.
 selectedHotkeySection := selectedSection
 selectedHotkeyConfigFile := configFile
-IniRead, existingHotkey, %configFile%, %selectedSection%, Hotkey
+existingHotkey := LLARS_ConfigReadFile(configFile, selectedSection, "Hotkey", "ERROR")
 GuiControl,, ChosenHotkey, %existingHotkey%
 GuiControl, Enable, ChosenHotkey
 GoSub, ButtonClicked2
@@ -1487,7 +1593,7 @@ if !LLARS_IsValidConfigHotkey(ChosenHotkey)
 
 ; Use the locked section and configuration file instead of whatever
 ; the dropdown may currently be highlighting.
-IniWrite, %ChosenHotkey%, %selectedHotkeyConfigFile%, %selectedHotkeySection%, Hotkey
+LLARS_ConfigWriteFile(selectedHotkeyConfigFile, selectedHotkeySection, "Hotkey", ChosenHotkey)
 LLARS_DeveloperAction("Hotkey Config || " . selectedHotkeySection . " || " . ChosenHotkey, false)
 if WinExist("Developer Mode ahk_class AutoHotkeyGUI")
 	Gosub, LLARS_DeveloperAutoRefresh
@@ -1590,9 +1696,9 @@ ExitApp
 ; shared options, developer/community resources, and project details.
 Info:
 LLARS_DeveloperHotkey("Information")
-IniRead, logout, %LLARS_CONFIG_FILE%, Logout, option
-IniRead, sleepoption, %LLARS_CONFIG_FILE%, Random Sleep, option
-IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance
+logout := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Logout", "option", "ERROR")
+sleepoption := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "option", "ERROR")
+chance := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "chance", "ERROR")
 
 ; Build the list of script hotkeys automatically.
 scriptHotkeys := ""
@@ -1609,16 +1715,16 @@ if (LLARS_lhk5 != "")
 
 ; Read script-specific hotkeys from Config.ini.
 configHotkeys := ""
-IniRead, sections, Config.ini
+sections := LLARS_ConfigSectionList("Config.ini")
 Loop, Parse, sections, `n, `r
 {
 	section := A_LoopField
 	if (section = "")
 		continue
-	IniRead, type, Config.ini, %section%, type
+	type := LLARS_ConfigReadFile("Config.ini", section, "type", "ERROR")
 	if (type = "hotkey")
 	{
-		IniRead, hotkey, Config.ini, %section%, hotkey
+		hotkey := LLARS_ConfigReadFile("Config.ini", section, "hotkey", "ERROR")
 		if (hotkey = "")
 			hotkey := "Not Set"
 		configHotkeys .= section . ": " . hotkey . "`n"
@@ -1665,7 +1771,9 @@ createdY := mitY + 22
 resourceDividerY := createdY + 27
 resourceTitleY := resourceDividerY + 8
 developerModeY := resourceTitleY + 23
-discordY := developerModeY + 29
+verifyFilesY := developerModeY + 29
+supportBundleY := verifyFilesY + 29
+discordY := supportBundleY + 29
 closeDividerY := discordY + 32
 closeInfoY := closeDividerY + 8
 informationHeight := closeInfoY + 39
@@ -1711,6 +1819,8 @@ Gui 20: Add, Text, x10 y%resourceDividerY% w270 h2 0x10
 Gui 20: Font, s10 Bold cBlack
 Gui 20: Add, Text, x10 y%resourceTitleY% w270 h20 Center, Resources
 Gui 20: Add, Button, x60 y%developerModeY% w170 h25 gDeveloperMode, Developer Mode
+Gui 20: Add, Button, x60 y%verifyFilesY% w170 h25 gInfoVerifyLLARSFiles, Verify LLARS Files
+Gui 20: Add, Button, x60 y%supportBundleY% w170 h25 gInfoCreateSupportBundle, Create Support Bundle
 Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
 Gui 20: Add, Text, x10 y%closeDividerY% w270 h2 0x10
 Gui 20: Add, Button, x60 y%closeInfoY% w170 h29 gCloseInfo, Close Information
@@ -1726,6 +1836,22 @@ Gui 1: Default
 LLARS_DeveloperUIAction("Information", "Closed")
 Gui 20: Destroy
 Gui 1: Show
+return
+
+; Runs the non-restrictive installation integrity check.
+InfoVerifyLLARSFiles:
+integrityResult := LLARS_VerifyInstallation(LLARS_ROOT, true)
+integrityText := LLARS_IntegrityResultText(integrityResult)
+LLARS_SupportEvent("Installation integrity", integrityResult.Status . " | Issues=" . integrityResult.IssueCount)
+if (integrityResult.Status = "PASS")
+	MsgBox, 0x40040, LLARS File Verification, %integrityText%
+else
+	MsgBox, 0x40030, LLARS File Verification, %integrityText%
+return
+
+; Creates the privacy-safe four-file support ZIP after showing its contents.
+InfoCreateSupportBundle:
+LLARS_CreateSupportBundle(LLARS_ROOT, true)
 return
 
 ; Opens the Discord link from the information GUI and returns to LLARS.
@@ -1963,7 +2089,7 @@ developerRunType := (LLARS_RUN_TYPE != "") ? LLARS_RUN_TYPE : "Not Started"
 
 if (LLARS_RUNNING && LLARS_RunStartTick > 0)
 {
-	developerElapsedMS := A_TickCount - LLARS_RunStartTick
+	developerElapsedMS := LLARS_NowMS() - LLARS_RunStartTick
 	developerElapsedHours := Floor(developerElapsedMS / 3600000)
 	developerElapsedMinutes := Floor(Mod(developerElapsedMS, 3600000) / 60000)
 	developerElapsedSeconds := Floor(Mod(developerElapsedMS, 60000) / 1000)
@@ -1975,7 +2101,7 @@ else
 if (developerRunType = "RunCount" && runcount3 != "")
 	developerProgress := count2 . " / " . runcount3
 else if (developerRunType = "Timer" && LLARS_RUNNING)
-	developerProgress := LLARS_TimerRemainingText(endTime - A_TickCount)
+	developerProgress := LLARS_TimerRemainingText(endTime - LLARS_NowMS())
 else
 	developerProgress := "--"
 
@@ -2614,7 +2740,7 @@ developerRunType := (LLARS_RUN_TYPE != "") ? LLARS_RUN_TYPE : "Not Started"
 
 if (LLARS_RUNNING && LLARS_RunStartTick > 0)
 {
-	developerElapsedMS := A_TickCount - LLARS_RunStartTick
+	developerElapsedMS := LLARS_NowMS() - LLARS_RunStartTick
 	developerElapsedHours := Floor(developerElapsedMS / 3600000)
 	developerElapsedMinutes := Floor(Mod(developerElapsedMS, 3600000) / 60000)
 	developerElapsedSeconds := Floor(Mod(developerElapsedMS, 60000) / 1000)
@@ -2626,7 +2752,7 @@ else
 if (developerRunType = "RunCount" && runcount3 != "")
 	developerProgress := count2 . " / " . runcount3
 else if (developerRunType = "Timer" && LLARS_RUNNING)
-	developerProgress := LLARS_TimerRemainingText(endTime - A_TickCount)
+	developerProgress := LLARS_TimerRemainingText(endTime - LLARS_NowMS())
 else
 	developerProgress := "--"
 
@@ -2723,7 +2849,7 @@ LLARS_DeveloperLightweightDebugData()
 
 	if (LLARS_RUNNING && LLARS_RunStartTick > 0)
 	{
-		elapsedMS := A_TickCount - LLARS_RunStartTick
+		elapsedMS := LLARS_NowMS() - LLARS_RunStartTick
 		elapsedHours := Floor(elapsedMS / 3600000)
 		elapsedMinutes := Floor(Mod(elapsedMS, 3600000) / 60000)
 		elapsedSeconds := Floor(Mod(elapsedMS, 60000) / 1000)
@@ -2735,7 +2861,7 @@ LLARS_DeveloperLightweightDebugData()
 	if (runTypeText = "RunCount" && runcount3 != "")
 		progressText := count2 . " / " . runcount3
 	else if (runTypeText = "Timer" && LLARS_RUNNING)
-		progressText := LLARS_TimerRemainingText(endTime - A_TickCount)
+		progressText := LLARS_TimerRemainingText(endTime - LLARS_NowMS())
 	else
 		progressText := "--"
 
@@ -2835,8 +2961,8 @@ LLARS_DeveloperPixelTargets()
 		configType := GetConfigType(ConfigPath, section)
 		if (configType = "coordinate")
 		{
-			IniRead, x, %ConfigPath%, %section%, x, ERROR
-			IniRead, y, %ConfigPath%, %section%, y, ERROR
+			x := LLARS_ConfigReadFile(ConfigPath, section, "x", "ERROR")
+			y := LLARS_ConfigReadFile(ConfigPath, section, "y", "ERROR")
 			if (x != "ERROR" || y != "ERROR")
 				pointSections.Push({Name: section, X: Trim(x), Y: Trim(y)})
 			continue
@@ -2892,7 +3018,7 @@ LLARS_DeveloperPixelTargets()
 		}
 
 		colorKey := LLARS_GetColorKey(ConfigPath, colorSection)
-		IniRead, targetColor, %ConfigPath%, %colorSection%, %colorKey%, ERROR
+		targetColor := LLARS_ConfigReadFile(ConfigPath, colorSection, colorKey, "ERROR")
 		targetColor := Trim(targetColor)
 		if (targetColor = "ERROR" || !RegExMatch(targetColor, "i)^0x[0-9A-F]{6}$"))
 			targetColor := "Not Set"
@@ -3417,17 +3543,17 @@ LLARS_DeveloperDestroyInspectorPanel(resetScroll := true)
 
 LLARS_DeveloperConfigSectionActive(ConfigPath, section)
 {
-	IniRead, option, %ConfigPath%, %section%, option, true
+	option := LLARS_ConfigReadFile(ConfigPath, section, "option", "true")
 	option := Trim(option)
 	StringLower, optionLower, option
 	if (optionLower = "false")
 		return false
 
-	IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+	depends := LLARS_ConfigReadFile(ConfigPath, section, "depends", "ERROR")
 	if (depends != "ERROR" && Trim(depends) != "")
 	{
 		depends := Trim(depends)
-		IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+		dependsOption := LLARS_ConfigReadFile(ConfigPath, depends, "option", "true")
 		dependsOption := Trim(dependsOption)
 		StringLower, dependsOptionLower, dependsOption
 		if (dependsOptionLower = "false")
@@ -3440,7 +3566,7 @@ LLARS_DeveloperConfigSectionActive(ConfigPath, section)
 LLARS_DeveloperPixelPointForColor(ConfigPath, colorSection, pointSections, sharedPoint, colorIndex)
 {
 	; MultiColor templates can explicitly map each color section to the exact coordinate section it belongs to.
-	IniRead, mappedCoordinate, %ConfigPath%, %colorSection%, coordinate, ERROR
+	mappedCoordinate := LLARS_ConfigReadFile(ConfigPath, colorSection, "coordinate", "ERROR")
 	mappedCoordinate := Trim(mappedCoordinate)
 	if (mappedCoordinate != "" && mappedCoordinate != "ERROR")
 	{
@@ -3560,24 +3686,24 @@ LLARS_DeveloperScriptHotkeys()
 		if (GetConfigType(ConfigPath, section) != "hotkey")
 			continue
 
-		IniRead, option, %ConfigPath%, %section%, option, true
+		option := LLARS_ConfigReadFile(ConfigPath, section, "option", "true")
 		option := Trim(option)
 		StringLower, optionLower, option
 		if (optionLower = "false")
 			continue
 
-		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		depends := LLARS_ConfigReadFile(ConfigPath, section, "depends", "ERROR")
 		if (depends != "ERROR" && Trim(depends) != "")
 		{
 			depends := Trim(depends)
-			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := LLARS_ConfigReadFile(ConfigPath, depends, "option", "true")
 			dependsOption := Trim(dependsOption)
 			StringLower, dependsOptionLower, dependsOption
 			if (dependsOptionLower = "false")
 				continue
 		}
 
-		IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
+		hotkeyValue := LLARS_ConfigReadFile(ConfigPath, section, "hotkey", "ERROR")
 		if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
 			hotkeys .= section . ": Not Set`n"
 		else
@@ -3609,17 +3735,17 @@ LLARS_DeveloperConfigDiagnostics()
 		if (section = "")
 			continue
 
-		IniRead, option, %ConfigPath%, %section%, option, true
+		option := LLARS_ConfigReadFile(ConfigPath, section, "option", "true")
 		option := Trim(option)
 		StringLower, optionLower, option
 		if (optionLower = "false")
 			continue
 
-		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		depends := LLARS_ConfigReadFile(ConfigPath, section, "depends", "ERROR")
 		if (depends != "ERROR" && Trim(depends) != "")
 		{
 			depends := Trim(depends)
-			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := LLARS_ConfigReadFile(ConfigPath, depends, "option", "true")
 			dependsOption := Trim(dependsOption)
 			StringLower, dependsOptionLower, dependsOption
 			if (dependsOptionLower = "false")
@@ -3629,7 +3755,7 @@ LLARS_DeveloperConfigDiagnostics()
 		configType := GetConfigType(ConfigPath, section)
 		if (configType = "hotkey")
 		{
-			IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
+			hotkeyValue := LLARS_ConfigReadFile(ConfigPath, section, "hotkey", "ERROR")
 			if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
 				diagnostics .= section . ": Hotkey missing`n"
 			else if (!LLARS_IsValidConfigHotkey(hotkeyValue))
@@ -3639,12 +3765,12 @@ LLARS_DeveloperConfigDiagnostics()
 
 		if (configType = "coordinate")
 		{
-			IniRead, x, %ConfigPath%, %section%, x, ERROR
-			IniRead, y, %ConfigPath%, %section%, y, ERROR
-			IniRead, xmin, %ConfigPath%, %section%, xmin, ERROR
-			IniRead, xmax, %ConfigPath%, %section%, xmax, ERROR
-			IniRead, ymin, %ConfigPath%, %section%, ymin, ERROR
-			IniRead, ymax, %ConfigPath%, %section%, ymax, ERROR
+			x := LLARS_ConfigReadFile(ConfigPath, section, "x", "ERROR")
+			y := LLARS_ConfigReadFile(ConfigPath, section, "y", "ERROR")
+			xmin := LLARS_ConfigReadFile(ConfigPath, section, "xmin", "ERROR")
+			xmax := LLARS_ConfigReadFile(ConfigPath, section, "xmax", "ERROR")
+			ymin := LLARS_ConfigReadFile(ConfigPath, section, "ymin", "ERROR")
+			ymax := LLARS_ConfigReadFile(ConfigPath, section, "ymax", "ERROR")
 
 			hasPointCoordinates := (x != "ERROR" || y != "ERROR")
 			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
@@ -3679,7 +3805,7 @@ LLARS_DeveloperConfigDiagnostics()
 		if (configType = "color")
 		{
 			colorKey := LLARS_GetColorKey(ConfigPath, section)
-			IniRead, colorValue, %ConfigPath%, %section%, %colorKey%, ERROR
+			colorValue := LLARS_ConfigReadFile(ConfigPath, section, colorKey, "ERROR")
 			if (colorValue = "ERROR" || !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$"))
 				diagnostics .= section . ": Color missing/invalid`n"
 		}

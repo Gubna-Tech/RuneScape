@@ -37,349 +37,7 @@ LLARS_WindowTitle()
 }
 
 
-LLARS_ConfigSchemaCurrent()
-{
-    return 1
-}
-
-; Reads the schema directly from a root LLARS configuration file. Configs that
-; predate config_schema are schema 1 without being rewritten.
-LLARS_GetConfigSchemaFromFile(configPath, ByRef schemaExplicit := false, ByRef errorDetail := "")
-{
-    schemaExplicit := false
-    errorDetail := ""
-    if !FileExist(configPath)
-    {
-        errorDetail := "LLARS Config.ini is missing."
-        return 0
-    }
-
-    FileGetSize, configSize, %configPath%
-    if (ErrorLevel || configSize <= 0)
-    {
-        errorDetail := "LLARS Config.ini is empty or unreadable."
-        return 0
-    }
-
-    IniRead, schemaValue, %configPath%, LLARS, config_schema, __LLARS_SCHEMA_MISSING__
-    if (schemaValue = "__LLARS_SCHEMA_MISSING__")
-        return 1
-
-    schemaExplicit := true
-    schemaValue := Trim(schemaValue)
-    if !RegExMatch(schemaValue, "^\d+$") || (schemaValue + 0) < 1
-    {
-        errorDetail := "The [LLARS] config_schema value is invalid."
-        return 0
-    }
-
-    return schemaValue + 0
-}
-
-; Reads the framework-wide configuration schema from the LLARS project root.
-LLARS_GetConfigSchema(root := "", ByRef schemaExplicit := false, ByRef errorDetail := "")
-{
-    global LLARS_ROOT
-
-    if (root = "")
-        root := LLARS_ROOT
-    if (root = "")
-        root := A_ScriptDir
-    return LLARS_GetConfigSchemaFromFile(RTrim(root, "\/") . "\LLARS Config.ini", schemaExplicit, errorDetail)
-}
-
-; Returns normalized INI section names without relying on the Windows profile API
-; section-list behavior. Reading the headers directly keeps the first section
-; visible even when a UTF-8 BOM is present.
-LLARS_ConfigSectionList(ConfigPath)
-{
-	if !FileExist(ConfigPath)
-		return "ERROR"
-
-	FileRead, configContents, %ConfigPath%
-	if ErrorLevel
-		return "ERROR"
-
-	sectionList := ""
-	Loop, Parse, configContents, `n, `r
-	{
-		line := Trim(A_LoopField)
-		line := StrReplace(line, Chr(0xFEFF))
-		if !RegExMatch(line, "^\[(.*)\]$", sectionMatch)
-			continue
-
-		section := Trim(sectionMatch1)
-		if (section = "")
-			continue
-
-		if (sectionList != "")
-			sectionList .= "`n"
-		sectionList .= section
-	}
-
-	return (sectionList = "") ? "ERROR" : sectionList
-}
-
-; Lightweight root-config validation used before backup/migration/restore.
-; Script-local Config.ini files intentionally do not use this schema contract.
-LLARS_ValidateRootConfigFile(configPath, ByRef schema := 0, ByRef errorDetail := "", expectedSchema := 0)
-{
-    schemaExplicit := false
-    schemaError := ""
-    schema := LLARS_GetConfigSchemaFromFile(configPath, schemaExplicit, schemaError)
-    if (schema < 1)
-    {
-        errorDetail := schemaError
-        return false
-    }
-
-    if (expectedSchema > 0 && schema != expectedSchema)
-    {
-        errorDetail := "Expected config schema " . expectedSchema . " but found " . schema . "."
-        return false
-    }
-
-    sectionList := LLARS_ConfigSectionList(configPath)
-    if (ErrorLevel || sectionList = "ERROR" || sectionList = "")
-    {
-        errorDetail := "LLARS Config.ini does not contain readable sections."
-        return false
-    }
-
-    sectionEnvelope := "`n" . StrReplace(sectionList, "`r") . "`n"
-    if (!InStr(sectionEnvelope, "`nStart Hotkey`n") || !InStr(sectionEnvelope, "`nExit Hotkey`n"))
-    {
-        errorDetail := "LLARS Config.ini is missing required root configuration sections."
-        return false
-    }
-
-    errorDetail := ""
-    return true
-}
-
-; Migration edges are added only when an actual incompatible root-config
-; change requires them. Schema 1 remains current until then.
-LLARS_ApplyConfigMigrationStep(configPath, fromSchema, toSchema, ByRef errorDetail := "")
-{
-    errorDetail := "No LLARS config migration exists from schema " . fromSchema . " to schema " . toSchema . "."
-    return false
-}
-
-; Transaction-like migration dispatcher. The original config is backed up and a
-; temporary copy is migrated/validated before the live file is replaced.
-LLARS_MigrateConfig(oldSchema, targetSchema, root := "", ByRef errorDetail := "")
-{
-    global LLARS_ROOT
-
-    errorDetail := ""
-    if (root = "")
-        root := LLARS_ROOT
-    if (root = "")
-        root := A_ScriptDir
-    root := RTrim(root, "\/")
-
-    if (oldSchema < 1 || targetSchema < 1 || oldSchema > targetSchema)
-    {
-        errorDetail := "Invalid LLARS config migration range."
-        return false
-    }
-    if (oldSchema = targetSchema)
-        return true
-
-    currentSchema := LLARS_ConfigSchemaCurrent()
-    if (targetSchema > currentSchema)
-    {
-        errorDetail := "The requested migration target is newer than this LLARS build supports."
-        return false
-    }
-
-    configPath := root . "\LLARS Config.ini"
-    sourceSchema := 0
-    sourceError := ""
-    if !LLARS_ValidateRootConfigFile(configPath, sourceSchema, sourceError, oldSchema)
-    {
-        errorDetail := sourceError
-        return false
-    }
-
-    backupError := ""
-    if !LLARS_RunConfigBackup(root, true, backupError)
-    {
-        errorDetail := "Pre-migration backup failed: " . backupError
-        return false
-    }
-
-    tempPath := configPath . ".migration.tmp"
-    rollbackPath := configPath . ".migration.rollback"
-    FileDelete, %tempPath%
-    FileDelete, %rollbackPath%
-    FileCopy, %configPath%, %tempPath%, 1
-    if (ErrorLevel || !FileExist(tempPath))
-    {
-        errorDetail := "Could not create the temporary migration copy."
-        return false
-    }
-
-    schemaCursor := oldSchema
-    while (schemaCursor < targetSchema)
-    {
-        nextSchema := schemaCursor + 1
-        stepError := ""
-        if !LLARS_ApplyConfigMigrationStep(tempPath, schemaCursor, nextSchema, stepError)
-        {
-            FileDelete, %tempPath%
-            errorDetail := stepError
-            return false
-        }
-        schemaCursor := nextSchema
-    }
-
-    migratedSchema := 0
-    migratedError := ""
-    if !LLARS_ValidateRootConfigFile(tempPath, migratedSchema, migratedError, targetSchema)
-    {
-        FileDelete, %tempPath%
-        errorDetail := "Migrated config validation failed: " . migratedError
-        return false
-    }
-
-    FileMove, %configPath%, %rollbackPath%, 1
-    if (ErrorLevel)
-    {
-        FileDelete, %tempPath%
-        errorDetail := "Could not stage the original config for replacement."
-        return false
-    }
-
-    FileMove, %tempPath%, %configPath%, 1
-    if (ErrorLevel)
-    {
-        FileMove, %rollbackPath%, %configPath%, 1
-        FileDelete, %tempPath%
-        errorDetail := "Could not commit the migrated config; the original was restored."
-        return false
-    }
-
-    FileDelete, %rollbackPath%
-    return true
-}
-
-; Refuse malformed/future configuration. When a real older schema exists, run
-; the sequential backup-first migration dispatcher before startup continues.
-LLARS_CheckConfigCompatibility(root := "")
-{
-    currentSchema := LLARS_ConfigSchemaCurrent()
-    explicitSchema := false
-    schemaError := ""
-    configSchema := LLARS_GetConfigSchema(root, explicitSchema, schemaError)
-    if (configSchema < 1)
-    {
-        MsgBox, 262192, LLARS Configuration, LLARS could not validate the shared configuration.`n`n%schemaError%`n`nRestore a known-good LLARS Config.ini before continuing.
-        return false
-    }
-
-    if (configSchema > currentSchema)
-    {
-        MsgBox, 262192, LLARS Configuration, This LLARS Config.ini was created by a newer configuration schema.`n`nConfig schema: %configSchema%`nSupported schema: %currentSchema%`n`nUse the matching/newer LLARS version or restore an older configuration backup.
-        return false
-    }
-
-    if (configSchema < currentSchema)
-    {
-        migrationError := ""
-        if !LLARS_MigrateConfig(configSchema, currentSchema, root, migrationError)
-        {
-            MsgBox, 262192, LLARS Configuration, LLARS could not safely migrate the shared configuration.`n`n%migrationError%`n`nThe original configuration was left recoverable and startup has stopped.
-            return false
-        }
-    }
-
-    return true
-}
-
-; Runs the existing public configuration tools. Automatic mode is hidden and
-; non-interactive so update-time backup can complete before Save As appears.
-LLARS_RunConfigTool(root, action, automatic := true, ByRef errorDetail := "")
-{
-    errorDetail := ""
-    root := RTrim(root, "\/")
-    if (root = "")
-    {
-        errorDetail := "LLARS project root is unavailable."
-        return false
-    }
-
-    if (action = "backup")
-        toolName := "Config Backup.bat"
-    else if (action = "restore")
-        toolName := "Config Restore.bat"
-    else
-    {
-        errorDetail := "Unknown configuration tool action."
-        return false
-    }
-
-    toolPath := root . "\Backup\" . toolName
-    if !FileExist(toolPath)
-    {
-        errorDetail := toolName . " is missing."
-        return false
-    }
-
-    quote := Chr(34)
-    command := quote . A_ComSpec . quote . " /d /c " . quote . quote . toolPath . quote
-    if (automatic)
-        command .= " --auto"
-    command .= quote
-    runOptions := automatic ? "Hide UseErrorLevel" : "UseErrorLevel"
-    RunWait, %command%, %root%, %runOptions%
-    exitCode := ErrorLevel
-    if (exitCode = "ERROR" || exitCode != 0)
-    {
-        errorDetail := toolName . " returned exit code " . exitCode . "."
-        return false
-    }
-
-    return true
-}
-
-LLARS_RunConfigBackup(root, automatic := true, ByRef errorDetail := "")
-{
-    root := RTrim(root, "\/")
-    configPath := root . "\LLARS Config.ini"
-    schema := 0
-    validationError := ""
-    if !LLARS_ValidateRootConfigFile(configPath, schema, validationError)
-    {
-        errorDetail := validationError
-        return false
-    }
-    if (schema > LLARS_ConfigSchemaCurrent())
-    {
-        errorDetail := "The root config uses unsupported future schema " . schema . "."
-        return false
-    }
-    return LLARS_RunConfigTool(root, "backup", automatic, errorDetail)
-}
-
-LLARS_RunConfigRestore(root, automatic := true, ByRef errorDetail := "")
-{
-    root := RTrim(root, "\/")
-    backupConfig := root . "\Backup\Config Backup\LLARS Config.ini"
-    schema := 0
-    validationError := ""
-    if !LLARS_ValidateRootConfigFile(backupConfig, schema, validationError)
-    {
-        errorDetail := "Latest backup is not restorable: " . validationError
-        return false
-    }
-    if (schema > LLARS_ConfigSchemaCurrent())
-    {
-        errorDetail := "Latest backup uses unsupported future schema " . schema . "."
-        return false
-    }
-    return LLARS_RunConfigTool(root, "restore", automatic, errorDetail)
-}
+; Configuration ownership lives in LLARS_Config.ahk.
 
 ; Captures the LLARS-owned window that was active when an update check began.
 ; Only that window is hidden during an accepted download flow.
@@ -727,4 +385,242 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
     ; A successful update download ends the old LLARS process immediately so
     ; users cannot accidentally keep the previous version running beside the new one.
     ExitApp
+}
+
+; ===================================================================
+; |     INSTALLATION INTEGRITY     -     INSTALLATION INTEGRITY      |
+; ===================================================================
+; Returns the generated runtime manifest used by installation integrity checks.
+LLARS_IntegrityManifestPath(root := "")
+{
+    global LLARS_ROOT
+
+    if (root = "")
+        root := LLARS_ROOT
+    if (root = "")
+        root := A_ScriptDir
+    return RTrim(root, "\/") . "\Core\LLARS_RequiredFiles.manifest"
+}
+
+; Computes one file SHA-256 with the Windows certutil utility.
+; Only packaged vendor binaries are hash-enforced; user configuration is not.
+LLARS_FileSHA256(path, ByRef errorDetail := "")
+{
+    errorDetail := ""
+    if !FileExist(path)
+    {
+        errorDetail := "File is missing."
+        return ""
+    }
+
+    processId := DllCall("Kernel32\GetCurrentProcessId", "UInt")
+    Random, hashToken, 100000, 999999
+    tempPath := A_Temp . "\LLARS-Hash-" . processId . "-" . hashToken . ".txt"
+    command := ComSpec . " /C certutil -hashfile """ . path . """ SHA256 > """ . tempPath . """ 2>&1"
+    RunWait, %command%,, Hide UseErrorLevel
+    exitCode := ErrorLevel
+
+    output := ""
+    if FileExist(tempPath)
+    {
+        FileRead, output, %tempPath%
+        FileDelete, %tempPath%
+    }
+
+    if (exitCode != 0)
+    {
+        errorDetail := "Windows could not calculate the SHA-256 hash."
+        return ""
+    }
+
+    if !RegExMatch(output, "im)^\s*([0-9A-F]{64})\s*$", hashMatch)
+    {
+        errorDetail := "Windows returned an unreadable SHA-256 result."
+        return ""
+    }
+
+    hashValue := hashMatch1
+    StringLower, hashValue, hashValue
+    return hashValue
+}
+
+; Checks active LLARS configuration files only. Backup copies are excluded,
+; while parseable legacy UTF-8/UTF-16 BOM configs remain supported.
+LLARS_IntegrityCheckIniEncoding(root, ByRef badFiles := "", ByRef checkedCount := 0)
+{
+    badFiles := ""
+    checkedCount := 0
+    root := RTrim(root, "\/")
+    iniFiles := []
+
+    rootConfig := root . "\LLARS Config.ini"
+    if FileExist(rootConfig)
+        iniFiles.Push(rootConfig)
+
+    for _, configRoot in [root . "\Scripts", root . "\Templates"]
+    {
+        pattern := configRoot . "\*.ini"
+        Loop, Files, %pattern%, FR
+            iniFiles.Push(A_LoopFileFullPath)
+    }
+
+    for _, iniPath in iniFiles
+    {
+        checkedCount++
+        if (LLARS_ConfigSectionList(iniPath) = "ERROR")
+        {
+            if (badFiles != "")
+                badFiles .= "`n"
+            badFiles .= iniPath
+        }
+    }
+    return (badFiles = "")
+}
+
+
+; Runs a non-restrictive integrity audit of the installed LLARS package.
+; The result is diagnostic: it identifies repairable package damage without
+; treating user-editable settings as anti-tamper material.
+LLARS_VerifyInstallation(root := "", verifyVendorHashes := true)
+{
+    global LLARS_ROOT
+
+    if (root = "")
+        root := LLARS_ROOT
+    if (root = "")
+        root := A_ScriptDir
+    root := RTrim(root, "\/")
+
+    result := {Status: "PASS"
+        , Issues: []
+        , IssueCount: 0
+        , RequiredChecked: 0
+        , SelectorTargetsChecked: 0
+        , HashesChecked: 0
+        , IniChecked: 0
+        , Version: "Unknown"
+        , Manifest: LLARS_IntegrityManifestPath(root)}
+
+    for _, folderName in ["Core", "Scripts", "Vendor", "Assets", "Templates"]
+    {
+        if !InStr(FileExist(root . "\" . folderName), "D")
+            result.Issues.Push("Required folder is missing: " . folderName . ". Re-extract or redownload the complete LLARS package.")
+    }
+
+    versionPath := root . "\VERSION"
+    if FileExist(versionPath)
+    {
+        FileRead, versionText, %versionPath%
+        versionText := Trim(versionText, " `t`r`n")
+        result.Version := versionText
+        if !RegExMatch(versionText, "^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$")
+            result.Issues.Push("VERSION is present but malformed. Re-extract or redownload the complete LLARS package.")
+    }
+    else
+        result.Issues.Push("VERSION is missing. Re-extract or redownload the complete LLARS package.")
+
+    manifestPath := result.Manifest
+    if !FileExist(manifestPath)
+        result.Issues.Push("Core\LLARS_RequiredFiles.manifest is missing. Re-extract or redownload the complete LLARS package.")
+    else
+    {
+        FileRead, manifestText, %manifestPath%
+        if ErrorLevel
+            result.Issues.Push("Core\LLARS_RequiredFiles.manifest could not be read. Re-extract or redownload LLARS.")
+        else
+        {
+            Loop, Parse, manifestText, `n, `r
+            {
+                line := Trim(A_LoopField)
+                if (line = "" || SubStr(line, 1, 1) = "#")
+                    continue
+                fields := StrSplit(line, A_Tab)
+                kind := Trim(fields[1])
+                StringLower, kind, kind
+                relativePath := fields.Length() >= 2 ? Trim(fields[2]) : ""
+                relativePath := StrReplace(relativePath, "/", "\")
+                if (relativePath = "")
+                    continue
+                fullPath := root . "\" . relativePath
+
+                if (kind = "required")
+                {
+                    result.RequiredChecked++
+                    if (RegExMatch(relativePath, "i)^Scripts\\.*\.ahk$"))
+                        result.SelectorTargetsChecked++
+                    if !FileExist(fullPath)
+                        result.Issues.Push(relativePath . " is missing. Re-extract or redownload the complete LLARS package.")
+                    continue
+                }
+
+                if (kind = "sha256" && verifyVendorHashes)
+                {
+                    expectedHash := fields.Length() >= 3 ? Trim(fields[3]) : ""
+                    StringLower, expectedHash, expectedHash
+                    result.HashesChecked++
+                    if !FileExist(fullPath)
+                        continue
+                    hashError := ""
+                    actualHash := LLARS_FileSHA256(fullPath, hashError)
+                    if (actualHash = "")
+                        result.Issues.Push(relativePath . " could not be hash-verified. " . hashError)
+                    else if (actualHash != expectedHash)
+                        result.Issues.Push(relativePath . " does not match the supported packaged version. Re-extract or redownload LLARS.")
+                }
+            }
+        }
+    }
+
+    canonicalIcon := root . "\Assets\Logo\LLARS\LLARS Logo.ico"
+    if !FileExist(canonicalIcon)
+        result.Issues.Push("The canonical LLARS icon is missing. Re-extract or redownload the complete LLARS package.")
+
+    duplicateIconCount := 0
+    iconPattern := root . "\LLARS Logo.ico"
+    Loop, Files, %iconPattern%, R
+    {
+        if (A_LoopFileFullPath != canonicalIcon)
+            duplicateIconCount++
+    }
+    if (duplicateIconCount > 0)
+        result.Issues.Push("Deprecated duplicate LLARS icon files were found outside Assets\Logo\LLARS. Use a clean LLARS release folder.")
+
+    badIniFiles := ""
+    iniCount := 0
+    if !LLARS_IntegrityCheckIniEncoding(root, badIniFiles, iniCount)
+    {
+        result.Issues.Push("One or more active LLARS config files could not be parsed. Legacy UTF-8/UTF-16 BOM configs are supported; restore only the affected config from a clean release or backup.")
+    }
+    result.IniChecked := iniCount
+
+    result.IssueCount := result.Issues.Length()
+    if (result.IssueCount > 0)
+        result.Status := "FAIL"
+    return result
+}
+
+; Formats the installation audit for Information UI and support bundles.
+LLARS_IntegrityResultText(result)
+{
+    if !IsObject(result)
+        return "Installation integrity result is unavailable."
+
+    text := "Status: " . result.Status . "`r`n"
+    text .= "Version: v" . result.Version . "`r`n"
+    text .= "Required runtime files checked: " . result.RequiredChecked . "`r`n"
+    text .= "Selector targets checked: " . result.SelectorTargetsChecked . "`r`n"
+    text .= "Vendor hashes checked: " . result.HashesChecked . "`r`n"
+    text .= "Active config INIs checked: " . result.IniChecked . "`r`n"
+    text .= "Issues: " . result.IssueCount . "`r`n"
+
+    if (result.IssueCount > 0)
+    {
+        text .= "`r`nRepair guidance:`r`n"
+        for index, issue in result.Issues
+            text .= index . ". " . issue . "`r`n"
+    }
+    else
+        text .= "`r`nThe required LLARS runtime structure and pinned vendor binaries match this release.`r`n"
+
+    return RTrim(text, "`r`n")
 }

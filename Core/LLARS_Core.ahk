@@ -135,8 +135,8 @@ LLARS_MainLoadPosition(ByRef x, ByRef y)
 {
 	global LLARS_CONFIG_FILE
 
-	IniRead, x, %LLARS_CONFIG_FILE%, GUI POS, guix, ERROR
-	IniRead, y, %LLARS_CONFIG_FILE%, GUI POS, guiy, ERROR
+	x := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "GUI POS", "guix", "ERROR")
+	y := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "GUI POS", "guiy", "ERROR")
 	x := Trim(x)
 	y := Trim(y)
 	if (x = "ERROR" || y = "ERROR" || !LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y))
@@ -161,8 +161,8 @@ LLARS_MainSavePosition(hwnd := 0)
 	if !LLARS_MainGetPosition(x, y, hwnd)
 		return false
 
-	IniWrite, %x%, %LLARS_CONFIG_FILE%, GUI POS, guix
-	IniWrite, %y%, %LLARS_CONFIG_FILE%, GUI POS, guiy
+	LLARS_ConfigWriteFile(LLARS_CONFIG_FILE, "GUI POS", "guix", x)
+	LLARS_ConfigWriteFile(LLARS_CONFIG_FILE, "GUI POS", "guiy", y)
 	return true
 }
 
@@ -171,8 +171,8 @@ LLARS_DeveloperLoadPosition(ByRef x, ByRef y)
 {
 	global LLARS_CONFIG_FILE
 
-	IniRead, x, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix, ERROR
-	IniRead, y, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy, ERROR
+	x := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Developer Mode GUI POS", "guix", "ERROR")
+	y := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Developer Mode GUI POS", "guiy", "ERROR")
 	x := Trim(x)
 	y := Trim(y)
 	if (x = "ERROR" || y = "ERROR")
@@ -198,8 +198,8 @@ LLARS_DeveloperSavePosition(hwnd := 0)
 	if !LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y)
 		return false
 
-	IniWrite, %x%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guix
-	IniWrite, %y%, %LLARS_CONFIG_FILE%, Developer Mode GUI POS, guiy
+	LLARS_ConfigWriteFile(LLARS_CONFIG_FILE, "Developer Mode GUI POS", "guix", x)
+	LLARS_ConfigWriteFile(LLARS_CONFIG_FILE, "Developer Mode GUI POS", "guiy", y)
 	return true
 }
 
@@ -276,7 +276,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	global LLARS_RUNNING
 	global LLARS_CONTROLS_LOCKED
 
-	IniRead, lhk1, %LLARS_CONFIG_FILE%, Start Hotkey, hotkey
+	lhk1 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Start Hotkey", "hotkey", "ERROR")
 	if (lhk1 = "ERROR")
 		lhk1 := ""
 	lhk1 := Trim(lhk1)
@@ -304,9 +304,9 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	if (startOnly)
 		return true
 
-	IniRead, lhk2, %LLARS_CONFIG_FILE%, Information Hotkey, hotkey
-	IniRead, lhk3, %LLARS_CONFIG_FILE%, color/coordinate/hotkey Hotkey, hotkey
-	IniRead, lhk4, %LLARS_CONFIG_FILE%, Exit Hotkey, hotkey
+	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information Hotkey", "hotkey", "ERROR")
+	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "color/coordinate/hotkey Hotkey", "hotkey", "ERROR")
+	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Exit Hotkey", "hotkey", "ERROR")
 	if (lhk2 = "ERROR")
 		lhk2 := ""
 	if (lhk3 = "ERROR")
@@ -405,7 +405,7 @@ LLARS_EnableDeveloperHotkey(lhk5 := "")
 	global LLARS_lhk5
 
 	if (lhk5 = "")
-		IniRead, lhk5, %LLARS_CONFIG_FILE%, Developer Mode, hotkey
+		lhk5 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Developer Mode", "hotkey", "ERROR")
 
 	if (lhk5 = "ERROR")
 		lhk5 := ""
@@ -438,11 +438,11 @@ LLARS_CheckHotkeyConfig()
 {
 	global LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5
 
-	IniRead, lhk1, %LLARS_CONFIG_FILE%, Start Hotkey, hotkey
-	IniRead, lhk2, %LLARS_CONFIG_FILE%, Information Hotkey, hotkey
-	IniRead, lhk3, %LLARS_CONFIG_FILE%, color/coordinate/hotkey Hotkey, hotkey
-	IniRead, lhk4, %LLARS_CONFIG_FILE%, exit Hotkey, hotkey
-	IniRead, lhk5, %LLARS_CONFIG_FILE%, Developer Mode, hotkey
+	lhk1 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Start Hotkey", "hotkey", "ERROR")
+	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information Hotkey", "hotkey", "ERROR")
+	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "color/coordinate/hotkey Hotkey", "hotkey", "ERROR")
+	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "exit Hotkey", "hotkey", "ERROR")
+	lhk5 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Developer Mode", "hotkey", "ERROR")
 
 	if (lhk1 = "ERROR" || lhk2 = "ERROR" || lhk3 = "ERROR" || lhk4 = "ERROR")
 		return
@@ -476,160 +476,346 @@ LLARS_NormalizeConfigSectionName(section)
 LLARS_ConfigSectionEnabled(ConfigPath, section)
 {
 	section := LLARS_NormalizeConfigSectionName(section)
-	IniRead, option, %ConfigPath%, %section%, option, true
+	option := LLARS_ConfigReadFile(ConfigPath, section, "option", "true")
 	option := Trim(option)
 	StringLower, optionLower, option
 	if (optionLower = "false")
 		return false
 
-	IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+	depends := LLARS_ConfigReadFile(ConfigPath, section, "depends", "ERROR")
 	if (depends = "ERROR" || Trim(depends) = "")
 		return true
 
 	depends := Trim(depends)
-	IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+	dependsOption := LLARS_ConfigReadFile(ConfigPath, depends, "option", "true")
 	dependsOption := Trim(dependsOption)
 	StringLower, dependsOptionLower, dependsOption
 	return (dependsOptionLower != "false")
 }
 
+; Returns the current script's derived mechanical setup capabilities.
+LLARS_GetScriptCapabilities()
+{
+	global LLARS_SCRIPT_DIR, LLARS_DISABLE_SCRIPT_CONFIG
+	configPath := LLARS_SCRIPT_DIR . "\Config.ini"
+	disabledOverride := LLARS_DISABLE_SCRIPT_CONFIG ? true : ""
+	return LLARS_ConfigCapabilityScan(configPath, A_ScriptFullPath, disabledOverride)
+}
+
+; Converts category counters into the four user-facing preflight states.
+LLARS_SetupCategoryState(capabilityAvailable, requiredCount, missingCount, invalidCount)
+{
+	if (!capabilityAvailable)
+		return "Not Required"
+	if (invalidCount > 0)
+		return "Invalid"
+	if (missingCount > 0)
+		return "Missing"
+	return "Ready"
+}
+
+; Builds one side-effect-free setup result used by the main status panel,
+; Setup preflight, diagnostics, and actionable setup navigation.
+LLARS_BuildSetupPreflight(includeInput := true)
+{
+	global LLARS_ROOT, LLARS_SCRIPT_DIR, LLARS_DISABLE_SCRIPT_CONFIG
+
+	caps := LLARS_GetScriptCapabilities()
+	result := {Capabilities: caps, Items: {}, Overall: "Ready", IssueCount: 0, RequiredCount: 0}
+	counts := {hotkey: {required: 0, missing: 0, invalid: 0}
+		, coordinate: {required: 0, missing: 0, invalid: 0}
+		, color: {required: 0, missing: 0, invalid: 0}
+		, timer: {required: 0, missing: 0, invalid: 0}}
+
+	configPath := LLARS_SCRIPT_DIR . "\Config.ini"
+	if (caps.ConfigExists)
+	{
+		sections := LLARS_ConfigSectionList(configPath)
+		if (sections != "ERROR")
+		{
+			Loop, Parse, sections, `n, `r
+			{
+				section := LLARS_NormalizeConfigSectionName(A_LoopField)
+				if (section = "" || !LLARS_ConfigSectionEnabled(configPath, section))
+					continue
+
+				configType := LLARS_ConfigCapabilitySectionType(configPath, section)
+				if (configType = "")
+					continue
+
+				if (configType = "hotkey")
+				{
+					counts.hotkey.required++
+					hotkeyValue := LLARS_ConfigReadFile(configPath, section, "hotkey", "ERROR")
+					if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
+						counts.hotkey.missing++
+					else if !LLARS_IsValidConfigHotkey(hotkeyValue)
+						counts.hotkey.invalid++
+					continue
+				}
+
+				if (configType = "coordinate")
+				{
+					counts.coordinate.required++
+					x := LLARS_ConfigReadFile(configPath, section, "x", "ERROR")
+					y := LLARS_ConfigReadFile(configPath, section, "y", "ERROR")
+					xmin := LLARS_ConfigReadFile(configPath, section, "xmin", "ERROR")
+					xmax := LLARS_ConfigReadFile(configPath, section, "xmax", "ERROR")
+					ymin := LLARS_ConfigReadFile(configPath, section, "ymin", "ERROR")
+					ymax := LLARS_ConfigReadFile(configPath, section, "ymax", "ERROR")
+					hasPoint := (x != "ERROR" || y != "ERROR")
+					hasRectangle := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
+
+					if (hasPoint)
+					{
+						if (x = "ERROR" || y = "ERROR" || Trim(x) = "" || Trim(y) = "")
+							counts.coordinate.missing++
+						else if (!LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y))
+							counts.coordinate.invalid++
+					}
+					else if (hasRectangle)
+					{
+						if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR" || Trim(xmin) = "" || Trim(xmax) = "" || Trim(ymin) = "" || Trim(ymax) = "")
+							counts.coordinate.missing++
+						else if (!LLARS_IsNumericConfigValue(xmin) || !LLARS_IsNumericConfigValue(xmax) || !LLARS_IsNumericConfigValue(ymin) || !LLARS_IsNumericConfigValue(ymax) || (xmin + 0) > (xmax + 0) || (ymin + 0) > (ymax + 0))
+							counts.coordinate.invalid++
+					}
+					else
+						counts.coordinate.missing++
+					continue
+				}
+
+				if (configType = "color")
+				{
+					counts.color.required++
+					colorKey := LLARS_GetColorKey(configPath, section)
+					colorValue := LLARS_ConfigReadFile(configPath, section, colorKey, "ERROR")
+					if (colorValue = "ERROR" || Trim(colorValue) = "")
+						counts.color.missing++
+					else if !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$")
+						counts.color.invalid++
+					continue
+				}
+
+				if (configType = "timer")
+				{
+					counts.timer.required++
+					minValue := LLARS_ConfigReadFile(configPath, section, "min", "ERROR")
+					maxValue := LLARS_ConfigReadFile(configPath, section, "max", "ERROR")
+					if (minValue = "ERROR" || maxValue = "ERROR" || Trim(minValue) = "" || Trim(maxValue) = "")
+						counts.timer.missing++
+					else if (!LLARS_IsNumericConfigValue(minValue) || !LLARS_IsNumericConfigValue(maxValue) || (minValue + 0) > (maxValue + 0))
+						counts.timer.invalid++
+				}
+			}
+		}
+	}
+
+	result.Items["Hotkeys"] := {State: LLARS_SetupCategoryState(caps.Hotkeys, counts.hotkey.required, counts.hotkey.missing, counts.hotkey.invalid), Required: counts.hotkey.required, Missing: counts.hotkey.missing, Invalid: counts.hotkey.invalid}
+	result.Items["Coordinates"] := {State: LLARS_SetupCategoryState(caps.Coordinates, counts.coordinate.required, counts.coordinate.missing, counts.coordinate.invalid), Required: counts.coordinate.required, Missing: counts.coordinate.missing, Invalid: counts.coordinate.invalid}
+	result.Items["Colors"] := {State: LLARS_SetupCategoryState(caps.Colors, counts.color.required, counts.color.missing, counts.color.invalid), Required: counts.color.required, Missing: counts.color.missing, Invalid: counts.color.invalid}
+	result.Items["Timer"] := {State: LLARS_SetupCategoryState(caps.Timer, counts.timer.required, counts.timer.missing, counts.timer.invalid), Required: counts.timer.required, Missing: counts.timer.missing, Invalid: counts.timer.invalid}
+
+	if (LLARS_DISABLE_SCRIPT_CONFIG)
+		scriptConfigState := "Not Required"
+	else if FileExist(configPath)
+		scriptConfigState := "Ready"
+	else
+		scriptConfigState := "Missing"
+	result.Items["Script Config"] := {State: scriptConfigState, Required: caps.RequiresLocalConfig ? 1 : 0, Missing: (scriptConfigState = "Missing") ? 1 : 0, Invalid: 0}
+
+	if (includeInput)
+	{
+		inputMode := LLARS_AHI_Mode(LLARS_ROOT)
+		if (inputMode = "standard")
+			inputState := "Ready"
+		else if (LLARS_AHI_IsReady("mouse") && LLARS_AHI_IsReady("keyboard"))
+			inputState := "Ready"
+		else
+			inputState := "Invalid"
+		result.Items["Input Backend"] := {State: inputState, Required: 1, Missing: 0, Invalid: (inputState = "Invalid") ? 1 : 0}
+	}
+
+	for _, itemName in ["Hotkeys", "Coordinates", "Colors", "Timer", "Script Config"]
+	{
+		item := result.Items[itemName]
+		result.RequiredCount += item.Required
+		if (item.State = "Missing" || item.State = "Invalid")
+			result.IssueCount++
+	}
+	if (includeInput)
+	{
+		item := result.Items["Input Backend"]
+		if (item.State = "Missing" || item.State = "Invalid")
+			result.IssueCount++
+	}
+
+	if (result.IssueCount > 0)
+	{
+		result.Overall := "Setup Required"
+		for _, item in result.Items
+		{
+			if (item.State = "Invalid")
+			{
+				result.Overall := "Invalid Setup"
+				break
+			}
+		}
+	}
+	return result
+}
+
 ; Summarizes required script configuration for the main LLARS status display.
 LLARS_UpdateConfigStatus()
 {
-	global LLARS_SCRIPT_DIR, LLARS_DISABLE_SCRIPT_CONFIG
 	global LLARS_CONFIG_READY, LLARS_CONFIG_MISSING_COUNT, LLARS_CONFIG_REQUIRED_COUNT
+	global LLARS_SCRIPT_CAPABILITIES, LLARS_SETUP_PREFLIGHT
 
-	LLARS_CONFIG_READY := false
+	LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(false)
+	LLARS_SCRIPT_CAPABILITIES := LLARS_SETUP_PREFLIGHT.Capabilities
+	LLARS_CONFIG_REQUIRED_COUNT := LLARS_SETUP_PREFLIGHT.RequiredCount
 	LLARS_CONFIG_MISSING_COUNT := 0
-	LLARS_CONFIG_REQUIRED_COUNT := 0
 
-	if (LLARS_DISABLE_SCRIPT_CONFIG)
+	for _, itemName in ["Hotkeys", "Coordinates", "Colors", "Timer", "Script Config"]
 	{
-		LLARS_SetConfigStatusText("ConfigStatusHotkeys", "ConfigStatusHotkeysLabel", 0, 0)
-		LLARS_SetConfigStatusText("ConfigStatusCoordinates", "ConfigStatusCoordinatesLabel", 0, 0)
-		LLARS_SetConfigStatusText("ConfigStatusColors", "ConfigStatusColorsLabel", 0, 0)
-		LLARS_CONFIG_READY := true
-		return true
+		item := LLARS_SETUP_PREFLIGHT.Items[itemName]
+		LLARS_CONFIG_MISSING_COUNT += item.Missing + item.Invalid
 	}
-
-	ConfigPath := LLARS_SCRIPT_DIR "\Config.ini"
-	if !FileExist(ConfigPath)
-		return false
-
-	hotkeyRequired := 0
-	hotkeyMissing := 0
-	coordinateRequired := 0
-	coordinateMissing := 0
-	colorRequired := 0
-	colorMissing := 0
-
-	sections := LLARS_ConfigSectionList(ConfigPath)
-	if (sections = "ERROR")
-		return
-
-	Loop, Parse, sections, `n, `r
-	{
-		section := Trim(A_LoopField)
-		if (section = "")
-			continue
-
-		if !LLARS_ConfigSectionEnabled(ConfigPath, section)
-			continue
-
-		configType := GetConfigType(ConfigPath, section)
-		if (configType = "hotkey")
-		{
-			hotkeyRequired++
-			IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
-			if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "" || !LLARS_IsValidConfigHotkey(hotkeyValue))
-				hotkeyMissing++
-			continue
-		}
-
-		if (configType = "coordinate")
-		{
-			coordinateRequired++
-			IniRead, x, %ConfigPath%, %section%, x, ERROR
-			IniRead, y, %ConfigPath%, %section%, y, ERROR
-			IniRead, xmin, %ConfigPath%, %section%, xmin, ERROR
-			IniRead, xmax, %ConfigPath%, %section%, xmax, ERROR
-			IniRead, ymin, %ConfigPath%, %section%, ymin, ERROR
-			IniRead, ymax, %ConfigPath%, %section%, ymax, ERROR
-
-			hasPointCoordinates := (x != "ERROR" || y != "ERROR")
-			hasRectangleCoordinates := (xmin != "ERROR" || xmax != "ERROR" || ymin != "ERROR" || ymax != "ERROR")
-			coordinateInvalid := false
-
-			if (hasPointCoordinates)
-			{
-				if (x = "ERROR" || y = "ERROR" || Trim(x) = "" || Trim(y) = "")
-					coordinateInvalid := true
-				else if (!LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y))
-					coordinateInvalid := true
-			}
-			else if (hasRectangleCoordinates)
-			{
-				if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR")
-					coordinateInvalid := true
-				else if (Trim(xmin) = "" || Trim(xmax) = "" || Trim(ymin) = "" || Trim(ymax) = "")
-					coordinateInvalid := true
-				else if (!LLARS_IsNumericConfigValue(xmin) || !LLARS_IsNumericConfigValue(xmax) || !LLARS_IsNumericConfigValue(ymin) || !LLARS_IsNumericConfigValue(ymax))
-					coordinateInvalid := true
-				else if ((xmin + 0) > (xmax + 0) || (ymin + 0) > (ymax + 0))
-					coordinateInvalid := true
-			}
-			else
-				coordinateInvalid := true
-
-			if (coordinateInvalid)
-				coordinateMissing++
-			continue
-		}
-
-		if (configType = "color")
-		{
-			colorRequired++
-			colorKey := LLARS_GetColorKey(ConfigPath, section)
-			IniRead, colorValue, %ConfigPath%, %section%, %colorKey%, ERROR
-			if (colorValue = "ERROR" || !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$"))
-				colorMissing++
-		}
-	}
-
-	LLARS_CONFIG_REQUIRED_COUNT := hotkeyRequired + coordinateRequired + colorRequired
-	LLARS_CONFIG_MISSING_COUNT := hotkeyMissing + coordinateMissing + colorMissing
 	LLARS_CONFIG_READY := (LLARS_CONFIG_MISSING_COUNT = 0)
 
-	LLARS_SetConfigStatusText("ConfigStatusHotkeys", "ConfigStatusHotkeysLabel", hotkeyRequired, hotkeyMissing)
-	LLARS_SetConfigStatusText("ConfigStatusCoordinates", "ConfigStatusCoordinatesLabel", coordinateRequired, coordinateMissing)
-	LLARS_SetConfigStatusText("ConfigStatusColors", "ConfigStatusColorsLabel", colorRequired, colorMissing)
+	LLARS_SetConfigStatusState("ConfigStatusHotkeys", "ConfigStatusHotkeysLabel", LLARS_SETUP_PREFLIGHT.Items["Hotkeys"].State)
+	LLARS_SetConfigStatusState("ConfigStatusCoordinates", "ConfigStatusCoordinatesLabel", LLARS_SETUP_PREFLIGHT.Items["Coordinates"].State)
+	LLARS_SetConfigStatusState("ConfigStatusColors", "ConfigStatusColorsLabel", LLARS_SETUP_PREFLIGHT.Items["Colors"].State)
+	LLARS_SetConfigStatusState("ConfigStatusTimer", "ConfigStatusTimerLabel", LLARS_SETUP_PREFLIGHT.Items["Timer"].State)
+	LLARS_SetConfigStatusState("ConfigStatusScriptConfig", "ConfigStatusScriptConfigLabel", LLARS_SETUP_PREFLIGHT.Items["Script Config"].State)
 	return LLARS_CONFIG_READY
 }
 
- ; Formats one main-GUI configuration status category.
-LLARS_SetConfigStatusText(controlName, labelName, requiredCount, missingCount)
+; Formats one main-GUI setup status category. Required categories remain
+; quick-open links after setup is complete; Missing/Invalid links are red so
+; attention state is visible without using hyperlink-blue. Not Required rows
+; stay visually neutral and their handlers remain inert.
+LLARS_SetConfigStatusState(controlName, labelName, state)
 {
-	if (requiredCount = 0)
+	if (state = "Invalid" || state = "Missing")
 	{
-		statusText := "Not Required"
-		statusColor := "Black"
-	}
-	else if (missingCount > 0)
-	{
-		statusText := "Missing"
 		statusColor := "Red"
+		labelColor := "Red"
+		labelUnderline := true
+	}
+	else if (state = "Ready")
+	{
+		statusColor := "Green"
+		labelColor := "Black"
+		labelUnderline := false
 	}
 	else
 	{
-		statusText := "Ready"
-		statusColor := "Green"
+		statusColor := "Black"
+		labelColor := "Black"
+		labelUnderline := false
 	}
 
-	Gui, 1: Font, s10 Bold cBlack
+	; Reset inherited font decoration first, then explicitly restore Bold. This
+	; keeps Setup Status typography consistent with the Status section above it.
+	Gui, 1: Font, s10 Norm c%labelColor%
+	if (labelUnderline)
+		Gui, 1: Font, s10 Bold Underline c%labelColor%
+	else
+		Gui, 1: Font, s10 Bold c%labelColor%
 	GuiControl, 1: Font, %labelName%
+
+	Gui, 1: Font, s10 Norm c%statusColor%
 	Gui, 1: Font, s10 Bold c%statusColor%
 	GuiControl, 1: Font, %controlName%
-	GuiControl, 1:, %controlName%, %statusText%
+	GuiControl, 1:, %controlName%, %state%
+}
+
+; Returns true only when the current preflight says the named setup item needs attention.
+LLARS_SetupItemNeedsAction(itemName)
+{
+	global LLARS_SETUP_PREFLIGHT
+	if !IsObject(LLARS_SETUP_PREFLIGHT) || !IsObject(LLARS_SETUP_PREFLIGHT.Items) || !LLARS_SETUP_PREFLIGHT.Items.HasKey(itemName)
+		LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(false)
+	item := LLARS_SETUP_PREFLIGHT.Items[itemName]
+	return (item.State = "Missing" || item.State = "Invalid")
+}
+
+; Returns true for setup categories that belong to the active script. Ready,
+; Missing, and Invalid rows are quick-open links; Not Required rows are inert.
+LLARS_SetupItemIsAvailable(itemName)
+{
+	global LLARS_SETUP_PREFLIGHT
+	if !IsObject(LLARS_SETUP_PREFLIGHT) || !IsObject(LLARS_SETUP_PREFLIGHT.Items) || !LLARS_SETUP_PREFLIGHT.Items.HasKey(itemName)
+		LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(false)
+	item := LLARS_SETUP_PREFLIGHT.Items[itemName]
+	return (item.State != "Not Required")
+}
+
+; Shows a compact preflight result. The exact same derived capability/state
+; object also powers Selector metadata, main Setup Status, and Setup controls.
+LLARS_ShowSetupPreflight()
+{
+	global LLARS_SETUP_PREFLIGHT, LLARS_COMBO_TIMER_LABEL, value
+
+	LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(true)
+	LLARS_SupportEvent("Setup preflight", LLARS_SETUP_PREFLIGHT.Overall)
+	Gui SetupCheck: Destroy
+	Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop +ToolWindow -Caption
+	Gui SetupCheck: Font, s12 Bold cBlack
+	Gui SetupCheck: Add, Text, x5 y5 w350 h25 Center, LLARS
+	Gui SetupCheck: Font, s10 Bold cGray
+	Gui SetupCheck: Add, Text, x5 y29 w350 h18 Center, Check Setup
+	Gui SetupCheck: Add, Text, x10 y50 w340 h2 0x10
+
+	y := 61
+	for _, itemName in ["Hotkeys", "Coordinates", "Colors", "Timer", "Script Config", "Input Backend"]
+	{
+		item := LLARS_SETUP_PREFLIGHT.Items[itemName]
+		state := item.State
+		Gui SetupCheck: Font, s10 Bold cBlack
+		Gui SetupCheck: Add, Text, x18 y%y% w145 h22 +0x200, %itemName%
+		if (state = "Ready")
+			Gui SetupCheck: Font, s10 Bold cGreen
+		else if (state = "Missing" || state = "Invalid")
+			Gui SetupCheck: Font, s10 Bold cRed
+		else
+			Gui SetupCheck: Font, s10 Bold cBlack
+		Gui SetupCheck: Add, Text, x168 y%y% w92 h22 Center +0x200, %state%
+
+		if (state = "Missing" || state = "Invalid")
+		{
+			if (itemName = "Hotkeys")
+				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckHotkeys, Open
+			else if (itemName = "Coordinates")
+				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckCoordinates, Open
+			else if (itemName = "Colors")
+				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckColors, Open
+			else if (itemName = "Timer" && LLARS_COMBO_TIMER_LABEL != "")
+				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckTimer, Open
+			else if (itemName = "Input Backend")
+				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckInput, Open
+		}
+		y += 26
+	}
+
+	Gui SetupCheck: Add, Text, x10 y%y% w340 h2 0x10
+	y += 8
+	Gui SetupCheck: Font, s10 Bold cBlack
+	Gui SetupCheck: Add, Text, x18 y%y% w145 h24 +0x200, Overall
+	overall := LLARS_SETUP_PREFLIGHT.Overall
+	if (overall = "Ready")
+		Gui SetupCheck: Font, s10 Bold cGreen
+	else
+		Gui SetupCheck: Font, s10 Bold cRed
+	Gui SetupCheck: Add, Text, x127 y%y% w174 h24 Center +0x200, %overall%
+	y += 34
+	Gui SetupCheck: Font, s10 Bold cBlack
+	Gui SetupCheck: Add, Button, x90 y%y% w175 h28 gCloseSetupCheck, Close Check Setup
+	height := y + 38
+	Gui SetupCheck: Show, Center w360 h%height%, Check Setup
+	WinSet, Transparent, %value%
+	return LLARS_SETUP_PREFLIGHT
 }
 
 ; Locks normal LLARS controls while a configuration/editor flow is active.
@@ -696,6 +882,9 @@ LLARS_FindRoot()
 ; prepares hotkeys and creates the main GUI.
 LLARS_Initialize()
 {
+	EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
+	if (LLARSValidationMode = "1")
+		ExitApp
 	global LLARS_ROOT, LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
 	global LLARS_RUNNING, LLARS_PAUSED, LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5, LLARS_CONTROLS_LOCKED, LLARS_CHECKPOS_DISABLED
 	global LLARS_DeveloperActions, LLARS_DeveloperActionSerial, LLARS_DeveloperAuditActions, LLARS_DeveloperLastHotkey, LLARS_RunStartTick, LLARS_RUN_TYPE
@@ -705,6 +894,7 @@ LLARS_Initialize()
 	global LLARS_RunRuneScapeHwnd
 	global LLARS_DeveloperLightweight, LLARS_DeveloperLastInputEngine, LLARS_DeveloperLastLightweightDebug
 	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
+	global LLARS_SupportEvents, LLARS_SupportEventMax, LLARS_SupportEventSerial
 global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLARS_DetectionThreshold, LLARS_DetectionDetail, LLARS_DetectionTick, LLARS_DetectionSignature
 	global LLARS_AHI_GateStartTick, LLARS_AHI_GateReady, LLARS_AHI_GateElapsed
 	global LLARS_AHI_InitStartTick, LLARS_AHI_InitElapsed, LLARS_AHI_FullyReady
@@ -729,6 +919,13 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	if (!LLARS_CheckConfigCompatibility(LLARS_ROOT))
 		return false
 
+	; Build validated startup snapshots. Writes through the shared config API invalidate
+	; the cache so Setup changes are deliberately reloaded instead of going stale.
+	LLARS_ConfigSnapshotReload(LLARS_CONFIG_FILE)
+	scriptConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
+	if FileExist(scriptConfigPath)
+		LLARS_ConfigSnapshotReload(scriptConfigPath)
+
 	; Complete the bounded GitHub release check before input-backend checks or the script GUI.
 	; Scripts launched by the selector inherit its completed-check marker and skip it.
 	LLARS_CheckForUpdates()
@@ -736,9 +933,9 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	; Supports both normal Script Selector launches and scripts opened directly.
 	; AHI is the recommended input backend; Standard AutoHotkey remains the
 	; fallback when AHI is declined or unavailable.
-	LLARS_AHI_GateStartTick := A_TickCount
+	LLARS_AHI_GateStartTick := LLARS_NowMS()
 	LLARS_AHI_GateReady := LLARS_AHI_StartupGate(LLARS_ROOT, true)
-	LLARS_AHI_GateElapsed := A_TickCount - LLARS_AHI_GateStartTick
+	LLARS_AHI_GateElapsed := LLARS_NowMS() - LLARS_AHI_GateStartTick
 	LLARS_lhk1 := ""
 	LLARS_lhk2 := ""
 	LLARS_lhk3 := ""
@@ -768,6 +965,9 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	LLARS_DiagnosticErrors := 0
 	LLARS_DiagnosticRecoveries := 0
 	LLARS_LastDiagnostic := "None"
+	LLARS_SupportEvents := []
+	LLARS_SupportEventMax := 150
+	LLARS_SupportEventSerial := 0
 	LLARS_DetectionName := "None"
 	LLARS_DetectionState := "Idle"
 	LLARS_DetectionConfidence := ""
@@ -803,9 +1003,9 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	; The LLARS window is visible before CLR/AHI device initialization begins.
 	; LLARS_Initialize() still does not return until AHI is ready (or has safely
 	; fallen back), so automation cannot start against an uninitialized backend.
-	LLARS_AHI_InitStartTick := A_TickCount
+	LLARS_AHI_InitStartTick := LLARS_NowMS()
 	LLARS_AHI_Initialize(LLARS_ROOT)
-	LLARS_AHI_InitElapsed := A_TickCount - LLARS_AHI_InitStartTick
+	LLARS_AHI_InitElapsed := LLARS_NowMS() - LLARS_AHI_InitStartTick
 	LLARS_AHI_FullyReady := (LLARS_AHI_IsReady("mouse") && LLARS_AHI_IsReady("keyboard"))
 	; StartupGate already owns first-run/install/restart messaging. Only show an
 	; additional runtime warning when the gate was healthy but AHI initialization
@@ -814,6 +1014,9 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 		LLARS_AHI_ShowRuntimeProblem(LLARS_ROOT)
 	LLARS_AHI_LogDeveloperStatus(LLARS_ROOT)
 	LLARS_DeveloperAction("AHI Startup || Gate=" . LLARS_AHI_GateElapsed . " ms || Initialize=" . LLARS_AHI_InitElapsed . " ms")
+	LLARS_SupportEvent("Script initialized", LLARS_DisplayScriptName())
+	LLARS_SupportEvent("Configuration loaded")
+	LLARS_SupportEvent("Input backend ready", LLARS_AHI_Mode(LLARS_ROOT))
 
 	OnMessage(0x0047, "WM_WINDOWPOSCHANGED")
 	OnMessage(0x8001, "LLARS_DeveloperKeyboardMessage")
@@ -911,10 +1114,10 @@ LLARS_DeveloperRefreshHotkeyMap(force := false)
 	global LLARS_SCRIPT_DIR, LLARS_DeveloperHotkeyMap
 	static lastRefreshTick := 0
 
-	if (!force && lastRefreshTick && (A_TickCount - lastRefreshTick) < 1000)
+	if (!force && lastRefreshTick && (LLARS_NowMS() - lastRefreshTick) < 1000)
 		return
 
-	lastRefreshTick := A_TickCount
+	lastRefreshTick := LLARS_NowMS()
 	LLARS_DeveloperHotkeyMap := {}
 	ConfigPath := LLARS_SCRIPT_DIR . "\Config.ini"
 	if !FileExist(ConfigPath)
@@ -933,7 +1136,7 @@ LLARS_DeveloperRefreshHotkeyMap(force := false)
 		if !LLARS_ConfigSectionEnabled(ConfigPath, section)
 			continue
 
-		IniRead, sectionData, %ConfigPath%, %section%
+		sectionData := LLARS_ConfigReadSection(ConfigPath, section)
 		if (sectionData = "ERROR")
 			continue
 
@@ -979,7 +1182,7 @@ LLARS_DeveloperScriptKey(vkCode, keyUp := false, eventTick := "")
 	{
 		if (LLARS_DeveloperKeyboardHook)
 			return
-		eventTick := A_TickCount
+		eventTick := LLARS_NowMS()
 	}
 
 	keyName := GetKeyName("vk" . Format("{:02X}", vkCode))
@@ -1099,164 +1302,7 @@ LLARS_DeveloperAction(action, lightweight := true)
 	; the visible console directly.
 }
 
-; Records framework warning/error/recovery state in the existing Developer Action stream.
-; This is intentionally lightweight: no additional log file or persistent telemetry store is created.
-LLARS_DiagnosticRecord(kind, summary, detail := "")
-{
-	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
-
-	kind := Trim(kind)
-	summary := Trim(summary)
-	detail := Trim(detail)
-	if (kind = "")
-		kind := "Info"
-	if (summary = "")
-		summary := "Framework diagnostic"
-
-	kindLower := kind
-	StringLower, kindLower, kindLower
-	if (kindLower = "warning" || kindLower = "blocked")
-		LLARS_DiagnosticWarnings++
-	else if (kindLower = "error")
-		LLARS_DiagnosticErrors++
-	else if (kindLower = "recovery" || kindLower = "recovered")
-		LLARS_DiagnosticRecoveries++
-
-	LLARS_LastDiagnostic := kind . ": " . summary
-	action := "Diagnostic || " . kind . " || " . summary
-	if (detail != "")
-		action .= " || " . detail
-	LLARS_DeveloperAction(action)
-	return true
-}
-
-; Returns the compact diagnostic state consumed by Developer/support reporting.
-LLARS_DiagnosticSnapshot()
-{
-	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
-	return {Warnings:(LLARS_DiagnosticWarnings + 0)
-		, Errors:(LLARS_DiagnosticErrors + 0)
-		, Recoveries:(LLARS_DiagnosticRecoveries + 0)
-		, Last:(LLARS_LastDiagnostic = "" ? "None" : LLARS_LastDiagnostic)}
-}
-
-; Tracks the latest shared detection state for Developer Mode and support reporting.
-; This is process-local diagnostic state only; scripts keep their own gameplay state machines.
-LLARS_DetectionRecord(name, state, confidence := "", threshold := "", detail := "", logChange := true)
-{
-	global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLARS_DetectionThreshold
-	global LLARS_DetectionDetail, LLARS_DetectionTick, LLARS_DetectionSignature
-
-	name := Trim(name)
-	state := Trim(state)
-	detail := Trim(detail)
-	if (name = "")
-		name := "Detection"
-	if (state = "")
-		state := "Unknown"
-
-	LLARS_DetectionName := name
-	LLARS_DetectionState := state
-	LLARS_DetectionConfidence := confidence
-	LLARS_DetectionThreshold := threshold
-	LLARS_DetectionDetail := detail
-	LLARS_DetectionTick := A_TickCount
-
-	signature := name . "|" . state . "|" . confidence . "|" . threshold . "|" . detail
-	if (logChange && signature != LLARS_DetectionSignature)
-	{
-		action := "Detection || " . name . " || " . state
-		if (confidence != "")
-			action .= " || Confidence=" . confidence
-		if (threshold != "")
-			action .= " || Threshold=" . threshold
-		if (detail != "")
-			action .= " || " . detail
-		LLARS_DeveloperAction(action)
-	}
-	LLARS_DetectionSignature := signature
-	return true
-}
-
-LLARS_DetectionSnapshot()
-{
-	global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLARS_DetectionThreshold
-	global LLARS_DetectionDetail, LLARS_DetectionTick
-	return {Name:(LLARS_DetectionName = "" ? "None" : LLARS_DetectionName)
-		, State:(LLARS_DetectionState = "" ? "Idle" : LLARS_DetectionState)
-		, Confidence:LLARS_DetectionConfidence
-		, Threshold:LLARS_DetectionThreshold
-		, Detail:LLARS_DetectionDetail
-		, Tick:(LLARS_DetectionTick + 0)}
-}
-
-LLARS_DetectionDisplay(short := false)
-{
-	state := LLARS_DetectionSnapshot()
-	if !IsObject(state)
-		return "None"
-	text := short ? state.State : (state.Name . " " . state.State)
-	if (state.Confidence != "")
-	{
-		text .= " " . state.Confidence
-		if (state.Threshold != "")
-			text .= "/" . state.Threshold
-	}
-	if (!short && state.Detail != "")
-		text .= " | " . state.Detail
-	return text
-}
-
-; Standard user-facing issue format: what happened, what LLARS did, and what to do next.
-LLARS_ReportIssue(severity, title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
-{
-	severity := Trim(severity)
-	title := Trim(title)
-	whatHappened := Trim(whatHappened)
-	whatLLARSDid := Trim(whatLLARSDid)
-	whatUserShouldDo := Trim(whatUserShouldDo)
-	if (title = "")
-		title := "LLARS"
-	if (whatHappened = "")
-		whatHappened := "An unexpected framework condition occurred."
-
-	LLARS_DiagnosticRecord(severity, whatHappened, detail)
-	if (!showMessage)
-		return false
-
-	message := "What happened:`n" . whatHappened
-	if (whatLLARSDid != "")
-		message .= "`n`nWhat LLARS did:`n" . whatLLARSDid
-	if (whatUserShouldDo != "")
-		message .= "`n`nWhat you should do:`n" . whatUserShouldDo
-
-	severityLower := severity
-	StringLower, severityLower, severityLower
-	if (severityLower = "error")
-		options := 0x40010
-	else if (severityLower = "warning" || severityLower = "blocked")
-		options := 0x40030
-	else
-		options := 0x40040
-	MsgBox, %options%, %title%, %message%
-	return false
-}
-
-LLARS_ReportWarning(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
-{
-	return LLARS_ReportIssue("Warning", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
-}
-
-LLARS_ReportError(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
-{
-	return LLARS_ReportIssue("Error", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
-}
-
-; Recovery events stay non-modal and flow into the same existing Developer/support stream.
-LLARS_ReportRecovery(summary, detail := "")
-{
-	return LLARS_DiagnosticRecord("Recovery", summary, detail)
-}
+; Support/diagnostic ownership lives in LLARS_Support.ahk.
 
 LLARS_DeveloperActionSnapshot()
 {
@@ -1372,7 +1418,7 @@ LLARS_DeveloperCaptureAuditAction(action)
 ; Keeps only the timing/input events shown by Developer Timing Audit.
 LLARS_DeveloperAuditActionWanted(action)
 {
-	if RegExMatch(action, "i)^(KeyPress|Key Press|Key Hold|Keyboard Timing|Mouse Timing|MouseMove|Move|Left Click|Right Click|Middle Click|XButton[12] Click|NaturalClick(?: Timing| Movement)?) \|\|")
+	if RegExMatch(action, "i)^(Runtime Estimate|KeyPress|Key Press|Key Hold|Keyboard Timing|Mouse Timing|MouseMove|Move|Left Click|Right Click|Middle Click|XButton[12] Click|NaturalClick(?: Timing| Movement)?) \|\|")
 		return true
 
 	if RegExMatch(action, "i)^(Color Search|Color Click|Divination Color Audit) \|\|")
@@ -1553,707 +1599,7 @@ LLARS_CheckGame()
 	return false
 }
 
-; Validates and starts a RunCount script, including the requested run count
-; and runtime-estimation state used by the RunCount GUI.
-LLARS_StartRun()
-{
-	global scriptname, frcount, LLARS_RUNNING
-	global count
-	global runcount, runcount3, startcheck
-	global StartTime, StartTimeStamp
-	global EstLoopStartTick, EstLoopTime, EstAverageLoopTime, EstFollowingAverageLoopTime, EstFollowingCompletedLoops, EstCompletedLoops
-	global EstFinalSleepActive, EstFinalSleepEndTick
-	global LLARS_RunStartTick, LLARS_RUN_TYPE
-
-	if (!LLARS_CheckGame())
-		return false
-
-	if (ConfigError())
-		return false
-
-	if IsFunc("LLARS_TimerStopAll")
-		LLARS_TimerStopAll()
-	LLARS_DeveloperHotkey("Start")
-	InputBox, runcount, Run How Many Times?,,,250,100
-	if (ErrorLevel)
-	{
-		Reload
-		return false
-	}
-
-	if (runcount = "" || !RegExMatch(runcount, "^\d+$") || runcount <= 0)
-	{
-		MsgBox, 48, Invalid Input, Please enter a valid whole number greater than 0.
-		return false
-	}
-
-	if (runcount > 1000)
-	{
-		MsgBox, 48, Invalid Input, Please enter a number between 1 and 1000.
-		return false
-	}
-
-	if (frcount = 0)
-		LLARS_CreateRunCountGUI()
-	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
-	GuiControl,, State3, Running
-	DisableButton()
-	startcheck := 1
-	LLARS_ResetRunState()
-	LLARS_RUNNING := true
-	LLARS_PAUSED := false
-	SetLLARSHOTKEYS("On")
-	runcount3 := runcount
-	StartTime := A_TickCount
-	LLARS_RunStartTick := StartTime
-	LLARS_RUN_TYPE := "RunCount"
-	StartTimeStamp := A_Hour ":" A_Min ":" A_Sec
-	LLARS_DeveloperAction("Run Started || " . runcount3 . " runs")
-	EstLoopStartTick := 0
-	EstLoopTime := 0
-	EstAverageLoopTime := 0
-	EstFollowingAverageLoopTime := 0
-	EstFollowingCompletedLoops := 0
-	EstCompletedLoops := 0
-	EstFinalSleepActive := false
-	EstFinalSleepEndTick := 0
-	if (!CalculateScriptRuntime())
-	{
-		GuiControl,, EstLoopRemaining, Estimate Error
-		GuiControl,, EstRunRemaining, Estimate Error
-		Gui, Show
-		Sleep, 250
-		MsgBox, 48, LLARS Estimate Error, Unable to calculate the estimated loop/run time.`n`nRunCount scripts need at least one enabled LLARS_Sleep("Sleep Section") or LLARS_RandomSleep() call inside the editable script section so LLARS can estimate the loop safely.`n`nThe automation loop will not start.
-		LLARS_RUNNING := false
-		EnableButton()
-		return false
-	}
-
-	Gosub, UpdateEstimatedTime
-	Gui, Show
-	Sleep, 500
-	SetTimer, UpdateEstimatedTime, 250
-	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")
-	{
-		if !LLARS_ActivateRuneScapeAtRunStart()
-		{
-			LLARS_RUNNING := false
-			SetTimer, UpdateEstimatedTime, Off
-			EnableButton()
-			return false
-		}
-	}
-	return true
-}
-
-; Validates and starts a condition-driven script that runs until the script itself reports completion.
-LLARS_StartUntilDoneRun()
-{
-	global LLARS_RUNNING, LLARS_PAUSED
-	global startcheck, LLARS_RunStartTick, LLARS_RUN_TYPE, LLARS_DeveloperKeyStates
-
-	if (!LLARS_CheckGame())
-		return false
-
-	if (ConfigError())
-		return false
-
-	if IsFunc("LLARS_TimerStopAll")
-		LLARS_TimerStopAll()
-	LLARS_DeveloperHotkey("Start")
-	startcheck := 1
-	LLARS_DeveloperKeyStates := {}
-	LLARS_RUNNING := true
-	LLARS_PAUSED := false
-	LLARS_RunStartTick := A_TickCount
-	LLARS_RUN_TYPE := "UntilDone"
-	LLARS_DeveloperAction("Until-Done Run Started")
-	LLARS_CreateUntilDoneGUI()
-	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
-	GuiControl,, State3, Running
-	DisableButton()
-	SetLLARSHOTKEYS()
-	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")
-	{
-		if !LLARS_ActivateRuneScapeAtRunStart()
-		{
-			LLARS_RUNNING := false
-			EnableButton()
-			return false
-		}
-	}
-	return true
-}
-
-; Clears shared running state after a condition-driven script reaches its own completion condition.
-LLARS_EndUntilDoneRun()
-{
-	global LLARS_RUNNING, LLARS_RunStartTick, LLARS_DeveloperKeyStates
-	global LLARS_RunRuneScapeHwnd
-
-	if IsFunc("LLARS_TimerStopAll")
-		LLARS_TimerStopAll()
-	LLARS_DeveloperAction("Until-Done Run Completed")
-	if IsFunc("LLARS_AHI_ReleaseAllInput")
-		LLARS_AHI_ReleaseAllInput()
-	LLARS_RUNNING := false
-	LLARS_DeveloperKeyStates := {}
-	LLARS_RunStartTick := 0
-	LLARS_RunRuneScapeHwnd := 0
-	EnableButton()
-	SetLLARSHOTKEYS()
-}
-
-; Validates and starts a duration-based script using the user's run time.
-LLARS_StartTimerRun()
-{
-	global scriptname, LLARS_RUNNING, LLARS_PAUSED
-	global timeToRunMinutes, timeToRunMS, endTime, startcheck
-	global LLARS_RunStartTick, LLARS_RUN_TYPE, LLARS_DeveloperKeyStates
-
-	if (!LLARS_CheckGame())
-		return false
-
-	if (ConfigError())
-		return false
-
-	if IsFunc("LLARS_TimerStopAll")
-		LLARS_TimerStopAll()
-	LLARS_DeveloperHotkey("Start")
-	InputBox, timeToRunMinutes, Set Run Time, Enter how long to run in minutes.`nExample: 1 = 1 minute or 0.5 = 30 seconds.,,270,165
-	if (ErrorLevel)
-	{
-		Reload
-		return false
-	}
-
-	timeToRunMinutes := Trim(timeToRunMinutes)
-	if (!RegExMatch(timeToRunMinutes, "^\d+(\.\d+)?$") || timeToRunMinutes <= 0)
-	{
-		MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
-		return false
-	}
-
-	timeToRunMS := timeToRunMinutes * 60 * 1000
-	endTime := A_TickCount + timeToRunMS
-	startcheck := 1
-	LLARS_DeveloperKeyStates := {}
-	LLARS_RUNNING := true
-	LLARS_PAUSED := false
-	LLARS_RunStartTick := A_TickCount
-	LLARS_RUN_TYPE := "Timer"
-	LLARS_DeveloperAction("Timed Run Started || " . timeToRunMinutes . " min")
-	LLARS_CreateTimerGUI()
-	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
-	GuiControl,, State3, Running
-	GuiControl,, TimerCount, % LLARS_TimerRemainingText(endTime - A_TickCount)
-	DisableButton()
-	SetLLARSHOTKEYS()
-	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")
-	{
-		if !LLARS_ActivateRuneScapeAtRunStart()
-		{
-			LLARS_RUNNING := false
-			EnableButton()
-			return false
-		}
-	}
-	LLARS_DeveloperScriptTimerAction("Timer set to " timeToRunMinutes " minutes")
-	return true
-}
-
-; Clears the shared running state and restores controls after a timed run.
-LLARS_EndTimerRun()
-{
-	global LLARS_RUNNING, LLARS_RunStartTick, LLARS_DeveloperKeyStates
-	global LLARS_RunRuneScapeHwnd
-
-	if IsFunc("LLARS_TimerStopAll")
-		LLARS_TimerStopAll()
-	LLARS_DeveloperAction("Timed Run Completed")
-	if IsFunc("LLARS_AHI_ReleaseAllInput")
-		LLARS_AHI_ReleaseAllInput()
-	LLARS_RUNNING := false
-	LLARS_DeveloperKeyStates := {}
-	LLARS_RunStartTick := 0
-	LLARS_RunRuneScapeHwnd := 0
-	EnableButton()
-	SetLLARSHOTKEYS()
-}
-
-; Converts remaining milliseconds into the timer text shown in the GUI.
-LLARS_TimerRemainingText(time)
-{
-	if (time <= 0)
-		return "0m 0s"
-
-	; Countdown text represents time still remaining, so retain a partial
-	; final second instead of displaying zero before the timer is actually due.
-	totalSeconds := Ceil(time / 1000)
-	minutes := Floor(totalSeconds / 60)
-	seconds := Mod(totalSeconds, 60)
-	return minutes . "m " . seconds . "s"
-}
-
-; Resets shared counters and first-run flags before a new RunCount session.
-LLARS_ResetRunState()
-{
-	global count2, sleepcount, totalSleepTime, rightclick, clickcount
-	global LLARS_RunRuneScapeHwnd
-	global firstrun, prime, bobprime
-	global LLARS_DeveloperKeyStates
-	global LLARS_RandomSleepPending, LLARS_RandomSleepPendingRun
-	global LLARS_RandomSleepPendingChance, LLARS_RandomSleepPendingRoll
-	global EstRandomSleepAdjustment, EstConfiguredSleepAdjustment
-
-	if IsFunc("LLARS_TimerStopAll")
-		LLARS_TimerStopAll()
-	LLARS_RunRuneScapeHwnd := 0
-	LLARS_DeveloperKeyStates := {}
-	EstRandomSleepAdjustment := 0
-	EstConfiguredSleepAdjustment := 0
-	LLARS_RandomSleepPending := false
-	LLARS_RandomSleepPendingRun := false
-	LLARS_RandomSleepPendingChance := ""
-	LLARS_RandomSleepPendingRoll := ""
-	count2 := 0
-	sleepcount := 0
-	totalSleepTime := 0
-	rightclick := 0
-	clickcount := 0
-	firstrun := 0
-	prime := 0
-	bobprime := 0
-}
-
-; Marks the beginning of one RunCount loop and updates loop tracking.
-LLARS_BeginLoop()
-{
-	global EstLoopStartTick, count, count2, runcount, runcount3
-	global EstFinalSleepActive, EstFinalSleepEndTick
-	global LLARS_RandomSleepPending, LLARS_RandomSleepPendingRun
-	global LLARS_RandomSleepPendingChance, LLARS_RandomSleepPendingRoll
-	global EstRandomSleepAdjustment, EstConfiguredSleepAdjustment
-	global scriptname
-
-	; Each loop starts from configured averages. Individual LLARS_Sleep calls
-	; replace their average contribution with the actual randomized duration as
-	; soon as that duration is chosen. Random Sleep is adjusted independently.
-	EstRandomSleepAdjustment := 0
-	EstConfiguredSleepAdjustment := 0
-
-	; A prepared Random Sleep roll is valid for one RunCount loop only.
-	LLARS_RandomSleepPending := false
-	LLARS_RandomSleepPendingRun := false
-	LLARS_RandomSleepPendingChance := ""
-	LLARS_RandomSleepPendingRoll := ""
-
-	EstFinalSleepActive := false
-	EstFinalSleepEndTick := 0
-	EstLoopStartTick := A_TickCount
-	LLARS_DeveloperAction("Loop Started || " . (count2 + 1) . "/" . runcount3)
-	if IsFunc("LLARS_WaitForRuneScape")
-		LLARS_WaitForRuneScape("RunCount loop start")
-
-	++count
-	++count2
-	GuiControl,, Counter, %count%
-	GuiControl,, Counter2, %count2% / %runcount3%
-	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
-	GuiControl,, State3, Running
-	DisableButton()
-}
-
-; Finds the configured timer section that produced the current randomized
-; duration so Developer Mode can show the timer name, range, and actual value.
-LLARS_DeveloperTimerInfo(time, ByRef timerName, ByRef timerMin, ByRef timerMax)
-{
-	global LLARS_SCRIPT_DIR, sa1, sa2
-
-	timerName := ""
-	timerMin := ""
-	timerMax := ""
-	configFile := LLARS_SCRIPT_DIR . "\Config.ini"
-
-	if !FileExist(configFile)
-		return false
-
-	developerSections := LLARS_ConfigSectionList(configFile)
-	bestRange := ""
-
-	Loop, Parse, developerSections, `n, `r
-	{
-		sectionName := Trim(A_LoopField)
-		if (sectionName = "")
-			continue
-
-		IniRead, sectionMin, %configFile%, %sectionName%, min, ERROR
-		IniRead, sectionMax, %configFile%, %sectionName%, max, ERROR
-
-		if (sectionMin = "ERROR" || sectionMax = "ERROR")
-			continue
-		if sectionMin is not number
-			continue
-		if sectionMax is not number
-			continue
-
-		if (sa1 != "" && sa2 != "" && sectionMin = sa1 && sectionMax = sa2)
-		{
-			timerName := sectionName
-			timerMin := sectionMin
-			timerMax := sectionMax
-			return true
-		}
-
-		if (time >= sectionMin && time <= sectionMax)
-		{
-			sectionRange := sectionMax - sectionMin
-			if (bestRange = "" || sectionRange < bestRange)
-			{
-				bestRange := sectionRange
-				timerName := sectionName
-				timerMin := sectionMin
-				timerMax := sectionMax
-			}
-		}
-	}
-
-	return (timerName != "")
-}
-
-; Adds one compact configured-timer entry to Recent Framework Actions.
-LLARS_DeveloperTimerAction(time)
-{
-	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
-
-	if LLARS_DeveloperTimerInfo(time, timerName, timerMin, timerMax)
-	{
-		LLARS_DeveloperAction(timerName . " || " . timerMin . "-" . timerMax . " ms || " . time . " ms")
-		LLARS_DeveloperLastSleepName := timerName
-	}
-	else
-	{
-		LLARS_DeveloperAction("Sleep || " . time . " ms")
-		LLARS_DeveloperLastSleepName := "Sleep"
-	}
-
-	LLARS_DeveloperLastSleepValue := time
-}
-
-; Runs an ordinary configured sleep while the current-loop display remains
-; predictive. LLARS_FinalSleep() performs the exact per-loop handoff.
-LLARS_EstimatedSleep(time)
-{
-	; Ordinary configured sleep. The GUI remains on the predictive loop
-	; estimate until the script explicitly reaches LLARS_FinalSleep().
-	LLARS_DeveloperTimerAction(time)
-	Sleep, %time%
-	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
-		LLARS_WaitForRuneScape("Estimated sleep complete")
-}
-
-; Rolls the shared Random Sleep chance and stores the result for this loop.
-LLARS_RandomSleepRoll()
-{
-	global LLARS_CONFIG_FILE
-	global LLARS_RandomSleepPending, LLARS_RandomSleepPendingRun
-	global LLARS_RandomSleepPendingChance, LLARS_RandomSleepPendingRoll
-
-	LLARS_RandomSleepPending := true
-	LLARS_RandomSleepPendingRun := false
-	LLARS_RandomSleepPendingChance := ""
-	LLARS_RandomSleepPendingRoll := ""
-
-	IniRead, option, %LLARS_CONFIG_FILE%, Random Sleep, option, false
-	option := Trim(option)
-	StringLower, option, option
-
-	if (option != "true")
-	{
-		LLARS_DeveloperRandomSleepConfig("Disabled")
-		return false
-	}
-
-	IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance, ERROR
-	chance := Trim(chance)
-	if chance is not number
-	{
-		LLARS_DeveloperAction("Random Sleep || Config Error || Chance=" . chance)
-		return false
-	}
-
-	chance += 0
-	if (chance < 0 || chance > 100)
-	{
-		LLARS_DeveloperAction("Random Sleep || Config Error || Chance=" . chance . "%")
-		return false
-	}
-
-	LLARS_DeveloperRandomSleepConfig("Enabled", chance)
-	LLARS_RandomSleepPendingChance := chance
-
-	Random, RandomNumber, 1, 100
-	LLARS_RandomSleepPendingRoll := RandomNumber
-	LLARS_RandomSleepPendingRun := (RandomNumber <= chance)
-	rollResult := LLARS_RandomSleepPendingRun ? "Triggered" : "Skipped"
-	LLARS_DeveloperAction("Random Sleep || Rolled || " . RandomNumber . "/100 || Chance=" . chance . "% || " . rollResult)
-
-	return LLARS_RandomSleepPendingRun
-}
-
-; Reports Random Sleep configuration only when it changes so the developer feed
-; stays informative without repeating the same configuration every loop.
-LLARS_DeveloperRandomSleepConfig(state, chance := "")
-{
-	global LLARS_RunStartTick
-	static lastConfig := "", lastRunStartTick := ""
-
-	configText := state
-	if (state = "Enabled")
-		configText .= " || Chance=" . chance . "%"
-
-	if (configText = lastConfig && lastRunStartTick = LLARS_RunStartTick)
-		return
-
-	lastConfig := configText
-	lastRunStartTick := LLARS_RunStartTick
-	LLARS_DeveloperAction("Random Sleep || " . configText)
-}
-
-; Returns the probability-weighted Random Sleep amount already included in
-; the normal RunCount estimate for one LLARS_RandomSleep() occurrence.
-LLARS_RandomSleepExpectedContribution()
-{
-	global LLARS_CONFIG_FILE
-
-	IniRead, option, %LLARS_CONFIG_FILE%, Random Sleep, option, false
-	option := Trim(option)
-	StringLower, option, option
-	if (option != "true")
-		return 0
-
-	IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance, 0
-	IniRead, rs1, %LLARS_CONFIG_FILE%, Random Sleep, min, 0
-	IniRead, rs2, %LLARS_CONFIG_FILE%, Random Sleep, max, 0
-	chance := Trim(chance)
-	rs1 := Trim(rs1)
-	rs2 := Trim(rs2)
-
-	if chance is not number
-		return 0
-	if rs1 is not integer
-		return 0
-	if rs2 is not integer
-		return 0
-
-	chance += 0
-	rs1 += 0
-	rs2 += 0
-	if (chance < 0 || chance > 100 || rs1 < 0 || rs2 < rs1)
-		return 0
-
-	return ((rs1 + rs2) / 2) * (chance / 100)
-}
-
-; Replaces the probability-weighted Random Sleep contribution in the current loop estimate with what actually happened on this occurrence.
-LLARS_AdjustRandomSleepEstimate(actualSleep)
-{
-	global LLARS_RUNNING, LLARS_RUN_TYPE
-	global EstRandomSleepAdjustment
-
-	if (!LLARS_RUNNING || LLARS_RUN_TYPE != "RunCount")
-		return
-
-	expectedSleep := LLARS_RandomSleepExpectedContribution()
-	EstRandomSleepAdjustment += (actualSleep - expectedSleep)
-	Gosub, UpdateEstimatedTime
-}
-
-; Runs the optional shared Random Sleep configured in LLARS Config.ini.
-LLARS_RandomSleep()
-{
-	global LLARS_CONFIG_FILE
-	global LLARS_RandomSleepPending, LLARS_RandomSleepPendingRun
-	global LLARS_RandomSleepPendingChance, LLARS_RandomSleepPendingRoll
-	global sleepcount, totalSleepTime
-	global EndTime, RandomSleepAmount
-	global scriptname
-
-	if (!LLARS_RandomSleepPending)
-		LLARS_RandomSleepRoll()
-
-	shouldRun := LLARS_RandomSleepPendingRun
-	chance := LLARS_RandomSleepPendingChance
-	RandomNumber := LLARS_RandomSleepPendingRoll
-
-	; Consume the prepared result immediately so it can never leak into a later call.
-	LLARS_RandomSleepPending := false
-	LLARS_RandomSleepPendingRun := false
-	LLARS_RandomSleepPendingChance := ""
-	LLARS_RandomSleepPendingRoll := ""
-
-	if (!shouldRun)
-	{
-		LLARS_AdjustRandomSleepEstimate(0)
-		return 0
-	}
-
-	; Recheck the option immediately before sleeping so Random Sleep can never run after the shared setting has been disabled.
-	IniRead, option, %LLARS_CONFIG_FILE%, Random Sleep, option, false
-	option := Trim(option)
-	StringLower, option, option
-	if (option != "true")
-	{
-		LLARS_DeveloperRandomSleepConfig("Disabled")
-		return 0
-	}
-
-	IniRead, rs1, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
-	IniRead, rs2, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
-	rs1 := Trim(rs1)
-	rs2 := Trim(rs2)
-
-	if rs1 is not integer
-	{
-		LLARS_DeveloperAction("Random Sleep || Config Error || Min=" . rs1)
-		return 0
-	}
-
-	if rs2 is not integer
-	{
-		LLARS_DeveloperAction("Random Sleep || Config Error || Max=" . rs2)
-		return 0
-	}
-
-	rs1 += 0
-	rs2 += 0
-	if (rs1 < 0 || rs2 < rs1)
-	{
-		LLARS_DeveloperAction("Random Sleep || Config Error || Range=" . rs1 . "-" . rs2 . " ms")
-		return 0
-	}
-
-	Random, RandomSleepAmount, %rs1%, %rs2%
-	++sleepcount
-	totalSleepTime += RandomSleepAmount
-	EndTime := A_TickCount + RandomSleepAmount
-	LLARS_AdjustRandomSleepEstimate(RandomSleepAmount)
-
-	GuiControl, 1:, ScriptBlue, Random Sleep
-	Gui, 1: Font, s10 Bold cRed
-	GuiControl, 1: Font, State3
-	Gui, 1: Font, s10 Bold cBlack
-	GuiControl, 1:, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
-	LLARS_DeveloperAction("Random Sleep || Sleeping || " . RandomSleepAmount . " ms")
-	LLARS_DeveloperLoggedSleepAction("RANDOM SLEEP", "Sleep=" RandomSleepAmount " ms | Chance=" chance "% | Roll=" RandomNumber)
-
-	SetTimer, UpdateCountdown, Off
-	SetTimer, UpdateCountdown, 1000
-	Sleep, %RandomSleepAmount%
-	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
-		LLARS_WaitForRuneScape("Random Sleep complete")
-	SetTimer, UpdateCountdown, Off
-
-	Gui, 1: Font, s10 Bold cBlue
-	GuiControl, 1: Font, State3
-	Gui, 1: Font, s10 Bold cBlack
-	GuiControl, 1:, ScriptBlue, % LLARS_DisplayScriptName()
-	GuiControl, 1:, State3, Running
-	Gosub, UpdateEstimatedTime
-
-	return RandomSleepAmount
-}
-
-; Uses the actual randomized duration of the final sleep for this iteration.
-LLARS_FinalSleep(time)
-{
-	global EstFinalSleepActive, EstFinalSleepEndTick
-	global LLARS_RUNNING
-
-	EstFinalSleepActive := true
-	EstFinalSleepEndTick := A_TickCount + time
-	LLARS_DeveloperTimerAction(time)
-	Gosub, UpdateEstimatedTime
-	Sleep, %time%
-	if (LLARS_RUNNING && IsFunc("LLARS_WaitForRuneScape"))
-		LLARS_WaitForRuneScape("Final sleep complete")
-}
-
-; Records the completed loop time and updates the live runtime estimate.
-LLARS_EndLoop()
-{
-	global EstLoopStartTick, EstLoopTime, EstCompletedLoops, EstAverageLoopTime
-	global EstFollowingAverageLoopTime, EstFollowingCompletedLoops
-
-	EstLoopTime := A_TickCount - EstLoopStartTick
-	++EstCompletedLoops
-	if (EstCompletedLoops = 1)
-	{
-		EstAverageLoopTime := EstLoopTime
-	}
-	else
-	{
-		++EstFollowingCompletedLoops
-		if (EstFollowingCompletedLoops = 1)
-			EstFollowingAverageLoopTime := EstLoopTime
-		else
-			EstFollowingAverageLoopTime := ((EstFollowingAverageLoopTime * (EstFollowingCompletedLoops - 1)) + EstLoopTime) / EstFollowingCompletedLoops
-
-		EstAverageLoopTime := ((EstAverageLoopTime * (EstCompletedLoops - 1)) + EstLoopTime) / EstCompletedLoops
-	}
-
-	Gosub, UpdateEstimatedTime
-	LLARS_DeveloperAction("Loop Completed || " . EstCompletedLoops)
-}
-
-; Finalizes a completed RunCount session, restores controls, and performs
-; the configured completion behavior.
-LLARS_RunComplete()
-{
-	global scriptname, runcount3, sleepcount, totalSleepTime, StartTime, StartTimeStamp
-	global LLARS_RUNNING, LLARS_RunRuneScapeHwnd
-	global EndTimeStamp, EndTime
-	global TotalTimeSeconds, AverageTimeSecondsTotal
-	global TotalTimeHours, TotalTimeMinutes, TotalTimeSecondsDisplay
-	global AverageTimeMinutes, AverageTimeSecondsDisplay, percentage
-	global totalSleepTimeSeconds, TotalSleepHours, TotalSleepMinutes, TotalSleepSeconds
-	global chance
-	global LLARS_RunStartTick
-
-	if IsFunc("LLARS_TimerStopAll")
-		LLARS_TimerStopAll()
-	LLARS_DeveloperAction("Run Completed || " . runcount3 . " runs")
-	if IsFunc("LLARS_AHI_ReleaseAllInput")
-		LLARS_AHI_ReleaseAllInput()
-	Logout()
-	SetTimer, UpdateEstimatedTime, Off
-	GuiControl,, EstLoopRemaining, 0h 0m 0s
-	GuiControl,, EstRunRemaining, 0h 0m 0s
-	GuiControl,, ScriptGreen, % LLARS_DisplayScriptName()
-	GuiControl,, State1, Finished
-	EndTimeStamp := A_Hour ":" A_Min ":" A_Sec
-	EndTime := A_TickCount
-	TotalTimeSeconds := Floor((EndTime - StartTime) / 1000)
-	AverageTimeSecondsTotal := Floor(TotalTimeSeconds / runcount3)
-	TotalTimeHours := Floor(TotalTimeSeconds / 3600)
-	TotalTimeMinutes := Floor(Mod(TotalTimeSeconds, 3600) / 60)
-	TotalTimeSecondsDisplay := Mod(TotalTimeSeconds, 60)
-	AverageTimeMinutes := Floor(AverageTimeSecondsTotal / 60)
-	AverageTimeSecondsDisplay := Mod(AverageTimeSecondsTotal, 60)
-	percentage := Round((sleepcount / runcount3) * 100)
-	totalSleepTimeSeconds := Floor(totalSleepTime / 1000)
-	TotalSleepHours := Floor(totalSleepTimeSeconds / 3600)
-	TotalSleepMinutes := Floor(Mod(totalSleepTimeSeconds, 3600) / 60)
-	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
-	SoundPlay, C:\Windows\Media\Ring06.wav, 1
-	IniRead, chance, %LLARS_CONFIG_FILE%, Random Sleep, chance
-	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
-	LLARS_RUNNING := false
-	LLARS_RunStartTick := 0
-	LLARS_RunRuneScapeHwnd := 0
-	EnableButton()
-	SetLLARSHOTKEYS("On")
-}
+; Shared run/countdown/random-sleep timing ownership lives in LLARS_Timing.ahk.
 
 ; ================================================================
 ; |     CONFIGURATION     -     CONFIGURATION                    |
@@ -2412,10 +1758,10 @@ CheckConfigFile(file)
 		if (section = "")
 			continue
 
-		IniRead, keys, %ConfigPath%, %section%
+		keys := LLARS_ConfigReadSection(ConfigPath, section)
 
 		; Validate option metadata before deciding whether the section is active.
-		IniRead, option, %ConfigPath%, %section%, option, ERROR
+		option := LLARS_ConfigReadFile(ConfigPath, section, "option", "ERROR")
 		if (option != "ERROR")
 		{
 			option := Trim(option)
@@ -2433,7 +1779,7 @@ CheckConfigFile(file)
 		typeIsMetadata := false
 		hasCoordinateKeys := RegExMatch(keys, "im)^(x|y|xmin|xmax|ymin|ymax)=")
 		hasHotkeyKey := RegExMatch(keys, "im)^hotkey=")
-		IniRead, sectionType, %ConfigPath%, %section%, type, ERROR
+		sectionType := LLARS_ConfigReadFile(ConfigPath, section, "type", "ERROR")
 		if (sectionType != "ERROR")
 		{
 			sectionType := Trim(sectionType)
@@ -2450,18 +1796,18 @@ CheckConfigFile(file)
 			sectionTypeLower := ""
 
 		; Validate dependency metadata and skip dependent sections while their parent option is disabled.
-		IniRead, depends, %ConfigPath%, %section%, depends, ERROR
+		depends := LLARS_ConfigReadFile(ConfigPath, section, "depends", "ERROR")
 		if (depends != "ERROR" && Trim(depends) != "")
 		{
 			depends := Trim(depends)
-			IniRead, dependsKeys, %ConfigPath%, %depends%
+			dependsKeys := LLARS_ConfigReadSection(ConfigPath, depends)
 			if (dependsKeys = "ERROR")
 			{
 				ConfigSemanticErrorMessage(file, section, "depends", "Referenced section does not exist: " depends)
 				return true
 			}
 
-			IniRead, dependsOption, %ConfigPath%, %depends%, option, true
+			dependsOption := LLARS_ConfigReadFile(ConfigPath, depends, "option", "true")
 			StringLower, dependsOption, dependsOption
 			if (dependsOption = "false")
 				continue
@@ -2476,12 +1822,12 @@ CheckConfigFile(file)
 		{
 
 			; Read all possible coordinate values.
-			IniRead, x, %ConfigPath%, %section%, x, ERROR
-			IniRead, y, %ConfigPath%, %section%, y, ERROR
-			IniRead, xmin, %ConfigPath%, %section%, xmin, ERROR
-			IniRead, xmax, %ConfigPath%, %section%, xmax, ERROR
-			IniRead, ymin, %ConfigPath%, %section%, ymin, ERROR
-			IniRead, ymax, %ConfigPath%, %section%, ymax, ERROR
+			x := LLARS_ConfigReadFile(ConfigPath, section, "x", "ERROR")
+			y := LLARS_ConfigReadFile(ConfigPath, section, "y", "ERROR")
+			xmin := LLARS_ConfigReadFile(ConfigPath, section, "xmin", "ERROR")
+			xmax := LLARS_ConfigReadFile(ConfigPath, section, "xmax", "ERROR")
+			ymin := LLARS_ConfigReadFile(ConfigPath, section, "ymin", "ERROR")
+			ymax := LLARS_ConfigReadFile(ConfigPath, section, "ymax", "ERROR")
 
 			; Determine which coordinate format is being used.
 			;
@@ -2599,7 +1945,7 @@ CheckConfigFile(file)
 		; Validate hotkey sections after the blank-value pass.
 		if (configType = "hotkey")
 		{
-			IniRead, hotkeyValue, %ConfigPath%, %section%, hotkey, ERROR
+			hotkeyValue := LLARS_ConfigReadFile(ConfigPath, section, "hotkey", "ERROR")
 			if (hotkeyValue = "ERROR")
 			{
 				ConfigErrorMessage(file, section, "hotkey")
@@ -2616,7 +1962,7 @@ CheckConfigFile(file)
 		if (configType = "color")
 		{
 			colorKey := LLARS_GetColorKey(ConfigPath, section)
-			IniRead, colorValue, %ConfigPath%, %section%, %colorKey%, ERROR
+			colorValue := LLARS_ConfigReadFile(ConfigPath, section, colorKey, "ERROR")
 			if (colorValue = "ERROR" || !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$"))
 			{
 				ConfigSemanticErrorMessage(file, section, colorKey, "Colors must use 0xRRGGBB format. Found: " colorValue)
@@ -2625,8 +1971,8 @@ CheckConfigFile(file)
 		}
 
 		; min/max pairs are used throughout LLARS for sleeps, counts, scrolling, offsets, and other random ranges.
-		IniRead, minValue, %ConfigPath%, %section%, min, ERROR
-		IniRead, maxValue, %ConfigPath%, %section%, max, ERROR
+		minValue := LLARS_ConfigReadFile(ConfigPath, section, "min", "ERROR")
+		maxValue := LLARS_ConfigReadFile(ConfigPath, section, "max", "ERROR")
 		if (minValue != "ERROR" || maxValue != "ERROR")
 		{
 			if (minValue = "ERROR" || maxValue = "ERROR")
@@ -2652,8 +1998,8 @@ CheckConfigFile(file)
 		}
 
 		; Offset-style ranges use minx/maxx and miny/maxy.
-		IniRead, minxValue, %ConfigPath%, %section%, minx, ERROR
-		IniRead, maxxValue, %ConfigPath%, %section%, maxx, ERROR
+		minxValue := LLARS_ConfigReadFile(ConfigPath, section, "minx", "ERROR")
+		maxxValue := LLARS_ConfigReadFile(ConfigPath, section, "maxx", "ERROR")
 		if (minxValue != "ERROR" || maxxValue != "ERROR")
 		{
 			if (minxValue = "ERROR" || maxxValue = "ERROR" || !LLARS_IsNumericConfigValue(minxValue) || !LLARS_IsNumericConfigValue(maxxValue))
@@ -2668,8 +2014,8 @@ CheckConfigFile(file)
 			}
 		}
 
-		IniRead, minyValue, %ConfigPath%, %section%, miny, ERROR
-		IniRead, maxyValue, %ConfigPath%, %section%, maxy, ERROR
+		minyValue := LLARS_ConfigReadFile(ConfigPath, section, "miny", "ERROR")
+		maxyValue := LLARS_ConfigReadFile(ConfigPath, section, "maxy", "ERROR")
 		if (minyValue != "ERROR" || maxyValue != "ERROR")
 		{
 			if (minyValue = "ERROR" || maxyValue = "ERROR" || !LLARS_IsNumericConfigValue(minyValue) || !LLARS_IsNumericConfigValue(maxyValue))
@@ -2705,7 +2051,7 @@ CheckConfigFile(file)
 		}
 
 		; Portable renewal counts must be positive whole numbers when enabled.
-		IniRead, portablesValue, %ConfigPath%, %section%, portables, ERROR
+		portablesValue := LLARS_ConfigReadFile(ConfigPath, section, "portables", "ERROR")
 		if (portablesValue != "ERROR" && Trim(portablesValue) != "")
 		{
 			if !RegExMatch(Trim(portablesValue), "^\d+$") || (portablesValue + 0) < 1
@@ -2716,7 +2062,7 @@ CheckConfigFile(file)
 		}
 
 		; Known boolean fields outside the option metadata use true/false.
-		IniRead, scrollValue, %ConfigPath%, %section%, scroll, ERROR
+		scrollValue := LLARS_ConfigReadFile(ConfigPath, section, "scroll", "ERROR")
 		if (scrollValue != "ERROR" && Trim(scrollValue) != "")
 		{
 			scrollValue := Trim(scrollValue)
@@ -2729,7 +2075,7 @@ CheckConfigFile(file)
 		}
 
 		; Percentage-style chance values must stay within 0-100.
-		IniRead, chanceValue, %ConfigPath%, %section%, chance, ERROR
+		chanceValue := LLARS_ConfigReadFile(ConfigPath, section, "chance", "ERROR")
 		if (chanceValue != "ERROR")
 		{
 			if !LLARS_IsNumericConfigValue(chanceValue)
@@ -2752,7 +2098,7 @@ CheckConfigFile(file)
 ; Supports both section-name keys and named keys such as red=0x5D1616.
 LLARS_GetColorKey(file, section)
 {
-	IniRead, keys, %file%, %section%
+	keys := LLARS_ConfigReadSection(file, section)
 	candidateKey := ""
 	candidateCount := 0
 
@@ -2796,7 +2142,7 @@ LLARS_ConfigItemHasResettableValue(file, section, configType)
 
 	if (configType = "hotkey")
 	{
-		IniRead, value, %file%, %section%, hotkey, ERROR
+		value := LLARS_ConfigReadFile(file, section, "hotkey", "ERROR")
 		return (value != "ERROR" && Trim(value) != "")
 	}
 
@@ -2806,7 +2152,7 @@ LLARS_ConfigItemHasResettableValue(file, section, configType)
 		Loop, Parse, coordinateKeys, |
 		{
 			key := A_LoopField
-			IniRead, value, %file%, %section%, %key%, ERROR
+			value := LLARS_ConfigReadFile(file, section, key, "ERROR")
 			if (value != "ERROR" && Trim(value) != "")
 				return true
 		}
@@ -2816,7 +2162,7 @@ LLARS_ConfigItemHasResettableValue(file, section, configType)
 	if (configType = "color")
 	{
 		colorKey := LLARS_GetColorKey(file, section)
-		IniRead, value, %file%, %section%, %colorKey%, ERROR
+		value := LLARS_ConfigReadFile(file, section, colorKey, "ERROR")
 		return (value != "ERROR" && Trim(value) != "")
 	}
 
@@ -2834,11 +2180,11 @@ LLARS_ResetConfigItem(file, section, configType)
 
 	if (configType = "hotkey")
 	{
-		IniRead, value, %file%, %section%, hotkey, ERROR
+		value := LLARS_ConfigReadFile(file, section, "hotkey", "ERROR")
 		if (value = "ERROR")
 			return false
 
-		IniWrite, %blank%, %file%, %section%, hotkey
+		LLARS_ConfigWriteFile(file, section, "hotkey", blank)
 		return true
 	}
 
@@ -2848,11 +2194,11 @@ LLARS_ResetConfigItem(file, section, configType)
 		Loop, Parse, coordinateKeys, |
 		{
 			key := A_LoopField
-			IniRead, value, %file%, %section%, %key%, ERROR
+			value := LLARS_ConfigReadFile(file, section, key, "ERROR")
 			if (value = "ERROR")
 				continue
 
-			IniWrite, %blank%, %file%, %section%, %key%
+			LLARS_ConfigWriteFile(file, section, key, blank)
 			changed := true
 		}
 		return changed
@@ -2861,11 +2207,11 @@ LLARS_ResetConfigItem(file, section, configType)
 	if (configType = "color")
 	{
 		colorKey := LLARS_GetColorKey(file, section)
-		IniRead, value, %file%, %section%, %colorKey%, ERROR
+		value := LLARS_ConfigReadFile(file, section, colorKey, "ERROR")
 		if (value = "ERROR")
 			return false
 
-		IniWrite, %blank%, %file%, %section%, %colorKey%
+		LLARS_ConfigWriteFile(file, section, colorKey, blank)
 		return true
 	}
 
@@ -2878,7 +2224,7 @@ GetConfigType(file, section)
 	section := LLARS_NormalizeConfigSectionName(section)
 
 	; Read the type value.
-	IniRead, sectionType, %file%, %section%, type, ERROR
+	sectionType := LLARS_ConfigReadFile(file, section, "type", "ERROR")
 	if (sectionType = "ERROR")
 		return ""
 
@@ -3032,8 +2378,8 @@ LLARS_DeveloperLoggedSleepAction(Event, Details := "")
 	if (eventText = "RANDOM SLEEP")
 	{
 		timerName := "Random Sleep"
-		IniRead, timerMin, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
-		IniRead, timerMax, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
+		timerMin := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "min", "ERROR")
+		timerMax := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "max", "ERROR")
 		if (timerMin = "ERROR" || timerMax = "ERROR")
 		{
 			timerMin := ""
@@ -3170,8 +2516,8 @@ LLARS_DeveloperClickTarget(x, y)
 		if !LLARS_ConfigSectionEnabled(ConfigPath, section)
 			continue
 
-		IniRead, configX, %ConfigPath%, %section%, x, ERROR
-		IniRead, configY, %ConfigPath%, %section%, y, ERROR
+		configX := LLARS_ConfigReadFile(ConfigPath, section, "x", "ERROR")
+		configY := LLARS_ConfigReadFile(ConfigPath, section, "y", "ERROR")
 		if (configX != "ERROR" && configY != "ERROR")
 		{
 			configX := Trim(configX)
@@ -3180,10 +2526,10 @@ LLARS_DeveloperClickTarget(x, y)
 				return section
 		}
 
-		IniRead, xmin, %ConfigPath%, %section%, xmin, ERROR
-		IniRead, xmax, %ConfigPath%, %section%, xmax, ERROR
-		IniRead, ymin, %ConfigPath%, %section%, ymin, ERROR
-		IniRead, ymax, %ConfigPath%, %section%, ymax, ERROR
+		xmin := LLARS_ConfigReadFile(ConfigPath, section, "xmin", "ERROR")
+		xmax := LLARS_ConfigReadFile(ConfigPath, section, "xmax", "ERROR")
+		ymin := LLARS_ConfigReadFile(ConfigPath, section, "ymin", "ERROR")
+		ymax := LLARS_ConfigReadFile(ConfigPath, section, "ymax", "ERROR")
 
 		if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR")
 			continue
@@ -3338,7 +2684,7 @@ LLARS_RandomUInt()
 		return NumGet(randomBytes, 0, "UInt")
 
 	Random, fallbackValue, 0, 2147483647
-	return (fallbackValue * 2) + Mod(A_TickCount, 2)
+	return (fallbackValue * 2) + Mod(LLARS_NowMS(), 2)
 }
 
 ; Returns a high-resolution random value in [0, 1).
@@ -3703,10 +3049,10 @@ LLARS_NaturalMovementRefreshEstimate()
 
 	if (!LLARS_RUNNING || LLARS_SCRIPT_TYPE != "RunCount")
 		return
-	if ((A_TickCount - lastUpdate) < 200)
+	if ((LLARS_NowMS() - lastUpdate) < 200)
 		return
 
-	lastUpdate := A_TickCount
+	lastUpdate := LLARS_NowMS()
 	if IsFunc("LLARS_UpdateEstimatedTimeNow")
 		LLARS_UpdateEstimatedTimeNow()
 }
@@ -3889,7 +3235,7 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 		steps := 48
 	if (steps > 92)
 		steps := 92
-	startTick := A_TickCount
+	startTick := LLARS_NowMS()
 	searchIndex := 2
 	previousX := missX
 	previousY := missY
@@ -3930,7 +3276,7 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 
 		LLARS_NaturalMovementRefreshEstimate()
 		targetElapsed := Round(duration * t)
-		delay := targetElapsed - (A_TickCount - startTick)
+		delay := targetElapsed - (LLARS_NowMS() - startTick)
 		if (delay > 0)
 		{
 			if (delay > 24)
@@ -4058,7 +3404,7 @@ LLARS_RedClickMaskLooksLikeX(mask)
 
 LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, baselineMask := 0, timeoutMs := 520)
 {
-	startTick := A_TickCount
+	startTick := LLARS_NowMS()
 	consecutive := 0
 	bestMask := 0
 	bestArms := 0
@@ -4067,7 +3413,7 @@ LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, baselineMask 
 
 	Loop
 	{
-		if ((A_TickCount - startTick) > timeoutMs)
+		if ((LLARS_NowMS() - startTick) > timeoutMs)
 			break
 		if (!DllCall("IsWindow", "Ptr", runeScapeHwnd) || WinExist("A") != runeScapeHwnd)
 			return false
@@ -4090,7 +3436,7 @@ LLARS_WaitForRedClickConfirmation(centerX, centerY, runeScapeHwnd, baselineMask 
 			consecutive++
 			if (consecutive >= 2)
 			{
-				LLARS_DeveloperAction("RedClick || Calibrated red X confirmed || Mask=" . mask . " || Arms=" . arms . " || " . (A_TickCount - startTick) . " ms")
+				LLARS_DeveloperAction("RedClick || Calibrated red X confirmed || Mask=" . mask . " || Arms=" . arms . " || " . (LLARS_NowMS() - startTick) . " ms")
 				LLARS_DetectionRecord("RedClick", "Confirmed", arms, 3, "Mask=" . mask, false)
 				return true
 			}
@@ -4145,7 +3491,7 @@ LLARS_RightClickContextMenuVisible(centerX, centerY, runeScapeHwnd)
 
 LLARS_WaitForRightClickConfirmation(centerX, centerY, runeScapeHwnd, timeoutMs := 650)
 {
-	startTick := A_TickCount
+	startTick := LLARS_NowMS()
 	captureFailures := 0
 
 	Loop
@@ -4153,14 +3499,14 @@ LLARS_WaitForRightClickConfirmation(centerX, centerY, runeScapeHwnd, timeoutMs :
 		state := LLARS_RightClickContextMenuVisible(centerX, centerY, runeScapeHwnd)
 		if (state = 1)
 		{
-			LLARS_DeveloperAction("RedClick || Right-click context menu confirmed || " . (A_TickCount - startTick) . " ms")
+			LLARS_DeveloperAction("RedClick || Right-click context menu confirmed || " . (LLARS_NowMS() - startTick) . " ms")
 			LLARS_DetectionRecord("RightClick", "Confirmed", "", "", "Context menu", false)
 			return true
 		}
 		if (state < 0)
 			captureFailures++
 
-		if ((A_TickCount - startTick) >= timeoutMs)
+		if ((LLARS_NowMS() - startTick) >= timeoutMs)
 			break
 
 		Sleep, 15
@@ -4498,7 +3844,7 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 
 	DllCall("QueryPerformanceFrequency", "Int64*", movementPerformanceFrequency)
 	DllCall("QueryPerformanceCounter", "Int64*", movementStartCounter)
-	startTime := A_TickCount
+	startTime := LLARS_NowMS()
 	searchIndex := 2
 	previousX := startX
 	previousY := startY
@@ -4557,7 +3903,7 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		LLARS_NaturalMovementRefreshEstimate()
 
 		targetElapsed := Round(duration * t)
-		actualElapsed := A_TickCount - startTime
+		actualElapsed := LLARS_NowMS() - startTime
 		delay := targetElapsed - actualElapsed
 		if (delay > 0)
 		{
@@ -4783,7 +4129,7 @@ AntiAFKNaturalClick(x, y, movementStream := "AntiAFKNaturalClick")
 		previousY := currentY
 	}
 
-	startTime := A_TickCount
+	startTime := LLARS_NowMS()
 	searchIndex := 2
 	previousX := startX
 	previousY := startY
@@ -4847,7 +4193,7 @@ AntiAFKNaturalClick(x, y, movementStream := "AntiAFKNaturalClick")
 		LLARS_NaturalMovementRefreshEstimate()
 
 		targetElapsed := Round(duration * t)
-		actualElapsed := A_TickCount - startTime
+		actualElapsed := LLARS_NowMS() - startTime
 		delay := targetElapsed - actualElapsed
 
 		if (delay < 1)

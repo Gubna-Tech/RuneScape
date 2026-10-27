@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/Gubna-Tech/RuneScape/archive/main.zip">
+  <a href="https://github.com/Gubna-Tech/RuneScape/archive/main.zip">
     <img
       src="https://raw.githubusercontent.com/Gubna-Tech/RuneScape/main/Assets/LLARS%20Download.png"
       alt="Download LLARS"

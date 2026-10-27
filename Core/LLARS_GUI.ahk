@@ -14,12 +14,12 @@ LLARS_CreateMainGUI()
 	Gui, 1:Default
 	global value, scriptname, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_SCRIPT_TYPE
 	global Counter, State3, State2, ScriptBlue, ScriptRed
-	global ConfigStatusHotkeys, ConfigStatusCoordinates, ConfigStatusColors
-	global ConfigStatusHotkeysLabel, ConfigStatusCoordinatesLabel, ConfigStatusColorsLabel
+	global ConfigStatusHotkeys, ConfigStatusCoordinates, ConfigStatusColors, ConfigStatusTimer, ConfigStatusScriptConfig
+	global ConfigStatusHotkeysLabel, ConfigStatusCoordinatesLabel, ConfigStatusColorsLabel, ConfigStatusTimerLabel, ConfigStatusScriptConfigLabel
 	displayScriptName := LLARS_DisplayScriptName()
 	windowTitle := LLARS_WindowTitle()
 
-	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
+	value := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Transparent", "value", "ERROR")
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
 	Gui, Font, s12 Bold
 	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
@@ -62,15 +62,19 @@ LLARS_CreateMainGUI()
 	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y207 w295 h20 Center, Setup Status
 	Gui, Font, s10 Bold cBlack
-	Gui, Add, Text, x15 y230 w140 h18 vConfigStatusHotkeysLabel, Hotkeys
-	Gui, Add, Text, x160 y230 w145 h18 Center vConfigStatusHotkeys, Checking
-	Gui, Add, Text, x15 y250 w140 h18 vConfigStatusCoordinatesLabel, Coordinates
-	Gui, Add, Text, x160 y250 w145 h18 Center vConfigStatusCoordinates, Checking
-	Gui, Add, Text, x15 y270 w140 h18 vConfigStatusColorsLabel, Colors
-	Gui, Add, Text, x160 y270 w145 h18 Center vConfigStatusColors, Checking
-	Gui, Add, Text, x5 y293 w305 h2 0x10
+	Gui, Add, Text, x15 y230 w140 h18 vConfigStatusHotkeysLabel gSetupStatusHotkeys, Hotkeys
+	Gui, Add, Text, x160 y230 w145 h18 Center vConfigStatusHotkeys gSetupStatusHotkeys, Checking
+	Gui, Add, Text, x15 y250 w140 h18 vConfigStatusCoordinatesLabel gSetupStatusCoordinates, Coordinates
+	Gui, Add, Text, x160 y250 w145 h18 Center vConfigStatusCoordinates gSetupStatusCoordinates, Checking
+	Gui, Add, Text, x15 y270 w140 h18 vConfigStatusColorsLabel gSetupStatusColors, Colors
+	Gui, Add, Text, x160 y270 w145 h18 Center vConfigStatusColors gSetupStatusColors, Checking
+	Gui, Add, Text, x15 y290 w140 h18 vConfigStatusTimerLabel gSetupStatusTimer, Timer
+	Gui, Add, Text, x160 y290 w145 h18 Center vConfigStatusTimer gSetupStatusTimer, Checking
+	Gui, Add, Text, x15 y310 w140 h18 vConfigStatusScriptConfigLabel gSetupStatusScriptConfig, Script Config
+	Gui, Add, Text, x160 y310 w145 h18 Center vConfigStatusScriptConfig gSetupStatusScriptConfig, Checking
+	Gui, Add, Text, x5 y333 w305 h2 0x10
 	Gui, Font, s10 Bold
-	Gui, Add, Button, x73 y301 w170 h29 gExitb , Exit LLARS
+	Gui, Add, Button, x73 y341 w170 h29 gExitb , Exit LLARS
 	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
@@ -79,9 +83,9 @@ LLARS_CreateMainGUI()
 	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	LLARS_UpdateConfigStatus()
 	if LLARS_MainLoadPosition(x, y)
-		Gui, Show, x%x% y%y% w315 h337, %windowTitle%
+		Gui, Show, x%x% y%y% w315 h377, %windowTitle%
 	else
-		Gui, Show, w315 h337, %windowTitle%
+		Gui, Show, w315 h377, %windowTitle%
 	CheckPOS(LLARSMainGuiHwnd)
 
 	; Loads the custom LLARS icon into the main GUI when available.
@@ -190,7 +194,7 @@ LLARS_CreateTimerGUI()
 	displayScriptName := LLARS_DisplayScriptName()
 	windowTitle := LLARS_WindowTitle()
 
-	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
+	value := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Transparent", "value", "ERROR")
 	hasMainPosition := LLARS_MainGetPosition(X, Y)
 	if (!hasMainPosition)
 		hasMainPosition := LLARS_MainLoadPosition(X, Y)
@@ -259,7 +263,7 @@ LLARS_CreateUntilDoneGUI()
 	displayScriptName := LLARS_DisplayScriptName()
 	windowTitle := LLARS_WindowTitle()
 
-	IniRead, value, %LLARS_CONFIG_FILE%, Transparent, value
+	value := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Transparent", "value", "ERROR")
 	hasMainPosition := LLARS_MainGetPosition(X, Y)
 	if (!hasMainPosition)
 		hasMainPosition := LLARS_MainLoadPosition(X, Y)

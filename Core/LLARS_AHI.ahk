@@ -1,4 +1,4 @@
-; ================================================================
+﻿; ================================================================
 ; |     LLARS AUTOHOTINTERCEPTION     -     INPUT BACKEND           |
 ; ================================================================
 ;
@@ -6,6 +6,8 @@
 ; lifecycle subscriptions. Physical keyboard/mouse input is observed only for
 ; lifecycle awareness; LLARS independently chooses the most reliable connected
 ; AHI transport carriers and never blocks physical input.
+
+; Shared timing ownership lives in LLARS_Timing.ahk.
 
 LLARS_AHI_LibraryReady(projectRoot := "")
 {
@@ -37,7 +39,7 @@ LLARS_AHI_Mode(projectRoot := "")
     if (configPath = "" || !FileExist(configPath))
         return "ahi"
 
-    IniRead, mode, %configPath%, Input Backend, mode, ahi
+    mode := LLARS_ConfigReadFile(configPath, "Input Backend", "mode", "ahi")
     mode := Trim(mode)
     StringLower, mode, mode
     return (mode = "standard") ? "standard" : "ahi"
@@ -51,8 +53,7 @@ LLARS_AHI_SetMode(projectRoot, mode)
 
     StringLower, mode, mode
     mode := (mode = "ahi") ? "ahi" : "standard"
-    IniWrite, %mode%, %configPath%, Input Backend, mode
-    return (ErrorLevel = 0)
+    return LLARS_ConfigWriteFile(configPath, "Input Backend", "mode", mode)
 }
 
 
@@ -476,7 +477,7 @@ LLARS_AHI_BuildSupportReport(projectRoot, trigger := "Manual")
     runState := LLARS_RUNNING ? (LLARS_PAUSED ? "Paused" : "Running") : "Idle"
     runType := (LLARS_RUN_TYPE = "" ? "Not Started" : LLARS_RUN_TYPE)
     if (LLARS_RUNNING && LLARS_RunStartTick > 0)
-        runElapsed := Round((A_TickCount - LLARS_RunStartTick) / 1000) . " s"
+        runElapsed := Round((LLARS_NowMS() - LLARS_RunStartTick) / 1000) . " s"
     else
         runElapsed := "--"
     if (LLARS_DISABLE_SCRIPT_CONFIG)
@@ -913,6 +914,9 @@ LLARS_AHI_FallbackModeCheck(projectRoot, interactive := true)
 
 LLARS_AHI_Enable(projectRoot, interactive := true)
 {
+    global LLARS_AHI_GateStartTick, LLARS_AHI_GateReady, LLARS_AHI_GateElapsed
+    global LLARS_AHI_InitStartTick, LLARS_AHI_InitElapsed, LLARS_AHI_FullyReady
+
     if (projectRoot = "")
         return false
 
@@ -927,8 +931,20 @@ LLARS_AHI_Enable(projectRoot, interactive := true)
     }
 
     LLARS_AHI_SetMode(projectRoot, "ahi")
-    ready := LLARS_AHI_StartupGate(projectRoot, interactive, true, false)
-    return ready
+    LLARS_AHI_GateStartTick := LLARS_NowMS()
+    LLARS_AHI_GateReady := LLARS_AHI_StartupGate(projectRoot, interactive, true, false)
+    LLARS_AHI_GateElapsed := LLARS_NowMS() - LLARS_AHI_GateStartTick
+    if !LLARS_AHI_GateReady
+        return false
+
+    ; Standard mode intentionally disposes the live AHI object. Re-enabling AHI
+    ; in the same process must rebuild the object, device routes, subscriptions,
+    ; and watchdog before Input Settings can report the backend as ready.
+    LLARS_AHI_InitStartTick := LLARS_NowMS()
+    LLARS_AHI_Initialize(projectRoot)
+    LLARS_AHI_InitElapsed := LLARS_NowMS() - LLARS_AHI_InitStartTick
+    LLARS_AHI_FullyReady := (LLARS_AHI_IsReady("mouse") && LLARS_AHI_IsReady("keyboard"))
+    return LLARS_AHI_FullyReady
 }
 
 LLARS_AHI_ShowRestartMessage(isReminder := false)
@@ -1369,7 +1385,7 @@ LLARS_AHI_TickAgeText(tick)
 {
     if (!tick)
         return "Not observed"
-    elapsed := A_TickCount - tick
+    elapsed := LLARS_NowMS() - tick
     if (elapsed < 0)
         elapsed := 0
     if (elapsed < 1000)
@@ -1382,7 +1398,7 @@ LLARS_AHI_TickAgeText(tick)
 LLARS_AHI_OnPhysicalKeyboard(code, state)
 {
     global LLARS_AHI_KEYBOARD_LAST_SEEN, LLARS_AHI_KEYBOARD_EVENT_COUNT
-    LLARS_AHI_KEYBOARD_LAST_SEEN := A_TickCount
+    LLARS_AHI_KEYBOARD_LAST_SEEN := LLARS_NowMS()
     LLARS_AHI_KEYBOARD_EVENT_COUNT++
 }
 
@@ -1392,13 +1408,13 @@ LLARS_AHI_OnPhysicalMouseButton(deviceId, code, state)
     global LLARS_AHI_MOUSE_LAST_SEEN, LLARS_AHI_MOUSE_EVENT_COUNT
     global LLARS_AHI_MOUSE_ACTIVITY_ID, LLARS_AHI_MOUSE_ACTIVITY_TICK, LLARS_AHI_MOUSE_ACTIVITY_BY_ID
     global LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_PENDING, LLARS_AHI_MOUSE_ACTIVITY_RECOVERY_FUNC
-    LLARS_AHI_MOUSE_LAST_SEEN := A_TickCount
+    LLARS_AHI_MOUSE_LAST_SEEN := LLARS_NowMS()
     LLARS_AHI_MOUSE_EVENT_COUNT++
     LLARS_AHI_MOUSE_ACTIVITY_ID := deviceId + 0
-    LLARS_AHI_MOUSE_ACTIVITY_TICK := A_TickCount
+    LLARS_AHI_MOUSE_ACTIVITY_TICK := LLARS_NowMS()
     if !IsObject(LLARS_AHI_MOUSE_ACTIVITY_BY_ID)
         LLARS_AHI_MOUSE_ACTIVITY_BY_ID := {}
-    LLARS_AHI_MOUSE_ACTIVITY_BY_ID[LLARS_AHI_MOUSE_ACTIVITY_ID] := A_TickCount
+    LLARS_AHI_MOUSE_ACTIVITY_BY_ID[LLARS_AHI_MOUSE_ACTIVITY_ID] := LLARS_NowMS()
     if (LLARS_AHI_MOUSE_ACTIVITY_ID = LLARS_AHI_MOUSE_ID)
     {
         LLARS_AHI_MOUSE_ROUTE_VERIFIED := true
@@ -1697,14 +1713,14 @@ LLARS_AHI_UpdateDeviceHistory(deviceList, isMouse)
         if (key = "")
             continue
         if !history.HasKey(key)
-            history[key] := {LastID:candidate.ID, Churn:0, FirstSeen:A_TickCount, LastSeen:A_TickCount}
+            history[key] := {LastID:candidate.ID, Churn:0, FirstSeen:LLARS_NowMS(), LastSeen:LLARS_NowMS()}
         else
         {
             entry := history[key]
             if (entry.LastID && entry.LastID != candidate.ID)
                 entry.Churn++
             entry.LastID := candidate.ID
-            entry.LastSeen := A_TickCount
+            entry.LastSeen := LLARS_NowMS()
             history[key] := entry
         }
     }
@@ -1738,7 +1754,7 @@ LLARS_AHI_DeviceReliabilityScore(candidate, isMouse, currentInfo := "")
     {
         entry := history[key]
         score -= (entry.Churn + 0) * 300
-        age := A_TickCount - (entry.FirstSeen + 0)
+        age := LLARS_NowMS() - (entry.FirstSeen + 0)
         if (age > 0)
         {
             ageBonus := Floor(age / 5000)
@@ -1827,7 +1843,7 @@ LLARS_AHI_StartFastMouseRecovery(projectRoot := "", durationMs := 10000)
     if !LLARS_AHI_FAST_RECOVERY_ACTIVE
     {
         LLARS_AHI_FAST_RECOVERY_ACTIVE := true
-        LLARS_AHI_FAST_RECOVERY_UNTIL := A_TickCount + durationMs
+        LLARS_AHI_FAST_RECOVERY_UNTIL := LLARS_NowMS() + durationMs
         SetTimer, % LLARS_AHI_FAST_RECOVERY_FUNC, 200
     }
     return true
@@ -1844,7 +1860,7 @@ LLARS_AHI_FastMouseRecoveryTick()
         LLARS_AHI_StopFastMouseRecovery()
         return
     }
-    if (A_TickCount >= LLARS_AHI_FAST_RECOVERY_UNTIL)
+    if (LLARS_NowMS() >= LLARS_AHI_FAST_RECOVERY_UNTIL)
     {
         LLARS_AHI_StopFastMouseRecovery()
         return

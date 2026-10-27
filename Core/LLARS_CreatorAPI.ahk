@@ -50,62 +50,19 @@ LLARS_ConfigPath(scope := "script")
 ; Returns true when a named section exists in the selected configuration file.
 LLARS_ConfigSectionExists(section, scope := "script")
 {
-	section := Trim(section)
-	if (section = "")
-		return false
-
-	configFile := LLARS_ConfigPath(scope)
-	if !FileExist(configFile)
-		return false
-
-	sections := LLARS_ConfigSectionList(configFile)
-	Loop, Parse, sections, `n, `r
-	{
-		if (Trim(A_LoopField) = section)
-			return true
-	}
-
-	return false
+	return LLARS_ConfigSectionExistsFile(LLARS_ConfigPath(scope), section)
 }
 
 ; Returns true when a key exists inside a named configuration section.
 LLARS_ConfigKeyExists(section, key, scope := "script")
 {
-	section := Trim(section)
-	key := Trim(key)
-	if (section = "" || key = "")
-		return false
-
-	configFile := LLARS_ConfigPath(scope)
-	if !FileExist(configFile)
-		return false
-	if !LLARS_ConfigSectionExists(section, scope)
-		return false
-
-	IniRead, sectionData, %configFile%, %section%
-	Loop, Parse, sectionData, `n, `r
-	{
-		line := A_LoopField
-		equalsPos := InStr(line, "=")
-		if (!equalsPos)
-			continue
-		lineKey := Trim(SubStr(line, 1, equalsPos - 1))
-		if (lineKey = key)
-			return true
-	}
-
-	return false
+	return LLARS_ConfigKeyExistsFile(LLARS_ConfigPath(scope), section, key)
 }
 
 ; Reads one configuration value without exposing IniRead boilerplate to scripts.
 LLARS_ConfigRead(section, key, default := "ERROR", scope := "script")
 {
-	configFile := LLARS_ConfigPath(scope)
-	if !FileExist(configFile)
-		return default
-
-	IniRead, value, %configFile%, %section%, %key%, %default%
-	return value
+	return LLARS_ConfigReadFile(LLARS_ConfigPath(scope), section, key, default)
 }
 
 ; Writes one configuration value through the shared path resolver.
@@ -117,11 +74,210 @@ LLARS_ConfigWrite(section, key, value, scope := "script")
 		return LLARS_CreatorConfigError("Config write requires a section and key")
 
 	configFile := LLARS_ConfigPath(scope)
-	IniWrite, %value%, %configFile%, %section%, %key%
-	if ErrorLevel
+	if !LLARS_ConfigWriteFile(configFile, section, key, value)
 		return LLARS_CreatorConfigError("Unable to write " . section . " " . key . " to " . configFile)
 
 	return true
+}
+
+; Deletes a configuration key (or an entire section when key is blank).
+LLARS_ConfigDelete(section, key := "", scope := "script")
+{
+	configFile := LLARS_ConfigPath(scope)
+	if !LLARS_ConfigDeleteFile(configFile, section, key)
+		return LLARS_CreatorConfigError("Unable to delete configuration value from " . section)
+	return true
+}
+
+; Returns the normalized key list for one section.
+LLARS_ConfigKeys(section, scope := "script", default := "ERROR")
+{
+	return LLARS_ConfigKeysFile(LLARS_ConfigPath(scope), section, default)
+}
+
+; Compatibility aliases matching the framework terminology used by diagnostics.
+LLARS_ConfigHasSection(section, scope := "script")
+{
+	return LLARS_ConfigSectionExists(section, scope)
+}
+
+LLARS_ConfigHasKey(section, key, scope := "script")
+{
+	return LLARS_ConfigKeyExists(section, key, scope)
+}
+
+; Creates or refreshes the validated per-file snapshot used by framework consumers.
+LLARS_ConfigSnapshot(scope := "script", forceReload := false)
+{
+	return LLARS_ConfigSnapshotLoad(LLARS_ConfigPath(scope), forceReload)
+}
+
+; Reads one typed configuration value and explicitly reports Valid/Missing/Invalid.
+; This is intended for framework preflight/diagnostics; existing creator readers
+; keep their compatibility return shapes.
+LLARS_ConfigReadTyped(section, key, valueType, default := "", scope := "script")
+{
+	result := {Status: "Missing", Value: default, Raw: ""}
+	valueType := Trim(valueType)
+	StringLower, valueType, valueType
+	configFile := LLARS_ConfigPath(scope)
+
+	if (valueType = "millisecond_range" || valueType = "range")
+	{
+		minValue := Trim(LLARS_ConfigReadFile(configFile, section, "min", "ERROR"))
+		maxValue := Trim(LLARS_ConfigReadFile(configFile, section, "max", "ERROR"))
+		result.Raw := minValue . "|" . maxValue
+		if (minValue = "ERROR" || maxValue = "ERROR" || minValue = "" || maxValue = "")
+			return result
+		if minValue is not number
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		if maxValue is not number
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		minValue += 0
+		maxValue += 0
+		if (minValue < 0 || maxValue < minValue)
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		result.Status := "Valid"
+		result.Value := {Min: minValue, Max: maxValue}
+		return result
+	}
+
+	if (valueType = "coordinate")
+	{
+		x := Trim(LLARS_ConfigReadFile(configFile, section, "x", "ERROR"))
+		y := Trim(LLARS_ConfigReadFile(configFile, section, "y", "ERROR"))
+		if (x != "ERROR" || y != "ERROR")
+		{
+			result.Raw := x . "|" . y
+			if (x = "ERROR" || y = "ERROR" || x = "" || y = "")
+				return result
+			if x is not number
+			{
+				result.Status := "Invalid"
+				return result
+			}
+			if y is not number
+			{
+				result.Status := "Invalid"
+				return result
+			}
+			result.Status := "Valid"
+			result.Value := {X: Round(x + 0), Y: Round(y + 0)}
+			return result
+		}
+
+		xmin := Trim(LLARS_ConfigReadFile(configFile, section, "xmin", "ERROR"))
+		xmax := Trim(LLARS_ConfigReadFile(configFile, section, "xmax", "ERROR"))
+		ymin := Trim(LLARS_ConfigReadFile(configFile, section, "ymin", "ERROR"))
+		ymax := Trim(LLARS_ConfigReadFile(configFile, section, "ymax", "ERROR"))
+		result.Raw := xmin . "|" . xmax . "|" . ymin . "|" . ymax
+		if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR")
+			return result
+		if xmin is not number
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		if xmax is not number
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		if ymin is not number
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		if ymax is not number
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		xmin := Round(xmin + 0), xmax := Round(xmax + 0), ymin := Round(ymin + 0), ymax := Round(ymax + 0)
+		if (xmin > xmax || ymin > ymax)
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		result.Status := "Valid"
+		result.Value := {XMin: xmin, XMax: xmax, YMin: ymin, YMax: ymax}
+		return result
+	}
+
+	raw := LLARS_ConfigReadFile(configFile, section, key, "ERROR")
+	if (raw = "ERROR")
+		return result
+	result.Raw := raw
+	value := Trim(raw)
+
+	if (valueType = "string")
+	{
+		result.Status := "Valid"
+		result.Value := raw
+		return result
+	}
+	if (value = "")
+		return result
+
+	if (valueType = "integer")
+	{
+		if value is not integer
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		result.Status := "Valid"
+		result.Value := value + 0
+		return result
+	}
+	if (valueType = "boolean" || valueType = "bool")
+	{
+		lower := value
+		StringLower, lower, lower
+		if (lower != "true" && lower != "false")
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		result.Status := "Valid"
+		result.Value := (lower = "true")
+		return result
+	}
+	if (valueType = "hotkey")
+	{
+		if (IsFunc("LLARS_IsValidConfigHotkey") && !LLARS_IsValidConfigHotkey(value))
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		result.Status := "Valid"
+		result.Value := value
+		return result
+	}
+	if (valueType = "color")
+	{
+		if !RegExMatch(value, "i)^0x[0-9A-F]{6}$")
+		{
+			result.Status := "Invalid"
+			return result
+		}
+		StringUpper, value, value
+		result.Status := "Valid"
+		result.Value := value
+		return result
+	}
+
+	result.Status := "Invalid"
+	return result
 }
 
 ; Returns the normalized newline-delimited section list used by LLARS config discovery.
@@ -360,7 +516,7 @@ LLARS_ConfigEnabledInternal(section, default, scope, depth)
 
 	configFile := LLARS_ConfigPath(scope)
 	defaultText := default ? "true" : "false"
-	IniRead, option, %configFile%, %section%, option, %defaultText%
+	option := LLARS_ConfigReadFile(configFile, section, "option", defaultText)
 	option := Trim(option)
 	StringLower, option, option
 
@@ -372,7 +528,7 @@ LLARS_ConfigEnabledInternal(section, default, scope, depth)
 		return default
 	}
 
-	IniRead, depends, %configFile%, %section%, depends, ERROR
+	depends := LLARS_ConfigReadFile(configFile, section, "depends", "ERROR")
 	depends := Trim(depends)
 	if (depends != "ERROR" && depends != "")
 		return LLARS_ConfigEnabledInternal(depends, true, scope, depth + 1)
@@ -754,6 +910,7 @@ LLARS_RunCount(callback)
 		return false
 
 	totalRuns := runcount3
+	LLARS_SupportEvent("RunCount started", "Runs=" . totalRuns)
 	Loop, %totalRuns%
 	{
 		if (!LLARS_RUNNING)
@@ -882,7 +1039,7 @@ LLARS_Sleep(section, final := false, scope := "script")
 	if (final)
 	{
 		EstFinalSleepActive := true
-		EstFinalSleepEndTick := A_TickCount + sleepAmount
+		EstFinalSleepEndTick := LLARS_NowMS() + sleepAmount
 		Gosub, UpdateEstimatedTime
 	}
 
@@ -955,13 +1112,14 @@ LLARS_CreatorTimerScheduleCallback(section, callback, repeat := false, scope := 
 		, Callback: callbackFn
 		, Handler: timerHandler
 		, Interval: interval
-		, EndTick: A_TickCount + interval
+		, EndTick: LLARS_NowMS() + interval
 		, Repeat: repeat
 		, Scope: scope}
 
 	SetTimer, %timerHandler%, %timerPeriod%
 	timerMode := repeat ? "Repeating Random" : "One Shot"
 	LLARS_DeveloperAction("Timer Scheduled || #" . timerId . " || " . section . " || " . interval . " ms || " . timerMode)
+	LLARS_SupportEvent("Timer scheduled", section . " | " . timerMode)
 	return timerId
 }
 
@@ -1014,7 +1172,7 @@ LLARS_CreatorTimerDispatch(timerId)
 	}
 
 	timerInfo.Interval := interval
-	timerInfo.EndTick := A_TickCount + interval
+	timerInfo.EndTick := LLARS_NowMS() + interval
 	LLARS_CreatorTimers[timerKey] := timerInfo
 	timerHandler := timerInfo.Handler
 	timerPeriod := -interval
@@ -1036,7 +1194,7 @@ LLARS_CreatorTimerRemaining(timerId)
 	if (!timerInfo.HasKey("EndTick"))
 		return -1
 
-	remaining := timerInfo.EndTick - A_TickCount
+	remaining := timerInfo.EndTick - LLARS_NowMS()
 	return (remaining > 0) ? remaining : 0
 }
 
@@ -1089,6 +1247,7 @@ LLARS_TimerSchedule(labelName, section, repeat := false, scope := "script")
 
 	timerMode := repeat ? "Repeating" : "One Shot"
 	LLARS_DeveloperAction("Legacy Timer Scheduled || " . labelName . " || " . section . " || " . interval . " ms || " . timerMode)
+	LLARS_SupportEvent("Timer scheduled", section . " | " . timerMode)
 	return interval
 }
 
@@ -1314,12 +1473,12 @@ LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 			stateKeyId := stateKey
 			StringLower, stateKeyId, stateKeyId
 			if (stateDirection = "down")
-				LLARS_CreatorExplicitKeyHolds[stateKeyId] := {Tick:A_TickCount, Transport:(sentWithAHI ? "AHI" : "Standard AHK"), Name:stateKey}
+				LLARS_CreatorExplicitKeyHolds[stateKeyId] := {Tick:LLARS_NowMS(), Transport:(sentWithAHI ? "AHI" : "Standard AHK"), Name:stateKey}
 			else if LLARS_CreatorExplicitKeyHolds.HasKey(stateKeyId)
 			{
 				heldState := LLARS_CreatorExplicitKeyHolds[stateKeyId]
 				LLARS_CreatorExplicitKeyHolds.Delete(stateKeyId)
-				explicitHoldMs := A_TickCount - heldState.Tick
+				explicitHoldMs := LLARS_NowMS() - heldState.Tick
 				if (explicitHoldMs < 0)
 					explicitHoldMs += 4294967296
 				LLARS_DeveloperAction("Key Hold || " . stateKey . " || Hold=" . explicitHoldMs . " ms || " . (heldState.Transport = "AHI" ? "AutoHotInterception" : "Standard AutoHotkey"))
@@ -3979,10 +4138,10 @@ LLARS_ColorTrackRuneScapeSignature(signature, matcher, ByRef matchRatio, ByRef m
 
 	if (DllCall("GetForegroundWindow", "Ptr") != hWnd)
 	{
-		if (lastBackgroundCaptureTick && (A_TickCount - lastBackgroundCaptureTick) < backgroundInterval)
+		if (lastBackgroundCaptureTick && (LLARS_NowMS() - lastBackgroundCaptureTick) < backgroundInterval)
 			return -1
 
-		backgroundCaptureTicks[trackerKey] := A_TickCount
+		backgroundCaptureTicks[trackerKey] := LLARS_NowMS()
 		captureMethod := ""
 		capture := LLARS_ColorCaptureBackgroundClient(hWnd, clientWidth, clientHeight, captureMethod)
 	}
@@ -4228,10 +4387,10 @@ LLARS_ColorTrackRuneScapeTarget(ByRef clientX, ByRef clientY, matcher, ByRef tra
 
 	if (DllCall("GetForegroundWindow", "Ptr") != hWnd)
 	{
-		if (lastBackgroundCaptureTick && (A_TickCount - lastBackgroundCaptureTick) < backgroundInterval)
+		if (lastBackgroundCaptureTick && (LLARS_NowMS() - lastBackgroundCaptureTick) < backgroundInterval)
 			return -1
 
-		backgroundCaptureTicks[trackerKey] := A_TickCount
+		backgroundCaptureTicks[trackerKey] := LLARS_NowMS()
 		captureMethod := ""
 		frame := LLARS_ColorCaptureBackgroundClient(hWnd, clientWidth, clientHeight, captureMethod)
 		if !IsObject(frame)

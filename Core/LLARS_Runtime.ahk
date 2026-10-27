@@ -2,6 +2,164 @@
 ; |     LLARS RUNTIME LIBRARY     -     LLARS RUNTIME LIBRARY    |
 ; ================================================================
 
+; Creates a declarative RunCount timing model. Scripts may return one of these
+; from LLARS_RuntimeEstimateMetadata() to avoid source-code timing discovery.
+LLARS_RuntimeMetadataCreate(confidence := "modeled")
+{
+	confidence := Trim(confidence)
+	StringLower, confidence, confidence
+	if (confidence != "exact" && confidence != "modeled" && confidence != "partial")
+		confidence := "modeled"
+	return {Confidence: confidence, Entries: []}
+}
+
+; Adds one configured timing range to a declarative runtime model. Count and
+; weight describe expected contribution; path is both, first, or following.
+LLARS_RuntimeMetadataAddSection(model, section, count := 1, path := "both", weight := 1.0, scope := "script", final := false)
+{
+	if !IsObject(model) || !IsObject(model.Entries)
+		return false
+	section := Trim(section)
+	path := Trim(path)
+	StringLower, path, path
+	if (section = "" || (path != "both" && path != "first" && path != "following"))
+		return false
+	if count is not number
+		return false
+	if weight is not number
+		return false
+	count += 0
+	weight += 0
+	if (count < 0 || weight < 0 || weight > 1)
+		return false
+	model.Entries.Push({Kind: "section", Section: section, Scope: scope, Count: count, Path: path, Weight: weight, Final: final ? true : false})
+	return true
+}
+
+; Adds a fixed millisecond contribution without requiring a Config.ini range.
+LLARS_RuntimeMetadataAddFixed(model, milliseconds, count := 1, path := "both", weight := 1.0, final := false)
+{
+	if !IsObject(model) || !IsObject(model.Entries)
+		return false
+	path := Trim(path)
+	StringLower, path, path
+	if milliseconds is not number
+		return false
+	if count is not number
+		return false
+	if weight is not number
+		return false
+	milliseconds += 0
+	count += 0
+	weight += 0
+	if (milliseconds < 0 || count < 0 || weight < 0 || weight > 1 || (path != "both" && path != "first" && path != "following"))
+		return false
+	model.Entries.Push({Kind: "fixed", Milliseconds: milliseconds, Count: count, Path: path, Weight: weight, Final: final ? true : false})
+	return true
+}
+
+; Adds the shared optional Random Sleep contribution using its configured chance.
+LLARS_RuntimeMetadataAddRandomSleep(model, path := "both")
+{
+	if !IsObject(model) || !IsObject(model.Entries)
+		return false
+	path := Trim(path)
+	StringLower, path, path
+	if (path != "both" && path != "first" && path != "following")
+		return false
+	model.Entries.Push({Kind: "random-sleep", Count: 1, Path: path, Weight: 1.0, Final: false})
+	return true
+}
+
+; Resolves declarative metadata against the current normalized configuration.
+LLARS_RuntimeMetadataResolve(model, ByRef FirstAverage, ByRef FollowingAverage, ByRef FirstMin, ByRef FirstMax, ByRef FollowingMin, ByRef FollowingMax, ByRef Confidence)
+{
+	global LLARS_CONFIG_FILE
+
+	FirstAverage := 0
+	FollowingAverage := 0
+	FirstMin := 0
+	FirstMax := 0
+	FollowingMin := 0
+	FollowingMax := 0
+	Confidence := "modeled"
+
+	if !IsObject(model) || !IsObject(model.Entries) || model.Entries.Length() = 0
+		return false
+
+	if (model.HasKey("Confidence"))
+	{
+		Confidence := Trim(model.Confidence)
+		StringLower, Confidence, Confidence
+		if (Confidence != "exact" && Confidence != "modeled" && Confidence != "partial")
+			Confidence := "modeled"
+	}
+
+	for _, entry in model.Entries
+	{
+		if !IsObject(entry) || !entry.HasKey("Kind")
+			return false
+
+		entryCount := entry.HasKey("Count") ? (entry.Count + 0) : 1
+		entryWeight := entry.HasKey("Weight") ? (entry.Weight + 0) : 1.0
+		entryPath := entry.HasKey("Path") ? entry.Path : "both"
+		StringLower, entryPath, entryPath
+		if (entryCount < 0 || entryWeight < 0 || entryWeight > 1)
+			return false
+
+		if (entry.Kind = "section")
+		{
+			scope := entry.HasKey("Scope") ? entry.Scope : "script"
+			if !LLARS_ConfigEnabled(entry.Section, true, scope)
+				continue
+			if !LLARS_ConfigReadRange(entry.Section, minValue, maxValue, scope)
+				return false
+		}
+		else if (entry.Kind = "fixed")
+		{
+			minValue := entry.Milliseconds + 0
+			maxValue := minValue
+		}
+		else if (entry.Kind = "random-sleep")
+		{
+			randomOption := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "option", "false")
+			StringLower, randomOption, randomOption
+			randomChance := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "chance", 0)
+			minValue := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "min", "ERROR")
+			maxValue := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "max", "ERROR")
+			if (randomOption != "true" || randomChance = "" || randomChance + 0 < 0 || randomChance + 0 > 100)
+				randomChance := 0
+			if (minValue = "ERROR" || maxValue = "ERROR" || minValue = "" || maxValue = "" || minValue + 0 < 0 || maxValue + 0 < minValue + 0)
+				return false
+			minValue += 0
+			maxValue += 0
+			entryWeight *= (randomChance + 0) / 100
+		}
+		else
+			return false
+
+		averageValue := (minValue + maxValue) / 2
+		averageContribution := averageValue * entryCount * entryWeight
+		minContribution := minValue * entryCount * entryWeight
+		maxContribution := maxValue * entryCount * entryWeight
+
+		if (entryPath = "both" || entryPath = "first")
+		{
+			FirstAverage += averageContribution
+			FirstMin += minContribution
+			FirstMax += maxContribution
+		}
+		if (entryPath = "both" || entryPath = "following")
+		{
+			FollowingAverage += averageContribution
+			FollowingMin += minContribution
+			FollowingMax += maxContribution
+		}
+	}
+
+	return (FirstAverage > 0 && FollowingAverage > 0)
+}
+
 ; Calculates the pre-run RunCount estimate. New scripts are modeled from the
 ; standardized timing API (LLARS_Sleep / LLARS_RandomSleep) plus ctx.IsFirst;
 ; direct IniRead/Sleep patterns remain supported for compatible existing scripts.
@@ -14,6 +172,8 @@ CalculateScriptRuntime()
 	global EstRuntimeCalculated
 	global EstimationRunCount
 	global EstFinalFirstSleepID, EstFinalFollowingSleepID
+	global LLARS_RuntimeEstimateSource, LLARS_RuntimeEstimateConfidence
+	global LLARS_CONFIG_FILE
 
 	EstConfiguredLoopMin := 0
 	EstConfiguredLoopMax := 0
@@ -23,48 +183,81 @@ CalculateScriptRuntime()
 	EstFinalFirstSleepID := 0
 	EstFinalFollowingSleepID := 0
 	EstRuntimeCalculated := false
+	LLARS_RuntimeEstimateSource := "unavailable"
+	LLARS_RuntimeEstimateConfidence := "partial"
+	FirstFinalSleepID := 0
+	FollowingFinalSleepID := 0
+	ResolvedByMetadata := false
 
-	; Read only the section of this script marked for LLARS editing.
-	FileRead, ScriptContents, %A_ScriptFullPath%
+	; Preferred path: a script may expose declarative timing metadata. Values
+	; are resolved from current configuration rather than hard-coded totals.
+	if IsFunc("LLARS_RuntimeEstimateMetadata")
+	{
+		try
+			RuntimeModel := Func("LLARS_RuntimeEstimateMetadata").Call()
+		catch RuntimeMetadataError
+		{
+			RuntimeModel := ""
+			if IsFunc("LLARS_DeveloperAction")
+				LLARS_DeveloperAction("Runtime Estimate || explicit metadata failed || " . RuntimeMetadataError.Message)
+		}
 
-	; Build the marker text in pieces so FileRead does not find the marker strings inside this function itself.
-	BeginMarker := "SCRIPT_EDIT_" . "BEGIN_4C4C415253"
-	EndMarker := "SCRIPT_EDIT_" . "END_4C4C415253"
-	StartPos := InStr(ScriptContents, "; " . BeginMarker)
-	if (!StartPos)
-		return false
+		if IsObject(RuntimeModel)
+		{
+			if LLARS_RuntimeMetadataResolve(RuntimeModel, FirstLoopAverage, FollowingLoopAverage, FirstLoopMin, FirstLoopMax, FollowingLoopMin, FollowingLoopMax, MetadataConfidence)
+			{
+				ResolvedByMetadata := true
+				LLARS_RuntimeEstimateSource := "explicit-metadata"
+				LLARS_RuntimeEstimateConfidence := MetadataConfidence
+			}
+		}
+	}
 
-	EndSearchPos := StartPos + StrLen("; " . BeginMarker)
-	EndPos := InStr(ScriptContents, "; " . EndMarker, false, EndSearchPos)
-	if (!EndPos)
-		return false
+	if (!ResolvedByMetadata)
+	{
+		; Compatibility path: parse only the section marked for LLARS editing.
+		FileRead, ScriptContents, %A_ScriptFullPath%
 
-	ScriptSection := SubStr(ScriptContents, EndSearchPos, EndPos - EndSearchPos)
-	ScriptSectionLineOffset := StrLen(SubStr(ScriptContents, 1, EndSearchPos)) - StrLen(StrReplace(SubStr(ScriptContents, 1, EndSearchPos), "`n", ""))
-	if (!ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, FirstLoopAverage, FollowingLoopAverage, FirstLoopMin, FirstLoopMax, FollowingLoopMin, FollowingLoopMax, FirstFinalSleepID, FollowingFinalSleepID))
-		return false
+		BeginMarker := "SCRIPT_EDIT_" . "BEGIN_4C4C415253"
+		EndMarker := "SCRIPT_EDIT_" . "END_4C4C415253"
+		StartPos := InStr(ScriptContents, "; " . BeginMarker)
+		if (!StartPos)
+			return false
+
+		EndSearchPos := StartPos + StrLen("; " . BeginMarker)
+		EndPos := InStr(ScriptContents, "; " . EndMarker, false, EndSearchPos)
+		if (!EndPos)
+			return false
+
+		ScriptSection := SubStr(ScriptContents, EndSearchPos, EndPos - EndSearchPos)
+		ScriptSectionLineOffset := StrLen(SubStr(ScriptContents, 1, EndSearchPos)) - StrLen(StrReplace(SubStr(ScriptContents, 1, EndSearchPos), "`n", ""))
+		if (!ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, FirstLoopAverage, FollowingLoopAverage, FirstLoopMin, FirstLoopMax, FollowingLoopMin, FollowingLoopMax, FirstFinalSleepID, FollowingFinalSleepID, ParserSource, ParserConfidence))
+			return false
+
+		LLARS_RuntimeEstimateSource := ParserSource
+		LLARS_RuntimeEstimateConfidence := ParserConfidence
+
+		if (RegExMatch(ScriptSection, "im)^\s*LLARS_FinalSleep\(") || RegExMatch(ScriptSection, "im)^\s*LLARS_Sleep\(\s*""[^""]+""\s*,\s*true(?:\s*,[^)]*)?\)\s*(?:;.*)?$"))
+		{
+			FinalSleepOption := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "option", "false")
+			StringLower, FinalSleepOption, FinalSleepOption
+			FinalSleepChance := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "chance", 0)
+			if (FinalSleepOption = "true" && FinalSleepChance + 0 > 0)
+			{
+				FirstFinalSleepID := 0
+				FollowingFinalSleepID := 0
+			}
+		}
+	}
 
 	EstFinalFirstSleepID := FirstFinalSleepID
 	EstFinalFollowingSleepID := FollowingFinalSleepID
 	EstConfiguredFirstLoopAverage := FirstLoopAverage
 	EstConfiguredFollowingLoopAverage := FollowingLoopAverage
 
-	if (RegExMatch(ScriptSection, "im)^\s*LLARS_FinalSleep\(") || RegExMatch(ScriptSection, "im)^\s*LLARS_Sleep\(\s*""[^""]+""\s*,\s*true(?:\s*,[^)]*)?\)\s*(?:;.*)?$"))
-	{
-		IniRead, FinalSleepOption, %LLARS_CONFIG_FILE%, Random Sleep, option, false
-		StringLower, FinalSleepOption, FinalSleepOption
-		IniRead, FinalSleepChance, %LLARS_CONFIG_FILE%, Random Sleep, chance, 0
-		if (FinalSleepOption = "true" && FinalSleepChance + 0 > 0)
-		{
-			EstFinalFirstSleepID := 0
-			EstFinalFollowingSleepID := 0
-		}
-	}
-
 	if (FirstLoopAverage <= 0 || FollowingLoopAverage <= 0)
 		return false
 
-	; Use the fixed estimation count only to stabilize the mathematical average.
 	if (EstimationRunCount <= 1)
 	{
 		EstConfiguredLoopAverage := FirstLoopAverage
@@ -82,12 +275,14 @@ CalculateScriptRuntime()
 		return false
 
 	EstRuntimeCalculated := true
+	if IsFunc("LLARS_DeveloperAction")
+		LLARS_DeveloperAction("Runtime Estimate || " . LLARS_RuntimeEstimateSource . " || " . LLARS_RuntimeEstimateConfidence . " || " . Round(EstConfiguredLoopAverage) . " ms")
 	return true
 }
 
 ; Parses the marked script section and separates first-loop timing from
 ; timing used by subsequent loops.
-ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, ByRef FollowingAverage, ByRef FirstMin, ByRef FirstMax, ByRef FollowingMin, ByRef FollowingMax, ByRef FirstFinalSleepID, ByRef FollowingFinalSleepID)
+ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, ByRef FollowingAverage, ByRef FirstMin, ByRef FirstMax, ByRef FollowingMin, ByRef FollowingMax, ByRef FirstFinalSleepID, ByRef FollowingFinalSleepID, ByRef EstimateSource, ByRef EstimateConfidence)
 {
 	global LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
 
@@ -99,6 +294,10 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 	FollowingMax := 0
 	FirstFinalSleepID := 0
 	FollowingFinalSleepID := 0
+	EstimateSource := "source-parser"
+	EstimateConfidence := "partial"
+	HasCreatorTiming := false
+	HasLegacyTiming := false
 
 	; Split the editable script into lines so timer occurrences can be matched to their actual branch instead of counting every timer in the file as though it runs on every loop.
 	Lines := []
@@ -132,6 +331,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 			Entry.Weight := 1.0
 			Entry.IsEstimatedSleep := true
 			TimerEntries.Push(Entry)
+			HasCreatorTiming := true
 			continue
 		}
 
@@ -139,8 +339,8 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		; so add its configured timer when the script calls LLARS_RandomSleep().
 		if RegExMatch(Line, "i)^(?:[A-Z_][A-Z0-9_]*\s*:?=\s*)?LLARS_RandomSleep\(\s*\)\s*(?:;.*)?$")
 		{
-			IniRead, RandomSleepMin, %LLARS_CONFIG_FILE%, Random Sleep, min, ERROR
-			IniRead, RandomSleepMax, %LLARS_CONFIG_FILE%, Random Sleep, max, ERROR
+			RandomSleepMin := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "min", "ERROR")
+			RandomSleepMax := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "max", "ERROR")
 			if (RandomSleepMin != "ERROR" && RandomSleepMax != "ERROR" && RandomSleepMin != "" && RandomSleepMax != "")
 			{
 				if (RandomSleepMin + 0 >= 0 && RandomSleepMax + 0 >= RandomSleepMin + 0)
@@ -156,6 +356,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 					Entry.Weight := 1.0
 					Entry.IsEstimatedSleep := false
 					TimerEntries.Push(Entry)
+					HasCreatorTiming := true
 				}
 			}
 			continue
@@ -196,8 +397,8 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 
 		if (MaxIndex = 0 || SleepIndex = 0)
 			continue
-		IniRead, MinValue, %ConfigFile%, %SectionName%, min, ERROR
-		IniRead, MaxValue, %ConfigFile%, %SectionName%, max, ERROR
+		MinValue := LLARS_ConfigReadFile(ConfigFile, SectionName, "min", "ERROR")
+		MaxValue := LLARS_ConfigReadFile(ConfigFile, SectionName, "max", "ERROR")
 		if (MinValue = "ERROR" || MaxValue = "ERROR")
 			continue
 		if (MinValue = "" || MaxValue = "")
@@ -215,6 +416,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		Entry.Weight := 1.0
 		Entry.IsEstimatedSleep := IsEstimatedSleep
 		TimerEntries.Push(Entry)
+		HasLegacyTiming := true
 	}
 
 	if (TimerEntries.Length() = 0)
@@ -321,7 +523,7 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 			OptionEnabled := LLARS_ConfigReadBool(OptionSection, OptionKey, OptionDefault, OptionScope)
 		else
 		{
-			IniRead, OptionValue, %OptionConfigFile%, %OptionSection%, %OptionKey%, false
+			OptionValue := LLARS_ConfigReadFile(OptionConfigFile, OptionSection, OptionKey, "false")
 			StringLower, OptionValue, OptionValue
 			OptionEnabled := (OptionValue = "true")
 		}
@@ -496,9 +698,9 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 		{
 			ConfigFile := Entry.File
 			ConfigSection := Entry.Section
-			IniRead, RandomSleepOption, %ConfigFile%, %ConfigSection%, option, false
+			RandomSleepOption := LLARS_ConfigReadFile(ConfigFile, ConfigSection, "option", "false")
 			StringLower, RandomSleepOption, RandomSleepOption
-			IniRead, Chance, %ConfigFile%, %ConfigSection%, chance, 0
+			Chance := LLARS_ConfigReadFile(ConfigFile, ConfigSection, "chance", 0)
 			if (RandomSleepOption != "true" || Chance = "" || Chance + 0 < 0 || Chance + 0 > 100)
 				Chance := 0
 			Entry.Weight := (Chance + 0) / 100
@@ -553,6 +755,17 @@ ParseLLARSRuntime(ScriptSection, ScriptSectionLineOffset, ByRef FirstAverage, By
 	FollowingMax := FollowingMaxTotal
 	if (FirstAverage <= 0 || FollowingAverage <= 0)
 		return false
+
+	if (HasLegacyTiming)
+	{
+		EstimateSource := HasCreatorTiming ? "hybrid-source-parser" : "legacy-source-parser"
+		EstimateConfidence := "partial"
+	}
+	else
+	{
+		EstimateSource := "creator-api-parser"
+		EstimateConfidence := "modeled"
+	}
 
 	return true
 }

@@ -4,8 +4,14 @@
 ; LLARS ships the pinned AutoHotInterception runtime. The soft include keeps
 ; first launch working before AHI setup is complete and preserves fallback input.
 #Include *i %A_ScriptDir%\Vendor\AutoHotInterception\Lib\AutoHotInterception.ahk
+#Include %A_ScriptDir%\Core\LLARS_Timing.ahk
+#Include %A_ScriptDir%\Core\LLARS_Config.ahk
 #Include %A_ScriptDir%\Core\LLARS_AHI.ahk
 #Include %A_ScriptDir%\Core\LLARS_Update.ahk
+
+EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
+if (LLARSValidationMode = "1")
+	ExitApp
 
 ; Confirms the complete LLARS project structure is available before the
 ; Script Selector attempts to use project folders or launch scripts.
@@ -161,85 +167,90 @@ GuiControl, Focus, ScriptListBox
 LLARS_SelectorBuildRegistry()
 {
 	registry := {Entries: [], ByName: {}}
-	LLARS_SelectorRegistryAdd(registry, "AFK Combat", "AFK Combat", "Intermediate", "Uses Agro pots/flasks to stay in combat for a predetermined length of time. Other pots/flasks can be used by changing the Config.ini", "AFK Combat", "AFK Combat.ahk", "Combat", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Alchemy", "Alchemy", "Easy", "Low/High Alchs a selected item(s) in your inventory for a predetermined amount of times.", "Alchemy", "Alchemy.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Amulet Stringer", "Amulet Stringer", "Easy", "Strings amulets by using in-game bank preset to make a predetermined amount of inventories of jewellery.", "Amulet Stringer", "Amulet Stringer.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Anti-AFK", "Anti-AFK", "Easy", "Moves the mouse within the RuneScape client border, based on a random timer configured through Config.ini", "Anti-AFK", "Anti-AFK.ahk", "Utility", "Timer", true)
-	LLARS_SelectorRegistryAdd(registry, "Armour Crafter", "Armour Crafter", "Intermediate", "Crafts your selected armour for a predetermined amount of runs.", "Armour Crafter", "Armour Crafter.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Arrow Fletcher", "Arrow Fletcher", "Easy", "Adds the tip to a headless arrow. Can be used for darts and/or bolts.", "Arrow Fletcher", "Arrow Fletcher.ahk", "Fletching", "Hotkey", true)
-	LLARS_SelectorRegistryAdd(registry, "Ash to Incense", "Ash to Incense", "Easy", "Adds ash to an already crafted incense stick. Use this after 'Incense Crafter' and before 'Herb to Incense'.", "Incense\Ash to Incense", "Ash to Incense.ahk", "Firemaking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "AutoClicker", "AutoClicker", "Easy", "Clicks randomly within a predetermined coordinate range set by the user. Timer for the clicks can be changed in the Config.ini", "AutoClicker", "AutoClicker.ahk", "Utility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "AutoTele", "AutoTele", "Easy", "Casts the same Teleportation spell a set number of times using hotkeys.", "AutoTele", "AutoTele.ahk", "Magic", "Hotkey", true)
-	LLARS_SelectorRegistryAdd(registry, "Bake Pie - Lunar Spell", "Bake Pie", "Easy", "Bakes all uncooked pies in your inventory.", "Lunar Spells\Bake Pie", "Bake Pie.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Bar Smelter", "Bar Smelter", "Intermediate", "Creates metal bars, type of bar is set by the user as is the run count.", "Bar Smelter", "Bar Smelter.ahk", "Smithing", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Bar Smelter - Smelting Gloves", "Smelting Glove", "Intermediate", "Uses the Smelting Gauntlets from Family Crest Quest to make Gold Bars. Smelted Gold Bars go to metal bank and not inventory.", "Bar Smelter", "Smelting Glove.ahk", "Smithing", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Barbarian - Advanced", "Barbarian Course", "Hard", "Runs laps of the Barbarian - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Barbarian\Advanced", "Barbarian Course.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Barbarian - Basic", "Barbarian Course", "Hard", "Runs laps of the Barbarian - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Barbarian\Basic", "Barbarian Course.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Bones 2 Bananas", "Bones 2 Bananas", "Easy", "Turns all normal bones, big bones and monkey bones in your inventory into bananas.", "Bones 2 Bananas", "Bones 2 Bananas.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Bow Cutter", "Bow Cutter", "Intermediate", "Cuts logs into unstrung bows. Use 'Bow Stringer' to string the bows after.", "Bow Cutter", "Bow Cutter.ahk", "Fletching", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Bow Stringer", "Bow Stringer", "Easy", "Combines bowstring with unstrung bows using the in-game bank preset hotkey.", "Bow Stringer", "Bow Stringer.ahk", "Fletching", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Brick Maker - Fort Forinthry", "Limestone Brick", "Hard", "Cuts limtestone into limestone bricks using the stonecutter.", "Fort Forinthry\Limestone Brick", "Brick Maker.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Burthorpe", "Burthorpe", "Hard", "Runs laps of the Burthorpe agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Burthorpe", "Burthorpe.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Candle Crafter", "Candle Crafter", "Easy", "Crafts candles for the Necromancy skill.", "Necromancy\Candle Crafter", "Candle Crafter.ahk", "Necromancy", "Hotkey", true)
-	LLARS_SelectorRegistryAdd(registry, "Herb Cleaner - Skillcape", "Skillcape Cleaner", "Easy", "Uses the 99/120 Herblore Skillcape to instantly clean a full inventory of dirty herbs. Requires the Skillcape to be worn.", "Herb Cleaner - Skillcape", "Skillcape Cleaner.ahk", "Herblore", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Cooking - Burthorpe", "Cooking", "Hard", "Walks between the Range and main bank in Burthorpe to cook an inventory of food. Fort Forinthry cooking is recommended over this script.", "Cooking", "Cooking.ahk", "Cooking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Cooking - Fort Forinthry", "Cooking", "Hard", "Cooks food at the Fort using the bank chest next to the Range.", "Fort Forinthry\Cooking", "Cooking.ahk", "Cooking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Fire Urn - Lunar Spell", "Fire Urn", "Easy", "Uses the Lunar Spell 'Fire Urn' to fire an inventory of unfired urns.", "Lunar Spells\Fire Urn", "Fire Urn.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Frame Maker - Fort Forinthry", "Frame Maker", "Hard", "Walks between the bank chest and woodworking bench to make frames.", "Fort Forinthry\Frame Maker", "Frame Maker.ahk", "Construction", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Gem Cutter", "Gem Cutter", "Easy", "Cuts an inventory of uncut gems, opens the bank, withdraws more, and repeats.", "Gem Cutter", "Gem Cutter.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Glassblowing", "Glassblowing", "Intermediate", "Turns molten glass into your selected glass item. Crafts full inventories, banks, and repeats.", "Glassblowing", "Glassblowing.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Gnome - Advanced", "Gnome Course", "Hard", "Runs laps of the Gnome - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Gnome\Advanced", "Gnome Course.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Gnome - Basic", "Gnome Course", "Hard", "Runs laps of the Gnome - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Gnome\Basic", "Gnome Course.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Herb to Incense", "Herb to Incense", "Easy", "Adds a herb to an ashy incense stick. Use 'Ash to Incense' first or ashy incense sticks from the Grand Exchange.", "Incense\Herb to Incense", "Herb to Incense.ahk", "Firemaking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Herb Cleaner", "Herb Cleaner", "Easy", "Cleans full inventories of dirty herbs.", "Herb Cleaner", "Herb Cleaner.ahk", "Herblore", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Het's Oasis", "Het's Oasis", "Hard", "Runs laps of the Het's Oasis agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Het's Oasis", "Het's Oasis.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Incense Crafter", "Incense Crafter", "Easy", "Cuts logs into incense sticks. Use this before 'Ash to Incense'.", "Incense\Incense Crafter", "Incense Crafter.ahk", "Firemaking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Ink Crafter", "Ink Crafter", "Easy", "Crafts ink for the Necromancy skill.", "Necromancy\Ink Crafter", "Ink Crafter.ahk", "Necromancy", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Lumbridge", "Jewellery Crafter", "Hard", "Runs between the Combat Academy bank chest and Lumbridge Furnace to craft your selected Jewellery. Config.ini needs manual setup to work.", "Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Fort Forinthry", "Jewellery Crafter", "Hard", "Runs between the bank chest and furnace at the Fort to craft your selected Jewellery. Config.ini needs manual setup to work.", "Fort Forinthry\Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Jewellery Enchanter", "Jewel Enchant", "Easy", "Casts the selected 'Enchanted Cast' spell to enchant jewellery in your inventory.", "Jewellery Enchant", "Jewel Enchant.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Jewellery Stringer - Lunar Spell", "String Jewellery", "Easy", "String an inventory of jewellery using the Lunar Spell.", "Lunar Spells\String Jewellery", "Jewel Stringer.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Plank + Refined - Fort Forinthry", "Plank + Refined", "Hard", "Cuts and refines the plank at the Fort.", "Fort Forinthry\Plank + Refined", "Plank + Refined.ahk", "Construction", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Plank Maker - Fort Forinthry", "Plank Maker", "Hard", "Cuts logs into planks using the sawmill at the Fort.", "Fort Forinthry\Plank Maker", "Plank Maker.ahk", "Construction", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Potion Mixer", "Potion Mixer", "Easy", "Combines an inventory of ingredients to make potions.", "Potion Mixer", "Potion Mixer.ahk", "Herblore", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Prayer", "Prayer", "Easy", "Buries an inventory of bones or scatters an inventory of ashes. This is a bank-standing script and does not work with altars.", "Prayer", "Prayer.ahk", "Prayer", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Pyre Crafter", "Pyre Crafter", "Easy", "Adds Sacred Oil to logs to craft Pyre Logs.", "Pyre Crafter", "Pyre Crafter.ahk", "Firemaking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Refined Plank - Fort Forinthry", "Refined Planks", "Hard", "Refines planks at the sawmill so they can be used to make frames.", "Fort Forinthry\Refined Plank", "Refined Plank.ahk", "Construction", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Rituals - Communion & Material - Focus Storage", "Rituals", "Hard", "Performs the Communion && Material ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Communion & Material\Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Rituals - Communion & Material - Without Storage", "Rituals", "Hard", "Performs the Communion && Material ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Communion & Material\Without Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Rituals - Ectoplasm - Focus Storage", "Rituals", "Hard", "Performs the Ectoplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Ectoplasm\Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Rituals - Ectoplasm - Without Storage", "Rituals", "Hard", "Performs the Ectoplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Ectoplasm\Without Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Rituals - Essence & Necroplasm - Focus Storage", "Rituals", "Hard", "Performs the Essence && Necroplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Essence & Necroplasm\Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Rituals - Essence & Necroplasm - Without Storage", "Rituals", "Hard", "Performs the Essence && Necroplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Essence & Necroplasm\Without Focus Storage", "Rituals.ahk", "Necromancy", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Sift Soil - Lunar Spell", "Sift Soil", "Easy", "Uses the Lunar Spell Sift Soil to screen various soils.", "Lunar Spells\Sift Soil", "Sift Soil.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Slime Collector", "Slime Collector", "Easy", "Collects Buckets of Slime and uses them on magic/enchanted notepaper to note them before collecting more slime.", "Necromancy\Slime Collector - Notepaper", "Slime Collector.ahk", "Necromancy", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Smithing", "Smithing", "Intermediate", "An underpowered smithing script best used for making arrowheads and dart tips. Can be used to smith any item, but does not currently support reheating the forge.", "Smithing", "Smithing.ahk", "Smithing", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Stone Wall - Fort Forinthry", "Stone Wall", "Hard", "Turns limestone bricks into wall segments at the stonecutter in the Fort.", "Fort Forinthry\Stone Wall", "Stone Wall.ahk", "Construction", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Tele Grind - Lunar Spell - No Banking", "Tele Grind", "Easy", "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory.", "Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking", "Tele Grind.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Tele Grind - Lunar Spell - With Banking", "Tele Grind", "Easy", "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory. Does not support banking, assumes items stack in inventory.", "Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking", "Tele Grind.ahk", "Magic", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Watchtower Shortcut", "Watchtower Shortcut", "Hard", "Runs laps of the Watchtower Shortcut. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Watchtower Shortcut", "Watchtower.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Agility - Wilderness", "Wilderness", "Hard", "Runs laps of the Wilderness agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Wilderness", "Wilderness.ahk", "Agility", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Wine Maker", "Wine Maker", "Easy", "Combines jugs of water with grapes with make jugs of wine.", "Wine Maker", "Wine Maker.ahk", "Cooking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Contract Binding", "Contract Binding", "Hard", "Creates Binding Contracts at the obelisk in Taverly.", "Contract Binding", "Contract Binding.ahk", "Summoning", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Fletching - Corrupted Magic Logs", "Fletching", "Easy", "Fletches corrupted magic logs. This method 'destroys' the log and leaves the inventory empty.", "Fletching - Corrupted Magic Logs", "Fletching.ahk", "Fletching", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Prifddinas - Cooking", "Cooking", "Hard", "Uses the bonfire in the Tower of Voices to cook.", "Prifddinas\Cooking", "Cooking.ahk", "Cooking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Prifddinas - Firemaking", "Firemaking", "Hard", "Uses the bonfire in the Tower of Voices to burn logs.", "Prifddinas\Firemaking", "Firemaking.ahk", "Firemaking", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Spinning Wheel - Fort Forinthry", "Spinning Wheel", "Hard", "Crafts various items using the spinning wheel in the Rangers Workshop.", "Fort Forinthry\Spinning Wheel", "Spinning Wheel.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Spinning Wheel - Fungal Bowstring - Fort Forinthry", "Fungal Bowstring", "Easy", "Creates fungal bowstrings using the spinning wheel in the Rangers Workshop.", "Fort Forinthry\Spinning Wheel", "Fungal Bowstring.ahk", "Crafting", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Disassembly - Invention", "Disassembly", "Easy", "Disassembles items using a hotkey to gather materials for the Invention skill.", "Invention\Disassembly", "Disassembly.ahk", "Invention", "Mixed", true)
-	LLARS_SelectorRegistryAdd(registry, "Sharp Shell Burning", "Sharp Shell Burning", "Easy", "Uses the Right-Click Ignite option on Sharp Shell Shards for Firemaking XP.", "Sharp Shell Burning", "Shell Burning.ahk", "Firemaking", "Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Archaeology - Excavate", "Archaeology - Excavate", "Hard", "Monitors Archaeology XP through ALT1 AfkWarden and reacts when XP gains stop. ALT1 with AfkWarden is required.", "Archaeology\Excavate", "Excavate.ahk", "Archaeology", "Color+Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Croesus Front", "Croesus Front", "Hard", "Monitors XP through ALT1 AfkWarden and clicks the configured Decaying Guard location when XP gains stop. ALT1 with AfkWarden is required.", "Croesus Front", "Croesus Front.ahk", "Hunter", "Color+Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Eternal Tree", "Eternal Tree", "Easy", "Finds and cuts Eternal Trees using built-in color detection, then tracks the selected tree until it is depleted before finding the next one.", "Eternal Tree", "Eternal Tree.ahk", "Woodcutting", "None", false)
-	LLARS_SelectorRegistryAdd(registry, "Waterfall Fishing", "Waterfall Fishing", "Hard", "Monitors Waterfall Fishing XP through ALT1 AfkWarden and clicks the configured fishing spot when XP gains stop. ALT1 with AfkWarden is required.", "Waterfall Fishing", "Waterfall Fishing.ahk", "Fishing", "Color+Coordinate", true)
-	LLARS_SelectorRegistryAdd(registry, "Divination - Divine Conversion - Monolith Power", "Divination - Divine Conversion - Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Divine Conversion - Monolith Power.", "Divination\Divine Conversion - Monolith Power", "Divination - High Contrast.ahk", "Divination", "None", false)
-	LLARS_SelectorRegistryAdd(registry, "Divination - Normal - Non-Monolith Power", "Divination - Normal - Non-Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Normal - Non-Monolith Power.", "Divination\Normal - Non-Monolith Power", "Divination - High Contrast.ahk", "Divination", "None", false)
+	LLARS_SelectorRegistryAdd(registry, "AFK Combat", "AFK Combat", "Intermediate", "Uses Agro pots/flasks to stay in combat for a predetermined length of time. Other pots/flasks can be used by changing the Config.ini", "AFK Combat", "AFK Combat.ahk", "Combat")
+	LLARS_SelectorRegistryAdd(registry, "Alchemy", "Alchemy", "Easy", "Low/High Alchs a selected item(s) in your inventory for a predetermined amount of times.", "Alchemy", "Alchemy.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Amulet Stringer", "Amulet Stringer", "Easy", "Strings amulets by using in-game bank preset to make a predetermined amount of inventories of jewellery.", "Amulet Stringer", "Amulet Stringer.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Anti-AFK", "Anti-AFK", "Easy", "Moves the mouse within the RuneScape client border, based on a random timer configured through Config.ini", "Anti-AFK", "Anti-AFK.ahk", "Utility")
+	LLARS_SelectorRegistryAdd(registry, "Armour Crafter", "Armour Crafter", "Intermediate", "Crafts your selected armour for a predetermined amount of runs.", "Armour Crafter", "Armour Crafter.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Arrow Fletcher", "Arrow Fletcher", "Easy", "Adds the tip to a headless arrow. Can be used for darts and/or bolts.", "Arrow Fletcher", "Arrow Fletcher.ahk", "Fletching")
+	LLARS_SelectorRegistryAdd(registry, "Ash to Incense", "Ash to Incense", "Easy", "Adds ash to an already crafted incense stick. Use this after 'Incense Crafter' and before 'Herb to Incense'.", "Incense\Ash to Incense", "Ash to Incense.ahk", "Firemaking")
+	LLARS_SelectorRegistryAdd(registry, "AutoClicker", "AutoClicker", "Easy", "Clicks randomly within a predetermined coordinate range set by the user. Timer for the clicks can be changed in the Config.ini", "AutoClicker", "AutoClicker.ahk", "Utility")
+	LLARS_SelectorRegistryAdd(registry, "AutoTele", "AutoTele", "Easy", "Casts the same Teleportation spell a set number of times using hotkeys.", "AutoTele", "AutoTele.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Bake Pie - Lunar Spell", "Bake Pie", "Easy", "Bakes all uncooked pies in your inventory.", "Lunar Spells\Bake Pie", "Bake Pie.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Bar Smelter", "Bar Smelter", "Intermediate", "Creates metal bars, type of bar is set by the user as is the run count.", "Bar Smelter", "Bar Smelter.ahk", "Smithing")
+	LLARS_SelectorRegistryAdd(registry, "Bar Smelter - Smelting Gloves", "Smelting Glove", "Intermediate", "Uses the Smelting Gauntlets from Family Crest Quest to make Gold Bars. Smelted Gold Bars go to metal bank and not inventory.", "Bar Smelter", "Smelting Glove.ahk", "Smithing")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Barbarian - Advanced", "Barbarian Course", "Hard", "Runs laps of the Barbarian - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Barbarian\Advanced", "Barbarian Course.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Barbarian - Basic", "Barbarian Course", "Hard", "Runs laps of the Barbarian - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Barbarian\Basic", "Barbarian Course.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Bones 2 Bananas", "Bones 2 Bananas", "Easy", "Turns all normal bones, big bones and monkey bones in your inventory into bananas.", "Bones 2 Bananas", "Bones 2 Bananas.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Bow Cutter", "Bow Cutter", "Intermediate", "Cuts logs into unstrung bows. Use 'Bow Stringer' to string the bows after.", "Bow Cutter", "Bow Cutter.ahk", "Fletching")
+	LLARS_SelectorRegistryAdd(registry, "Bow Stringer", "Bow Stringer", "Easy", "Combines bowstring with unstrung bows using the in-game bank preset hotkey.", "Bow Stringer", "Bow Stringer.ahk", "Fletching")
+	LLARS_SelectorRegistryAdd(registry, "Brick Maker - Fort Forinthry", "Limestone Brick", "Hard", "Cuts limtestone into limestone bricks using the stonecutter.", "Fort Forinthry\Limestone Brick", "Brick Maker.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Burthorpe", "Burthorpe", "Hard", "Runs laps of the Burthorpe agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Burthorpe", "Burthorpe.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Candle Crafter", "Candle Crafter", "Easy", "Crafts candles for the Necromancy skill.", "Necromancy\Candle Crafter", "Candle Crafter.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Herb Cleaner - Skillcape", "Skillcape Cleaner", "Easy", "Uses the 99/120 Herblore Skillcape to instantly clean a full inventory of dirty herbs. Requires the Skillcape to be worn.", "Herb Cleaner - Skillcape", "Skillcape Cleaner.ahk", "Herblore")
+	LLARS_SelectorRegistryAdd(registry, "Cooking - Burthorpe", "Cooking", "Hard", "Walks between the Range and main bank in Burthorpe to cook an inventory of food. Fort Forinthry cooking is recommended over this script.", "Cooking", "Cooking.ahk", "Cooking")
+	LLARS_SelectorRegistryAdd(registry, "Cooking - Fort Forinthry", "Cooking", "Hard", "Cooks food at the Fort using the bank chest next to the Range.", "Fort Forinthry\Cooking", "Cooking.ahk", "Cooking")
+	LLARS_SelectorRegistryAdd(registry, "Fire Urn - Lunar Spell", "Fire Urn", "Easy", "Uses the Lunar Spell 'Fire Urn' to fire an inventory of unfired urns.", "Lunar Spells\Fire Urn", "Fire Urn.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Frame Maker - Fort Forinthry", "Frame Maker", "Hard", "Walks between the bank chest and woodworking bench to make frames.", "Fort Forinthry\Frame Maker", "Frame Maker.ahk", "Construction")
+	LLARS_SelectorRegistryAdd(registry, "Gem Cutter", "Gem Cutter", "Easy", "Cuts an inventory of uncut gems, opens the bank, withdraws more, and repeats.", "Gem Cutter", "Gem Cutter.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Glassblowing", "Glassblowing", "Intermediate", "Turns molten glass into your selected glass item. Crafts full inventories, banks, and repeats.", "Glassblowing", "Glassblowing.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Gnome - Advanced", "Gnome Course", "Hard", "Runs laps of the Gnome - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Gnome\Advanced", "Gnome Course.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Gnome - Basic", "Gnome Course", "Hard", "Runs laps of the Gnome - Basic agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Gnome\Basic", "Gnome Course.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Herb to Incense", "Herb to Incense", "Easy", "Adds a herb to an ashy incense stick. Use 'Ash to Incense' first or ashy incense sticks from the Grand Exchange.", "Incense\Herb to Incense", "Herb to Incense.ahk", "Firemaking")
+	LLARS_SelectorRegistryAdd(registry, "Herb Cleaner", "Herb Cleaner", "Easy", "Cleans full inventories of dirty herbs.", "Herb Cleaner", "Herb Cleaner.ahk", "Herblore")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Het's Oasis", "Het's Oasis", "Hard", "Runs laps of the Het's Oasis agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Het's Oasis", "Het's Oasis.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Incense Crafter", "Incense Crafter", "Easy", "Cuts logs into incense sticks. Use this before 'Ash to Incense'.", "Incense\Incense Crafter", "Incense Crafter.ahk", "Firemaking")
+	LLARS_SelectorRegistryAdd(registry, "Ink Crafter", "Ink Crafter", "Easy", "Crafts ink for the Necromancy skill.", "Necromancy\Ink Crafter", "Ink Crafter.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Lumbridge", "Jewellery Crafter", "Hard", "Runs between the Combat Academy bank chest and Lumbridge Furnace to craft your selected Jewellery. Config.ini needs manual setup to work.", "Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Fort Forinthry", "Jewellery Crafter", "Hard", "Runs between the bank chest and furnace at the Fort to craft your selected Jewellery. Config.ini needs manual setup to work.", "Fort Forinthry\Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Enchanter", "Jewel Enchant", "Easy", "Casts the selected 'Enchanted Cast' spell to enchant jewellery in your inventory.", "Jewellery Enchant", "Jewel Enchant.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Stringer - Lunar Spell", "String Jewellery", "Easy", "String an inventory of jewellery using the Lunar Spell.", "Lunar Spells\String Jewellery", "Jewel Stringer.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Plank + Refined - Fort Forinthry", "Plank + Refined", "Hard", "Cuts and refines the plank at the Fort.", "Fort Forinthry\Plank + Refined", "Plank + Refined.ahk", "Construction")
+	LLARS_SelectorRegistryAdd(registry, "Plank Maker - Fort Forinthry", "Plank Maker", "Hard", "Cuts logs into planks using the sawmill at the Fort.", "Fort Forinthry\Plank Maker", "Plank Maker.ahk", "Construction")
+	LLARS_SelectorRegistryAdd(registry, "Potion Mixer", "Potion Mixer", "Easy", "Combines an inventory of ingredients to make potions.", "Potion Mixer", "Potion Mixer.ahk", "Herblore")
+	LLARS_SelectorRegistryAdd(registry, "Prayer", "Prayer", "Easy", "Buries an inventory of bones or scatters an inventory of ashes. This is a bank-standing script and does not work with altars.", "Prayer", "Prayer.ahk", "Prayer")
+	LLARS_SelectorRegistryAdd(registry, "Pyre Crafter", "Pyre Crafter", "Easy", "Adds Sacred Oil to logs to craft Pyre Logs.", "Pyre Crafter", "Pyre Crafter.ahk", "Firemaking")
+	LLARS_SelectorRegistryAdd(registry, "Refined Plank - Fort Forinthry", "Refined Planks", "Hard", "Refines planks at the sawmill so they can be used to make frames.", "Fort Forinthry\Refined Plank", "Refined Plank.ahk", "Construction")
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Communion & Material - Focus Storage", "Rituals", "Hard", "Performs the Communion && Material ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Communion & Material\Focus Storage", "Rituals.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Communion & Material - Without Storage", "Rituals", "Hard", "Performs the Communion && Material ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Communion & Material\Without Focus Storage", "Rituals.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Ectoplasm - Focus Storage", "Rituals", "Hard", "Performs the Ectoplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Ectoplasm\Focus Storage", "Rituals.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Ectoplasm - Without Storage", "Rituals", "Hard", "Performs the Ectoplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Ectoplasm\Without Focus Storage", "Rituals.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Essence & Necroplasm - Focus Storage", "Rituals", "Hard", "Performs the Essence && Necroplasm ritual using the focus storage for material. Place materials for rituals into focus storage for this to work.", "Necromancy\Rituals\Essence & Necroplasm\Focus Storage", "Rituals.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Rituals - Essence & Necroplasm - Without Storage", "Rituals", "Hard", "Performs the Essence && Necroplasm ritual using the player inventory for material. Keep materials in your inventory and do not use the focus storage.", "Necromancy\Rituals\Essence & Necroplasm\Without Focus Storage", "Rituals.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Sift Soil - Lunar Spell", "Sift Soil", "Easy", "Uses the Lunar Spell Sift Soil to screen various soils.", "Lunar Spells\Sift Soil", "Sift Soil.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Slime Collector", "Slime Collector", "Easy", "Collects Buckets of Slime and uses them on magic/enchanted notepaper to note them before collecting more slime.", "Necromancy\Slime Collector - Notepaper", "Slime Collector.ahk", "Necromancy")
+	LLARS_SelectorRegistryAdd(registry, "Smithing", "Smithing", "Intermediate", "An underpowered smithing script best used for making arrowheads and dart tips. Can be used to smith any item, but does not currently support reheating the forge.", "Smithing", "Smithing.ahk", "Smithing")
+	LLARS_SelectorRegistryAdd(registry, "Stone Wall - Fort Forinthry", "Stone Wall", "Hard", "Turns limestone bricks into wall segments at the stonecutter in the Fort.", "Fort Forinthry\Stone Wall", "Stone Wall.ahk", "Construction")
+	LLARS_SelectorRegistryAdd(registry, "Tele Grind - Lunar Spell - No Banking", "Tele Grind", "Easy", "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory.", "Lunar Spells\Telekinetic Grind\Telekinetic Grind with No Banking", "Tele Grind.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Tele Grind - Lunar Spell - With Banking", "Tele Grind", "Easy", "Casts the Lunar Spell Telekinetic Grind to grind any eligible items in your inventory. Does not support banking, assumes items stack in inventory.", "Lunar Spells\Telekinetic Grind\Telekinetic Grind with Banking", "Tele Grind.ahk", "Magic")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Watchtower Shortcut", "Watchtower Shortcut", "Hard", "Runs laps of the Watchtower Shortcut. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Watchtower Shortcut", "Watchtower.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Agility - Wilderness", "Wilderness", "Hard", "Runs laps of the Wilderness agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Wilderness", "Wilderness.ahk", "Agility")
+	LLARS_SelectorRegistryAdd(registry, "Wine Maker", "Wine Maker", "Easy", "Combines jugs of water with grapes with make jugs of wine.", "Wine Maker", "Wine Maker.ahk", "Cooking")
+	LLARS_SelectorRegistryAdd(registry, "Contract Binding", "Contract Binding", "Hard", "Creates Binding Contracts at the obelisk in Taverly.", "Contract Binding", "Contract Binding.ahk", "Summoning")
+	LLARS_SelectorRegistryAdd(registry, "Fletching - Corrupted Magic Logs", "Fletching", "Easy", "Fletches corrupted magic logs. This method 'destroys' the log and leaves the inventory empty.", "Fletching - Corrupted Magic Logs", "Fletching.ahk", "Fletching")
+	LLARS_SelectorRegistryAdd(registry, "Prifddinas - Cooking", "Cooking", "Hard", "Uses the bonfire in the Tower of Voices to cook.", "Prifddinas\Cooking", "Cooking.ahk", "Cooking")
+	LLARS_SelectorRegistryAdd(registry, "Prifddinas - Firemaking", "Firemaking", "Hard", "Uses the bonfire in the Tower of Voices to burn logs.", "Prifddinas\Firemaking", "Firemaking.ahk", "Firemaking")
+	LLARS_SelectorRegistryAdd(registry, "Spinning Wheel - Fort Forinthry", "Spinning Wheel", "Hard", "Crafts various items using the spinning wheel in the Rangers Workshop.", "Fort Forinthry\Spinning Wheel", "Spinning Wheel.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Spinning Wheel - Fungal Bowstring - Fort Forinthry", "Fungal Bowstring", "Easy", "Creates fungal bowstrings using the spinning wheel in the Rangers Workshop.", "Fort Forinthry\Spinning Wheel", "Fungal Bowstring.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Disassembly - Invention", "Disassembly", "Easy", "Disassembles items using a hotkey to gather materials for the Invention skill.", "Invention\Disassembly", "Disassembly.ahk", "Invention")
+	LLARS_SelectorRegistryAdd(registry, "Sharp Shell Burning", "Sharp Shell Burning", "Easy", "Uses the Right-Click Ignite option on Sharp Shell Shards for Firemaking XP.", "Sharp Shell Burning", "Shell Burning.ahk", "Firemaking")
+	LLARS_SelectorRegistryAdd(registry, "Archaeology - Excavate", "Archaeology - Excavate", "Hard", "Monitors Archaeology XP through ALT1 AfkWarden and reacts when XP gains stop. ALT1 with AfkWarden is required.", "Archaeology\Excavate", "Excavate.ahk", "Archaeology")
+	LLARS_SelectorRegistryAdd(registry, "Croesus Front", "Croesus Front", "Hard", "Monitors XP through ALT1 AfkWarden and clicks the configured Decaying Guard location when XP gains stop. ALT1 with AfkWarden is required.", "Croesus Front", "Croesus Front.ahk", "Hunter")
+	LLARS_SelectorRegistryAdd(registry, "Eternal Tree", "Eternal Tree", "Easy", "Finds and cuts Eternal Trees using built-in color detection, then tracks the selected tree until it is depleted before finding the next one.", "Eternal Tree", "Eternal Tree.ahk", "Woodcutting")
+	LLARS_SelectorRegistryAdd(registry, "Waterfall Fishing", "Waterfall Fishing", "Hard", "Monitors Waterfall Fishing XP through ALT1 AfkWarden and clicks the configured fishing spot when XP gains stop. ALT1 with AfkWarden is required.", "Waterfall Fishing", "Waterfall Fishing.ahk", "Fishing")
+	LLARS_SelectorRegistryAdd(registry, "Divination - Divine Conversion - Monolith Power", "Divination - Divine Conversion - Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Divine Conversion - Monolith Power.", "Divination\Divine Conversion - Monolith Power", "Divination - High Contrast.ahk", "Divination")
+	LLARS_SelectorRegistryAdd(registry, "Divination - Normal - Non-Monolith Power", "Divination - Normal - Non-Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Normal - Non-Monolith Power.", "Divination\Normal - Non-Monolith Power", "Divination - High Contrast.ahk", "Divination")
 	return registry
 }
 
-LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Description, RelativeDirectory, FileName, Category, SetupType, RequiresLocalConfig)
+LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Description, RelativeDirectory, FileName, Category)
 {
-	record := {Name: Name, InfoTitle: InfoTitle, Difficulty: Difficulty, Description: Description, RelativeDirectory: RelativeDirectory, FileName: FileName, Category: Category, SetupType: SetupType, RequiresLocalConfig: RequiresLocalConfig}
+	scriptDir := A_ScriptDir . "\Scripts\" . RelativeDirectory
+	scriptPath := scriptDir . "\" . FileName
+	configPath := scriptDir . "\Config.ini"
+	capabilities := LLARS_ConfigCapabilityScan(configPath, scriptPath)
+	record := {Name: Name, InfoTitle: InfoTitle, Difficulty: Difficulty, Description: Description, RelativeDirectory: RelativeDirectory, FileName: FileName, Category: Category
+		, Capabilities: capabilities, SetupType: capabilities.SetupType, SetupText: capabilities.SetupText, RequiresLocalConfig: capabilities.RequiresLocalConfig}
 	registry.Entries.Push(record)
 	registry.ByName[Name] := record
 	return record
@@ -282,15 +293,15 @@ LLARS_SelectorValidateRegistry(registry, ByRef errorDetail := "")
 			return false
 		}
 
-		if (record.SetupType != "None" && record.SetupType != "Hotkey" && record.SetupType != "Coordinate" && record.SetupType != "Color" && record.SetupType != "Color+Coordinate" && record.SetupType != "Mixed" && record.SetupType != "Timer")
+		if !IsObject(record.Capabilities)
 		{
-			errorDetail := "Registry entry " . record.Name . " has an invalid setup type."
+			errorDetail := "Registry entry " . record.Name . " has no derived setup capability object."
 			return false
 		}
 
-		if (record.RequiresLocalConfig != true && record.RequiresLocalConfig != false)
+		if (record.SetupType != record.Capabilities.SetupType || record.SetupText != record.Capabilities.SetupText || record.RequiresLocalConfig != record.Capabilities.RequiresLocalConfig)
 		{
-			errorDetail := "Registry entry " . record.Name . " has an invalid local-config flag."
+			errorDetail := "Registry entry " . record.Name . " does not match its derived setup capabilities."
 			return false
 		}
 
@@ -369,8 +380,8 @@ LLARS_SelectorLoadPreferences()
 	global LLARS_SelectorFavorites, LLARS_SelectorRecent
 	configPath := A_ScriptDir . "\LLARS Config.ini"
 
-	IniRead, favorites, %configPath%, Script Selector, favorites,
-	IniRead, recent, %configPath%, Script Selector, recent,
+	favorites := LLARS_ConfigReadFile(configPath, "Script Selector", "favorites", "")
+	recent := LLARS_ConfigReadFile(configPath, "Script Selector", "recent", "")
 
 	LLARS_SelectorFavorites := LLARS_SelectorSanitizePreferenceList(favorites, 0)
 	LLARS_SelectorRecent := LLARS_SelectorSanitizePreferenceList(recent, 5)
@@ -380,8 +391,8 @@ LLARS_SelectorLoadPreferences()
 LLARS_SelectorLoadWindowPosition(ByRef x, ByRef y)
 {
 	configPath := A_ScriptDir . "\LLARS Config.ini"
-	IniRead, x, %configPath%, Script Selector, window_x,
-	IniRead, y, %configPath%, Script Selector, window_y,
+	x := LLARS_ConfigReadFile(configPath, "Script Selector", "window_x", "")
+	y := LLARS_ConfigReadFile(configPath, "Script Selector", "window_y", "")
 	return RegExMatch(x, "^-?\d+$") && RegExMatch(y, "^-?\d+$")
 }
 
@@ -393,11 +404,9 @@ LLARS_SelectorSavePosition(hwnd)
 	if (x = "" || y = "")
 		return false
 	configPath := A_ScriptDir . "\LLARS Config.ini"
-	IniWrite, %x%, %configPath%, Script Selector, window_x
-	if ErrorLevel
+	if !LLARS_ConfigWriteFile(configPath, "Script Selector", "window_x", x)
 		return false
-	IniWrite, %y%, %configPath%, Script Selector, window_y
-	return !ErrorLevel
+	return LLARS_ConfigWriteFile(configPath, "Script Selector", "window_y", y)
 }
 
 ; Keeps only current selector names and removes duplicates from persisted lists.
@@ -443,9 +452,9 @@ LLARS_SelectorSavePreferences()
 {
 	global LLARS_SelectorFavorites, LLARS_SelectorRecent
 	configPath := A_ScriptDir . "\LLARS Config.ini"
-	IniWrite, %LLARS_SelectorFavorites%, %configPath%, Script Selector, favorites
-	IniWrite, %LLARS_SelectorRecent%, %configPath%, Script Selector, recent
-	return !ErrorLevel
+	if !LLARS_ConfigWriteFile(configPath, "Script Selector", "favorites", LLARS_SelectorFavorites)
+		return false
+	return LLARS_ConfigWriteFile(configPath, "Script Selector", "recent", LLARS_SelectorRecent)
 }
 
 ; Records the last five successfully selected scripts, newest first.
@@ -817,7 +826,7 @@ if A_GuiEvent = Normal
 	scriptinfo := record.Description
 	difficulty := record.Difficulty
 	category := record.Category
-	setupType := record.SetupType
+	setupType := record.SetupText
 	localConfigText := record.RequiresLocalConfig ? "Yes" : "No"
 	GuiReset()
 	SetSetupDifficulty(difficulty)

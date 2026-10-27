@@ -5,6 +5,10 @@
 #SingleInstance Force
 SetBatchLines, -1
 
+EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
+if (LLARSValidationMode = "1")
+	ExitApp
+
 SplitPath, A_ScriptDir, , GeneratorRoot
 GeneratorScriptsRoot := GeneratorRoot . "\Scripts"
 GeneratorOutputParent := GeneratorScriptsRoot
