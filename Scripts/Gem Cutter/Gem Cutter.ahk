@@ -57,6 +57,16 @@ Run(ctx)
 	LLARS_Sleep("Sleep Craft", true)
 }
 
+; Declarative timing model: no total runtime is hard-coded. Values continue to
+; come from Config.ini, and Random Sleep keeps its configured probability.
+LLARS_RuntimeEstimateMetadata()
+{
+	model := LLARS_RuntimeMetadataCreate("modeled")
+	LLARS_RuntimeMetadataAddSection(model, "Sleep Short", 3)
+	LLARS_RuntimeMetadataAddRandomSleep(model)
+	LLARS_RuntimeMetadataAddSection(model, "Sleep Craft", 1, "both", 1.0, "script", true)
+	return model
+}
 
 
 ; ================================================================
