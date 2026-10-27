@@ -457,7 +457,7 @@ LLARS_IntegrityCheckIniEncoding(root, ByRef badFiles := "", ByRef checkedCount :
     if FileExist(rootConfig)
         iniFiles.Push(rootConfig)
 
-    for _, configRoot in [root . "\Scripts", root . "\Templates"]
+    for _, configRoot in [root . "\Scripts", root . "\Scripts - Menu Entry Swapper", root . "\Templates"]
     {
         pattern := configRoot . "\*.ini"
         Loop, Files, %pattern%, FR
@@ -501,7 +501,7 @@ LLARS_VerifyInstallation(root := "", verifyVendorHashes := true)
         , Version: "Unknown"
         , Manifest: LLARS_IntegrityManifestPath(root)}
 
-    for _, folderName in ["Core", "Scripts", "Vendor", "Assets", "Templates"]
+    for _, folderName in ["Core", "Scripts", "Scripts - Menu Entry Swapper", "Vendor", "Assets", "Templates"]
     {
         if !InStr(FileExist(root . "\" . folderName), "D")
             result.Issues.Push("Required folder is missing: " . folderName . ". Re-extract or redownload the complete LLARS package.")
@@ -546,7 +546,7 @@ LLARS_VerifyInstallation(root := "", verifyVendorHashes := true)
                 if (kind = "required")
                 {
                     result.RequiredChecked++
-                    if (RegExMatch(relativePath, "i)^Scripts\\.*\.ahk$"))
+                    if (RegExMatch(relativePath, "i)^(?:Scripts|Scripts - Menu Entry Swapper)\\.*\.ahk$"))
                         result.SelectorTargetsChecked++
                     if !FileExist(fullPath)
                         result.Issues.Push(relativePath . " is missing. Re-extract or redownload the complete LLARS package.")

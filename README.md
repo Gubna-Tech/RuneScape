@@ -143,6 +143,8 @@ A script-local `Config.ini` may contain important instructions and information s
 
 Different scripts can require different configurations—or no script-local configuration at all—so **do not assume that the settings or instructions from one script apply to another**.
 
+When a supported activity has both versions, Script Selector offers **Normal** and **Menu Entry Swapper** variants. Normal scripts remain under `Scripts`; Menu Entry Swapper variants are kept separately under `Scripts - Menu Entry Swapper` and rely on the bank interaction to load the last preset instead of pressing a Bank Preset hotkey. The Selector uses the shorter `- MES` suffix for these alternate entries while the type filter keeps the full Menu Entry Swapper family name. Use the Selector's type filter to show either family.
+
 For normal setup, use the **LLARS GUI whenever possible** rather than manually editing configuration files.
 
 ### Configuration Backup & Restore

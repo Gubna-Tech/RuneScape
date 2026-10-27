@@ -5,9 +5,9 @@ LLARS includes `Backup\Config Backup.bat` and `Backup\Config Restore.bat` to pro
 The tools preserve:
 
 - The root `LLARS Config.ini` used for shared hotkeys, input-backend settings, GUI positions, and framework options.
-- Every script-local `Config.ini` found under the `Scripts` folder.
+- Every script-local `Config.ini` found under `Scripts` and `Scripts - Menu Entry Swapper`.
 
-The latest successful snapshot is stored under the runtime-created `Backup\Config Backup` folder beside these tools. LLARS also retains up to two previous successful snapshots as `Backup\Config Backup 1` and `Backup\Config Backup 2`. Script folder structure is preserved inside each snapshot under `Scripts\`, while the shared configuration is stored as `LLARS Config.ini`.
+The latest successful snapshot is stored under the runtime-created `Backup\Config Backup` folder beside these tools. LLARS also retains up to two previous successful snapshots as `Backup\Config Backup 1` and `Backup\Config Backup 2`. Script folder structure is preserved inside each snapshot under `Scripts\` and, when present, `Scripts - Menu Entry Swapper\`, while the shared configuration is stored as `LLARS Config.ini`.
 
 ## Config Backup
 

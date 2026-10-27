@@ -17,6 +17,7 @@ if (LLARSValidationMode = "1")
 ; Script Selector attempts to use project folders or launch scripts.
 if (!FileExist(A_ScriptDir . "\Core")
 || !FileExist(A_ScriptDir . "\Scripts")
+|| !FileExist(A_ScriptDir . "\Scripts - Menu Entry Swapper")
 || !FileExist(A_ScriptDir . "\LLARS Config.ini")
 || !FileExist(A_ScriptDir . "\VERSION"))
 {
@@ -71,8 +72,9 @@ LLARS_AHI_StartupGate(A_ScriptDir, true)
 ; |     LLARS PATH SETUP     -     LLARS PATH SETUP                     |
 ; =======================================================================
 
-; Root folder containing all selectable LLARS scripts.
+; Script roots used by the Selector.
 LLARS_SCRIPTS_DIR := A_ScriptDir . "\Scripts"
+LLARS_MENU_ENTRY_SWAPPER_DIR := A_ScriptDir . "\Scripts - Menu Entry Swapper"
 
 ; ===================================================================
 ; |     ARRAY SETUP     -     ARRAY SETUP     -     ARRAY SETUP     |
@@ -137,8 +139,9 @@ Gui, Font, s10 Norm cBlack
 Gui, Add, Edit, x12 y80 w250 h24 vSelectorSearch gSelectorFilterChanged hwndLLARSSelectorSearchHwnd
 DllCall("SendMessageW", "Ptr", LLARSSelectorSearchHwnd, "UInt", 0x1501, "Ptr", 1, "WStr", "Search scripts...")
 Gui, Add, DropDownList, x270 y80 w138 vSelectorView gSelectorFilterChanged Choose1, All Scripts|Favorites|Recent
-Gui, Add, DropDownList, x12 y112 w194 vSelectorCategory gSelectorFilterChanged Choose1, %LLARS_SelectorCategoryOptions%
-Gui, Add, DropDownList, x214 y112 w194 vSelectorDifficulty gSelectorFilterChanged Choose1, All Difficulties|Easy|Intermediate|Hard
+Gui, Add, DropDownList, x12 y112 w126 vSelectorCategory gSelectorFilterChanged Choose1, %LLARS_SelectorCategoryOptions%
+Gui, Add, DropDownList, x145 y112 w126 vSelectorDifficulty gSelectorFilterChanged Choose1, All Difficulties|Easy|Intermediate|Hard
+Gui, Add, DropDownList, x278 y112 w130 vSelectorScriptFamily gSelectorFilterChanged Choose1, All Types|Normal|Menu Entry Swapper
 Gui, Font, s11 Bold cBlack
 Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y144 w396 h250, %scriptArray%
 Gui, Font, s10 Bold cBlack
@@ -240,20 +243,82 @@ LLARS_SelectorBuildRegistry()
 	LLARS_SelectorRegistryAdd(registry, "Waterfall Fishing", "Waterfall Fishing", "Hard", "Monitors Waterfall Fishing XP through ALT1 AfkWarden and clicks the configured fishing spot when XP gains stop. ALT1 with AfkWarden is required.", "Waterfall Fishing", "Waterfall Fishing.ahk", "Fishing")
 	LLARS_SelectorRegistryAdd(registry, "Divination - Divine Conversion - Monolith Power", "Divination - Divine Conversion - Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Divine Conversion - Monolith Power.", "Divination\Divine Conversion - Monolith Power", "Divination - High Contrast.ahk", "Divination")
 	LLARS_SelectorRegistryAdd(registry, "Divination - Normal - Non-Monolith Power", "Divination - Normal - Non-Monolith Power", "Easy", "Use RuneScape High Contrast Mode. Finds resources with enriched priority, tracks depletion, and handles full inventories using the Normal - Non-Monolith Power.", "Divination\Normal - Non-Monolith Power", "Divination - High Contrast.ahk", "Divination")
+	; Menu Entry Swapper variants are separate launch targets and never replace the normal scripts.
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Amulet Stringer")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Armour Crafter")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Bones 2 Bananas")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Bow Cutter")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Bow Stringer")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Cooking - Burthorpe")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Fletching - Corrupted Magic Logs")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Cooking - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Frame Maker - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Jewellery Crafter - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Brick Maker - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Plank + Refined - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Plank Maker - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Refined Plank - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Spinning Wheel - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Stone Wall - Fort Forinthry")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Gem Cutter")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Glassblowing")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Herb Cleaner")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Herb Cleaner - Skillcape")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Ash to Incense")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Herb to Incense")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Incense Crafter")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Jewellery Crafter - Lumbridge")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Jewellery Enchanter")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Bake Pie - Lunar Spell")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Fire Urn - Lunar Spell")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Sift Soil - Lunar Spell")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Jewellery Stringer - Lunar Spell")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Tele Grind - Lunar Spell - With Banking")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Ink Crafter")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Potion Mixer")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Prayer")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Prifddinas - Cooking")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Prifddinas - Firemaking")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Pyre Crafter")
+	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Wine Maker")
+
 	return registry
 }
 
-LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Description, RelativeDirectory, FileName, Category)
+LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Description, RelativeDirectory, FileName, Category, RootDirectory := "Scripts", ScriptFamily := "Normal")
 {
-	scriptDir := A_ScriptDir . "\Scripts\" . RelativeDirectory
+	scriptDir := A_ScriptDir . "\" . RootDirectory . "\" . RelativeDirectory
 	scriptPath := scriptDir . "\" . FileName
 	configPath := scriptDir . "\Config.ini"
 	capabilities := LLARS_ConfigCapabilityScan(configPath, scriptPath)
 	record := {Name: Name, InfoTitle: InfoTitle, Difficulty: Difficulty, Description: Description, RelativeDirectory: RelativeDirectory, FileName: FileName, Category: Category
+		, RootDirectory: RootDirectory, ScriptFamily: ScriptFamily
 		, Capabilities: capabilities, SetupType: capabilities.SetupType, SetupText: capabilities.SetupText, RequiresLocalConfig: capabilities.RequiresLocalConfig}
 	registry.Entries.Push(record)
 	registry.ByName[Name] := record
 	return record
+}
+
+LLARS_SelectorRegistryAddMenuEntrySwapper(ByRef registry, SourceName)
+{
+	if !registry.ByName.HasKey(SourceName)
+		return ""
+
+	source := registry.ByName[SourceName]
+	description := source.Description
+	description := StrReplace(description, "by using in-game bank preset", "using Menu Entry Swapper banking")
+	description := StrReplace(description, "using the in-game bank preset hotkey", "using Menu Entry Swapper banking")
+	description .= " This version uses the bank interaction to load the last preset automatically and does not press a Bank Preset hotkey."
+	return LLARS_SelectorRegistryAdd(registry
+		, source.Name . " - MES"
+		, source.InfoTitle . " - MES"
+		, source.Difficulty
+		, description
+		, source.RelativeDirectory
+		, source.FileName
+		, source.Category
+		, "Scripts - Menu Entry Swapper"
+		, "Menu Entry Swapper")
 }
 
 LLARS_SelectorValidateRegistry(registry, ByRef errorDetail := "")
@@ -275,7 +340,7 @@ LLARS_SelectorValidateRegistry(registry, ByRef errorDetail := "")
 			return false
 		}
 
-		if (record.Name = "" || record.InfoTitle = "" || record.Description = "" || record.RelativeDirectory = "" || record.FileName = "")
+		if (record.Name = "" || record.InfoTitle = "" || record.Description = "" || record.RelativeDirectory = "" || record.FileName = "" || record.RootDirectory = "" || record.ScriptFamily = "")
 		{
 			errorDetail := "Registry entry " . index . " has an empty required field."
 			return false
@@ -290,6 +355,12 @@ LLARS_SelectorValidateRegistry(registry, ByRef errorDetail := "")
 		if (record.Category = "")
 		{
 			errorDetail := "Registry entry " . record.Name . " has an empty category."
+			return false
+		}
+
+		if (record.ScriptFamily != "Normal" && record.ScriptFamily != "Menu Entry Swapper")
+		{
+			errorDetail := "Registry entry " . record.Name . " has an invalid script family."
 			return false
 		}
 
@@ -314,7 +385,7 @@ LLARS_SelectorValidateRegistry(registry, ByRef errorDetail := "")
 		}
 		seenNames[nameKey] := true
 
-		targetPath := A_ScriptDir . "\Scripts\" . record.RelativeDirectory . "\" . record.FileName
+		targetPath := A_ScriptDir . "\" . record.RootDirectory . "\" . record.RelativeDirectory . "\" . record.FileName
 		if !FileExist(targetPath)
 		{
 			errorDetail := "Missing Selector target: " . record.Name . " -> " . targetPath
@@ -490,6 +561,7 @@ LLARS_SelectorApplyFilter()
 	GuiControlGet, selectorView, , SelectorView
 	GuiControlGet, selectorCategory, , SelectorCategory
 	GuiControlGet, selectorDifficulty, , SelectorDifficulty
+	GuiControlGet, selectorScriptFamily, , SelectorScriptFamily
 	searchText := Trim(searchText)
 
 	if (selectorView = "Recent")
@@ -511,6 +583,8 @@ LLARS_SelectorApplyFilter()
 		if (selectorCategory != "All Categories" && record.Category != selectorCategory)
 			continue
 		if (selectorDifficulty != "All Difficulties" && record.Difficulty != selectorDifficulty)
+			continue
+		if (selectorScriptFamily != "All Types" && record.ScriptFamily != selectorScriptFamily)
 			continue
 		if (searchText != "" && !InStr(scriptName, searchText, false))
 			continue
@@ -585,6 +659,7 @@ GuiControl, , SelectorSearch,
 GuiControl, ChooseString, SelectorView, All Scripts
 GuiControl, ChooseString, SelectorCategory, All Categories
 GuiControl, ChooseString, SelectorDifficulty, All Difficulties
+GuiControl, ChooseString, SelectorScriptFamily, All Types
 LLARS_SelectorApplyFilter()
 GuiControl, Focus, SelectorSearch
 return
@@ -875,7 +950,7 @@ if !IsObject(record)
 	return
 }
 
-scriptDir := LLARS_SCRIPTS_DIR . "\" . record.RelativeDirectory
+scriptDir := A_ScriptDir . "\" . record.RootDirectory . "\" . record.RelativeDirectory
 scriptFile := record.FileName
 
 if !LaunchSelectedScript(scriptDir, scriptFile, selectedScript)

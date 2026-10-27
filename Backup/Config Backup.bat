@@ -3,11 +3,13 @@ setlocal EnableExtensions EnableDelayedExpansion
 
 for %%I in ("%~dp0..") do set "llarsRoot=%%~fI"
 set "source=%llarsRoot%\Scripts"
+set "sourceMES=%llarsRoot%\Scripts - Menu Entry Swapper"
 set "backupRoot=%~dp0Config Backup"
 set "backup1=%~dp0Config Backup 1"
 set "backup2=%~dp0Config Backup 2"
 set "staging=%~dp0Config Backup.tmp"
 set "destination=%staging%\Scripts"
+set "destinationMES=%staging%\Scripts - Menu Entry Swapper"
 set "automatic=0"
 set "failed=0"
 
@@ -30,6 +32,10 @@ mkdir "%staging%" >nul 2>&1
 if errorlevel 1 set "failed=1"
 mkdir "%destination%" >nul 2>&1
 if errorlevel 1 set "failed=1"
+if exist "%sourceMES%" (
+    mkdir "%destinationMES%" >nul 2>&1
+    if errorlevel 1 set "failed=1"
+)
 
 if "%failed%"=="0" (
     copy /Y "%llarsRoot%\LLARS Config.ini" "%staging%\LLARS Config.ini" >nul
@@ -52,6 +58,23 @@ if "%failed%"=="0" (
                 set "failed=1"
             ) else if "%automatic%"=="0" (
                 echo Staged script config: "%%G"
+            )
+        )
+    )
+)
+
+if "%failed%"=="0" if exist "%sourceMES%" (
+    for /r "%sourceMES%" %%G in (*) do (
+        if /I "%%~nxG"=="Config.ini" (
+            set "filepath=%%~dpG"
+            set "filepath=!filepath:%sourceMES%=%destinationMES%!"
+            if not exist "!filepath!" mkdir "!filepath!" >nul 2>&1
+            if errorlevel 1 set "failed=1"
+            copy /Y "%%G" "!filepath!\%%~nxG" >nul
+            if errorlevel 1 (
+                set "failed=1"
+            ) else if "%automatic%"=="0" (
+                echo Staged Menu Entry Swapper config: "%%G"
             )
         )
     )

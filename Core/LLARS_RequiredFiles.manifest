@@ -1,4 +1,4 @@
-# LLARS v2.2.4 required runtime manifest
+# LLARS v2.2.5 required runtime manifest
 # Generated from the canonical Selector registry and packaged runtime dependencies.
 # User-editable Config.ini values are intentionally not hash-enforced.
 required	VERSION
@@ -99,6 +99,43 @@ required	Scripts/Eternal Tree/Eternal Tree.ahk
 required	Scripts/Waterfall Fishing/Waterfall Fishing.ahk
 required	Scripts/Divination/Divine Conversion - Monolith Power/Divination - High Contrast.ahk
 required	Scripts/Divination/Normal - Non-Monolith Power/Divination - High Contrast.ahk
+required	Scripts - Menu Entry Swapper/Amulet Stringer/Amulet Stringer.ahk
+required	Scripts - Menu Entry Swapper/Armour Crafter/Armour Crafter.ahk
+required	Scripts - Menu Entry Swapper/Bones 2 Bananas/Bones 2 Bananas.ahk
+required	Scripts - Menu Entry Swapper/Bow Cutter/Bow Cutter.ahk
+required	Scripts - Menu Entry Swapper/Bow Stringer/Bow Stringer.ahk
+required	Scripts - Menu Entry Swapper/Cooking/Cooking.ahk
+required	Scripts - Menu Entry Swapper/Fletching - Corrupted Magic Logs/Fletching.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Cooking/Cooking.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Frame Maker/Frame Maker.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Jewellery Crafter/Jewellery Crafter.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Limestone Brick/Brick Maker.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Plank + Refined/Plank + Refined.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Plank Maker/Plank Maker.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Refined Plank/Refined Plank.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Spinning Wheel/Spinning Wheel.ahk
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Stone Wall/Stone Wall.ahk
+required	Scripts - Menu Entry Swapper/Gem Cutter/Gem Cutter.ahk
+required	Scripts - Menu Entry Swapper/Glassblowing/Glassblowing.ahk
+required	Scripts - Menu Entry Swapper/Herb Cleaner/Herb Cleaner.ahk
+required	Scripts - Menu Entry Swapper/Herb Cleaner - Skillcape/Skillcape Cleaner.ahk
+required	Scripts - Menu Entry Swapper/Incense/Ash to Incense/Ash to Incense.ahk
+required	Scripts - Menu Entry Swapper/Incense/Herb to Incense/Herb to Incense.ahk
+required	Scripts - Menu Entry Swapper/Incense/Incense Crafter/Incense Crafter.ahk
+required	Scripts - Menu Entry Swapper/Jewellery Crafter/Jewellery Crafter.ahk
+required	Scripts - Menu Entry Swapper/Jewellery Enchant/Jewel Enchant.ahk
+required	Scripts - Menu Entry Swapper/Lunar Spells/Bake Pie/Bake Pie.ahk
+required	Scripts - Menu Entry Swapper/Lunar Spells/Fire Urn/Fire Urn.ahk
+required	Scripts - Menu Entry Swapper/Lunar Spells/Sift Soil/Sift Soil.ahk
+required	Scripts - Menu Entry Swapper/Lunar Spells/String Jewellery/Jewel Stringer.ahk
+required	Scripts - Menu Entry Swapper/Lunar Spells/Telekinetic Grind/Telekinetic Grind with Banking/Tele Grind.ahk
+required	Scripts - Menu Entry Swapper/Necromancy/Ink Crafter/Ink Crafter.ahk
+required	Scripts - Menu Entry Swapper/Potion Mixer/Potion Mixer.ahk
+required	Scripts - Menu Entry Swapper/Prayer/Prayer.ahk
+required	Scripts - Menu Entry Swapper/Prifddinas/Cooking/Cooking.ahk
+required	Scripts - Menu Entry Swapper/Prifddinas/Firemaking/Firemaking.ahk
+required	Scripts - Menu Entry Swapper/Pyre Crafter/Pyre Crafter.ahk
+required	Scripts - Menu Entry Swapper/Wine Maker/Wine Maker.ahk
 sha256	Vendor/AutoHotInterception/Lib/AutoHotInterception.dll	f993d7c9c9f37f1ff28246cfe620caae9efab92aa0fa1b57a7c615d68d034a17
 sha256	Vendor/AutoHotInterception/Lib/x64/interception.dll	ab88164c11b1b48488772d4c3bfaa4509d5b0ae9dbc5a691dc4f96f0260443c8
 sha256	Vendor/AutoHotInterception/Lib/x86/interception.dll	9e1def27b804df9ba97fd07f9de835c70660ae568c00950102f70034e293a684
