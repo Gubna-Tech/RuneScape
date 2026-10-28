@@ -115,7 +115,7 @@ LLARS_ReleaseAssetName(tag)
     tag := LLARS_NormalizeReleaseTag(tag)
     if (tag = "")
         return ""
-    return "LLARS-" . tag . ".zip"
+    return "RuneScape-" . tag . ".zip"
 }
 
 LLARS_ReleaseAssetUrl(tag)
@@ -123,7 +123,7 @@ LLARS_ReleaseAssetUrl(tag)
     tag := LLARS_NormalizeReleaseTag(tag)
     if (tag = "")
         return ""
-    return "https://github.com/Gubna-Tech/RuneScape/releases/download/" . tag . "/" . LLARS_ReleaseAssetName(tag)
+    return "https://github.com/Gubna-Tech/RuneScape/archive/refs/tags/" . tag . ".zip"
 }
 
 LLARS_ReleaseAssetAvailable(downloadUrl, ByRef errorDetail := "")
@@ -131,7 +131,7 @@ LLARS_ReleaseAssetAvailable(downloadUrl, ByRef errorDetail := "")
     errorDetail := ""
     if (downloadUrl = "")
     {
-        errorDetail := "The release asset URL was empty."
+        errorDetail := "The repository archive URL was empty."
         return false
     }
 
@@ -148,7 +148,7 @@ LLARS_ReleaseAssetAvailable(downloadUrl, ByRef errorDetail := "")
         if (status = 200 || (status >= 300 && status < 400))
             return true
 
-        errorDetail := "GitHub returned HTTP " . status . " for the expected release asset."
+        errorDetail := "GitHub returned HTTP " . status . " for the tagged repository archive."
         return false
     }
     catch error
@@ -373,15 +373,15 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
         return false
     }
 
-    assetName := LLARS_ReleaseAssetName(tag)
+    archiveName := LLARS_ReleaseAssetName(tag)
     downloadUrl := LLARS_ReleaseAssetUrl(tag)
-    if (assetName = "" || downloadUrl = "")
+    if (archiveName = "" || downloadUrl = "")
     {
-        MsgBox, 262192, LLARS Update, LLARS could not resolve the official release asset for %tag%.
+        MsgBox, 262192, LLARS Update, LLARS could not resolve the RuneScape repository archive for %tag%.
         return false
     }
 
-    defaultName := A_Desktop . "\" . assetName
+    defaultName := A_Desktop . "\" . archiveName
 
     ; Protect both the shared LLARS config and script-local configs before the
     ; update download begins. A failed backup leaves the running copy untouched.
@@ -396,10 +396,10 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
         return false
     }
 
-    assetError := ""
-    if !LLARS_ReleaseAssetAvailable(downloadUrl, assetError)
+    archiveError := ""
+    if !LLARS_ReleaseAssetAvailable(downloadUrl, archiveError)
     {
-        MsgBox, 262192, LLARS Update, The official release asset %assetName% is not available, so the update was not started.`n`n%assetError%`n`nYour current LLARS files are unchanged.`n`nRelease page:`nhttps://github.com/Gubna-Tech/RuneScape/releases/latest
+        MsgBox, 262192, LLARS Update, The tagged RuneScape repository archive for %tag% is not available, so the update was not started.`n`n%archiveError%`n`nYour current LLARS files are unchanged.`n`nRelease page:`nhttps://github.com/Gubna-Tech/RuneScape/releases/latest
         return false
     }
 
@@ -423,7 +423,7 @@ LLARS_DownloadRelease(tag, ownerHwnd := 0)
     if (ErrorLevel || !FileExist(partialPath))
     {
         FileDelete, %partialPath%
-        MsgBox, 262192, LLARS Update, LLARS could not download the official release asset %assetName%.`n`nThe release may be missing the expected asset, or the network request may have failed.`n`nRelease page:`nhttps://github.com/Gubna-Tech/RuneScape/releases/latest
+        MsgBox, 262192, LLARS Update, LLARS could not download the RuneScape repository archive for %tag%.`n`nThe tagged repository archive may be unavailable, or the network request may have failed.`n`nRelease page:`nhttps://github.com/Gubna-Tech/RuneScape/releases/latest
         LLARS_SetUpdateOwnerVisible(ownerHwnd, true)
         return false
     }
