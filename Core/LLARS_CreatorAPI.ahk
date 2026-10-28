@@ -31,6 +31,13 @@ LLARS_CreatorInputBlocked(action, reason)
 }
 
 ; ================================================================
+; |     CREATOR API CATALOG     -     CREATOR API CATALOG        |
+; ================================================================
+; The authoritative Creator metadata is isolated so standalone tools
+; can consume it without loading the gameplay/runtime Creator API.
+#Include %A_LineFile%\..\LLARS_CreatorCatalog.ahk
+
+; ================================================================
 ; |     CONFIGURATION     -     CONFIGURATION                    |
 ; ================================================================
 ; Returns either the current script Config.ini or the shared LLARS Config.ini.
@@ -1045,7 +1052,12 @@ LLARS_Sleep(section, final := false, scope := "script")
 
 	Sleep, %sleepAmount%
 	if LLARS_RunActive()
-		LLARS_WaitForRuneScape("Sleep " . section)
+	{
+		if !LLARS_WaitForRuneScape("Sleep " . section)
+			LLARS_DeveloperAction("Sleep Focus Wait || " . section . " || RuneScape not active")
+	}
+	else
+		LLARS_DeveloperAction("Sleep Ended || " . section . " || Run no longer active")
 	return sleepAmount
 }
 
@@ -1494,6 +1506,41 @@ LLARS_CreatorSendInput(sendSequence, action := "Keyboard")
 	}
 }
 
+; A generated RunCount callback must never silently advance after a key action
+; that was rejected by the selected input backend. Do not fall back from AHI
+; to Standard mode: the user must explicitly choose Standard in Input Settings.
+; Returning false outside a run preserves the public API's boolean contract.
+LLARS_CreatorKeyboardDeliveryFailed(action, sendSequence := "", detail := "")
+{
+	global LLARS_ROOT, LLARS_RUNNING, LLARS_PAUSED
+
+	mode := IsFunc("LLARS_AHI_Mode") ? LLARS_AHI_Mode(LLARS_ROOT) : "ahi"
+	if (detail = "")
+	{
+		if (mode = "ahi")
+		{
+			if (IsFunc("LLARS_AHI_IsReady") && !LLARS_AHI_IsReady("keyboard"))
+				detail := "AutoHotInterception keyboard route unavailable"
+			else
+				detail := "AutoHotInterception did not complete the key press"
+		}
+		else
+			detail := "Standard AutoHotkey keyboard dispatch was not completed"
+	}
+	message := action . " was not sent. " . detail
+	if (sendSequence != "")
+		message .= " | Key=" . sendSequence
+	LLARS_CreatorInputBlocked(action, message)
+	if IsFunc("LLARS_DeveloperAction")
+		LLARS_DeveloperAction("Keyboard Dispatch Failed || " . message . " || Input mode=" . mode)
+
+	; LLARS_RunCount catches this and stops the generated script, rather than
+	; treating the next action/iteration as though input was delivered.
+	if (LLARS_RUNNING && !LLARS_PAUSED)
+		throw Exception(message . ". Check LLARS Input Settings and the selected keyboard route.")
+	return false
+}
+
 ; Returns true when a plain AutoHotkey key name can be sent safely through the
 ; creator API. Modifier combinations belong in LLARS_PressHotkey().
 LLARS_CreatorValidKeyName(keyName)
@@ -1553,7 +1600,7 @@ LLARS_PressKey(keyName)
 
 	sendSequence := "{" . keyName . "}"
 	if !LLARS_CreatorSendInput(sendSequence, "Key " . keyName)
-		return false
+		return LLARS_CreatorKeyboardDeliveryFailed("Press Key", sendSequence)
 	if keyName in WheelUp,WheelDown,WheelLeft,WheelRight
 		LLARS_DeveloperAction("Mouse Wheel || " . keyName . " || " . (IsFunc("LLARS_AHI_TransportName") ? LLARS_AHI_TransportName("mouse") : "Standard AutoHotkey"))
 	return true
@@ -1564,17 +1611,17 @@ LLARS_PressHotkey(section, key := "hotkey", scope := "script")
 {
 	hotkey := LLARS_ConfigReadHotkey(section, key, scope)
 	if (hotkey = "")
-		return false
+		return LLARS_CreatorKeyboardDeliveryFailed("Press Hotkey [" . section . "]", "", "The configured hotkey is missing, invalid, or disabled")
 
 	sendSequence := LLARS_CreatorHotkeySendSequence(hotkey)
 	if (sendSequence = "")
 	{
 		LLARS_CreatorConfigError(section . " " . key . " cannot be converted to a sendable hotkey: " . hotkey)
-		return false
+		return LLARS_CreatorKeyboardDeliveryFailed("Press Hotkey [" . section . "]", hotkey, "The configured hotkey cannot be converted to a supported key sequence")
 	}
 
 	if !LLARS_CreatorSendInput(sendSequence, "Hotkey " . section)
-		return false
+		return LLARS_CreatorKeyboardDeliveryFailed("Press Hotkey [" . section . "]", sendSequence)
 	return true
 }
 

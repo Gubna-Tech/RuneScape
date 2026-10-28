@@ -240,7 +240,7 @@ Gui 1: Hide
 DisableHotkey()
 Menu, Tray, NoIcon
 Gui Combo: Destroy
-Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop
+Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSetupGuiHwnd
 Gui Combo: Font, s12 Bold cBlack
 Gui Combo: Add, Text, x5 y5 w210 h25 Center, LLARS
 Gui Combo: Font, s10 Bold cGray
@@ -402,7 +402,7 @@ LLARS_MainSavePosition()
 Gui 1: Hide
 DisableHotkey()
 Gui ConfigSettings: Destroy
-Gui ConfigSettings: +LastFound +OwnDialogs +AlwaysOnTop
+Gui ConfigSettings: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSettingsGuiHwnd
 Gui ConfigSettings: Font, s12 Bold cBlack
 Gui ConfigSettings: Add, Text, x5 y5 w210 h25 Center, LLARS
 Gui ConfigSettings: Font, s10 Bold cGray
@@ -490,7 +490,6 @@ Gui Reset: -Caption
 Gui Reset: Show, w320 h174 Center, Reset Configuration
 LLARS_DeveloperUIAction("Reset Configuration")
 Gui Reset: +ToolWindow
-WinSet, Transparent, %value%, ahk_id %LLARSResetGuiHwnd%
 return
 
 ; Enables the reset button only after a real, framework-recognized item
@@ -698,7 +697,6 @@ Gui 2: -Caption
 Gui, 2: Show, w290 h126 Center, Coordinates
 LLARS_DeveloperUIAction("Coordinates")
 Gui 2: +ToolWindow
-WinSet, Transparent, %value%, ahk_id %LLARSConfigGuiHwnd%
 return
 
 ; Closes the coordinate editor and returns to the main LLARS window.
@@ -1188,7 +1186,6 @@ Gui 2: -Caption
 Gui, 2: Show, w290 h126 Center, Colors
 LLARS_DeveloperUIAction("Colors")
 Gui 2: +ToolWindow
-WinSet, Transparent, %value%, ahk_id %LLARSConfigGuiHwnd%
 return
 
 ; Closes the color editor and returns to the main LLARS GUI.
@@ -1514,7 +1511,6 @@ Gui 3: -Caption
 Gui, 3: Show, w290 h176 Center, Hotkeys
 LLARS_DeveloperUIAction("Hotkeys")
 Gui 3: +ToolWindow
-WinSet, Transparent, %value%, ahk_id %LLARSHotkeyGuiHwnd%
 return
 
 ; Closes the hotkey editor and returns to the main LLARS GUI.
@@ -1778,7 +1774,7 @@ closeDividerY := discordY + 32
 closeInfoY := closeDividerY + 8
 informationHeight := closeInfoY + 39
 
-Gui 20: +AlwaysOnTop +OwnDialogs +LastFound
+Gui 20: +AlwaysOnTop +OwnDialogs +LastFound +HwndLLARSInfoGuiHwnd
 Gui 20: Font, s12 Bold cBlack
 Gui 20: Add, Text, x5 y5 w280 h25 Center, LLARS
 Gui 20: Font, s10 Bold cBlack
@@ -1927,7 +1923,7 @@ InputSettings:
 EnableHotkey()
 Gui Combo: Hide
 Gui 21: Destroy
-Gui 21: +AlwaysOnTop +OwnDialogs +LastFound +ToolWindow -caption
+Gui 21: +AlwaysOnTop +OwnDialogs +LastFound +ToolWindow -caption +HwndLLARSInputSettingsGuiHwnd
 Gui 21: Font, s12 Bold cBlack
 Gui 21: Add, Text, x5 y5 w490 h25 Center, LLARS
 Gui 21: Font, s11 Bold cBlack
@@ -2200,9 +2196,19 @@ Gui Dev: Show, Hide w560 h711, Developer Mode
 LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd)
 LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd)
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
-	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h711, Developer Mode
+{
+	if (LLARS_RUNNING)
+		Gui Dev: Show, NoActivate x%DeveloperGUIx% y%DeveloperGUIy% w560 h711, Developer Mode
+	else
+		Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h711, Developer Mode
+}
 else
-	Gui Dev: Show, Center w560 h711, Developer Mode
+{
+	if (LLARS_RUNNING)
+		Gui Dev: Show, NoActivate Center w560 h711, Developer Mode
+	else
+		Gui Dev: Show, Center w560 h711, Developer Mode
+}
 
 ; Populate the console only after the final Show and mark a snapshot current
 ; only after the read-only Edit control verifies the complete ordered text.
@@ -2306,9 +2312,19 @@ Gui Dev: Add, Button, x416 y460 w124 h27 gCloseDeveloperMode, Close
 Gui Dev: +ToolWindow
 Gui Dev: -Caption
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
-	Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h498, Developer Mode
+{
+	if (LLARS_RUNNING)
+		Gui Dev: Show, NoActivate x%DeveloperGUIx% y%DeveloperGUIy% w560 h498, Developer Mode
+	else
+		Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h498, Developer Mode
+}
 else
-	Gui Dev: Show, Center w560 h498, Developer Mode
+{
+	if (LLARS_RUNNING)
+		Gui Dev: Show, NoActivate Center w560 h498, Developer Mode
+	else
+		Gui Dev: Show, Center w560 h498, Developer Mode
+}
 
 LLARS_DeveloperLastActions := ""
 LLARS_DeveloperLastActionSerial := -1
@@ -3147,7 +3163,7 @@ LLARS_DeveloperAddInspectorRow(labelText, valueText, rowY, ByRef valueHwnd)
 	Gui DevInspector: Font, s10 Norm cBlack
 	Gui DevInspector: Add, Text, x5 y%rowY% w105 h18 -Wrap, %labelText%
 	Gui DevInspector: Font, s10 Bold cBlack
-	Gui DevInspector: Add, Text, x113 y%rowY% w88 h18 Right -Wrap hwndDeveloperInspectorValueHwnd, %valueText%
+	Gui DevInspector: Add, Text, x109 y%rowY% w116 h18 Right -Wrap hwndDeveloperInspectorValueHwnd, %valueText%
 	valueHwnd := DeveloperInspectorValueHwnd
 }
 

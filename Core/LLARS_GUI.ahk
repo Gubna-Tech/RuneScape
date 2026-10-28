@@ -21,18 +21,18 @@ LLARS_CreateMainGUI()
 
 	value := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Transparent", "value", "ERROR")
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
-	Gui, Font, s12 Bold
+	Gui, Font, s12 Bold cBlack
 	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
 	Gui, Add, Text, x5 y49 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x10 y57 w145 h25 gStart , Start
 	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
 	Gui, Add, Button, x10 y86 w295 h25 gCombo, Setup
 	Gui, Add, Button, x10 y115 w295 h25 gConfigSettings, Config Settings
 	Gui, Add, Text, x5 y146 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	if (LLARS_SCRIPT_TYPE = "UntilDone")
 	{
 		Gui, Add, Text, x10 y152 w165 h20, Run Mode
@@ -73,19 +73,19 @@ LLARS_CreateMainGUI()
 	Gui, Add, Text, x15 y310 w140 h18 vConfigStatusScriptConfigLabel gSetupStatusScriptConfig, Script Config
 	Gui, Add, Text, x160 y310 w145 h18 Center vConfigStatusScriptConfig gSetupStatusScriptConfig, Checking
 	Gui, Add, Text, x5 y333 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x73 y341 w170 h29 gExitb , Exit LLARS
 	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
-	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	LLARS_UpdateConfigStatus()
 	if LLARS_MainLoadPosition(x, y)
 		Gui, Show, x%x% y%y% w315 h377, %windowTitle%
 	else
 		Gui, Show, w315 h377, %windowTitle%
+	LLARS_ApplyGuiOpacity(LLARSMainGuiHwnd, LLARS_CONFIG_FILE)
 	CheckPOS(LLARSMainGuiHwnd)
 
 	; Loads the custom LLARS icon into the main GUI when available.
@@ -109,7 +109,7 @@ LLARS_CreateRunCountGUI()
 	; can change AutoHotkey's default GUI context; an explicit reset prevents the
 	; setup GUI from surviving when a runtime GUI replaces it.
 	Gui, 1:Default
-	global scriptname, value, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
+	global scriptname, value, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_CONFIG_FILE
 	global Counter, Counter2, EstLoopRemaining, EstRunRemaining, State1, State3, State2, ScriptGreen, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
 	windowTitle := LLARS_WindowTitle()
@@ -121,35 +121,35 @@ LLARS_CreateRunCountGUI()
 		hasMainPosition := LLARS_MainLoadPosition(X, Y)
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
-	Gui, Font, s12 Bold
+	Gui, Font, s12 Bold cBlack
 	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
 	Gui, Add, Text, x5 y49 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x10 y57 w145 h25 gStart, Start
 	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
 	Gui, Add, Button, x10 y86 w145 h25 gPauseb, Pause
 	Gui, Add, Button, x160 y86 w145 h25 gResumeb, Resume
 	Gui, Add, Text, x5 y114 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y120 w165 h20, Run Count
-	Gui, Font, s10
+	Gui, Font, s10 cBlack
 	Gui, Add, Text, x180 y120 w125 h20 Center vCounter2
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y141 w165 h20, Total Run Count
-	Gui, Font, s10
+	Gui, Font, s10 cBlack
 	Gui, Add, Text, x180 y141 w125 h20 Center vCounter
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y162 w165 h20, Est. Loop Remaining
-	Gui, Font, s10
+	Gui, Font, s10 cBlack
 	Gui, Add, Text, x180 y162 w125 h20 Center vEstLoopRemaining
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y183 w165 h20, Est. Run Remaining
-	Gui, Font, s10
+	Gui, Font, s10 cBlack
 	Gui, Add, Text, x180 y183 w125 h20 Center vEstRunRemaining
 	Gui, Add, Text, x5 y205 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y211 w145 h20, Status
 	Gui, Font, s10 Bold cGreen
 	Gui, Add, Text, x160 y211 w145 h20 Center vState1
@@ -161,18 +161,18 @@ LLARS_CreateRunCountGUI()
 	Gui, Add, Text, x160 y211 w145 h20 Center vState2
 	Gui, Add, Text, x10 y211 w145 h20 cBlack vScriptRed
 	GuiControl,, State2, ** OFF **
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x73 y239 w170 h29 gExitb, Exit LLARS
 	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
 	Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
-	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	if (hasMainPosition)
 		Gui, Show, x%X% y%Y% w315 h275, %windowTitle%
 	else
 		Gui, Show, w315 h275, %windowTitle%
+	LLARS_ApplyGuiOpacity(LLARSMainGuiHwnd, LLARS_CONFIG_FILE)
 	CheckPOS(LLARSMainGuiHwnd)
 	count = 0
 	++frcount
@@ -189,7 +189,7 @@ LLARS_CreateTimerGUI()
 	; can change AutoHotkey's default GUI context; an explicit reset prevents the
 	; setup GUI from surviving when a runtime GUI replaces it.
 	Gui, 1:Default
-	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd
+	global scriptname, value, X, Y, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_CONFIG_FILE
 	global TimerCount, State3, State2, ScriptBlue, ScriptRed
 	displayScriptName := LLARS_DisplayScriptName()
 	windowTitle := LLARS_WindowTitle()
@@ -200,23 +200,23 @@ LLARS_CreateTimerGUI()
 		hasMainPosition := LLARS_MainLoadPosition(X, Y)
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
-	Gui, Font, s12 Bold
+	Gui, Font, s12 Bold cBlack
 	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
 	Gui, Add, Text, x5 y49 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x10 y57 w145 h25 gStart, Start
 	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
 	Gui, Add, Button, x10 y86 w145 h25 gPauseb, Pause
 	Gui, Add, Button, x160 y86 w145 h25 gResumeb, Resume
 	Gui, Add, Text, x5 y114 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y120 w165 h20, Time Remaining
-	Gui, Font, s10
+	Gui, Font, s10 cBlack
 	Gui, Add, Text, x180 y120 w125 h20 Center vTimerCount
 	Gui, Add, Text, x5 y142 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y148 w145 h20, Status
 	Gui, Font, s10 Bold cBlue
 	Gui, Add, Text, x160 y148 w145 h20 Center vState3
@@ -225,18 +225,18 @@ LLARS_CreateTimerGUI()
 	Gui, Add, Text, x160 y148 w145 h20 Center vState2
 	Gui, Add, Text, x10 y148 w145 h20 cBlack vScriptRed
 	GuiControl,, State2, ** OFF **
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x73 y176 w170 h29 gExitb, Exit LLARS
 	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
-	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	if (hasMainPosition)
 		Gui, Show, x%X% y%Y% w315 h212, %windowTitle%
 	else
 		Gui, Show, w315 h212, %windowTitle%
+	LLARS_ApplyGuiOpacity(LLARSMainGuiHwnd, LLARS_CONFIG_FILE)
 	CheckPOS(LLARSMainGuiHwnd)
 	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
@@ -269,18 +269,18 @@ LLARS_CreateUntilDoneGUI()
 		hasMainPosition := LLARS_MainLoadPosition(X, Y)
 	Gui destroy
 	Gui +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
-	Gui, Font, s12 Bold
+	Gui, Font, s12 Bold cBlack
 	Gui, Add, Text, x5 y5 w305 h25 Center, LLARS
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x5 y29 w305 h18 Center cGray, %displayScriptName%
 	Gui, Add, Text, x5 y49 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x10 y57 w145 h25 gStart, Start
 	Gui, Add, Button, x160 y57 w145 h25 gInfo, Information
 	Gui, Add, Button, x10 y86 w145 h25 gPauseb, Pause
 	Gui, Add, Button, x160 y86 w145 h25 gResumeb, Resume
 	Gui, Add, Text, x5 y114 w305 h2 0x10
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Text, x10 y120 w145 h20, Status
 	Gui, Font, s10 Bold cBlue
 	Gui, Add, Text, x160 y120 w145 h20 Center vState3
@@ -289,18 +289,18 @@ LLARS_CreateUntilDoneGUI()
 	Gui, Add, Text, x160 y120 w145 h20 Center vState2
 	Gui, Add, Text, x10 y120 w145 h20 cBlack vScriptRed
 	GuiControl,, State2, ** OFF **
-	Gui, Font, s10 Bold
+	Gui, Font, s10 Bold cBlack
 	Gui, Add, Button, x73 y148 w170 h29 gExitb, Exit LLARS
 	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{
 		Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
 	}
 
-	WinSet, Transparent, %value%, ahk_id %LLARSMainGuiHwnd%
 	if (hasMainPosition)
 		Gui, Show, x%X% y%Y% w315 h184, %windowTitle%
 	else
 		Gui, Show, w315 h184, %windowTitle%
+	LLARS_ApplyGuiOpacity(LLARSMainGuiHwnd, LLARS_CONFIG_FILE)
 	CheckPOS(LLARSMainGuiHwnd)
 	if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
 	{

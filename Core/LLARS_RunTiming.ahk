@@ -25,7 +25,7 @@ LLARS_StartRun()
 	if IsFunc("LLARS_TimerStopAll")
 		LLARS_TimerStopAll()
 	LLARS_DeveloperHotkey("Start")
-	InputBox, runcount, Run How Many Times?,,,250,100
+	LLARS_RunInputPrompt(runcount, "Run How Many Times?", "Enter how many times to run this script (1-1000).", 350, 155)
 	if (ErrorLevel)
 	{
 		Reload
@@ -171,7 +171,7 @@ LLARS_StartTimerRun()
 	if IsFunc("LLARS_TimerStopAll")
 		LLARS_TimerStopAll()
 	LLARS_DeveloperHotkey("Start")
-	InputBox, timeToRunMinutes, Set Run Time, Enter how long to run in minutes.`nExample: 1 = 1 minute or 0.5 = 30 seconds.,,270,165
+	LLARS_RunInputPrompt(timeToRunMinutes, "Set Run Time", "Enter how long to run in minutes.`nExample: 1 = 1 minute or 0.5 = 30 seconds.", 365, 165)
 	if (ErrorLevel)
 	{
 		Reload
@@ -705,3 +705,35 @@ LLARS_RunComplete()
 	EnableButton()
 	SetLLARSHOTKEYS("On")
 }
+
+; Native InputBox is modal and does not offer an AlwaysOnTop option.
+; Watch only this process's temporary input dialog while it is open;
+; match its exact title, keep it above LLARS, and retain native full opacity.
+LLARS_RunInputPrompt(ByRef result, title, instructions, width := 350, height := 155)
+{
+    global LLARS_RunPromptTitle, LLARS_RunPromptHwnd
+    LLARS_RunPromptTitle := title
+    LLARS_RunPromptHwnd := 0
+    SetTimer, LLARS_RunPromptOnTop, 60
+    InputBox, result, %title%, %instructions%,, %width%, %height%
+    cancelled := ErrorLevel
+    SetTimer, LLARS_RunPromptOnTop, Off
+    LLARS_RunPromptTitle := ""
+    LLARS_RunPromptHwnd := 0
+    ErrorLevel := cancelled
+    return !cancelled
+}
+
+LLARS_RunPromptOnTop:
+    global LLARS_RunPromptTitle, LLARS_RunPromptHwnd
+    if (LLARS_RunPromptTitle != "")
+    {
+        pid := DllCall("GetCurrentProcessId")
+        dialog := WinExist(LLARS_RunPromptTitle . " ahk_class #32770 ahk_pid " . pid)
+        if (dialog && dialog != LLARS_RunPromptHwnd)
+        {
+            WinSet, AlwaysOnTop, On, % "ahk_id " . dialog
+            LLARS_RunPromptHwnd := dialog
+        }
+    }
+return

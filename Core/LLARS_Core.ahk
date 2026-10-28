@@ -756,12 +756,12 @@ LLARS_SetupItemIsAvailable(itemName)
 ; object also powers Selector metadata, main Setup Status, and Setup controls.
 LLARS_ShowSetupPreflight()
 {
-	global LLARS_SETUP_PREFLIGHT, LLARS_COMBO_TIMER_LABEL, value
+	global LLARS_SETUP_PREFLIGHT, LLARS_COMBO_TIMER_LABEL, value, LLARS_CONFIG_FILE
 
 	LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(true)
 	LLARS_SupportEvent("Setup preflight", LLARS_SETUP_PREFLIGHT.Overall)
 	Gui SetupCheck: Destroy
-	Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop +ToolWindow -Caption
+	Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop +ToolWindow -Caption +HwndLLARSSetupCheckHwnd
 	Gui SetupCheck: Font, s12 Bold cBlack
 	Gui SetupCheck: Add, Text, x5 y5 w350 h25 Center, LLARS
 	Gui SetupCheck: Font, s10 Bold cGray
@@ -814,7 +814,6 @@ LLARS_ShowSetupPreflight()
 	Gui SetupCheck: Add, Button, x90 y%y% w175 h28 gCloseSetupCheck, Close Check Setup
 	height := y + 38
 	Gui SetupCheck: Show, Center w360 h%height%, Check Setup
-	WinSet, Transparent, %value%
 	return LLARS_SETUP_PREFLIGHT
 }
 
@@ -899,6 +898,7 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	global LLARS_AHI_GateStartTick, LLARS_AHI_GateReady, LLARS_AHI_GateElapsed
 	global LLARS_AHI_InitStartTick, LLARS_AHI_InitElapsed, LLARS_AHI_FullyReady
 	global EstimationRunCount
+    global LLARS_StartupContinuation
 	global coordcount, frcount, LastClickTime, clickspot, scriptname, LLARS_GUIScriptName
 
 	CoordMode, Pixel, Client
@@ -926,9 +926,12 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	if FileExist(scriptConfigPath)
 		LLARS_ConfigSnapshotReload(scriptConfigPath)
 
-	; Complete the bounded GitHub release check before input-backend checks or the script GUI.
+	; Complete the bounded GitHub release check, then keep its indicator visible
+    ; during setup instead of leaving a silent gap before the main GUI appears.
 	; Scripts launched by the selector inherit its completed-check marker and skip it.
+    LLARS_StartupContinuation := true
 	LLARS_CheckForUpdates()
+    LLARS_StartupStage("Checking input setup...", "Checking keyboard and mouse input readiness.")
 
 	; Supports both normal Script Selector launches and scripts opened directly.
 	; AHI is the recommended input backend; Standard AutoHotkey remains the
@@ -936,6 +939,7 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	LLARS_AHI_GateStartTick := LLARS_NowMS()
 	LLARS_AHI_GateReady := LLARS_AHI_StartupGate(LLARS_ROOT, true)
 	LLARS_AHI_GateElapsed := LLARS_NowMS() - LLARS_AHI_GateStartTick
+    LLARS_StartupStage("Preparing script controls...", "Loading hotkeys, settings, and runtime controls.")
 	LLARS_lhk1 := ""
 	LLARS_lhk2 := ""
 	LLARS_lhk3 := ""
@@ -998,7 +1002,11 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	if (LLARS_GUIScriptName = "")
 		LLARS_GUIScriptName := scriptname
 	EstimationRunCount := 1000
+    LLARS_StartupStage("Opening script window...", "Creating the main LLARS control window.")
 	LLARS_CreateMainGUI()
+    ; The primary GUI is visible now. Leave its existing backend initialization
+    ; and readiness gate unchanged; do not add an artificial startup delay.
+    LLARS_HideUpdateCheckSplash()
 
 	; The LLARS window is visible before CLR/AHI device initialization begins.
 	; LLARS_Initialize() still does not return until AHI is ready (or has safely
@@ -1934,8 +1942,8 @@ CheckConfigFile(file)
 				continue
 			if (value = "")
 			{
-				; Script Selector Favorites/Recent are optional preference lists and may be empty.
-				if (ConfigPath = LLARS_CONFIG_FILE && section = "Script Selector" && (key = "favorites" || key = "recent"))
+				; Script Selector position and preference fields are optional; a blank position centers the window.
+				if (ConfigPath = LLARS_CONFIG_FILE && section = "Script Selector" && (key = "favorites" || key = "recent" || key = "window_x" || key = "window_y"))
 					continue
 				ConfigErrorMessage(file, section, key)
 				return true
@@ -2548,7 +2556,7 @@ LLARS_DeveloperClickTarget(x, y)
 	return ""
 }
 
-; Identifies RuneScape by known process name, with exact-title fallback.
+; Recognizes RuneScape 3, the official Old School RuneScape client, and RuneLite.
 LLARS_IsRuneScapeWindow(hwnd)
 {
 	if (!hwnd)
@@ -2558,6 +2566,21 @@ LLARS_IsRuneScapeWindow(hwnd)
 	StringLower, processName, processName
 	if processName in runescape.exe,rs2client.exe
 		return true
+
+	; Official OSRS: require both the client executable and its game-window class.
+	if (processName = "osclient.exe")
+	{
+		WinGetClass, gameWindowClass, ahk_id %hwnd%
+		return (gameWindowClass = "JagWindow")
+	}
+
+	; RuneLite: the window title can include a character name, which is not an identity.
+	; Require both the RuneLite executable and Java game-window class instead.
+	if (processName = "runelite.exe")
+	{
+		WinGetClass, gameWindowClass, ahk_id %hwnd%
+		return (gameWindowClass = "SunAwtFrame")
+	}
 
 	WinGetTitle, windowTitle, ahk_id %hwnd%
 	return (windowTitle = "RuneScape")
@@ -3297,14 +3320,8 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 ; RuneScape drew its red world-interaction X around the intended click point.
 ; Use this only for interactions that normally produce that red X.
 ;
-; FrameRecorder calibration (2026-10-13):
-; - 16/16 successful world-object clicks produced the same X signature.
-; - Dominant solid X color: RGB 156,9,6 (0x9C0906).
-; - Solid body spans roughly 14x14 px centered on the click (-7..+6).
-; - First detectable frame: ~47-79 ms after mouse-down.
-; - Strong/full signature: ~125-172 ms.
-; - Still detectable through ~375-438 ms.
-; - Two non-world/UI clicks produced no matching signature at all.
+; The solid red X is approximately 14 pixels across and is sampled near
+; the click position during the immediate post-click verification window.
 ;
 ; Keep the verification area deliberately tight around the click so nearby red
 ; scenery/UI cannot satisfy the check.

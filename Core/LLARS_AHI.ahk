@@ -3170,8 +3170,18 @@ LLARS_AHI_SendSequence(sendSequence, keyHold := 60, keyDelay := 20)
     if keyName in WheelUp,WheelDown,WheelLeft,WheelRight
         return LLARS_AHI_SendWheel(keyName)
 
-    if (!LLARS_AHI_KEYBOARD_READY || !IsObject(LLARS_AHI_Object))
+    if !IsObject(LLARS_AHI_Object)
         return false
+    ; The keyboard can reconnect after startup or change its Interception ID.
+    ; Give the existing bounded route-recovery mechanism one opportunity to
+    ; rebind before refusing a Creator keyboard action.
+    if (!LLARS_AHI_KEYBOARD_READY)
+    {
+        if !LLARS_AHI_AttemptTransportRecovery("keyboard", "Creator keyboard route unavailable")
+            return false
+        if (!LLARS_AHI_KEYBOARD_READY || !IsObject(LLARS_AHI_Object))
+            return false
+    }
 
     if !LLARS_AHI_ParseModifiers(prefix, modifierKeys)
         return false
@@ -3184,12 +3194,13 @@ LLARS_AHI_SendSequence(sendSequence, keyHold := 60, keyDelay := 20)
             return false
     }
 
-    ; A timed key press should never release an explicit held key owned by a
-    ; separate LLARS action. Suppress the conflicting press instead.
+    ; A timed press cannot claim success when a separate action already owns
+    ; the key in the held-key tracker. Report a rejected send to the caller;
+    ; otherwise generated scripts silently skip the user's saved key action.
     if LLARS_AHI_KeyHeld(keyName)
     {
-        LLARS_AHI_DeveloperAction("Keyboard Safety || Press suppressed because " . keyName . " is already held")
-        return true
+        LLARS_AHI_DeveloperAction("Keyboard Safety || Press rejected because " . keyName . " is already held")
+        return false
     }
 
     wasCritical := A_IsCritical
@@ -3234,7 +3245,8 @@ LLARS_AHI_SendSequence(sendSequence, keyHold := 60, keyDelay := 20)
         {
             if (keyDelay > 0)
                 Sleep, %keyDelay%
-            LLARS_AHI_SendKeyState(ownedModifiers[index], 0)
+            if !LLARS_AHI_SendKeyState(ownedModifiers[index], 0)
+                throw Exception("Modifier up failed: " . ownedModifiers[index])
             index--
         }
         LLARS_AHI_RecordTransport("keyboard", "AHI " . sendSequence . " | #" . LLARS_AHI_KEYBOARD_ID)

@@ -49,7 +49,7 @@
 
 ## What is LLARS?
 
-LLARS is a free and open-source AutoHotkey framework and script-building toolkit designed for **RuneScape 3 Evolution of Combat (EoC)**.
+LLARS is a free and open-source AutoHotkey framework and script-building toolkit for **RuneScape 3 (RS3/EoC)** and **Old School RuneScape (OSRS)**. Its included scripts are for RS3; the LLARS framework and Script Generator can also be used to create and run OSRS-specific scripts.
 
 It provides a shared framework, Creator API, reusable functions, configuration system, GUI tools, and supporting libraries for creating and running LLARS-compatible scripts.
 
@@ -81,7 +81,7 @@ LLARS is designed for both:
 >
 > Normal script configuration should be performed through the **LLARS GUI**, the root `LLARS Config.ini`, and any script-local `Config.ini` provided for that activity. Some scripts do not require a local `Config.ini`.
 
-The scripts in this repository are specifically designed for **RuneScape 3 (RS3)** and are **not intended for use with Old School RuneScape (OSRS)**.
+**The included scripts are designed for RuneScape 3 (RS3/EoC) only.** LLARS recognizes Old School RuneScape (OSRS) through the official client and RuneLite, and creators can use its framework and Script Generator to build OSRS scripts. **No ready-made OSRS scripts are included.**
 
 Make sure to use these scripts only with the appropriate version of the game and understand the risks and responsibilities associated with game automation.
 
@@ -159,7 +159,7 @@ LLARS includes the existing backup and restore tools under the **[Backup](Backup
 | :--- | :--- |
 | **Operating System** | Windows |
 | **AutoHotkey** | v1.1.37.02 |
-| **RuneScape** | RuneScape 3 — Evolution of Combat |
+| **Game clients** | RuneScape 3 (RS3/EoC); Old School RuneScape (official client or RuneLite). Included scripts: RS3 only. |
 | **Script Format** | Uncompiled `.ahk` scripts |
 
 LLARS is built for **AutoHotkey v1**, and the scripts are provided in an uncompiled format.

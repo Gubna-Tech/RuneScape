@@ -202,30 +202,95 @@ LLARS_GetLatestReleaseTag(ByRef latestTag, ByRef errorDetail := "")
     }
 }
 
+; The splash is a separate named GUI.  AutoHotkey v1 changes A_DefaultGui
+; when Gui, Name:New runs; preserve it so subsequent unqualified Gui commands
+; cannot accidentally build or destroy the Selector inside this splash.
 LLARS_ShowUpdateCheckSplash()
 {
+    global LLARSUpdateSplashHwnd, LLARSUpdateSplashMessage, LLARSUpdateSplashDetail
+    previousGui := A_DefaultGui
+    if (previousGui = "" || previousGui = "LLARSUpdateSplash")
+        previousGui := 1
     version := LLARS_GetVersion()
     Gui, LLARSUpdateSplash:Destroy
     Gui, LLARSUpdateSplash:New, +AlwaysOnTop +ToolWindow -Caption +Border +HwndLLARSUpdateSplashHwnd
     Gui, LLARSUpdateSplash:Color, F5F7FA
     Gui, LLARSUpdateSplash:Font, s13 Bold c152039, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y14 w284 h24 Center, LLARS v%version%
+    Gui, LLARSUpdateSplash:Add, Text, x18 y12 w394 h26 Center, LLARS v%version%
     Gui, LLARSUpdateSplash:Font, s12 Bold c3D4A5C, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y41 w284 h26 Center, Checking for updates...
-    Gui, LLARSUpdateSplash:Show, w320 h82 Center NoActivate, LLARS Update Check
-    ; Yield once so the splash paints before the bounded WinHTTP request blocks.
+    Gui, LLARSUpdateSplash:Add, Text, x18 y42 w394 h26 Center vLLARSUpdateSplashMessage, Checking for updates...
+    Gui, LLARSUpdateSplash:Font, s10 Norm c303B4B, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y75 w394 h34 Center vLLARSUpdateSplashDetail, Checking the latest release information.
+    Gui, LLARSUpdateSplash:Show, w430 h126 Center NoActivate, LLARS Update Check
+    Gui, %previousGui%:Default
+    ; Give the update indicator one chance to paint before synchronous WinHTTP.
     Sleep, 20
     return LLARSUpdateSplashHwnd
 }
 
+; Show only real preparation stages. The explanation says what that stage does;
+; no timer or fake progress percentage is used. Never steal focus from prompts.
+LLARS_ShowInitializationSplash(stage := "Initializing LLARS...", detail := "Preparing your scripts and controls.")
+{
+    global LLARSUpdateSplashHwnd, LLARSUpdateSplashMessage, LLARSUpdateSplashDetail
+    previousGui := A_DefaultGui
+    if (previousGui = "" || previousGui = "LLARSUpdateSplash")
+        previousGui := 1
+    if (LLARSUpdateSplashHwnd && DllCall("IsWindow", "Ptr", LLARSUpdateSplashHwnd))
+    {
+        GuiControl, LLARSUpdateSplash:, LLARSUpdateSplashMessage, %stage%
+        GuiControl, LLARSUpdateSplash:, LLARSUpdateSplashDetail, %detail%
+        Gui, LLARSUpdateSplash:-AlwaysOnTop
+        Gui, %previousGui%:Default
+        ; Yield to paint the current work before synchronous setup resumes.
+        Sleep, -1
+        return LLARSUpdateSplashHwnd
+    }
+    version := LLARS_GetVersion()
+    Gui, LLARSUpdateSplash:New, +ToolWindow -Caption +Border +HwndLLARSUpdateSplashHwnd
+    Gui, LLARSUpdateSplash:Color, F5F7FA
+    Gui, LLARSUpdateSplash:Font, s13 Bold c152039, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y12 w394 h26 Center, LLARS v%version%
+    Gui, LLARSUpdateSplash:Font, s12 Bold c3D4A5C, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y42 w394 h26 Center vLLARSUpdateSplashMessage, %stage%
+    Gui, LLARSUpdateSplash:Font, s10 Norm c303B4B, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y75 w394 h34 Center vLLARSUpdateSplashDetail, %detail%
+    Gui, LLARSUpdateSplash:Show, w430 h126 Center NoActivate, LLARS Initializing
+    Gui, %previousGui%:Default
+    Sleep, 20
+    return LLARSUpdateSplashHwnd
+}
+
+LLARS_StartupStage(stage, detail := "")
+{
+    static previousStage := "", previousTick := 0
+    now := A_TickCount
+    if (previousTick)
+        OutputDebug, % "LLARS startup: " . previousStage . " took " . (now - previousTick) . " ms"
+    previousStage := stage
+    previousTick := now
+    if (detail = "")
+        detail := "Preparing the next startup step."
+    return LLARS_ShowInitializationSplash(stage, detail)
+}
+
+; Cleanup is strictly scoped to the splash HWND, never the Selector or main GUI.
 LLARS_HideUpdateCheckSplash()
 {
-    Gui, LLARSUpdateSplash:Destroy
+    global LLARSUpdateSplashHwnd
+    previousGui := A_DefaultGui
+    if (previousGui = "" || previousGui = "LLARSUpdateSplash")
+        previousGui := 1
+    if (LLARSUpdateSplashHwnd && DllCall("IsWindow", "Ptr", LLARSUpdateSplashHwnd))
+        Gui, LLARSUpdateSplash:Destroy
+    LLARSUpdateSplashHwnd := 0
+    Gui, %previousGui%:Default
 }
 
 ; Updater MsgBox options include MB_TOPMOST (0x40000 / 262144) so they stay above LLARS GUIs.
 LLARS_CheckForUpdates(showCurrentMessage := false)
 {
+    global LLARS_StartupContinuation
     static checkComplete := false
     static checkRunning := false
 
@@ -247,14 +312,15 @@ LLARS_CheckForUpdates(showCurrentMessage := false)
     LLARS_ShowUpdateCheckSplash()
     if !LLARS_GetLatestReleaseTag(latestTag, updateError)
     {
-        LLARS_HideUpdateCheckSplash()
+        if (LLARS_StartupContinuation)
+            LLARS_ShowInitializationSplash("Initializing LLARS...", "Update check finished. Preparing input and settings.")
+        else
+            LLARS_HideUpdateCheckSplash()
         checkRunning := false
         checkComplete := true
         EnvSet, LLARS_UPDATE_CHECKED, 1
         return false
     }
-    LLARS_HideUpdateCheckSplash()
-
     latestVersion := RegExReplace(latestTag, "i)^v")
     checkRunning := false
     checkComplete := true
@@ -262,11 +328,17 @@ LLARS_CheckForUpdates(showCurrentMessage := false)
 
     if (LLARS_VersionCompare(latestVersion, currentVersion) <= 0)
     {
+        if (LLARS_StartupContinuation && !showCurrentMessage)
+            LLARS_ShowInitializationSplash("Initializing LLARS...", "Update check finished. Preparing input and settings.")
+        else
+            LLARS_HideUpdateCheckSplash()
         if (showCurrentMessage)
             MsgBox, 262208, LLARS Update Check, LLARS v%currentVersion% is up to date.
         return false
     }
 
+    ; Don't cover an update decision with a lingering startup indicator.
+    LLARS_HideUpdateCheckSplash()
     MsgBox, 262212, LLARS Update Available, A newer LLARS release is available.`n`nCurrent version: v%currentVersion%`nNewest release: %latestTag%`n`nLLARS will automatically back up your current configuration before downloading.`n`nDownload the newest release now?
     IfMsgBox, Yes
         return LLARS_DownloadRelease(latestTag, updateOwnerHwnd)

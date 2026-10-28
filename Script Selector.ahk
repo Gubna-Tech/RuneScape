@@ -6,6 +6,7 @@
 #Include *i %A_ScriptDir%\Vendor\AutoHotInterception\Lib\AutoHotInterception.ahk
 #Include %A_ScriptDir%\Core\LLARS_Timing.ahk
 #Include %A_ScriptDir%\Core\LLARS_Config.ahk
+#Include %A_ScriptDir%\Core\LLARS_CreatorRegistry.ahk
 #Include %A_ScriptDir%\Core\LLARS_AHI.ahk
 #Include %A_ScriptDir%\Core\LLARS_Update.ahk
 
@@ -60,9 +61,11 @@ if !LLARS_CheckConfigCompatibility(A_ScriptDir)
 ; Close an older LLARS/script-selector window before any update prompt or Save As dialog.
 CloseOtherLLARS()
 
-; Finish the bounded GitHub release check before the selector is displayed.
+; Keep the update indicator visible as a startup indicator through subsequent work.
 ; Selected scripts inherit the completed-check marker and do not check twice.
+LLARS_StartupContinuation := true
 LLARS_CheckForUpdates()
+LLARS_StartupStage("Checking input setup...", "Checking keyboard and mouse input readiness.")
 
 ; Applies AHI input-backend setup/readiness checks before the selector opens.
 ; AHI is recommended; Standard AutoHotkey remains available as a fallback.
@@ -82,14 +85,24 @@ LLARS_MENU_ENTRY_SWAPPER_DIR := A_ScriptDir . "\Scripts - Menu Entry Swapper"
 
 ; Authoritative Selector registry. Every display name, info-panel title, setup
 ; difficulty, description, and launch target is defined exactly once here.
+LLARS_StartupStage("Loading available scripts...", "Reading script entries and their Setup requirements.")
+LLARS_SelectorRegistryLoadError := ""
 LLARS_SelectorRegistry := LLARS_SelectorBuildRegistry()
+if (LLARS_SelectorRegistryLoadError != "")
+{
+    LLARS_HideUpdateCheckSplash()
+	MsgBox, 262192, Script Selector Registry, % "Generated Creator registry is invalid. Existing entries were preserved.`n" . LLARS_SelectorRegistryLoadError
+	ExitApp
+}
 LLARS_SelectorRegistryError := ""
 if !LLARS_SelectorValidateRegistry(LLARS_SelectorRegistry, LLARS_SelectorRegistryError)
 {
+    LLARS_HideUpdateCheckSplash()
 	MsgBox, 262192, Script Selector Registry, The Script Selector registry is invalid.`n`n%LLARS_SelectorRegistryError%
 	ExitApp
 }
 
+LLARS_StartupStage("Preparing script choices...", "Restoring filters and preparing the script list.")
 ; Compatibility list generated from the registry for existing filter/preferences logic.
 scriptArray := LLARS_SelectorRegistryNameList(LLARS_SelectorRegistry)
 ScriptTotal := LLARS_SelectorRegistry.Entries.Length()
@@ -120,6 +133,8 @@ Hotkey, Esc, Exit
 ; |     MAIN GUI CREATION     -     MAIN GUI CREATION     -     MAIN GUI CREATION     |
 ; =====================================================================================
 
+; The status splash creates a named GUI. Always build Selector on GUI 1.
+Gui, 1:Default
 ; Creates the script selector GUI.
 Gui +LastFound +OwnDialogs +AlwaysOnTop -caption
 Gui, +HwndLLARSSelectorHwnd
@@ -154,6 +169,7 @@ if LLARS_SelectorLoadWindowPosition(selectorX, selectorY)
 else
 	selectorShowOptions := "w420 h482 Center"
 Gui, Show, %selectorShowOptions%, Script Selector
+LLARS_HideUpdateCheckSplash()
 Gui, +ToolWindow
 if FileExist(LLARS_SelectorIconPath)
 {
@@ -281,6 +297,24 @@ LLARS_SelectorBuildRegistry()
 	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Prifddinas - Firemaking")
 	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Pyre Crafter")
 	LLARS_SelectorRegistryAddMenuEntrySwapper(registry, "Wine Maker")
+
+	; Generator-managed entries join the one authoritative registry, rather
+	; than maintaining a second independent Selector list or editing shipped rows.
+	global LLARS_SelectorRegistryLoadError
+	created := LLARS_CreatorRegistryRead(A_ScriptDir, LLARS_SelectorRegistryLoadError)
+	if (LLARS_SelectorRegistryLoadError != "")
+		return registry
+	for _, item in created
+	{
+		; Deleted user scripts do not prevent the shipped Selector from opening.
+		; If restored, their registered metadata becomes visible again.
+		target := A_ScriptDir . "\" . item.RootDirectory . "\" . item.RelativeDirectory . "\" . item.FileName
+		if !FileExist(target)
+			continue
+		LLARS_SelectorRegistryAdd(registry, item.Name, item.InfoTitle, item.Difficulty
+			, item.Description, item.RelativeDirectory, item.FileName, item.Category
+			, item.RootDirectory, item.ScriptFamily)
+	}
 
 	return registry
 }

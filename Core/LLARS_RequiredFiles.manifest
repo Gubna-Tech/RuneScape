@@ -1,5 +1,5 @@
-# LLARS v2.2.5 required runtime manifest
-# Generated from the canonical Selector registry and packaged runtime dependencies.
+# LLARS v2.3.0 required runtime manifest
+# Runtime dependencies required for a complete LLARS installation.
 # User-editable Config.ini values are intentionally not hash-enforced.
 required	VERSION
 required	LLARS Config.ini
@@ -13,6 +13,8 @@ required	Core/LLARS_Update.ahk
 required	Core/LLARS_AHI.ahk
 required	Core/LLARS_AHI_Setup.ps1
 required	Core/LLARS_Core.ahk
+required	Core/LLARS_CreatorCatalog.ahk
+required	Core/LLARS_CreatorRegistry.ahk
 required	Core/LLARS_CreatorAPI.ahk
 required	Core/LLARS_GUI.ahk
 required	Core/LLARS_Labels.ahk
