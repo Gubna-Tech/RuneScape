@@ -3,6 +3,7 @@
 ; ================================================================
 #Requires AutoHotkey v1.1.37.02
 #SingleInstance Force
+#Include %A_ScriptDir%\..\Core\LLARS_Visual.ahk
 SetBatchLines, -1
 
 EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
@@ -82,46 +83,53 @@ if FileExist(GeneratorIconPath)
 Generator_GetTemplate(GeneratorTemplateChoice, GeneratorSourceFolder, GeneratorSourceScript, GeneratorDescription)
 
 Gui, +OwnDialogs +HwndGeneratorGuiHWND
-Gui, Font, s14 Bold cBlack
-Gui, Add, Text, x25 y12 w680 h30 Center, LLARS Script Generator
-Gui, Font, s11 Norm cBlack
-Gui, Add, Text, x30 y53 w670 h40 +Wrap Center, Create your own automation without writing code. Start with a guided example or build the steps yourself.
-Gui, Font, s11 Bold cBlack
-Gui, Add, Text, x30 y112 w145 h27, Name your script
-Gui, Font, s11 Norm cBlack
+LLARS_VisualPrepare("1", 11)
+LLARS_VisualAccent("1", 730)
+LLARS_VisualBanner("1", 730, 97)
+LLARS_VisualCard("1", 22, 102, 688, 116)
+Gui, Font, s20 Bold cFFFFFF, Bahnschrift
+Gui, Add, Text, x25 y11 w680 h36 Center BackgroundTrans, LLARS Script Generator
+Gui, Font, s11 Norm cE2EAF6, Segoe UI
+Gui, Add, Text, x30 y53 w670 h40 +Wrap Center BackgroundTrans, Create your own automation without writing code. Start with a guided example or build the steps yourself.
+Gui, Font, s11 Bold c24324A, Segoe UI
+Gui, Add, Text, x30 y112 w145 h27 BackgroundTrans, Name your script
+Gui, Font, s11 Norm c24324A, Segoe UI
 Gui, Add, Edit, x183 y108 w515 h31 vGeneratorScriptName hwndGeneratorScriptNameHwnd gGeneratorScriptIdentityChanged
 
-Gui, Font, s11 Bold cBlack
-Gui, Add, Text, x30 y150 w145 h27, Banking method
-Gui, Font, s11 Norm cBlack
+Gui, Font, s11 Bold c24324A, Segoe UI
+Gui, Add, Text, x30 y150 w145 h27 BackgroundTrans, Banking method
+Gui, Font, s11 Norm c24324A, Segoe UI
 Gui, Add, DropDownList, x183 y145 w515 vGeneratorMainBankingMethod gGeneratorMainBankingChanged Choose1, Standard banking (Bank Preset)|Menu Entry Swapper (no preset)
-Gui, Font, s10 Norm cBlack
-Gui, Add, Text, x183 y177 w515 h45 +Wrap, % "Standard: LLARS presses your Bank Preset key.`nMenu Entry Swapper: bank click selects preset. No bank? Standard."
-Gui, Font, s11 Bold cBlack
-Gui, Add, GroupBox, x22 y230 w688 h142, Recommended: guided script builder
-Gui, Font, s11 Norm cBlack
-Gui, Add, Text, x40 y264 w448 h75 +Wrap, Choose an example, add actions in the order they happen, and check what the script needs before saving. You can reopen and edit scripts made with the guided builder.
-Gui, Font, s11 Bold cBlack
+Gui, Font, s10 Norm c24324A, Segoe UI
+Gui, Add, Text, x183 y177 w515 h45 +Wrap BackgroundTrans, % "Standard: LLARS presses your Bank Preset key.`nMenu Entry Swapper: bank click selects preset. No bank? Standard."
+Gui, Font, s11 Bold c24324A, Segoe UI
+LLARS_VisualCard("1", 22, 230, 688, 142)
+Gui, Add, Text, x40 y239 w650 h25 BackgroundTrans, START HERE  /  GUIDED BUILDER
+Gui, Font, s11 Norm c24324A, Segoe UI
+Gui, Add, Text, x40 y264 w448 h75 +Wrap BackgroundTrans, Choose an example, add actions in the order they happen, and check what the script needs before saving. You can reopen and edit scripts made with the guided builder.
+Gui, Font, s11 Bold c24324A, Segoe UI
 Gui, Add, Button, x507 y269 w185 h53 gGeneratorOpenSequenceBuilder Default, Open Guided Builder
-Gui, Font, s10 Norm cBlack
-Gui, Add, Text, x40 y345 w648 h22, No programming experience needed. The builder explains each step as you go.
+Gui, Font, s10 Norm c24324A, Segoe UI
+Gui, Add, Text, x40 y345 w648 h22 BackgroundTrans, No programming experience needed. The builder explains each step as you go.
 
-Gui, Font, s11 Bold cBlack
-Gui, Add, GroupBox, x22 y388 w688 h170, Experienced users: copy an AutoHotkey code template
-Gui, Font, s10 Norm cBlack
-Gui, Add, Text, x40 y419 w132 h25, Code template
+Gui, Font, s11 Bold c24324A, Segoe UI
+LLARS_VisualCard("1", 22, 388, 688, 170)
+Gui, Add, Text, x40 y396 w650 h25 BackgroundTrans, FOR ADVANCED USERS  /  CODE TEMPLATES
+Gui, Font, s10 Norm c24324A, Segoe UI
+Gui, Add, Text, x40 y419 w132 h25 BackgroundTrans, Code template
 Gui, Add, DropDownList, x181 y415 w327 vGeneratorTemplateChoice gGeneratorTemplateChanged Choose1, RunCount - Basic Loop|RunCount - Advanced Loop|Timer|MultiTimer|Color Detection|Multi Color Detection
-Gui, Font, s10 Bold cBlack
+Gui, Font, s10 Bold c24324A, Segoe UI
 Gui, Add, Button, x520 y411 w170 h42 gGeneratorCreate, Copy Code Template
-Gui, Font, s10 Norm cBlack
-Gui, Add, Text, x40 y460 w648 h38 +Wrap vGeneratorDescription, %GeneratorDescription%
-Gui, Add, Text, x40 y514 w118 h25, Save to folder
+Gui, Font, s10 Norm c24324A, Segoe UI
+Gui, Add, Text, x40 y460 w648 h38 +Wrap vGeneratorDescription BackgroundTrans, %GeneratorDescription%
+Gui, Add, Text, x40 y514 w118 h25 BackgroundTrans, Save to folder
 Gui, Add, Edit, x164 y509 w426 h28 ReadOnly vGeneratorOutputParent, %GeneratorOutputParent%
 Gui, Add, Button, x601 y507 w89 h32 gGeneratorBrowse, Browse
-Gui, Font, s10 Norm cBlack
-Gui, Add, Text, x35 y571 w575 h32 +Wrap, Code templates are copies for editing in AutoHotkey. Use the guided builder above if you prefer not to write code.
+Gui, Font, s10 Norm c24324A, Segoe UI
+Gui, Add, Text, x35 y571 w575 h32 +Wrap BackgroundTrans, Code templates are copies for editing in AutoHotkey. Use the guided builder above if you prefer not to write code.
 Gui, Add, Button, x611 y567 w97 h35 gGeneratorClose, Close
 Gui, Show, w730 h628, LLARS Script Generator
+LLARS_VisualWindow(GeneratorGuiHWND)
 GuiControl, Focus, GeneratorScriptName
 SendMessage, 0xB1, -1, -1,, % "ahk_id " . GeneratorScriptNameHwnd
 return
@@ -824,9 +832,11 @@ Generator_ShowScriptDetails()
 	global GeneratorCreatorCategory, GeneratorCreatorDifficulty, GeneratorCreatorDescription, GeneratorCreatorAuthor, GeneratorRegisterSelector
 	Gui, Identity:Destroy
 	Gui, Identity:New, +OwnDialogs +LabelGeneratorIdentity
-	Gui, Identity:Font, s10 Bold
+	LLARS_VisualPrepare("Identity")
+	LLARS_VisualAccent("Identity", 465)
+	Gui, Identity:Font, s10 Bold, Segoe UI
 	Gui, Identity:Add, Text, x16 y15 w430, About Your Script
-	Gui, Identity:Font, s10 Norm
+	Gui, Identity:Font, s10 Norm, Segoe UI
 	Gui, Identity:Add, Text, x16 y50 w100, Category
 	Gui, Identity:Add, Edit, x130 y47 w315 h24 vGeneratorCreatorCategory, %GeneratorCreatorCategory%
 	Gui, Identity:Add, Text, x16 y87 w100, Difficulty
@@ -841,6 +851,7 @@ Generator_ShowScriptDetails()
 	Gui, Identity:Add, Button, x128 y315 w130 h32 gGeneratorIdentitySave Default, Save Information
 	Gui, Identity:Add, Button, x270 y315 w115 h32 gGeneratorIdentityCancel, Cancel
 	Gui, Identity:Show, w465 h363, LLARS Script Details
+	LLARS_VisualFinish("Identity")
 }
 
 Generator_SaveScriptDetails()
@@ -974,9 +985,11 @@ Generator_ShowCreatedOptions(destination, scriptFile)
 	GeneratorCreatedFolder := destination
 	Gui, Created:Destroy
 	Gui, Created:New, +OwnDialogs +LabelGeneratorCreated
-	Gui, Created:Font, s11 Bold
+	LLARS_VisualPrepare("Created")
+	LLARS_VisualAccent("Created", 555)
+	Gui, Created:Font, s11 Bold, Segoe UI
 	Gui, Created:Add, Text, x16 y14 w530 h30, Script created and verified
-	Gui, Created:Font, s10 Norm
+	Gui, Created:Font, s10 Norm, Segoe UI
 	Gui, Created:Add, Text, x16 y53 w525 h63 +Wrap, % scriptFile . "`nScript Selector: " . (GeneratorRegisterSelector ? "Registered. Choose Open Selector to refresh the list." : "Not registered. You can change this in Script Details next time.")
 	Gui, Created:Add, Text, x16 y122 w525 h45, Test Script executes real automation. Review Setup and the generated AHK first; no automatic launch occurs.
 	Gui, Created:Add, Button, x15 y181 w126 h32 gGeneratorCreatedOpenSource, View Script File
@@ -987,6 +1000,7 @@ Generator_ShowCreatedOptions(destination, scriptFile)
         Gui, Created:Add, Button, x283 y181 w125 h32 gGeneratorCreatedTest, Test Script
     Gui, Created:Add, Button, x416 y181 w124 h32 gGeneratorCreatedClose, Close
 	Gui, Created:Show, w555 h232, LLARS Script Created
+	LLARS_VisualFinish("Created")
 }
 
 
@@ -1861,17 +1875,20 @@ Generator_ShowBeginnerGuide()
     GeneratorGuidePage := 1
     Gui, Guide:Destroy
     Gui, Guide:New, +OwnDialogs +LabelGeneratorGuide
-    Gui, Guide:Font, s12 Bold cBlack
+    LLARS_VisualPrepare("Guide")
+    LLARS_VisualAccent("Guide", 700)
+    Gui, Guide:Font, s12 Bold c24324A, Segoe UI
     Gui, Guide:Add, Text, x20 y14 w660 h30 Center vGeneratorGuideTitle, % Generator_GuidePageHeading(1)
-    Gui, Guide:Font, s10 Norm cBlack
+    Gui, Guide:Font, s10 Norm c24324A, Segoe UI
     ; Static Text deliberately avoids the automatic selection of a focused Edit control.
     Gui, Guide:Add, Text, x24 y57 w652 h385 +Wrap vGeneratorGuideBody, % Generator_GuidePageText(1)
     Gui, Guide:Add, Text, x25 y445 w175 h20 vGeneratorGuidePageLabel, % "Page 1 of " . Generator_GuidePageCount()
-    Gui, Guide:Font, s10 Bold cBlack
+    Gui, Guide:Font, s10 Bold c24324A, Segoe UI
     Gui, Guide:Add, Button, x176 y467 w114 h34 vGeneratorGuideBackButton gGeneratorGuideBack Disabled, Previous
     Gui, Guide:Add, Button, x298 y467 w114 h34 vGeneratorGuideNextButton gGeneratorGuideNext, Next
     Gui, Guide:Add, Button, x420 y467 w114 h34 gGeneratorGuideClose Default vGeneratorGuideCloseButton, Close Guide
     Gui, Guide:Show, w700 h516, LLARS Script Builder Help
+    LLARS_VisualFinish("Guide")
     GuiControl, Guide:Focus, GeneratorGuideNextButton
 }
 
@@ -1979,6 +1996,8 @@ Generator_ShowSequenceBuilder()
     global GeneratorSequenceHelpNote, GeneratorSequenceCloseButton, GeneratorSequenceScriptNameLabel
     global GeneratorSequenceIdentityButton, GeneratorSequenceBankingNote, GeneratorSequenceSaveLabel
     global GeneratorSequenceFolderButton
+    global GeneratorSequenceBuildRunOrderButton, GeneratorSequenceReviewRunOrderButton
+    global GeneratorSequenceTopDivider, GeneratorSequenceBottomDivider
 
     if !IsObject(GeneratorSequence)
         GeneratorSequence := []
@@ -1991,106 +2010,117 @@ Generator_ShowSequenceBuilder()
 
     GeneratorSequenceBankingMethod := Generator_BankingLabel(GeneratorSequenceFamily)
     GeneratorSequenceScriptName := GeneratorScriptName
-    Gui, Sequence:New, +OwnDialogs +Resize +MinSize1250x667 +HwndGeneratorSequenceHWND +LabelGeneratorSequence
-    Gui, Sequence:Font, s13 Bold cBlack
-    Gui, Sequence:Add, Text, x18 y9 w1214 h29 Center, LLARS Guided Script Builder
-    Gui, Sequence:Font, s11 Norm cBlack
-    Gui, Sequence:Add, Text, x22 y43 w404 h31, Choose banking type first. No bank? Use Standard.
-    Gui, Sequence:Font, s10 Norm cBlack
-    Gui, Sequence:Add, Text, x443 y50 w117 h25, Banking type
-    Gui, Sequence:Add, DropDownList, x562 y42 w400 vGeneratorSequenceBankingMethod gGeneratorSequenceFamilyChanged, Standard banking (Bank Preset)|Menu Entry Swapper (no preset)
+    Gui, Sequence:New, +OwnDialogs +Resize +MinSize1250x700 +HwndGeneratorSequenceHWND +LabelGeneratorSequence
+    LLARS_VisualPrepare("Sequence")
+    LLARS_VisualAccent("Sequence", 1250)
+    LLARS_VisualCard("Sequence", 16, 8, 1218, 67)
+    ; Two-level header: brand and guidance left, banking and Help on one
+    ; VERTICALLY CENTERED axis inside the 67px header (y8..75).
+    Gui, Sequence:Font, s15 Bold c1B3553, Segoe UI
+    Gui, Sequence:Add, Text, x25 y9 w420 h26 BackgroundTrans, LLARS Guided Script Builder
+    Gui, Sequence:Font, s10 Bold c526885, Segoe UI
+    Gui, Sequence:Add, Text, x25 y36 w420 h22 BackgroundTrans, Choose banking type, then build and review.
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
+    Gui, Sequence:Add, Text, x463 y32 w102 h24 BackgroundTrans, Banking type
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
+    Gui, Sequence:Add, DropDownList, x570 y24 w390 vGeneratorSequenceBankingMethod gGeneratorSequenceFamilyChanged, Standard banking (Bank Preset)|Menu Entry Swapper (no preset)
     GuiControl, Sequence:ChooseString, GeneratorSequenceBankingMethod, %GeneratorSequenceBankingMethod%
-    Gui, Sequence:Font, s10 Bold cBlack
-    Gui, Sequence:Add, Button, x988 y42 w242 h34 gGeneratorSequenceBeginnerHelp, Step-by-Step Help
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
+    Gui, Sequence:Add, Button, x1000 y24 w216 h34 gGeneratorSequenceBeginnerHelp, Step-by-Step Help
 
-    Gui, Sequence:Font, s11 Bold cBlack
+    Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Tab2, x20 y79 w1210 h441 vGeneratorSequencePage gGeneratorSequencePageChanged, Build Actions|Review && Save
     Gui, Sequence:Tab, 1
-    Gui, Sequence:Font, s11 Bold cBlack
+    Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Button, x34 y116 w200 h33 gGeneratorSequenceStarterTemplates, Start From Example
     Gui, Sequence:Add, Button, x245 y116 w200 h33 gGeneratorSequenceBankingWorkflow, Add Banking Steps
-    Gui, Sequence:Font, s10 Norm cBlack
-    Gui, Sequence:Add, Text, x471 y119 w727 h27, Start with an example, or choose a step below. Then arrange your steps in order.
-    Gui, Sequence:Font, s11 Bold cBlack
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
+    Gui, Sequence:Add, Text, x474 y122 w717 h23, Add an action, then arrange the run order below.
+    Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Text, x34 y158 w1150 h25, 1. What would you like the script to do next?
-    Gui, Sequence:Font, s11 Norm cBlack
+    Gui, Sequence:Font, s11 Norm c24324A, Segoe UI
     Gui, Sequence:Add, Text, x54 y186 w105 h26, Step type
     Gui, Sequence:Add, DropDownList, x165 y182 w232 vGeneratorActionCategory gGeneratorSequenceCategoryChanged
     Gui, Sequence:Add, Text, x416 y186 w65 h25, Do this
     Gui, Sequence:Add, DropDownList, x483 y182 w425 vGeneratorActionChoice gGeneratorSequenceActionChanged
     Gui, Sequence:Add, CheckBox, x929 y184 w267 h26 vGeneratorSequenceAdvanced gGeneratorSequenceAdvancedChanged, Show advanced choices
-    Gui, Sequence:Font, s10 Bold cBlack
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Text, x54 y218 w740 h21, What this step does
     Gui, Sequence:Add, Text, x828 y218 w360 h21, When your script runs
-    Gui, Sequence:Font, s10 Norm cBlack
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
     Gui, Sequence:Add, Edit, x54 y242 w753 h52 vGeneratorActionHelp ReadOnly +Wrap +VScroll, Choose a step to read what it does.
     Gui, Sequence:Add, Edit, x828 y242 w366 h52 vGeneratorActionOutcome ReadOnly +Wrap +VScroll, You are planning your script; nothing runs while you edit.
-    Gui, Sequence:Font, s10 Bold cBlack
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Button, x54 y299 w173 h32 gGeneratorSequenceAddAction, Set Up This Step
     Gui, Sequence:Add, Button, x238 y299 w146 h32 gGeneratorSequenceAddFlow, Repeat / Decide
     Gui, Sequence:Add, Button, x394 y299 w174 h32 gGeneratorSequenceAddCustom vGeneratorSequenceCustomCode, Custom Code (Advanced)
     Gui, Sequence:Add, Button, x579 y299 w134 h32 gGeneratorCreatorHelpOpen, More Details
-    Gui, Sequence:Font, s11 Bold cBlack
+    Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Text, x34 y338 w1160 h26, 2. Arrange the steps in the order they will run (double-click one to edit it)
-    Gui, Sequence:Font, s10 Norm cBlack
-    Gui, Sequence:Add, ListView, x34 y366 w1180 h106 vGeneratorSequenceList Grid -Multi gGeneratorSequenceListEvent, #|Action|Details
-    Gui, Sequence:Font, s10 Bold cBlack
-    Gui, Sequence:Add, Button, x34 y480 w142 h31 vGeneratorSequenceEditButton gGeneratorSequenceEdit, Edit Step
-    Gui, Sequence:Add, Button, x184 y480 w142 h31 vGeneratorSequenceDuplicateButton gGeneratorSequenceDuplicate, Duplicate
-    Gui, Sequence:Add, Button, x334 y480 w142 h31 vGeneratorSequenceRemoveButton gGeneratorSequenceDelete, Remove
-    Gui, Sequence:Add, Button, x484 y480 w125 h31 vGeneratorSequenceUpButton gGeneratorSequenceMoveUp, Move Up
-    Gui, Sequence:Add, Button, x617 y480 w125 h31 vGeneratorSequenceDownButton gGeneratorSequenceMoveDown, Move Down
-    Gui, Sequence:Add, Button, x750 y480 w135 h31 vGeneratorSequenceClearButton gGeneratorSequenceClear, Remove All Steps
-    Gui, Sequence:Add, Button, x893 y480 w101 h31 gGeneratorSequenceRunOrder, Run Order
-    Gui, Sequence:Add, Button, x1003 y479 w211 h32 vGeneratorSequenceReviewButton gGeneratorSequenceReviewPage, Next: Check My Script
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
+    Gui, Sequence:Add, ListView, x34 y366 w1180 h98 vGeneratorSequenceList Grid -Multi gGeneratorSequenceListEvent, #|Action|Details
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
+    Gui, Sequence:Add, Button, x34 y474 w142 h31 vGeneratorSequenceEditButton gGeneratorSequenceEdit, Edit Step
+    Gui, Sequence:Add, Button, x184 y474 w142 h31 vGeneratorSequenceDuplicateButton gGeneratorSequenceDuplicate, Duplicate
+    Gui, Sequence:Add, Button, x334 y474 w142 h31 vGeneratorSequenceRemoveButton gGeneratorSequenceDelete, Remove
+    Gui, Sequence:Add, Button, x484 y474 w125 h31 vGeneratorSequenceUpButton gGeneratorSequenceMoveUp, Move Up
+    Gui, Sequence:Add, Button, x617 y474 w125 h31 vGeneratorSequenceDownButton gGeneratorSequenceMoveDown, Move Down
+    Gui, Sequence:Add, Button, x750 y474 w135 h31 vGeneratorSequenceClearButton gGeneratorSequenceClear, Remove All Steps
+    Gui, Sequence:Add, Button, x893 y474 w101 h31 vGeneratorSequenceBuildRunOrderButton gGeneratorSequenceRunOrder, Run Order
+    Gui, Sequence:Add, Button, x1003 y474 w211 h32 vGeneratorSequenceReviewButton gGeneratorSequenceReviewPage, Next: Check My Script
 
     GuiControl, Sequence:Hide, GeneratorSequenceCustomCode
     Gui, Sequence:Tab, 2
-    Gui, Sequence:Font, s11 Bold cBlack
+    Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Text, x34 y120 w1120 h25, 3. Setup values your script will need
-    Gui, Sequence:Font, s10 Norm cBlack
-    Gui, Sequence:Add, Text, x55 y151 w833 h47 +Wrap vGeneratorSequenceCapabilitySummary, This updates automatically as you add steps and configure their values.
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
+    Gui, Sequence:Add, Text, x55 y151 w833 h56 +Wrap vGeneratorSequenceCapabilitySummary, This updates automatically as you add steps and configure their values.
     Gui, Sequence:Add, Button, x897 y153 w146 h33 gGeneratorSequenceConfigManager, Edit Setup Values
     Gui, Sequence:Add, Button, x1050 y153 w147 h33 gGeneratorSequenceSetupPreview, What Do I Need?
-    Gui, Sequence:Font, s11 Bold cBlack
+    Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Text, x34 y211 w1120 h25, 4. Check your script for missing information
-    Gui, Sequence:Font, s10 Norm cBlack
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
     Gui, Sequence:Add, Text, x55 y243 w955 h25 vGeneratorPreflightSummary, This check updates as you change your steps.
     Gui, Sequence:Add, Button, x1048 y240 w149 h32 gGeneratorSequencePreflightDetails, Explain Issues
     Gui, Sequence:Add, Edit, x55 y275 w1140 h38 vGeneratorPreflightDetails ReadOnly +Wrap
-    Gui, Sequence:Font, s11 Bold cBlack
+    Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Text, x34 y324 w550 h24, Generated script (advanced preview)
     Gui, Sequence:Add, Text, x634 y324 w570 h24, Generated setup file (advanced preview)
-    Gui, Sequence:Font, s10 Norm cBlack
-    Gui, Sequence:Add, Edit, x34 y353 w568 h116 vGeneratorSequencePreview ReadOnly +Wrap
-    Gui, Sequence:Add, Edit, x634 y353 w580 h116 vGeneratorConfigPreview ReadOnly +Wrap
-    Gui, Sequence:Add, Text, x34 y475 w800 h24 vGeneratorRuntimeEstimateSummary, An estimated duration appears here when LLARS can calculate one.
-    Gui, Sequence:Add, Button, x707 y475 w150 h30 gGeneratorSequenceRunOrder, Read Run Order
-    Gui, Sequence:Add, Button, x867 y475 w155 h30 vGeneratorSequenceRuntimeButton gGeneratorSequenceRuntimeDetails, Time Estimate
-    Gui, Sequence:Add, Button, x1034 y475 w180 h30 vGeneratorSequenceBackButton gGeneratorSequenceBuildPage, Back to My Steps
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
+    Gui, Sequence:Add, Edit, x34 y353 w568 h109 vGeneratorSequencePreview ReadOnly +Wrap
+    Gui, Sequence:Add, Edit, x634 y353 w580 h109 vGeneratorConfigPreview ReadOnly +Wrap
+    Gui, Sequence:Add, Text, x34 y477 w642 h24 vGeneratorRuntimeEstimateSummary, An estimated duration appears here when LLARS can calculate one.
+    Gui, Sequence:Add, Button, x707 y474 w150 h31 vGeneratorSequenceReviewRunOrderButton gGeneratorSequenceRunOrder, Read Run Order
+    Gui, Sequence:Add, Button, x867 y474 w155 h31 vGeneratorSequenceRuntimeButton gGeneratorSequenceRuntimeDetails, Time Estimate
+    Gui, Sequence:Add, Button, x1034 y474 w180 h31 vGeneratorSequenceBackButton gGeneratorSequenceBuildPage, Back to My Steps
 
     ; These always-visible controls remain outside the tabs, so opening/saving
     ; does not require hunting for controls on a different page.
     Gui, Sequence:Tab
-    Gui, Sequence:Font, s10 Bold cBlack
+    Gui, Sequence:Add, Text, x22 y519 w1206 h1 Disabled BackgroundE6ECF3 vGeneratorSequenceTopDivider
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Button, x20 y529 w174 h34 vGeneratorSequenceOpenButton gGeneratorSequenceOpenProject, Open Saved Script
     Gui, Sequence:Add, Button, x205 y529 w158 h34 gGeneratorSequenceSaveProject vGeneratorSequenceSaveProject Disabled, Save Changes
     Gui, Sequence:Add, Button, x374 y529 w200 h34 vGeneratorSequenceCreateButton gGeneratorSequenceCreate, Create My Script
-    Gui, Sequence:Add, Text, x598 y534 w452 h25 vGeneratorSequenceHelpNote, Need help? The Step-by-Step Help button explains the process.
-    Gui, Sequence:Add, Button, x1122 y529 w108 h34 vGeneratorSequenceCloseButton gGeneratorSequenceClose, Close
+    Gui, Sequence:Add, Text, x598 y534 w452 h25 vGeneratorSequenceHelpNote, Help: Step-by-Step Help explains the process.
 
-    Gui, Sequence:Font, s11 Norm cBlack
+    Gui, Sequence:Add, Text, x22 y569 w1206 h1 Disabled BackgroundE6ECF3 vGeneratorSequenceBottomDivider
+    Gui, Sequence:Font, s11 Norm c24324A, Segoe UI
     Gui, Sequence:Add, Text, x22 y578 w107 h25 vGeneratorSequenceScriptNameLabel, Script name
     Gui, Sequence:Add, Edit, x130 y573 w262 h29 vGeneratorSequenceScriptName hwndGeneratorSequenceScriptNameHwnd gGeneratorSequenceScriptNameChanged, %GeneratorSequenceScriptName%
     Gui, Sequence:Add, Button, x402 y570 w130 h34 vGeneratorSequenceIdentityButton gGeneratorSequenceIdentity, Script Details
-    Gui, Sequence:Font, s10 Norm cBlack
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
     Gui, Sequence:Add, Text, x552 y578 w675 h27 vGeneratorSequenceBankingNote, Banking type is selected at the top, before your steps.
-    Gui, Sequence:Font, s11 Norm cBlack
+    Gui, Sequence:Font, s11 Norm c24324A, Segoe UI
     Gui, Sequence:Add, Text, x22 y614 w96 h25 vGeneratorSequenceSaveLabel, Save to
     Gui, Sequence:Add, Edit, x130 y609 w937 h28 vGeneratorSequenceOutputParent ReadOnly, %GeneratorSequenceOutputParent%
     Gui, Sequence:Add, Button, x1077 y608 w153 h32 vGeneratorSequenceFolderButton gGeneratorSequenceFamilyBrowse, Choose Folder
-    Gui, Sequence:Font, s10 Norm cBlack
-    Gui, Sequence:Add, Text, x22 y643 w1208 h21 vGeneratorProjectStatus, New script: choose Start From Example, or add your first step above.
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
+    Gui, Sequence:Add, Text, x22 y651 w1020 h27 vGeneratorProjectStatus, New script: choose Start From Example, or add your first step above.
+    ; Close remains beneath Choose Folder, aligned to its right edge.
+    ; The 700px client minimum leaves 13px below Close, not a blank band.
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
+    Gui, Sequence:Add, Button, x1077 y653 w153 h34 vGeneratorSequenceCloseButton gGeneratorSequenceClose, Close
 
     if (GeneratorOpenProjectPath != "")
     {
@@ -2104,37 +2134,42 @@ Generator_ShowSequenceBuilder()
     Generator_RefreshActionLibrary(false)
     Generator_ReconcileConfigRequirements(false)
     Generator_RefreshSequence()
-    ; A taller starting window shows more actions; maximize it to reveal the
-    ; entire sequence without shrinking the action explanations.
-    Gui, Sequence:Show, w1250 h700, LLARS Guided Script Builder
+    ; Compact footer: preserve a deliberate 13px bottom inset for Close at
+    ; minimum size, and expand the step/preview areas only when resized.
+    Gui, Sequence:Show, w1250 h705, LLARS Guided Script Builder
+    LLARS_VisualFinish("Sequence")
+    LLARS_VisualWindow(GeneratorSequenceHWND)
     GuiControl, Sequence:Focus, GeneratorSequenceScriptName
     ; Focus the name, with no text highlighted and the caret at the end.
     SendMessage, 0xB1, -1, -1,, % "ahk_id " . GeneratorSequenceScriptNameHwnd
 }
 
-; Size changes are confined to the step list / review previews and controls
-; below them. Every baseline bound remains inside the 667px minimum client.
+; Keep action lists, preview panes, and their associated controls in sync.
+; Move ALL separators with their corresponding footer controls; otherwise a
+; resized Review tab visually draws a divider through its buttons.
 Generator_ResizeBuilder(height)
 {
-    extra := height - 667
+    extra := height - 700
     if (extra < 0)
         extra := 0
     GuiControl, Sequence:Move, GeneratorSequencePage, % "h" . (441 + extra)
-    GuiControl, Sequence:Move, GeneratorSequenceList, % "h" . (106 + extra)
-    GuiControl, Sequence:Move, GeneratorSequencePreview, % "h" . (116 + extra)
-    GuiControl, Sequence:Move, GeneratorConfigPreview, % "h" . (116 + extra)
-    for control, y in {GeneratorSequenceEditButton:480, GeneratorSequenceDuplicateButton:480
-        , GeneratorSequenceRemoveButton:480, GeneratorSequenceUpButton:480
-        , GeneratorSequenceDownButton:480, GeneratorSequenceClearButton:480
-        , GeneratorSequenceReviewButton:479, GeneratorRuntimeEstimateSummary:475
-        , GeneratorSequenceRuntimeButton:475, GeneratorSequenceBackButton:475
+    GuiControl, Sequence:Move, GeneratorSequenceList, % "h" . (98 + extra)
+    GuiControl, Sequence:Move, GeneratorSequencePreview, % "h" . (109 + extra)
+    GuiControl, Sequence:Move, GeneratorConfigPreview, % "h" . (109 + extra)
+    for control, y in {GeneratorSequenceEditButton:474, GeneratorSequenceDuplicateButton:474
+        , GeneratorSequenceRemoveButton:474, GeneratorSequenceUpButton:474
+        , GeneratorSequenceDownButton:474, GeneratorSequenceClearButton:474
+        , GeneratorSequenceBuildRunOrderButton:474, GeneratorSequenceReviewButton:474
+        , GeneratorRuntimeEstimateSummary:477, GeneratorSequenceReviewRunOrderButton:474
+        , GeneratorSequenceRuntimeButton:474, GeneratorSequenceBackButton:474
         , GeneratorSequenceOpenButton:529, GeneratorSequenceSaveProject:529
         , GeneratorSequenceCreateButton:529, GeneratorSequenceHelpNote:534
-        , GeneratorSequenceCloseButton:529, GeneratorSequenceScriptNameLabel:578
+        , GeneratorSequenceCloseButton:653, GeneratorSequenceScriptNameLabel:578
         , GeneratorSequenceScriptName:573, GeneratorSequenceIdentityButton:570
         , GeneratorSequenceBankingNote:578, GeneratorSequenceSaveLabel:614
         , GeneratorSequenceOutputParent:609, GeneratorSequenceFolderButton:608
-        , GeneratorProjectStatus:643}
+        , GeneratorSequenceTopDivider:519, GeneratorSequenceBottomDivider:569
+        , GeneratorProjectStatus:651}
         GuiControl, Sequence:Move, %control%, % "y" . (y + extra)
 }
 
@@ -2344,15 +2379,18 @@ Generator_ShowBankingWorkflow()
 	}
 	GeneratorBankingChoice := GeneratorSequenceFamily = "MES" ? "Menu Entry Swapper" : "Standard (Bank Preset)"
 	Gui, Banking:New, +OwnDialogs +HwndGeneratorBankingHWND +LabelGeneratorBanking
-	Gui, Banking:Font, s11 Bold cBlack
+	LLARS_VisualPrepare("Banking")
+	LLARS_VisualAccent("Banking", 576)
+	Gui, Banking:Font, s11 Bold c24324A, Segoe UI
 	Gui, Banking:Add, Text, x18 y15 w540 h24, Add Banking Steps
-	Gui, Banking:Font, s10 Norm cBlack
+	Gui, Banking:Font, s10 Norm c24324A, Segoe UI
     Gui, Banking:Add, Text, x18 y48 w535 h28, % "Banking type: " . Generator_BankingLabel(GeneratorSequenceFamily)
 	Gui, Banking:Add, Edit, x18 y82 w540 h132 ReadOnly +Wrap vGeneratorBankingPreview
 	Gui, Banking:Add, Button, x18 y234 w145 h32 gGeneratorBankingAdd, Add Bank Steps
 	Gui, Banking:Add, Button, x174 y234 w169 h32 vGeneratorBankingConvertButton gGeneratorBankingConvert, Change Banking Method
 	Gui, Banking:Add, Button, x355 y234 w110 h32 gGeneratorBankingCancel, Cancel
 	Gui, Banking:Show, w576 h283, LLARS Add Banking Steps
+	LLARS_VisualFinish("Banking")
     if !Generator_BankingWorkflowRange(existingMode, existingStart, existingCount)
         GuiControl, Banking:Disable, GeneratorBankingConvertButton
     Generator_UpdateBankingPreview()
@@ -2567,15 +2605,18 @@ Generator_ShowStarterTemplates()
 		names .= (names = "" ? "" : "|") . entry.DisplayName
 	}
 	Gui, Starter:New, +OwnDialogs +HwndGeneratorStarterHWND +LabelGeneratorStarter
-	Gui, Starter:Font, s12 Bold cBlack
+	LLARS_VisualPrepare("Starter")
+	LLARS_VisualAccent("Starter", 680)
+	Gui, Starter:Font, s12 Bold c24324A, Segoe UI
 	Gui, Starter:Add, Text, x20 y15 w660 h28 Center, Choose a Starting Example
-	Gui, Starter:Font, s10 Norm cBlack
+	Gui, Starter:Font, s10 Norm c24324A, Segoe UI
 	Gui, Starter:Add, Text, x20 y51 w645 h52 +Wrap, Choose an example close to what you want to automate. You can change, reorder or remove every step after loading it.
 	Gui, Starter:Add, DropDownList, x20 y112 w640 vGeneratorStarterChoice gGeneratorStarterChoiceChanged Choose1, %names%
 	Gui, Starter:Add, Edit, x20 y151 w640 h280 vGeneratorStarterPreview ReadOnly +Wrap
 	Gui, Starter:Add, Button, x180 y448 w155 h33 gGeneratorStarterLoad, Use This Example
 	Gui, Starter:Add, Button, x360 y448 w155 h33 gGeneratorStarterCancel, Cancel
 	Gui, Starter:Show, w680 h499, LLARS Starting Examples
+	LLARS_VisualFinish("Starter")
 	Gui, Starter:Submit, NoHide
 	Generator_UpdateStarterPreview()
 }
@@ -2900,9 +2941,11 @@ Generator_ShowCreatorHelp(selectedFunction := "")
             GeneratorCreatorHelpAdvanced := 1
     }
     Gui, APIHelp:New, +OwnDialogs +HwndGeneratorCreatorHelpHWND +LabelGeneratorCreatorHelp
-    Gui, APIHelp:Font, s11 Bold cBlack
+    LLARS_VisualPrepare("APIHelp")
+    LLARS_VisualAccent("APIHelp", 1025)
+    Gui, APIHelp:Font, s11 Bold c24324A, Segoe UI
     Gui, APIHelp:Add, Text, x18 y12 w980 h26 Center, Detailed Action Reference
-    Gui, APIHelp:Font, s10 Norm cBlack
+    Gui, APIHelp:Font, s10 Norm c24324A, Segoe UI
     Gui, APIHelp:Add, Text, x18 y52 w62 h22, Search
     Gui, APIHelp:Add, Edit, x80 y48 w325 h25 vGeneratorCreatorHelpSearch gGeneratorCreatorHelpFilter
     Gui, APIHelp:Add, CheckBox, % "x421 y50 w215 h24 vGeneratorCreatorHelpAdvanced gGeneratorCreatorHelpFilter Checked" . GeneratorCreatorHelpAdvanced, Include advanced and legacy
@@ -2913,6 +2956,7 @@ Generator_ShowCreatorHelp(selectedFunction := "")
     Gui, APIHelp:Add, Button, x885 y585 w120 h30 gGeneratorCreatorHelpClose, Close
     Generator_RefreshCreatorHelp()
     Gui, APIHelp:Show, w1025 h632, LLARS Creator API Help
+    LLARS_VisualFinish("APIHelp")
 }
 
 Generator_RefreshCreatorHelp()
@@ -3127,9 +3171,11 @@ Generator_ShowKeyPicker()
     GeneratorKeyPickerSearch := ""
     GeneratorKeyPickerCategory := "All keys"
     Gui, KeyPick:New, +OwnDialogs +HwndGeneratorKeyPickerHWND +LabelGeneratorKeyPicker
-    Gui, KeyPick:Font, s13 Bold cBlack
+    LLARS_VisualPrepare("KeyPick")
+    LLARS_VisualAccent("KeyPick", 800)
+    Gui, KeyPick:Font, s13 Bold c24324A, Segoe UI
     Gui, KeyPick:Add, Text, x20 y14 w760 h28, Choose the keyboard key to press
-    Gui, KeyPick:Font, s10 Norm cBlack
+    Gui, KeyPick:Font, s10 Norm c24324A, Segoe UI
     Gui, KeyPick:Add, Text, x20 y49 w760 h45 +Wrap, Search by key name (for example Space, Enter, A, F5 or Volume). Double-click a result, or select one and choose Use This Key.
     Gui, KeyPick:Add, Text, x20 y103 w75 h25, Search keys
     Gui, KeyPick:Add, Edit, x100 y100 w356 h30 vGeneratorKeyPickerSearch gGeneratorKeyPickerFilterChanged
@@ -3137,11 +3183,12 @@ Generator_ShowKeyPicker()
     Gui, KeyPick:Add, DropDownList, x528 y100 w250 vGeneratorKeyPickerCategory gGeneratorKeyPickerFilterChanged Choose1, All keys|Everyday keys|Letters (A-Z)|Numbers (0-9)|Navigation|Function keys (F1-F24)|Number pad|Modifiers and locks|Media and browser|Other supported keys
     Gui, KeyPick:Add, ListView, x20 y145 w758 h340 vGeneratorKeyPickerList gGeneratorKeyPickerListEvent Grid -Multi, Key to press|Group|AHK v1 key name
     Gui, KeyPick:Add, Text, x20 y495 w758 h38 +Wrap vGeneratorKeyPickerDeliveryHint, Select a key to check its generated command and scan-code compatibility. For combinations use Press Hotkey; for clicks use Mouse.
-    Gui, KeyPick:Font, s10 Bold cBlack
+    Gui, KeyPick:Font, s10 Bold c24324A, Segoe UI
     Gui, KeyPick:Add, Button, x20 y542 w190 h38 gGeneratorKeyPickerUse Default, Use This Key
     Gui, KeyPick:Add, Button, x226 y542 w195 h38 vGeneratorKeyPickerAdvancedButton gGeneratorKeyPickerAdvanced, Unusual Key (Advanced)
     Gui, KeyPick:Add, Button, x640 y542 w138 h38 gGeneratorKeyPickerCancel, Cancel
     Gui, KeyPick:Show, w800 h595, LLARS - Choose Keyboard Key
+    LLARS_VisualFinish("KeyPick")
     if !GeneratorSequenceAdvanced
         GuiControl, KeyPick:Hide, GeneratorKeyPickerAdvancedButton
     Generator_RefreshKeyPicker()
@@ -3295,9 +3342,11 @@ Generator_OpenActionEditor(editIndex, functionName)
 		oldNode := GeneratorSequence[editIndex]
 
 	Gui, ActionEdit:New, +OwnDialogs +HwndGeneratorActionEditorHWND +LabelGeneratorActionEditor
-	Gui, ActionEdit:Font, s11 Bold cBlack
+	LLARS_VisualPrepare("ActionEdit")
+	LLARS_VisualAccent("ActionEdit", 880)
+	Gui, ActionEdit:Font, s11 Bold c24324A, Segoe UI
 	Gui, ActionEdit:Add, Text, x15 y12 w845 h28 Center, % entry.DisplayName
-	Gui, ActionEdit:Font, s10 Norm cBlack
+	Gui, ActionEdit:Font, s10 Norm c24324A, Segoe UI
 	Gui, ActionEdit:Add, Text, x20 y47 w540 h65 +Wrap, % entry.Purpose
 
     GeneratorEditingKeyParamIndex := 0
@@ -3379,10 +3428,10 @@ Generator_OpenActionEditor(editIndex, functionName)
             defaultStatus := oldNode.ProgressStatus
         if IsObject(oldNode) && oldNode.HasKey("ProgressActivity")
             defaultActivity := oldNode.ProgressActivity
-        Gui, ActionEdit:Font, s10 Bold cBlack
+        Gui, ActionEdit:Font, s10 Bold c24324A, Segoe UI
         Gui, ActionEdit:Add, Text, % "x20 y" . y . " w540 h25", Progress shown before this step (optional)
         y += 29
-        Gui, ActionEdit:Font, s10 Norm cBlack
+        Gui, ActionEdit:Font, s10 Norm c24324A, Segoe UI
         Gui, ActionEdit:Add, CheckBox, % "x20 y" . y . " w540 h28 vGeneratorStepShowProgress gGeneratorActionEditorProgressChanged Checked" . defaultShow, Show a status message when this step runs
         y += 32
         Gui, ActionEdit:Add, Text, % "x20 y" . y . " w170 h25", What is happening?
@@ -3396,23 +3445,23 @@ Generator_OpenActionEditor(editIndex, functionName)
     }
     if (entry.PreviewKind = "status")
     {
-        Gui, ActionEdit:Font, s10 Bold cBlack
+        Gui, ActionEdit:Font, s10 Bold c24324A, Segoe UI
 		Gui, ActionEdit:Add, Text, % "x20 y" . y . " w540 h23", Status display preview (updates as you type)
 		y += 24
-		Gui, ActionEdit:Font, s10 Norm cBlack
+		Gui, ActionEdit:Font, s10 Norm c24324A, Segoe UI
 		Gui, ActionEdit:Add, Edit, % "x20 y" . y . " w540 h88 vGeneratorActionEditorStatusPreview ReadOnly +Wrap -VScroll"
 		y += 93
 	}
 	Gui, ActionEdit:Add, Edit, % "x20 y" . y . " w540 h47 ReadOnly +Wrap", Step saved as an editable action. No code is needed here.
 	y += 53
-	Gui, ActionEdit:Font, s10 Bold cBlack
+	Gui, ActionEdit:Font, s10 Bold c24324A, Segoe UI
 	Gui, ActionEdit:Add, Button, % "x155 y" . y . " w120 h32 gGeneratorActionEditorSave", Save Step
 	Gui, ActionEdit:Add, Button, % "x305 y" . y . " w120 h32 gGeneratorActionEditorCancel", Cancel
 	Gui, ActionEdit:Add, Button, % "x435 y" . y . " w125 h32 gGeneratorActionEditorHelp", More Details
 	y += 48
-	Gui, ActionEdit:Font, s10 Bold cBlack
+	Gui, ActionEdit:Font, s10 Bold c24324A, Segoe UI
     Gui, ActionEdit:Add, Text, x585 y54 w270 h25, What should I enter?
-    Gui, ActionEdit:Font, s10 Norm cBlack
+    Gui, ActionEdit:Font, s10 Norm c24324A, Segoe UI
     guide := Generator_ActionFieldGuide(entry)
     dialogHeight := y
     if (dialogHeight < 350)
@@ -3420,6 +3469,7 @@ Generator_OpenActionEditor(editIndex, functionName)
     guideHeight := dialogHeight - 116
     Gui, ActionEdit:Add, Edit, % "x585 y84 w275 h" . guideHeight . " ReadOnly +Wrap +VScroll", %guide%
     Gui, ActionEdit:Show, % "w880 h" . dialogHeight, LLARS - Edit Step
+    LLARS_VisualFinish("ActionEdit")
     if (entry.PreviewKind = "status")
         Generator_UpdateStatusEditorPreview()
     else
@@ -3742,20 +3792,23 @@ Generator_OpenFlowEditor(editIndex)
 	}
 
 	Gui, FlowEdit:New, +OwnDialogs +HwndGeneratorFlowEditorHWND +LabelGeneratorFlowEditor
-	Gui, FlowEdit:Font, s11 Bold cBlack
+	LLARS_VisualPrepare("FlowEdit")
+	LLARS_VisualAccent("FlowEdit", 420)
+	Gui, FlowEdit:Font, s11 Bold c24324A, Segoe UI
 	Gui, FlowEdit:Add, Text, x15 y12 w390 h28 Center, Repeat Steps or Make a Decision
-	Gui, FlowEdit:Font, s10 Norm cBlack
+	Gui, FlowEdit:Font, s10 Norm c24324A, Segoe UI
 	Gui, FlowEdit:Add, Text, x25 y58 w105 h22, Choose a rule
 	Gui, FlowEdit:Add, DropDownList, x135 y54 w245 vGeneratorFlowType gGeneratorFlowTypeChanged, Repeat N Times|Repeat Forever|Else|End Block|Break|Continue
 	Gui, FlowEdit:Add, Text, x25 y96 w105 h22 vGeneratorFlowCountLabel, How many times?
 	Gui, FlowEdit:Add, Edit, x135 y92 w245 h25 vGeneratorFlowCount, %flowCount%
 	Gui, FlowEdit:Add, Text, x25 y130 w355 h60 +Wrap vGeneratorFlowExplanation, Choose a rule to see where it belongs in your list of steps.
-	Gui, FlowEdit:Font, s10 Bold cBlack
+	Gui, FlowEdit:Font, s10 Bold c24324A, Segoe UI
 	Gui, FlowEdit:Add, Button, x82 y194 w110 h30 gGeneratorFlowEditorSave, Add Rule
 	Gui, FlowEdit:Add, Button, x215 y194 w110 h30 gGeneratorFlowEditorCancel, Cancel
 	GuiControl, FlowEdit:ChooseString, GeneratorFlowType, %flowType%
 	Generator_UpdateFlowCountVisibility(flowType)
 	Gui, FlowEdit:Show, w420 h240, LLARS Flow Control
+	LLARS_VisualFinish("FlowEdit")
 }
 
 Generator_UpdateFlowCountVisibility(flowType)
@@ -3864,15 +3917,18 @@ Generator_OpenCustomEditor(editIndex)
 		code := GeneratorSequence[editIndex].Code
 
 	Gui, CustomEdit:New, +OwnDialogs +HwndGeneratorCustomEditorHWND +LabelGeneratorCustomEditor
-	Gui, CustomEdit:Font, s11 Bold cBlack
+	LLARS_VisualPrepare("CustomEdit")
+	LLARS_VisualAccent("CustomEdit", 600)
+	Gui, CustomEdit:Font, s11 Bold c24324A, Segoe UI
 	Gui, CustomEdit:Add, Text, x15 y12 w570 h28 Center, Custom AHK Block
-	Gui, CustomEdit:Font, s10 Norm cBlack
+	Gui, CustomEdit:Font, s10 Norm c24324A, Segoe UI
 	Gui, CustomEdit:Add, Text, x20 y48 w560 h42, Advanced escape hatch: this code is inserted verbatim. LLARS cannot fully validate arbitrary AutoHotkey, so review the generated preview before creating the script.
 	Gui, CustomEdit:Add, Edit, x20 y96 w560 h280 vGeneratorCustomCode WantTab -Wrap, %code%
-	Gui, CustomEdit:Font, s10 Bold cBlack
+	Gui, CustomEdit:Font, s10 Bold c24324A, Segoe UI
 	Gui, CustomEdit:Add, Button, x172 y392 w110 h32 gGeneratorCustomEditorSave, Save
 	Gui, CustomEdit:Add, Button, x312 y392 w110 h32 gGeneratorCustomEditorCancel, Cancel
 	Gui, CustomEdit:Show, w600 h442, LLARS Custom AHK
+	LLARS_VisualFinish("CustomEdit")
 }
 
 Generator_SaveCustomEditor()
@@ -4215,12 +4271,15 @@ Generator_ShowRunOrder()
     explanation := Generator_RunOrderText()
     Gui, RunOrder:Destroy
     Gui, RunOrder:New, +OwnDialogs +Resize +MinSize700x420
-    Gui, RunOrder:Font, s12 Bold cBlack
+    LLARS_VisualPrepare("RunOrder")
+    LLARS_VisualAccent("RunOrder", 895)
+    Gui, RunOrder:Font, s12 Bold c24324A, Segoe UI
     Gui, RunOrder:Add, Text, x20 y15 w855 h30, Your Script - What Happens, in Order
-    Gui, RunOrder:Font, s10 Norm cBlack
+    Gui, RunOrder:Font, s10 Norm c24324A, Segoe UI
     Gui, RunOrder:Add, Edit, x20 y52 w855 h460 ReadOnly +Wrap +VScroll, %explanation%
     Gui, RunOrder:Add, Button, x380 y522 w135 h32 gGeneratorRunOrderClose, Close
     Gui, RunOrder:Show, w895 h567, LLARS - Run Order & Waits
+    LLARS_VisualFinish("RunOrder")
 }
 
 Generator_UpdatePreview()
@@ -4757,9 +4816,11 @@ Generator_ShowConfigManager()
 	}
 
 	Gui, ConfigMgr:New, +OwnDialogs +HwndGeneratorConfigHWND +LabelGeneratorConfig
-	Gui, ConfigMgr:Font, s12 Bold cBlack
+	LLARS_VisualPrepare("ConfigMgr")
+	LLARS_VisualAccent("ConfigMgr", 780)
+	Gui, ConfigMgr:Font, s12 Bold c24324A, Segoe UI
 	Gui, ConfigMgr:Add, Text, x10 y10 w760 h28 Center, Setup Values for My Script
-	Gui, ConfigMgr:Font, s10 Norm cBlack
+	Gui, ConfigMgr:Font, s10 Norm c24324A, Segoe UI
 	Gui, ConfigMgr:Add, Text, x20 y46 w740 h42, Edit saved locations, keys and waits here. Enter wait times in SECONDS (for example 2 = 2 seconds); Config.ini stores milliseconds automatically. Imported extra sections stay read-only.
 	Gui, ConfigMgr:Add, ListView, x20 y96 w740 h310 vGeneratorConfigList Grid -Multi, Section|Type|Source|State|References
 	Gui, ConfigMgr:Add, Button, x20 y422 w105 h30 gGeneratorConfigAdd, Add Value
@@ -4772,6 +4833,7 @@ Generator_ShowConfigManager()
 	Gui, ConfigMgr:Add, Text, x20 y468 w740 h42 Center, Renaming a saved value updates steps created here. Code that you write manually will not be changed.
 	Generator_RefreshConfigManager()
 	Gui, ConfigMgr:Show, w780 h526, LLARS Config.ini Manager
+	LLARS_VisualFinish("ConfigMgr")
 }
 
 Generator_RefreshConfigManager()
@@ -5028,9 +5090,11 @@ Generator_OpenConfigEditor(configKey := "")
 	typeDisplay := IsObject(definition) ? definition.DisplayName : "Coordinate"
 
 	Gui, ConfigEdit:New, +OwnDialogs +HwndGeneratorConfigEditorHWND +LabelGeneratorConfigEditor
-	Gui, ConfigEdit:Font, s11 Bold cBlack
+	LLARS_VisualPrepare("ConfigEdit")
+	LLARS_VisualAccent("ConfigEdit", 550)
+	Gui, ConfigEdit:Font, s11 Bold c24324A, Segoe UI
 	Gui, ConfigEdit:Add, Text, x15 y12 w520 h28 Center, Edit a Saved Setup Value
-	Gui, ConfigEdit:Font, s10 Norm cBlack
+	Gui, ConfigEdit:Font, s10 Norm c24324A, Segoe UI
 	Gui, ConfigEdit:Add, Text, x20 y54 w130 h22, Value name
 	nameOptions := IsObject(section) ? "ReadOnly" : ""
 	Gui, ConfigEdit:Add, Edit, % "x160 y50 w360 h25 vGeneratorConfigSectionName " . nameOptions, %sectionName%
@@ -5056,12 +5120,13 @@ Generator_OpenConfigEditor(configKey := "")
     GuiControl, ConfigEdit:Choose, GeneratorConfigUnitsChoice, 1
     Gui, ConfigEdit:Add, Text, x20 y400 w500 h60 +Wrap vGeneratorConfigTimingHint,
     Gui, ConfigEdit:Add, Text, x20 y467 w500 h40 +Wrap vGeneratorConfigPurpose,
-	Gui, ConfigEdit:Font, s10 Bold cBlack
+	Gui, ConfigEdit:Font, s10 Bold c24324A, Segoe UI
 	Gui, ConfigEdit:Add, Button, x150 y516 w110 h32 gGeneratorConfigEditorSave, Save Value
 	Gui, ConfigEdit:Add, Button, x290 y516 w110 h32 gGeneratorConfigEditorCancel, Cancel
 	values := IsObject(section) ? section.Values : ""
 	Generator_RenderConfigEditorFields(configType, mode, values)
 	Gui, ConfigEdit:Show, w550 h566, LLARS Config.ini Section
+	LLARS_VisualFinish("ConfigEdit")
 }
 
 Generator_ConfigEditorTypeChanged()
@@ -5589,7 +5654,7 @@ Generator_CapabilitySummary(caps)
 		return "Setup preview unavailable"
 	return "Hotkeys: " . Generator_CapabilityFlagText(caps.Hotkeys) . " | Coordinates: " . Generator_CapabilityFlagText(caps.Coordinates)
 		. "`nColors: " . Generator_CapabilityFlagText(caps.Colors) . " | Timer: " . Generator_CapabilityFlagText(caps.Timer)
-		. "`nScript Config: " . Generator_CapabilityFlagText(caps.ScriptConfig)
+		. " | Script Config: " . Generator_CapabilityFlagText(caps.ScriptConfig)
 }
 
 Generator_CapabilityDetail(caps)

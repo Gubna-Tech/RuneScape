@@ -48,6 +48,7 @@ LLARS_StartRun()
 		LLARS_CreateRunCountGUI()
 	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl,, State3, Running
+	LLARS_VisualShowStatus("blue")
 	DisableButton()
 	startcheck := 1
 	LLARS_ResetRunState()
@@ -122,6 +123,7 @@ LLARS_StartUntilDoneRun()
 	LLARS_CreateUntilDoneGUI()
 	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl,, State3, Running
+	LLARS_VisualShowStatus("blue")
 	DisableButton()
 	SetLLARSHOTKEYS()
 	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")
@@ -197,6 +199,7 @@ LLARS_StartTimerRun()
 	LLARS_CreateTimerGUI()
 	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl,, State3, Running
+	LLARS_VisualShowStatus("blue")
 	GuiControl,, TimerCount, % LLARS_TimerRemainingText(endTime - LLARS_NowMS())
 	DisableButton()
 	SetLLARSHOTKEYS()
@@ -312,6 +315,7 @@ LLARS_BeginLoop()
 	GuiControl,, Counter2, %count2% / %runcount3%
 	GuiControl,, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl,, State3, Running
+	LLARS_VisualShowStatus("blue")
 	DisableButton()
 }
 
@@ -595,6 +599,7 @@ LLARS_RandomSleep()
 	GuiControl, 1: Font, State3
 	Gui, 1: Font, s10 Bold cBlack
 	GuiControl, 1:, State3, % RandomSleepAmountToMinutesSeconds(RandomSleepAmount)
+	LLARS_VisualShowStatus("blue")
 	LLARS_DeveloperAction("Random Sleep || Sleeping || " . RandomSleepAmount . " ms")
 	LLARS_DeveloperLoggedSleepAction("RANDOM SLEEP", "Sleep=" RandomSleepAmount " ms | Chance=" chance "% | Roll=" RandomNumber)
 
@@ -610,6 +615,7 @@ LLARS_RandomSleep()
 	Gui, 1: Font, s10 Bold cBlack
 	GuiControl, 1:, ScriptBlue, % LLARS_DisplayScriptName()
 	GuiControl, 1:, State3, Running
+	LLARS_VisualShowStatus("blue")
 	Gosub, UpdateEstimatedTime
 
 	return RandomSleepAmount
@@ -682,6 +688,7 @@ LLARS_RunComplete()
 	GuiControl,, EstRunRemaining, 0h 0m 0s
 	GuiControl,, ScriptGreen, % LLARS_DisplayScriptName()
 	GuiControl,, State1, Finished
+	LLARS_VisualShowStatus("green")
 	EndTimeStamp := A_Hour ":" A_Min ":" A_Sec
 	EndTime := LLARS_NowMS()
 	TotalTimeSeconds := Floor((EndTime - StartTime) / 1000)

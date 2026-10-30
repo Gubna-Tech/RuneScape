@@ -214,14 +214,16 @@ LLARS_ShowUpdateCheckSplash()
     version := LLARS_GetVersion()
     Gui, LLARSUpdateSplash:Destroy
     Gui, LLARSUpdateSplash:New, +AlwaysOnTop +ToolWindow -Caption +Border +HwndLLARSUpdateSplashHwnd
-    Gui, LLARSUpdateSplash:Color, F5F7FA
-    Gui, LLARSUpdateSplash:Font, s13 Bold c152039, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y12 w394 h26 Center, LLARS v%version%
-    Gui, LLARSUpdateSplash:Font, s12 Bold c3D4A5C, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y42 w394 h26 Center vLLARSUpdateSplashMessage, Checking for updates...
-    Gui, LLARSUpdateSplash:Font, s10 Norm c303B4B, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y75 w394 h34 Center vLLARSUpdateSplashDetail, Checking the latest release information.
-    Gui, LLARSUpdateSplash:Show, w430 h126 Center NoActivate, LLARS Update Check
+    LLARS_VisualPrepare("LLARSUpdateSplash")
+    LLARS_VisualBanner("LLARSUpdateSplash", 430, 55)
+    Gui, LLARSUpdateSplash:Font, s14 Bold cFFFFFF, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y12 w394 h26 Center BackgroundTrans, LLARS v%version%
+    Gui, LLARSUpdateSplash:Font, s12 Bold c24324A, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y65 w394 h26 Center vLLARSUpdateSplashMessage, Checking for updates...
+    Gui, LLARSUpdateSplash:Font, s10 Norm c516B89, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y100 w394 h34 Center vLLARSUpdateSplashDetail, Checking the latest release information.
+    Gui, LLARSUpdateSplash:Show, w430 h148 Center NoActivate, LLARS Update Check
+    LLARS_VisualFinish("LLARSUpdateSplash")
     Gui, %previousGui%:Default
     ; Give the update indicator one chance to paint before synchronous WinHTTP.
     Sleep, 20
@@ -248,14 +250,16 @@ LLARS_ShowInitializationSplash(stage := "Initializing LLARS...", detail := "Prep
     }
     version := LLARS_GetVersion()
     Gui, LLARSUpdateSplash:New, +ToolWindow -Caption +Border +HwndLLARSUpdateSplashHwnd
-    Gui, LLARSUpdateSplash:Color, F5F7FA
-    Gui, LLARSUpdateSplash:Font, s13 Bold c152039, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y12 w394 h26 Center, LLARS v%version%
-    Gui, LLARSUpdateSplash:Font, s12 Bold c3D4A5C, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y42 w394 h26 Center vLLARSUpdateSplashMessage, %stage%
-    Gui, LLARSUpdateSplash:Font, s10 Norm c303B4B, Segoe UI
-    Gui, LLARSUpdateSplash:Add, Text, x18 y75 w394 h34 Center vLLARSUpdateSplashDetail, %detail%
-    Gui, LLARSUpdateSplash:Show, w430 h126 Center NoActivate, LLARS Initializing
+    LLARS_VisualPrepare("LLARSUpdateSplash")
+    LLARS_VisualBanner("LLARSUpdateSplash", 430, 55)
+    Gui, LLARSUpdateSplash:Font, s14 Bold cFFFFFF, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y12 w394 h26 Center BackgroundTrans, LLARS v%version%
+    Gui, LLARSUpdateSplash:Font, s12 Bold c24324A, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y65 w394 h26 Center vLLARSUpdateSplashMessage, %stage%
+    Gui, LLARSUpdateSplash:Font, s10 Norm c516B89, Segoe UI
+    Gui, LLARSUpdateSplash:Add, Text, x18 y100 w394 h34 Center vLLARSUpdateSplashDetail, %detail%
+    Gui, LLARSUpdateSplash:Show, w430 h148 Center NoActivate, LLARS Initializing
+    LLARS_VisualFinish("LLARSUpdateSplash")
     Gui, %previousGui%:Default
     Sleep, 20
     return LLARSUpdateSplashHwnd

@@ -1,4 +1,5 @@
-﻿#Requires AutoHotkey v1.1.37.02
+#Requires AutoHotkey v1.1.37.02
+#NoEnv
 #SingleInstance Force
 
 ; LLARS ships the pinned AutoHotInterception runtime. The soft include keeps
@@ -9,6 +10,7 @@
 #Include %A_ScriptDir%\Core\LLARS_CreatorRegistry.ahk
 #Include %A_ScriptDir%\Core\LLARS_AHI.ahk
 #Include %A_ScriptDir%\Core\LLARS_Update.ahk
+#Include %A_ScriptDir%\Core\LLARS_Visual.ahk
 
 EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
 if (LLARSValidationMode = "1")
@@ -25,17 +27,18 @@ if (!FileExist(A_ScriptDir . "\Core")
 	Menu, Tray, NoIcon
 
 	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui Error: Font, S13 bold underline cRed
+	LLARS_VisualPrepare("Error")
+	Gui Error: Font, s13 Bold cEF4444, Segoe UI
 	Gui Error: Add, Text, Center w220 x5, ERROR
 	Gui Error: Add, Text, Center x5 w220,
-	Gui Error: Font, s12 norm bold
+	Gui Error: Font, s12 Bold c24324A, Segoe UI
 	Gui Error: Add, Text, Center w220 x5, LLARS Project Files Missing
 	Gui Error: Add, Text, Center x5 w220,
-	Gui Error: Font, cBlack
+	Gui Error: Font, s10 Norm c24324A, Segoe UI
 	Gui Error: Add, Text, Center w220 x5, The complete LLARS project could not be found.
 	Gui Error: Add, Text, Center x5 w220,
 	Gui Error: Add, Text, Center w220 x5, If you opened this file from a ZIP, RAR, or 7Z archive, extract the entire LLARS folder before running it.
-	Gui Error: Font, s11 norm Bold c0x152039
+	Gui Error: Font, s11 Bold c24324A, Segoe UI
 	Gui Error: Add, Text, Center x5 w220,
 	Gui Error: Add, Text, Center w220 x5, Created by Gubna
 	Gui Error: Add, Button, gDiscordError w150 x40 Center, Discord
@@ -45,6 +48,7 @@ if (!FileExist(A_ScriptDir . "\Core")
 
 	Gui Error: -caption
 	Gui Error: Show, Center w230, File Error
+	LLARS_VisualFinish("Error")
 
 	return
 }
@@ -138,6 +142,11 @@ Gui, 1:Default
 ; Creates the script selector GUI.
 Gui +LastFound +OwnDialogs +AlwaysOnTop -caption
 Gui, +HwndLLARSSelectorHwnd
+LLARS_VisualPrepare("1")
+LLARS_VisualAccent("1", 420)
+LLARS_VisualBanner("1", 420, 88)
+LLARS_VisualCard("1", 8, 92, 404, 68)
+LLARS_VisualCard("1", 8, 430, 404, 108)
 LLARS_SelectorMoving := false
 ; Register borderless-window movement before the first handler label so these
 ; callbacks are active during the Selector's entire lifetime. Display changes
@@ -146,29 +155,34 @@ OnMessage(0x0201, "WM_LBUTTONDOWN")
 OnMessage(0x0231, "WM_ENTERSIZEMOVE")
 OnMessage(0x0232, "WM_EXITSIZEMOVE")
 OnMessage(0x007E, "WM_DISPLAYCHANGE")
-Gui, Font, s12 Bold cBlue
-Gui, Add, Text, Center w410 x5 y10 h40, Select a script from the list below and`nclick 'Select Script' or press Enter
-Gui, Font, cGreen
-Gui, Add, Text, Center w410 x5 y52 h22 vTS, Showing: %ScriptTotal% of %ScriptTotal%
-Gui, Font, s10 Norm cBlack
-Gui, Add, Edit, x12 y80 w250 h24 vSelectorSearch gSelectorFilterChanged hwndLLARSSelectorSearchHwnd
+Gui, Font, s21 Bold cFFFFFF, Bahnschrift
+Gui, Add, Text, Center w396 x12 y3 h36 BackgroundTrans, LLARS
+Gui, Font, s9 Bold cE2EAF6, Segoe UI
+Gui, Add, Text, Center w396 x12 y37 h28 +0x200 BackgroundTrans, Local Library of Automated Routines and Scripts
+Gui, Font, s9 Bold c9DC9FF, Segoe UI
+Gui, Add, Text, Center w396 x12 y68 h18 BackgroundTrans vTS, Showing: %ScriptTotal% of %ScriptTotal%
+Gui, Font, s10 Norm c24324A, Segoe UI
+Gui, Add, Edit, x12 y96 w250 h27 vSelectorSearch gSelectorFilterChanged hwndLLARSSelectorSearchHwnd
 DllCall("SendMessageW", "Ptr", LLARSSelectorSearchHwnd, "UInt", 0x1501, "Ptr", 1, "WStr", "Search scripts...")
-Gui, Add, DropDownList, x270 y80 w138 vSelectorView gSelectorFilterChanged Choose1, All Scripts|Favorites|Recent
-Gui, Add, DropDownList, x12 y112 w126 vSelectorCategory gSelectorFilterChanged Choose1, %LLARS_SelectorCategoryOptions%
-Gui, Add, DropDownList, x145 y112 w126 vSelectorDifficulty gSelectorFilterChanged Choose1, All Difficulties|Easy|Intermediate|Hard
-Gui, Add, DropDownList, x278 y112 w130 vSelectorScriptFamily gSelectorFilterChanged Choose1, All Types|Normal|Menu Entry Swapper
-Gui, Font, s11 Bold cBlack
-Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y144 w396 h250, %scriptArray%
-Gui, Font, s10 Bold cBlack
-Gui, Add, Button, gSelect w120 h28 x12 y404 Center, Select Script
-Gui, Add, Button, gSelectorToggleFavorite w140 h28 x140 y404 vSelectorFavoriteButton Center, Add Favorite
-Gui, Add, Button, gSelectorClearFilters w120 h28 x288 y404 Center, Clear Filters
-Gui, Add, Button, gExit w140 h28 x140 y440 Center, Close Selector
+Gui, Add, DropDownList, x270 y96 w138 vSelectorView gSelectorFilterChanged Choose1, All Scripts|Favorites|Recent
+Gui, Add, DropDownList, x12 y131 w126 vSelectorCategory gSelectorFilterChanged Choose1, %LLARS_SelectorCategoryOptions%
+Gui, Add, DropDownList, x145 y131 w126 vSelectorDifficulty gSelectorFilterChanged Choose1, All Difficulties|Easy|Intermediate|Hard
+Gui, Add, DropDownList, x278 y131 w130 vSelectorScriptFamily gSelectorFilterChanged Choose1, All Types|Normal|Menu Entry Swapper
+Gui, Font, s9 Bold c60768F, Segoe UI
+Gui, Add, Text, x20 y171 w250 h19, AVAILABLE SCRIPTS
+Gui, Font, s11 Norm c24324A, Segoe UI
+Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y194 w396 h226, %scriptArray%
+Gui, Font, s10 Bold c24324A, Segoe UI
+Gui, Add, Button, gSelect w110 h34 x24 y446 Center, Select Script
+Gui, Add, Button, gSelectorToggleFavorite w128 h34 x146 y446 vSelectorFavoriteButton Center, Add Favorite
+Gui, Add, Button, gSelectorClearFilters w110 h34 x286 y446 Center, Clear Filters
+Gui, Add, Button, gExit w128 h34 x146 y488 Center, Close Selector
 if LLARS_SelectorLoadWindowPosition(selectorX, selectorY)
-	selectorShowOptions := "w420 h482 x" . selectorX . " y" . selectorY
+	selectorShowOptions := "w420 h550 x" . selectorX . " y" . selectorY
 else
-	selectorShowOptions := "w420 h482 Center"
+	selectorShowOptions := "w420 h550 Center"
 Gui, Show, %selectorShowOptions%, Script Selector
+LLARS_VisualWindow(LLARSSelectorHwnd)
 LLARS_HideUpdateCheckSplash()
 Gui, +ToolWindow
 if FileExist(LLARS_SelectorIconPath)
@@ -842,75 +856,9 @@ CloseOtherLLARS()
 	}
 }
 
-GuiBalance()
-{
-	; Get the heights of the two GUIs.
-	WinGetPos,,,, bottomH, BottomGUI
-	WinGetPos,,,, topH, TopGUI
-	
-	; Calculate the vertical position required to center TopGUI.
-	topPOS := (bottomH - topH) / 2
-	
-	Gui, TopGUI: +LabelTopGUI
-	
-	WinMove, TopGUI,, , %topPOS%
-}
-
-; =======================================================================
-; |     SETUP DIFFICULTY BORDERS     -     SETUP DIFFICULTY BORDERS     |
-; =======================================================================
-
-; Red border for scripts that are difficult to configure.
-GuiBorderHard()
-{
-	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui Border: Color, Red
-	
-	Gui Border: +ToolWindow
-	
-	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w505 h205, BottomGUI
-}
-
-; Green border for scripts that are easy to configure.
-GuiBorderEasy()
-{
-	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui Border: Color, Green
-	
-	Gui Border: +ToolWindow
-	
-	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w505 h205, BottomGUI
-}
-
-; Orange border for scripts with intermediate setup difficulty.
-GuiBorderIntermediate()
-{
-	Gui Border: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui Border: Color, CC5500
-	
-	Gui Border: +ToolWindow
-	
-	Gui Border: -caption
-	Gui Border: Show, NoActivate xcenter y0 w505 h205, BottomGUI
-}
-
 GuiReset()
 {
-	Gui Border: Destroy
-	Gui Info: Destroy
-}
-
-; Applies the standardized setup-difficulty border.
-SetSetupDifficulty(Difficulty)
-{
-	if (Difficulty = "Easy")
-		GuiBorderEasy()
-	else if (Difficulty = "Intermediate")
-		GuiBorderIntermediate()
-	else if (Difficulty = "Hard")
-		GuiBorderHard()
+    Gui Info: Destroy
 }
 
 ScriptSelect:
@@ -938,32 +886,107 @@ if A_GuiEvent = Normal
 	setupType := record.SetupText
 	localConfigText := record.RequiresLocalConfig ? "Yes" : "No"
 	GuiReset()
-	SetSetupDifficulty(difficulty)
-	Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-	Gui Info: Color, White
-	Gui Info: Font, s14 bold underline cBlue
-	Gui Info: Add, Text, center x5 w480, %Script%
+	Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled +ToolWindow -Caption
+	LLARS_VisualPrepare("Info")
+	Gui Info: Color, FFFFFF, FFFFFF
+	Gui Info: Margin, 0, 0
+	if (difficulty = "Easy")
+		infoFrameAsset := "script_info_easy.png"
+	else if (difficulty = "Intermediate")
+		infoFrameAsset := "script_info_intermediate.png"
+	else
+		infoFrameAsset := "script_info_hard.png"
+	infoFramePath := LLARS_VisualAsset(infoFrameAsset)
+    ; Size the colored border to the *rendered description*, not to a
+    ; fixed tallest-case frame. Preserve the original 11pt readable copy.
+    ; Keep 20 units of breathing room below the copy, while drawing the
+    ; white inset slightly smaller inside the difficulty-colored frame.
+    descriptionHeight := LLARS_SelectorDescriptionHeight(scriptinfo, 418)
+    infoHeight := Max(270, Min(445, 221 + descriptionHeight + 20))
+	if (infoFramePath != "")
+        Gui Info: Add, Picture, x0 y0 w490 h%infoHeight%, %infoFramePath%
+	Gui Info: Font, s16 Bold c24324A, Segoe UI
+	Gui Info: Add, Text, Center x28 y22 w434 h30 BackgroundTrans, %script%
 	LLARS_SelectorSetDifficultyFont(difficulty)
-	Gui Info: Add, Text, center x5 w480, Setup Difficulty: %difficulty%
-	Gui Info: Font, s11 norm c0x303030
-	Gui Info: Add, Text, center x5 w480, Category: %category%   |   Setup: %setupType%   |   Local config required: %localConfigText%
-	Gui Info: Font, S12 cBlack
-	Gui Info: Add, Text, center x5 w480, %scriptinfo%
-	Gui Info: +ToolWindow
-	Gui Info: -caption
-	Gui Info: Show, NoActivate xcenter y9999 w490 h190, TopGUI
-	GuiBalance()
+	Gui Info: Add, Text, Center x28 y54 w434 h28 BackgroundTrans, Setup Difficulty: %difficulty%
+	LLARS_VisualDivider("Info", 38, 90, 414)
+    ; Metadata fields are neutral. Only the DIFFICULTY heading and outer
+    ; frame use the difficulty color; setup type is never a readiness alarm.
+	Gui Info: Font, s11 Bold c24324A, Segoe UI
+    Gui Info: Add, Text, Center x30 y98 w430 h25 BackgroundTrans, Category: %category%
+    Gui Info: Add, Text, Center x30 y125 w430 h25 BackgroundTrans, % "Setup: " . setupType
+    Gui Info: Add, Text, Center x30 y152 w430 h25 BackgroundTrans, Local config required: %localConfigText%
+    LLARS_VisualDivider("Info", 38, 184, 414)
+    Gui Info: Font, s11 Bold c45689A, Segoe UI
+    Gui Info: Add, Text, Center x36 y190 w418 h25 BackgroundTrans, ABOUT THIS SCRIPT
+    ; Restore normal reading-size copy. The longer frame is for the text,
+    ; not an excuse to reduce its font compared with earlier releases.
+	Gui Info: Font, s11 Norm c24324A, Segoe UI
+    Gui Info: Add, Text, x36 y221 w418 h%descriptionHeight% +Wrap BackgroundTrans, %scriptinfo%
+	infoTop := LLARS_SelectorInfoTop()
+	Gui Info: Show, % "NoActivate xcenter y" . infoTop . " w490 h" . infoHeight, TopGUI
+	LLARS_VisualFinish("Info")
 }
 return
+
+; Place the Script Info popup near the top of the same monitor as Selector.
+; Monitor work areas support secondary monitors and top-docked taskbars.
+LLARS_SelectorInfoTop()
+{
+    global LLARSSelectorHwnd
+    if (!LLARSSelectorHwnd || !DllCall("user32\IsWindow", "Ptr", LLARSSelectorHwnd))
+        return 8
+    monitor := DllCall("user32\MonitorFromWindow", "Ptr", LLARSSelectorHwnd, "UInt", 2, "Ptr")
+    if (!monitor)
+        return 8
+    VarSetCapacity(monitorInfo, 40, 0)
+    NumPut(40, monitorInfo, 0, "UInt")
+    if (!DllCall("user32\GetMonitorInfoW", "Ptr", monitor, "Ptr", &monitorInfo))
+        return 8
+    return NumGet(monitorInfo, 24, "Int") + 2
+}
+
+; Measure Segoe UI 11pt with native Windows word-wrap metrics. All values
+; returned to the GUI use AHK logical units so 100/125/150% DPI stays aligned.
+; The old fixed frame was oversized for short descriptions and tempting to
+; shrink the text; this keeps the text size and fits the frame instead.
+LLARS_SelectorDescriptionHeight(description, logicalWidth)
+{
+    dpi := A_ScreenDPI ? A_ScreenDPI : 96
+    fontHeight := -Round(11 * dpi / 72)
+    hFont := DllCall("gdi32\CreateFontW", "Int", fontHeight, "Int", 0
+        , "Int", 0, "Int", 0, "Int", 400, "UInt", 0, "UInt", 0
+        , "UInt", 0, "UInt", 1, "UInt", 0, "UInt", 0, "UInt", 5
+        , "UInt", 0, "WStr", "Segoe UI", "Ptr")
+    hdc := DllCall("user32\GetDC", "Ptr", 0, "Ptr")
+    if (!hFont || !hdc)
+    {
+        if (hdc)
+            DllCall("user32\ReleaseDC", "Ptr", 0, "Ptr", hdc)
+        if (hFont)
+            DllCall("gdi32\DeleteObject", "Ptr", hFont)
+        return 76
+    }
+    oldFont := DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", hFont, "Ptr")
+    VarSetCapacity(rect, 16, 0)
+    NumPut(Round(logicalWidth * dpi / 96), rect, 8, "Int")
+    ; DT_WORDBREAK | DT_CALCRECT. Explicit CR/LF remain respected.
+    pixelHeight := DllCall("user32\DrawTextW", "Ptr", hdc, "WStr", description
+        , "Int", -1, "Ptr", &rect, "UInt", 0x410, "Int")
+    DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", oldFont, "Ptr")
+    DllCall("user32\ReleaseDC", "Ptr", 0, "Ptr", hdc)
+    DllCall("gdi32\DeleteObject", "Ptr", hFont)
+    return Max(25, Ceil(pixelHeight * 96 / dpi) + 7)
+}
 
 LLARS_SelectorSetDifficultyFont(Difficulty)
 {
 	if (Difficulty = "Easy")
-		Gui Info: Font, s13 normal bold cGreen
+		Gui Info: Font, s12 Bold c128C79, Segoe UI
 	else if (Difficulty = "Intermediate")
-		Gui Info: Font, s13 normal bold c0xCC5500
+		Gui Info: Font, s12 Bold cB66B20, Segoe UI
 	else
-		Gui Info: Font, s13 normal bold cRed
+		Gui Info: Font, s12 Bold cEF4444, Segoe UI
 }
 
 ; =================================================================
@@ -1031,6 +1054,10 @@ LaunchSelectedScript(ScriptDirectory, ScriptFile, ScriptDisplayName := "")
 	}
 
 	LLARS_SelectorRememberRecent(ScriptDisplayName)
+
+	; Keep one header theme across selector and selected script.
+	sessionHeaderTheme := LLARS_VisualHeaderVariantName()
+	EnvSet, LLARS_HEADER_THEME, %sessionHeaderTheme%
 
 	Gui, TopGUI:Destroy
 	Gui, BottomGUI:Destroy

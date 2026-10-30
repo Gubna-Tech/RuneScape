@@ -30,6 +30,9 @@
 ; Loads the standardized creator-facing API.
 #Include %A_LineFile%\..\LLARS_CreatorAPI.ahk
 
+; Loads the shared LLARS visual system.
+#Include %A_LineFile%\..\LLARS_Visual.ahk
+
 ; Loads the main, RunCount, and Timer GUI builders.
 #Include %A_LineFile%\..\LLARS_GUI.ahk
 

@@ -1,4 +1,4 @@
-﻿; ================================================================
+; ================================================================
 ; |     LLARS LABEL LIBRARY     -     LLARS LABEL LIBRARY        |
 ; ================================================================
 
@@ -130,6 +130,20 @@ RandomSleepAmountToMinutesSeconds(time)
 ; |     ESTIMATED TIME COUNTDOWN     -     ESTIMATED TIME COUNTDOWN       |
 ; =========================================================================
 
+; The estimate timer runs every 250 ms, but its values are displayed in
+; whole seconds. Avoid invalidating transparent status text four times per second.
+LLARS_GUISetRemainingText(controlId, displayText)
+{
+    global LLARS_GUIRemainingPaintCache
+    if (!IsObject(LLARS_GUIRemainingPaintCache))
+        LLARS_GUIRemainingPaintCache := {}
+    if (LLARS_GUIRemainingPaintCache.HasKey(controlId) && LLARS_GUIRemainingPaintCache[controlId] == displayText)
+        return false
+    LLARS_GUIRemainingPaintCache[controlId] := displayText
+    GuiControl, 1:, %controlId%, %displayText%
+    return true
+}
+
 ; Updates the current-loop and full-run estimates shown by RunCount scripts.
 UpdateEstimatedTime:
 LLARS_UpdateEstimatedTimeNow()
@@ -168,8 +182,8 @@ LLARS_UpdateEstimatedTimeNow()
 
 	else
 	{
-		GuiControl, 1:, EstLoopRemaining, Calculating
-		GuiControl, 1:, EstRunRemaining, Calculating
+		LLARS_GUISetRemainingText("EstLoopRemaining", "Calculating")
+		LLARS_GUISetRemainingText("EstRunRemaining", "Calculating")
 		return
 	}
 
@@ -197,7 +211,7 @@ LLARS_UpdateEstimatedTimeNow()
 	EstLoopMinutes := Floor(Mod(EstLoopTotalSeconds, 3600) / 60)
 	EstLoopSeconds := Mod(EstLoopTotalSeconds, 60)
 	EstLoopDisplay := EstLoopHours "h " EstLoopMinutes "m " EstLoopSeconds "s"
-	GuiControl, 1:, EstLoopRemaining, %EstLoopDisplay%
+	LLARS_GUISetRemainingText("EstLoopRemaining", EstLoopDisplay)
 	if (EstFollowingCompletedLoops > 0 && EstFollowingAverageLoopTime > 0)
 		FutureLoopTime := EstFollowingAverageLoopTime
 	else if (EstConfiguredFollowingLoopAverage > 0)
@@ -224,7 +238,7 @@ LLARS_UpdateEstimatedTimeNow()
 	EstRunMinutes := Floor(Mod(EstRunTotalSeconds, 3600) / 60)
 	EstRunSeconds := Mod(EstRunTotalSeconds, 60)
 	EstRunDisplay := EstRunHours "h " EstRunMinutes "m " EstRunSeconds "s"
-	GuiControl, 1:, EstRunRemaining, %EstRunDisplay%
+	LLARS_GUISetRemainingText("EstRunRemaining", EstRunDisplay)
 }
 
 ; =====================================================================
@@ -241,52 +255,42 @@ DisableHotkey()
 Menu, Tray, NoIcon
 Gui Combo: Destroy
 Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSetupGuiHwnd
-Gui Combo: Font, s12 Bold cBlack
-Gui Combo: Add, Text, x5 y5 w210 h25 Center, LLARS
-Gui Combo: Font, s10 Bold cGray
-Gui Combo: Add, Text, x5 y29 w210 h18 Center, Setup
-Gui Combo: Add, Text, x5 y49 w210 h2 0x10
-Gui Combo: Font, s10 Bold cBlack
+LLARS_VisualPrepare("Combo")
 setupCaps := LLARS_GetScriptCapabilities()
-
-setupY := 57
-Gui Combo: Add, Button, x25 y%setupY% w170 h25 gColor vSetupColorsButton, Colors
+setupHasTimer := (setupCaps.Timer && LLARS_COMBO_TIMER_LABEL != "")
+setupButtonCount := 6 + (setupHasTimer ? 1 : 0)
+setupLayout := LLARS_VisualStackLayout(setupButtonCount)
+LLARS_VisualModalHeader("Combo", setupLayout.width, "Setup")
+LLARS_VisualModalCards("Combo", setupLayout)
+setupY := setupLayout.buttonY
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gColor vSetupColorsButton", Colors
 if (!setupCaps.Colors)
-	GuiControl, Combo:Disable, SetupColorsButton
-setupY += 29
-Gui Combo: Add, Button, x25 y%setupY% w170 h25 gCoordinates vSetupCoordinatesButton, Coordinates
+    GuiControl, Combo:Disable, SetupColorsButton
+setupY += setupLayout.step
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCoordinates vSetupCoordinatesButton", Coordinates
 if (!setupCaps.Coordinates)
-	GuiControl, Combo:Disable, SetupCoordinatesButton
-setupY += 29
-
-; Hotkeys also owns LLARS-wide Start/Info/Setup/Exit bindings, so this editor
-; stays reachable even when the selected script has no local hotkey section.
-Gui Combo: Add, Button, x25 y%setupY% w170 h25 gHotkey vSetupHotkeysButton, Hotkeys
-setupY += 29
-
-if (setupCaps.Timer && LLARS_COMBO_TIMER_LABEL != "")
+    GuiControl, Combo:Disable, SetupCoordinatesButton
+setupY += setupLayout.step
+; LLARS-wide hotkeys must remain reachable even without script hotkeys.
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gHotkey vSetupHotkeysButton", Hotkeys
+setupY += setupLayout.step
+if (setupHasTimer)
 {
-	Gui Combo: Add, Button, x25 y%setupY% w170 h25 gLLARS_CustomComboTimer vSetupTimerButton, Timer
-	setupY += 29
+    Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gLLARS_CustomComboTimer vSetupTimerButton", Timer
+    setupY += setupLayout.step
 }
-
-Gui Combo: Add, Button, x25 y%setupY% w170 h25 gSetupOpenScriptConfig vSetupScriptConfigButton, Script Config
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gSetupOpenScriptConfig vSetupScriptConfigButton", Script Config
 if (!setupCaps.ScriptConfig)
-	GuiControl, Combo:Disable, SetupScriptConfigButton
-setupY += 29
-
-Gui Combo: Add, Button, x25 y%setupY% w170 h25 gInputSettings, Input Settings
-setupY += 29
-Gui Combo: Add, Button, x25 y%setupY% w170 h25 gCheckSetup, Check Setup
-setupY += 32
-Gui Combo: Add, Text, x5 y%setupY% w210 h2 0x10
-setupY += 8
-Gui Combo: Add, Button, x25 y%setupY% w170 h29 gCloseCombo, Close Setup
-comboHeight := setupY + 37
-
+    GuiControl, Combo:Disable, SetupScriptConfigButton
+setupY += setupLayout.step
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gInputSettings", Input Settings
+setupY += setupLayout.step
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCheckSetup", Check Setup
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupLayout.footerButtonY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCloseCombo", Close Setup
 Gui Combo: +ToolWindow
 Gui Combo: -caption
-Gui Combo: Show, center w220 h%comboHeight%, Setup
+Gui Combo: Show, % "Center w" . setupLayout.width . " h" . setupLayout.height, Setup
+LLARS_VisualFinish("Combo")
 LLARS_DeveloperUIAction("Setup")
 return
 
@@ -403,24 +407,22 @@ Gui 1: Hide
 DisableHotkey()
 Gui ConfigSettings: Destroy
 Gui ConfigSettings: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSettingsGuiHwnd
-Gui ConfigSettings: Font, s12 Bold cBlack
-Gui ConfigSettings: Add, Text, x5 y5 w210 h25 Center, LLARS
-Gui ConfigSettings: Font, s10 Bold cGray
-Gui ConfigSettings: Add, Text, x5 y29 w210 h18 Center, Config Settings
-Gui ConfigSettings: Add, Text, x5 y49 w210 h2 0x10
-Gui ConfigSettings: Font, s10 Bold cBlack
-Gui ConfigSettings: Add, Button, x25 y57 w170 h25 gInfoLLARS, LLARS Config
-Gui ConfigSettings: Add, Button, x25 y86 w170 h25 gInfoConfig vConfigSettingsScriptButton, Script Config
+LLARS_VisualPrepare("ConfigSettings")
+settingsLayout := LLARS_VisualStackLayout(5)
+LLARS_VisualModalHeader("ConfigSettings", settingsLayout.width, "Config Settings")
+LLARS_VisualModalCards("ConfigSettings", settingsLayout)
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . settingsLayout.buttonY . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoLLARS", LLARS Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoConfig vConfigSettingsScriptButton", Script Config
 if !FileExist(LLARS_SCRIPT_DIR . "\Config.ini")
-	GuiControl, ConfigSettings:Disable, ConfigSettingsScriptButton
-Gui ConfigSettings: Add, Button, x25 y115 w170 h25 gInfoBackupConfig, Backup Config
-Gui ConfigSettings: Add, Button, x25 y144 w170 h25 gInfoRestoreConfig, Restore Config
-Gui ConfigSettings: Add, Button, x25 y173 w170 h25 gResetConfig, Reset Config
-Gui ConfigSettings: Add, Text, x5 y205 w210 h2 0x10
-Gui ConfigSettings: Add, Button, x25 y213 w170 h29 gCloseConfigSettings, Close Config Settings
+    GuiControl, ConfigSettings:Disable, ConfigSettingsScriptButton
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+2*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoBackupConfig", Backup Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+3*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoRestoreConfig", Restore Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+4*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gResetConfig", Reset Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . settingsLayout.footerButtonY . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gCloseConfigSettings", Close Config Settings
 Gui ConfigSettings: +ToolWindow
 Gui ConfigSettings: -caption
-Gui ConfigSettings: Show, center w220 h249, Config Settings
+Gui ConfigSettings: Show, % "Center w" . settingsLayout.width . " h" . settingsLayout.height, Config Settings
+LLARS_VisualFinish("ConfigSettings")
 LLARS_DeveloperUIAction("Config Settings")
 return
 
@@ -445,7 +447,10 @@ Gui ConfigSettings: Destroy
 DisableHotkey()
 Gui Reset: Destroy
 Gui Reset: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSResetGuiHwnd
-Gui Reset: Font, s10 Bold
+LLARS_VisualPrepare("Reset")
+LLARS_VisualModalHeader("Reset", 320, "Reset Configuration")
+LLARS_VisualCard("Reset", 12, 82, 296, 178)
+Gui Reset: Font, s10 Bold c24324A, Segoe UI
 resetConfigItems := {}
 resetSectionList := " ***** Make a Selection ***** "
 resetSections := LLARS_ConfigSectionList("Config.ini")
@@ -478,16 +483,16 @@ if (resetSections != "ERROR")
 	}
 }
 
-Gui Reset: Add, Text, x10 y10 w300 h20 Center, Reset Saved Configuration
 Gui Reset: Font, s10 Norm
-Gui Reset: Add, Text, x10 y34 w300 h32 Center, Only saved Hotkeys, Coordinates, and Colors can be reset.
+Gui Reset: Add, Text, x20 y94 w280 h35 Center, Only saved Hotkeys, Coordinates, and Colors can be reset.
 Gui Reset: Font, s10 Bold
-Gui Reset: Add, DropDownList, x10 y70 w300 vResetSectionList Choose1 gResetConfigSelection, %resetSectionList%
-Gui Reset: Add, Button, x10 y104 w145 h27 vResetConfigButton gResetSelectedConfig Disabled, Reset Selected
-Gui Reset: Add, Button, x165 y104 w145 h27 gResetAllConfig, Clear All
-Gui Reset: Add, Button, x10 y137 w300 h27 gCloseResetConfig, Cancel
+Gui Reset: Add, DropDownList, x20 y139 w280 vResetSectionList Choose1 gResetConfigSelection, %resetSectionList%
+Gui Reset: Add, Button, x20 y174 w132 h34 vResetConfigButton gResetSelectedConfig Disabled, Reset Selected
+Gui Reset: Add, Button, x168 y174 w132 h34 gResetAllConfig, Clear All
+Gui Reset: Add, Button, x20 y213 w280 h33 gCloseResetConfig, Cancel
 Gui Reset: -Caption
-Gui Reset: Show, w320 h174 Center, Reset Configuration
+Gui Reset: Show, w320 h274 Center, Reset Configuration
+LLARS_VisualFinish("Reset")
 LLARS_DeveloperUIAction("Reset Configuration")
 Gui Reset: +ToolWindow
 return
@@ -524,28 +529,7 @@ if !LLARS_ResetConfigItem("Config.ini", resetSection, resetType)
 
 LLARS_DeveloperAction("Config Reset || " . resetTypeDisplay . " || " . resetSection)
 LLARS_UpdateConfigStatus()
-Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13u: Color, Green
-Gui 13u: Font, cGreen
-Gui 13u: Font, s16 bold
-Gui 13u: Add, Text, valertlabel center,----%resetTypeDisplay% [ %resetSection% ] has been reset in the Config.ini file`n----
-Gui 13u: +ToolWindow
-Gui 13u: -caption
-Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13: Color, White
-Gui 13: Font, s16 bold
-Gui 13: Add, Text, vTthree center, %resetTypeDisplay% [ %resetSection% ] has been reset in the Config.ini file
-Gui 13: -caption
-Gui 13: Show, NoActivate xcenter y9999, TopGUI
-wingetpos,,,,bottomH, BottomGUI
-wingetpos,,,,topH, TopGUI
-topPOS := (bottomH - topH) / 2
-Gui, TopGUI: +LabelTopGUI
-WinMove, TopGUI,, , %topPOS%
-Sleep 1500
-Gui 13u: Destroy
-Gui 13: Destroy
+LLARS_VisualConfigNotice("CONFIGURATION RESET", resetTypeDisplay . " [ " . resetSection . " ]", "Cleared from Config.ini", 1500)
 GoSub, ConfigSettings
 return
 
@@ -587,28 +571,7 @@ if !resetChanged
 
 LLARS_DeveloperAction("Config Reset || Clear All")
 LLARS_UpdateConfigStatus()
-Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13u: Color, Green
-Gui 13u: Font, cGreen
-Gui 13u: Font, s16 bold
-Gui 13u: Add, Text, valertlabel center,----All saved Hotkeys, Coordinates, and Colors have been reset in the Config.ini file`n----
-Gui 13u: +ToolWindow
-Gui 13u: -caption
-Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13: Color, White
-Gui 13: Font, s16 bold
-Gui 13: Add, Text, vTthree center, All saved Hotkeys, Coordinates, and Colors have been reset in the Config.ini file
-Gui 13: -caption
-Gui 13: Show, NoActivate xcenter y9999, TopGUI
-wingetpos,,,,bottomH, BottomGUI
-wingetpos,,,,topH, TopGUI
-topPOS := (bottomH - topH) / 2
-Gui, TopGUI: +LabelTopGUI
-WinMove, TopGUI,, , %topPOS%
-Sleep 1500
-Gui 13u: Destroy
-Gui 13: Destroy
+LLARS_VisualConfigNotice("CONFIGURATION RESET", "All saved Hotkeys, Coordinates, and Colors cleared", "Saved to Config.ini", 1500)
 GoSub, ConfigSettings
 return
 
@@ -632,12 +595,10 @@ Gui 1: Hide
 LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSConfigGuiHwnd
-Gui 2: Font, s12 Bold cBlack
-Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
-Gui 2: Font, s10 Bold cGray
-Gui 2: Add, Text, x5 y29 w280 h18 Center, Coordinates
-Gui 2: Add, Text, x10 y49 w270 h2 0x10
-Gui 2: Font, s10 Bold cBlack
+LLARS_VisualPrepare("2")
+LLARS_VisualModalHeader("2", 320, "Coordinates")
+LLARS_VisualCard("2", 12, 82, 296, 106)
+Gui 2: Font, s10 Bold c24324A, Segoe UI
 DisableHotkey()
 scriptHotkeyConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
 allContents := LLARS_ConfigSectionList(scriptHotkeyConfigFile)
@@ -691,10 +652,11 @@ Loop, Parse, llarsContents, `n, `r
 	}
 }
 
-Gui, 2: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged, % sectionList
-Gui, 2: Add, Button, x60 y91 w170 h25 gClose, Close Coordinates
+Gui, 2: Add, DropDownList, x30 y98 w260 vSectionList Choose1 gDropDownChanged, % sectionList
+Gui, 2: Add, Button, x42 y144 w236 h34 gClose, Close Coordinates
 Gui 2: -Caption
-Gui, 2: Show, w290 h126 Center, Coordinates
+Gui, 2: Show, w320 h198 Center, Coordinates
+LLARS_VisualFinish("2")
 LLARS_DeveloperUIAction("Coordinates")
 Gui 2: +ToolWindow
 return
@@ -703,7 +665,7 @@ return
 Close:
 LLARS_DeveloperUIAction("Coordinates", "Closed")
 Gui 2: Destroy
-Gui 1: Show
+LLARS_VisualRestoreMain()
 EnableHotkey()
 return
 
@@ -749,25 +711,7 @@ if (pointCoordinateSection)
     ButtonText := selectedSection
     CoordinateRButtonWasDown := false
     SetTimer, CheckClicksPixel, 10
-    Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-    Gui 11u: Color, Red
-    Gui 11u: Font, cRed
-    Gui 11u: Font, s16 bold
-    Gui 11u: Add, Text, valertlabel center,----Right-click the pixel for [ %selectedSection% ]`n----
-    Gui 11u: +ToolWindow
-    Gui 11u: -caption
-    Gui 11u: Show, NoActivate xcenter y0, BottomGUI
-    Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-    Gui 11: Font, s16 bold
-    Gui 11: Add, Text, vTone center,Right-click the pixel for [ %selectedSection% ]
-    Gui 11: +ToolWindow
-    Gui 11: -caption
-    Gui 11: Show, NoActivate xcenter y9999, TopGUI
-    wingetpos,,,,bottomH, BottomGUI
-    wingetpos,,,,topH, TopGUI
-    topPOS := (bottomH - topH) / 2
-    Gui, TopGUI: +LabelTopGUI
-    WinMove, TopGUI,, , %topPOS%
+    LLARS_VisualCapturePrompt("11", "Update Coordinates", "Right-click the pixel for [ " . selectedSection . " ]")
 }
 
 else
@@ -782,24 +726,7 @@ else
     ButtonText := selectedSection
     CoordinateRButtonWasDown := false
     SetTimer, CheckClicks, 10
-    Gui 11u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-    Gui 11u: Color, Red
-    Gui 11u: Font, cRed
-    Gui 11u: Font, s16 bold
-    Gui 11u: Add, Text, valertlabel center,----Right-click the top-left corner for [ %selectedSection% ]`n----
-    Gui 11u: +ToolWindow
-    Gui 11u: -caption
-    Gui 11u: Show, NoActivate xcenter y0, BottomGUI
-    Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-    Gui 11: Font, s16 bold
-    Gui 11: Add, Text, vTone center,Right-click the top-left corner for [ %selectedSection% ]
-    Gui 11: -caption
-    Gui 11: Show, NoActivate xcenter y9999, TopGUI
-    wingetpos,,,,bottomH, BottomGUI
-    wingetpos,,,,topH, TopGUI
-    topPOS := (bottomH - topH) / 2
-    Gui, TopGUI: +LabelTopGUI
-    WinMove, TopGUI,, , %topPOS%
+    LLARS_VisualCapturePrompt("11", "Update Coordinates", "Right-click the top-left corner for [ " . selectedSection . " ]")
 }
 
 return
@@ -814,27 +741,14 @@ if GetKeyState("Esc", "P")
 CoordinateRButtonDown := GetKeyState("RButton")
 if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 {
-	MouseGetPos, MouseX, MouseY
+	if !LLARS_CaptureRuneScapeClientPoint(MouseX, MouseY)
+		return
 	ClickCount++
 	if (ClickCount = 1)
 	{
 		Gui 11: Destroy
 		Gui 11u: Destroy
-		Gui 12u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-		Gui 12u: Color, Red
-		Gui 12u: Font, cRed
-		Gui 12u: Font, s16 bold
-		Gui 12u: Add, Text, valertlabel center,----Right-click the bottom-right corner for [ %selectedSection% ]`n----
-		Gui 12u: +ToolWindow
-		Gui 12u: -caption
-		Gui 12u: Show, NoActivate xcenter y0, BottomGUI
-		Gui 12: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-		Gui 12: Font, s16 bold
-		Gui 12: Add, Text, vTtwo center,Right-click the bottom-right corner for [ %selectedSection% ]
-		Gui 12: -caption
-		Gui 12: Show, NoActivate xcenter y9999, TopGUI
-		Gui, TopGUI: +LabelTopGUI
-		WinMove, TopGUI,, , %topPOS%
+		LLARS_VisualCapturePrompt("12", "Update Coordinates", "Right-click the bottom-right corner for [ " . selectedSection . " ]")
 		xmin := MouseX
 		ymin := MouseY
 	}
@@ -854,53 +768,12 @@ if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 		LLARS_ConfigWriteFile(configFile, ButtonText, "ymin", ymin)
 		LLARS_ConfigWriteFile(configFile, ButtonText, "ymax", ymax)
 		LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . xmin . "-" . xmax . " || Y=" . ymin . "-" . ymax, false)
-		if (ButtonText = "Logout")
-		{
-			Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-			Gui 13u: Color, Green
-			Gui 13u: Font, cGreen
-			Gui 13u: Font, s16 bold
-			Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file`n----
-			Gui 13u: +ToolWindow
-			Gui 13u: -caption
-			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-			Gui 13: Color, White
-			Gui 13: Font, s16 bold
-			Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the LLARS Config.ini file
-			Gui 13: -caption
-			Gui 13: Show, NoActivate xcenter y9999, TopGUI
-		}
-		else
-		{
-			Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-			Gui 13u: Color, Green
-			Gui 13u: Font, cGreen
-			Gui 13u: Font, s16 bold
-			Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
-			Gui 13u: +ToolWindow
-			Gui 13u: -caption
-			Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-			Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-			Gui 13: Color, White
-			Gui 13: Font, s16 bold
-			Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
-			Gui 13: -caption
-			Gui 13: Show, NoActivate xcenter y9999, TopGUI
-		}
-
-		wingetpos,,,,bottomH, BottomGUI
-		wingetpos,,,,topH, TopGUI
-		topPOS := (bottomH - topH) / 2
-		Gui, TopGUI: +LabelTopGUI
-		WinMove, TopGUI,, , %topPOS%
-		Sleep, 1500
+		coordinateConfigDisplay := (configFile = LLARS_CONFIG_FILE) ? "LLARS Config.ini" : "Config.ini"
+		LLARS_VisualConfigNotice("COORDINATES UPDATED", selectedSection, "Saved to " . coordinateConfigDisplay, 1500)
 		LLARS_HideCoordinatePreview()
-		Gui 13: Destroy
-		Gui 13u: Destroy
 		LLARS_DeveloperUIAction("Coordinates", "Closed")
 		Gui, 2: Destroy
-		Gui, 1: Show
+		LLARS_VisualRestoreMain()
 		EnableHotkey()
 	}
 
@@ -920,24 +793,10 @@ if GetKeyState("Esc", "P")
 CoordinateRButtonDown := GetKeyState("RButton")
 if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 {
-	MouseGetPos, MouseX, MouseY
+	if !LLARS_CaptureRuneScapeClientPoint(MouseX, MouseY)
+		return
 	Gui 11: Destroy
 	Gui 11u: Destroy
-	Gui 13u: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-	Gui 13u: Color, Green
-	Gui 13u: Font, cGreen
-	Gui 13u: Font, s16 bold
-	Gui 13u: Add, Text, valertlabel center,----Coordinates for [ %selectedSection% ] have been updated in the Config.ini file`n----
-	Gui 13u: +ToolWindow
-	Gui 13u: -caption
-	Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-	Gui 13: +LastFound +OwnDialogs +AlwaysOnTop +Disabled
-	Gui 13: Font, s16 bold
-	Gui 13: Add, Text, vTthree center,Coordinates for [ %selectedSection% ] have been updated in the Config.ini file
-	Gui 13: -caption
-	Gui 13: Show, NoActivate xcenter y9999, TopGUI
-	Gui, TopGUI: +LabelTopGUI
-	WinMove, TopGUI,, , %topPOS%
 	x := MouseX
 	y := MouseY
 	SetTimer, CheckClicksPixel, Off
@@ -950,12 +809,11 @@ if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 	LLARS_ConfigWriteFile(configFile, ButtonText, "x", x)
 	LLARS_ConfigWriteFile(configFile, ButtonText, "y", y)
 	LLARS_DeveloperAction("Coordinates || " . selectedSection . " || X=" . x . " || Y=" . y, false)
-	Sleep, 1500
-	Gui 13: Destroy
-	Gui 13u: Destroy
+	coordinateConfigDisplay := (configFile = LLARS_CONFIG_FILE) ? "LLARS Config.ini" : "Config.ini"
+	LLARS_VisualConfigNotice("COORDINATES UPDATED", selectedSection, "Saved to " . coordinateConfigDisplay, 1500)
 	LLARS_DeveloperUIAction("Coordinates", "Closed")
 	Gui, 2: Destroy
-	Gui, 1: Show
+	LLARS_VisualRestoreMain()
 	EnableHotkey()
 	Sleep, 250
 }
@@ -970,8 +828,8 @@ LLARS_ShowCoordinatePreview(x1, y1, x2, y2)
 	LLARS_HideCoordinatePreview()
 
 	; Mouse coordinates are captured relative to the RuneScape client area.
-	LLARS_ClientToScreen(x1, y1)
-	LLARS_ClientToScreen(x2, y2)
+	if (!LLARS_ClientToScreen(x1, y1) || !LLARS_ClientToScreen(x2, y2))
+		return false
 	border := 3
 	left := (x1 < x2) ? x1 : x2
 	top := (y1 < y2) ? y1 : y2
@@ -1105,33 +963,48 @@ LLARS_HideDeveloperCoordinateOverlay:
 LLARS_HideCoordinatePreview()
 return
 
-; Converts RuneScape client coordinates to absolute screen coordinates for temporary overlays.
+; Captures an actual physical cursor point through the RuneScape client.
+; If focus is missing we DO NOT write incorrect coordinates to Config.ini.
+LLARS_CaptureRuneScapeClientPoint(ByRef clientX, ByRef clientY)
+{
+    global LLARS_RunRuneScapeHwnd
+    hwnd := 0
+    if (LLARS_RunRuneScapeHwnd && DllCall("user32\IsWindow", "Ptr", LLARS_RunRuneScapeHwnd)
+        && LLARS_IsRuneScapeWindow(LLARS_RunRuneScapeHwnd))
+        hwnd := LLARS_RunRuneScapeHwnd
+    if (!hwnd)
+    {
+        hwnd := DllCall("user32\GetForegroundWindow", "Ptr")
+        if (!hwnd || !LLARS_IsRuneScapeWindow(hwnd))
+            hwnd := LLARS_FindRuneScapeWindow()
+    }
+    if (!hwnd)
+        return false
+    if !LLARS_AHI_CursorClientPoint(hwnd, clientX, clientY)
+        return false
+    VarSetCapacity(clientRect, 16, 0)
+    if !DllCall("user32\GetClientRect", "Ptr", hwnd, "Ptr", &clientRect)
+        return false
+    return (clientX >= 0 && clientY >= 0 && clientX < NumGet(clientRect, 8, "Int")
+        && clientY < NumGet(clientRect, 12, "Int"))
+}
+
+; The red target preview and click conversion share the SAME RuneScape HWND.
 LLARS_ClientToScreen(ByRef x, ByRef y)
 {
-	global LLARS_RunRuneScapeHwnd
-
-	hWnd := 0
-	if (LLARS_RunRuneScapeHwnd && DllCall("IsWindow", "Ptr", LLARS_RunRuneScapeHwnd) && LLARS_IsRuneScapeWindow(LLARS_RunRuneScapeHwnd))
-		hWnd := LLARS_RunRuneScapeHwnd
-
-	if (!hWnd)
-	{
-		activeHwnd := WinExist("A")
-		if (activeHwnd && IsFunc("LLARS_IsRuneScapeWindow") && LLARS_IsRuneScapeWindow(activeHwnd))
-			hWnd := activeHwnd
-	}
-
-	if (!hWnd)
-		hWnd := LLARS_FindRuneScapeWindow()
-	if (!hWnd)
-		return
-
-	VarSetCapacity(point, 8, 0)
-	NumPut(x, point, 0, "Int")
-	NumPut(y, point, 4, "Int")
-	DllCall("ClientToScreen", "Ptr", hWnd, "Ptr", &point)
-	x := NumGet(point, 0, "Int")
-	y := NumGet(point, 4, "Int")
+    global LLARS_RunRuneScapeHwnd
+    hwnd := (LLARS_RunRuneScapeHwnd && DllCall("user32\IsWindow", "Ptr", LLARS_RunRuneScapeHwnd)
+        && LLARS_IsRuneScapeWindow(LLARS_RunRuneScapeHwnd)) ? LLARS_RunRuneScapeHwnd : 0
+    if (!hwnd)
+    {
+        hwnd := DllCall("user32\GetForegroundWindow", "Ptr")
+        if (!hwnd || !LLARS_IsRuneScapeWindow(hwnd))
+            hwnd := LLARS_FindRuneScapeWindow()
+    }
+    if (!hwnd || !LLARS_AHI_ClientPointToScreen(x, y, hwnd, screenX, screenY))
+        return false
+    x := screenX, y := screenY
+    return true
 }
 
 ; Removes the temporary coordinate selection outline.
@@ -1156,12 +1029,10 @@ Gui 1: Hide
 LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
 Gui 2: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSConfigGuiHwnd
-Gui 2: Font, s12 Bold cBlack
-Gui 2: Add, Text, x5 y5 w280 h25 Center, LLARS
-Gui 2: Font, s10 Bold cGray
-Gui 2: Add, Text, x5 y29 w280 h18 Center, Colors
-Gui 2: Add, Text, x10 y49 w270 h2 0x10
-Gui 2: Font, s10 Bold cBlack
+LLARS_VisualPrepare("2")
+LLARS_VisualModalHeader("2", 320, "Colors")
+LLARS_VisualCard("2", 12, 82, 296, 106)
+Gui 2: Font, s10 Bold c24324A, Segoe UI
 DisableHotkey()
 colorConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
 allContents := LLARS_ConfigSectionList(colorConfigFile)
@@ -1180,10 +1051,11 @@ Loop, Parse, allContents, `n, `r
 		sectionList .= "|" currentSection
 }
 
-Gui, 2: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged1, % sectionList
-Gui, 2: Add, Button, x60 y91 w170 h25 gClose1, Close Colors
+Gui, 2: Add, DropDownList, x30 y98 w260 vSectionList Choose1 gDropDownChanged1, % sectionList
+Gui, 2: Add, Button, x42 y144 w236 h34 gClose1, Close Colors
 Gui 2: -Caption
-Gui, 2: Show, w290 h126 Center, Colors
+Gui, 2: Show, w320 h198 Center, Colors
+LLARS_VisualFinish("2")
 LLARS_DeveloperUIAction("Colors")
 Gui 2: +ToolWindow
 return
@@ -1192,7 +1064,7 @@ return
 Close1:
 LLARS_DeveloperUIAction("Colors", "Closed")
 Gui 2: Destroy
-Gui 1: Show
+LLARS_VisualRestoreMain()
 EnableHotkey()
 return
 
@@ -1234,27 +1106,7 @@ if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 {
 	SetTimer, CheckColorClick, 25
 	colorHoverText := "Right-click the exact color for [ " . selectedSection . " ] | RGB: ------"
-	colorPickerBorder := 12
-	colorPickerInnerHeight := 38
-	colorPickerInnerWidth := Min(1080, A_ScreenWidth - (colorPickerBorder * 2) - 16)
-	if (colorPickerInnerWidth < 620)
-		colorPickerInnerWidth := 620
-	colorPickerOuterWidth := colorPickerInnerWidth + (colorPickerBorder * 2)
-	colorPickerOuterHeight := colorPickerInnerHeight + (colorPickerBorder * 2)
-	colorPickerRightX := colorPickerOuterWidth - colorPickerBorder
-	colorPickerBottomY := colorPickerOuterHeight - colorPickerBorder
-	Gui 11u: Destroy
-	Gui 11: Destroy
-	Gui 11: +LastFound +OwnDialogs +AlwaysOnTop +Disabled +ToolWindow -Caption
-	Gui 11: Margin, 0, 0
-	Gui 11: Color, White
-	Gui 11: Add, Progress, x0 y0 w%colorPickerOuterWidth% h%colorPickerBorder% cRed BackgroundRed Disabled, 100
-	Gui 11: Add, Progress, x0 y%colorPickerBottomY% w%colorPickerOuterWidth% h%colorPickerBorder% cRed BackgroundRed Disabled, 100
-	Gui 11: Add, Progress, x0 y%colorPickerBorder% w%colorPickerBorder% h%colorPickerInnerHeight% cRed BackgroundRed Disabled, 100
-	Gui 11: Add, Progress, x%colorPickerRightX% y%colorPickerBorder% w%colorPickerBorder% h%colorPickerInnerHeight% cRed BackgroundRed Disabled, 100
-	Gui 11: Font, s16 bold cBlack
-	Gui 11: Add, Text, x%colorPickerBorder% y%colorPickerBorder% w%colorPickerInnerWidth% h%colorPickerInnerHeight% Center +0x200 vTone, %colorHoverText%
-	Gui 11: Show, NoActivate xcenter y0 w%colorPickerOuterWidth% h%colorPickerOuterHeight%, ColorPicker
+	LLARS_VisualCapturePrompt("11", "Update Colors", colorHoverText, 880)
 	return
 }
 
@@ -1264,7 +1116,7 @@ if x is not number
 {
 	LLARS_CreatorConfigError(ButtonText . " references an invalid color coordinate section: " . colorCoordinateSection)
 	Gui, 2: Destroy
-	Gui, 1: Show
+	LLARS_VisualRestoreMain()
 	EnableHotkey()
 	return
 }
@@ -1272,7 +1124,7 @@ if y is not number
 {
 	LLARS_CreatorConfigError(ButtonText . " references an invalid color coordinate section: " . colorCoordinateSection)
 	Gui, 2: Destroy
-	Gui, 1: Show
+	LLARS_VisualRestoreMain()
 	EnableHotkey()
 	return
 }
@@ -1330,7 +1182,7 @@ if LLARS_IsRuneScapeActive()
 		StringUpper, hoverColor, hoverColor
 }
 colorHoverText := "Right-click the exact color for [ " . selectedSection . " ] | RGB: " . hoverColor
-GuiControl, 11:, Tone, %colorHoverText%
+LLARS_VisualCapturePromptUpdate("11", colorHoverText)
 
 if GetKeyState("RButton", "P")
 {
@@ -1356,44 +1208,11 @@ else
 	colorResultText := ButtonText . " = " . color . " | Matches: " . duplicateColors
 LLARS_DeveloperAction("Color || " . ButtonText . " || RGB=" . color . ((duplicateColors != "") ? " || Matches=" . duplicateColors : ""), false)
 LLARS_DeveloperColorConfigAction(ButtonText " | " colorKey " = " color . ((duplicateColors != "") ? " | Matches: " . duplicateColors : ""))
-; Build one balanced confirmation window: white center with an equal 12 px green frame on every side.
-colorResultHeight := 38
-colorResultBorder := 12
-Gui 19: Destroy
-Gui 19: +ToolWindow -Caption
-Gui 19: Font, s16 bold
-Gui 19: Add, Text, vLLARSColorMeasure -Wrap, %colorResultText%
-Gui 19: Show, Hide AutoSize, ColorConfirmationMeasure
-GuiControlGet, colorResultTextPos, 19:Pos, LLARSColorMeasure
-colorResultWidth := colorResultTextPosW + 50
-Gui 19: Destroy
-if (colorResultWidth < 520)
-	colorResultWidth := 520
-colorResultMaxWidth := A_ScreenWidth - (colorResultBorder * 2) - 16
-if (colorResultWidth > colorResultMaxWidth)
-	colorResultWidth := colorResultMaxWidth
-colorResultOuterWidth := colorResultWidth + (colorResultBorder * 2)
-colorResultOuterHeight := colorResultHeight + (colorResultBorder * 2)
-colorResultRightX := colorResultOuterWidth - colorResultBorder
-colorResultBottomY := colorResultOuterHeight - colorResultBorder
-Gui 13u: Destroy
-Gui 13: Destroy
-Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled +ToolWindow -Caption
-Gui 13: Margin, 0, 0
-Gui 13: Color, White
-Gui 13: Add, Progress, x0 y0 w%colorResultOuterWidth% h%colorResultBorder% cGreen BackgroundGreen Disabled, 100
-Gui 13: Add, Progress, x0 y%colorResultBottomY% w%colorResultOuterWidth% h%colorResultBorder% cGreen BackgroundGreen Disabled, 100
-Gui 13: Add, Progress, x0 y%colorResultBorder% w%colorResultBorder% h%colorResultHeight% cGreen BackgroundGreen Disabled, 100
-Gui 13: Add, Progress, x%colorResultRightX% y%colorResultBorder% w%colorResultBorder% h%colorResultHeight% cGreen BackgroundGreen Disabled, 100
-Gui 13: Font, s16 bold cBlack
-Gui 13: Add, Text, x%colorResultBorder% y%colorResultBorder% w%colorResultWidth% h%colorResultHeight% Center +0x200 vTthree, %colorResultText%
-Gui 13: Show, NoActivate xcenter y0 w%colorResultOuterWidth% h%colorResultOuterHeight%, ColorConfirmation
-Sleep 1800
-Gui 13: Destroy
-Gui 13u: Destroy
+colorConfigDisplay := (colorConfigFile = LLARS_CONFIG_FILE) ? "LLARS Config.ini" : "Config.ini"
+LLARS_VisualConfigNotice("COLOR UPDATED", colorResultText, "Saved to " . colorConfigDisplay, 1800)
 LLARS_DeveloperUIAction("Colors", "Closed")
 Gui, 2: Destroy
-Gui, 1: Show
+LLARS_VisualRestoreMain()
 EnableHotkey()
 return
 
@@ -1442,12 +1261,10 @@ Gui 1: Hide
 LLARS_DeveloperUIAction("Setup", "Closed")
 Gui Combo: Destroy
 Gui 3: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSHotkeyGuiHwnd
-Gui 3: Font, s12 Bold cBlack
-Gui 3: Add, Text, x5 y5 w280 h25 Center, LLARS
-Gui 3: Font, s10 Bold cGray
-Gui 3: Add, Text, x5 y29 w280 h18 Center, Hotkeys
-Gui 3: Add, Text, x10 y49 w270 h2 0x10
-Gui 3: Font, s10 Bold cBlack
+LLARS_VisualPrepare("3")
+LLARS_VisualModalHeader("3", 320, "Hotkeys")
+LLARS_VisualCard("3", 12, 82, 296, 176)
+Gui 3: Font, s10 Bold c24324A, Segoe UI
 DisableHotkey()
 scriptHotkeyConfigFile := LLARS_SCRIPT_DIR . "\Config.ini"
 allContents := LLARS_ConfigSectionList(scriptHotkeyConfigFile)
@@ -1503,12 +1320,13 @@ Loop, Parse, llarsContents, `n
 ; from the dropdown selection.
 selectedHotkeySection := ""
 selectedHotkeyConfigFile := ""
-Gui, 3: Add, DropDownList, x30 y58 w230 vSectionList Choose1 gDropDownChanged2, % sectionList
-Gui, 3: Add, Text, x30 y88 w230 h18 Center vHotkeysText, Hotkeys will be displayed here
-Gui, 3: Add, Hotkey, x70 y109 w150 h23 vChosenHotkey gHotkeyChanged Center Disabled, ** NONE **
-Gui, 3: Add, Button, x60 y141 w170 h25 gClose2, Close Hotkeys
+Gui, 3: Add, DropDownList, x30 y98 w260 vSectionList Choose1 gDropDownChanged2, % sectionList
+Gui, 3: Add, Text, x30 y131 w260 h20 Center vHotkeysText, Hotkeys will be displayed here
+Gui, 3: Add, Hotkey, x60 y157 w200 h28 vChosenHotkey gHotkeyChanged Center Disabled, ** NONE **
+Gui, 3: Add, Button, x42 y200 w236 h34 gClose2, Close Hotkeys
 Gui 3: -Caption
-Gui, 3: Show, w290 h176 Center, Hotkeys
+Gui, 3: Show, w320 h270 Center, Hotkeys
+LLARS_VisualFinish("3")
 LLARS_DeveloperUIAction("Hotkeys")
 Gui 3: +ToolWindow
 return
@@ -1517,7 +1335,7 @@ return
 Close2:
 LLARS_DeveloperUIAction("Hotkeys", "Closed")
 Gui 3: Destroy
-Gui 1: Show
+LLARS_VisualRestoreMain()
 EnableHotkey()
 return
 
@@ -1602,29 +1420,8 @@ else
 	hotkeyConfigDisplay := "Config.ini"
 LLARS_DeveloperUIAction("Hotkeys", "Closed")
 Gui, 3: Destroy
-Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13u: Color, Green
-Gui 13u: Font, cgreenhite
-Gui 13u: Font, s16 bold
-Gui 13u: Add, Text, valertlabel center,----Hotkey has been updated in the %hotkeyConfigDisplay% file`n----
-Gui 13u: +ToolWindow
-Gui 13u: -caption
-Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13: Color, White
-Gui 13: Font, s16 bold
-Gui 13: Add, Text, vTthree center, Hotkey has been updated in the %hotkeyConfigDisplay% file
-Gui 13: -caption
-Gui 13: Show, NoActivate xcenter y9999, TopGUI
-wingetpos,,,,bottomH, BottomGUI
-wingetpos,,,,topH, TopGUI
-topPOS := (bottomH - topH) / 2
-Gui, TopGUI: +LabelTopGUI
-WinMove, TopGUI,, , %topPOS%
-Sleep 1500
-Gui 13u: Destroy
-Gui 13: Destroy
-Gui 1: Show
+LLARS_VisualConfigNotice("HOTKEY UPDATED", selectedHotkeySection . "  =  " . ChosenHotkey, "Saved to " . hotkeyConfigDisplay, 1500)
+LLARS_VisualRestoreMain()
 EnableHotkey()
 return
 
@@ -1638,6 +1435,7 @@ LLARS_PAUSED := false
 LLARS_DeveloperAction("Script || Resumed")
 GuiControl,,ScriptBlue, % LLARS_DisplayScriptName()
 GuiControl,,State3, Running
+LLARS_VisualShowStatus("blue")
 GuiControl, Dev:, DeveloperRunningText, Running
 Return
 
@@ -1650,6 +1448,7 @@ LLARS_PAUSED := true
 LLARS_DeveloperAction("Script || Paused")
 GuiControl,,State2, Paused
 GuiControl,,ScriptRed, % LLARS_DisplayScriptName()
+LLARS_VisualShowStatus("red")
 GuiControl, Dev:, DeveloperRunningText, Paused
 
 Pause, On, 1
@@ -1741,88 +1540,116 @@ else
 	scriptHotkeys := RTrim(scriptHotkeys, "`n`r")
 LLARS_MainSavePosition()
 Gui 3: hide
-; Size the Information GUI from its actual hotkey content so each section
-; keeps its own space without relying on relative Y positions.
+; Content-driven layout with evenly centered section titles, distinct
+; separators, and breathable grouping. Action callbacks remain unchanged.
 hotkeyLineCount := 0
 Loop, Parse, scriptHotkeys, `n, `r
-	hotkeyLineCount++
+    hotkeyLineCount++
 if (hotkeyLineCount < 1)
-	hotkeyLineCount := 1
+    hotkeyLineCount := 1
+hotkeyRowHeight := 23
+hotkeyHeight := hotkeyLineCount * hotkeyRowHeight + 8
+hotkeyHeadingY := 86
+hotkeyTextY := hotkeyHeadingY + 34
+informationHeadingY := hotkeyTextY + hotkeyHeight + 16
+optionsHeadingY := informationHeadingY + 33
+optionsRow1Y := optionsHeadingY + 25
+optionsRow2Y := optionsRow1Y + 23
+optionsRow3Y := optionsRow2Y + 23
+notesHeadingY := optionsRow3Y + 36
+notesTextY := notesHeadingY + 34
+notesTextHeight := 63
+mitY := notesTextY + notesTextHeight + 8
+createdY := mitY + 23
+resourcesHeadingY := createdY + 38
+resourceButtonY := resourcesHeadingY + 34
+resourceButtonY2 := resourceButtonY + 40
+closeInfoY := resourceButtonY2 + 45
+informationHeight := closeInfoY + 45
 
-hotkeyHeight := hotkeyLineCount * 18
-hotkeyBoxY := 57
-hotkeyTextY := hotkeyBoxY + 21
-hotkeyBoxHeight := hotkeyHeight + 29
-
-; When there are no script-specific Config.ini hotkeys, keep the full text height so every LLARS hotkey remains visible while trimming only the unused bottom padding from the group box.
-if (configHotkeys = "")
-	hotkeyBoxHeight := hotkeyHeight + 25
-additionalTitleY := hotkeyBoxY + hotkeyBoxHeight + 4
-optionsBoxY := additionalTitleY + 23
-notesBoxY := optionsBoxY + 91
-notesBoxHeight := 94
-projectDividerY := notesBoxY + notesBoxHeight + 7
-mitY := projectDividerY + 8
-createdY := mitY + 22
-resourceDividerY := createdY + 27
-resourceTitleY := resourceDividerY + 8
-developerModeY := resourceTitleY + 23
-verifyFilesY := developerModeY + 29
-supportBundleY := verifyFilesY + 29
-discordY := supportBundleY + 29
-closeDividerY := discordY + 32
-closeInfoY := closeDividerY + 8
-informationHeight := closeInfoY + 39
-
-Gui 20: +AlwaysOnTop +OwnDialogs +LastFound +HwndLLARSInfoGuiHwnd
-Gui 20: Font, s12 Bold cBlack
-Gui 20: Add, Text, x5 y5 w280 h25 Center, LLARS
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, Text, x5 y29 w280 h18 Center, Information
-Gui 20: Add, Text, x10 y49 w270 h2 0x10
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, GroupBox, x20 y%hotkeyBoxY% w250 h%hotkeyBoxHeight%, Script Hotkeys
-Gui 20: Font, s10 Norm cBlack
-Gui 20: Add, Text, x32 y%hotkeyTextY% w226 h%hotkeyHeight% Center, %scriptHotkeys%
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, Text, x10 y%additionalTitleY% w270 h20 Center, Script Information
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, GroupBox, x20 y%optionsBoxY% w250 h84, Script Options
-Gui 20: Font, s10 Norm cBlack
-optionsRow1Y := optionsBoxY + 23
-optionsRow2Y := optionsBoxY + 43
-optionsRow3Y := optionsBoxY + 63
-Gui 20: Add, Text, x35 y%optionsRow1Y% w105 h18, Logout
-Gui 20: Add, Text, x35 y%optionsRow2Y% w105 h18, Random Sleep
-Gui 20: Add, Text, x35 y%optionsRow3Y% w105 h18, Sleep Chance
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, Text, x145 y%optionsRow1Y% w105 h18 Right, %logout%
-Gui 20: Add, Text, x145 y%optionsRow2Y% w105 h18 Right, %sleepoption%
-Gui 20: Add, Text, x145 y%optionsRow3Y% w105 h18 Right, %chance%`%
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, GroupBox, x20 y%notesBoxY% w250 h%notesBoxHeight%, Script Notes
-notesTextY := notesBoxY + 23
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, Text, x32 y%notesTextY% w226 h62 Center, Additional notes/comments can be found in the script Config.ini file, available from Config Settings.
-Gui 20: Add, Text, x10 y%projectDividerY% w270 h2 0x10
-Gui 20: Font, s10 Bold cBlue underline
-Gui 20: Add, Text, x10 y%mitY% w270 h20 Center gMIT, MIT License
-Gui 20: Font, s10 Norm cBlack
-Gui 20: Add, Text, x91 y%createdY% w70 h20 Right, Created by
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, Text, x163 y%createdY% w45 h20, Gubna
-Gui 20: Add, Text, x10 y%resourceDividerY% w270 h2 0x10
-Gui 20: Font, s10 Bold cBlack
-Gui 20: Add, Text, x10 y%resourceTitleY% w270 h20 Center, Resources
-Gui 20: Add, Button, x60 y%developerModeY% w170 h25 gDeveloperMode, Developer Mode
-Gui 20: Add, Button, x60 y%verifyFilesY% w170 h25 gInfoVerifyLLARSFiles, Verify LLARS Files
-Gui 20: Add, Button, x60 y%supportBundleY% w170 h25 gInfoCreateSupportBundle, Create Support Bundle
-Gui 20: Add, Button, x60 y%discordY% w170 h25 gDiscord, Discord
-Gui 20: Add, Text, x10 y%closeDividerY% w270 h2 0x10
-Gui 20: Add, Button, x60 y%closeInfoY% w170 h29 gCloseInfo, Close Information
-Gui 20: +ToolWindow
-Gui 20: -caption
-Gui 20: Show, center w290 h%informationHeight%, Information
+Gui 20: +AlwaysOnTop +OwnDialogs +LastFound +HwndLLARSInfoGuiHwnd +ToolWindow -Caption
+LLARS_VisualPrepare("20")
+Gui 20: Color, FFFFFF, FFFFFF
+LLARS_VisualBanner("20", 360, 73)
+Gui 20: Font, s16 Bold cFFFFFF, Segoe UI
+Gui 20: Add, Text, x14 y10 w332 h29 Center BackgroundTrans, LLARS
+Gui 20: Font, s11 Bold cDCE7F4, Segoe UI
+Gui 20: Add, Text, x14 y40 w332 h21 Center BackgroundTrans, Information
+; Hotkey section: heading is a colored band, not body text.
+Gui 20: Add, Text, % "x21 y" . hotkeyHeadingY . " w318 h28 Disabled BackgroundEAF1FB"
+Gui 20: Add, Text, % "x21 y" . hotkeyHeadingY . " w4 h28 Disabled Background3676E8"
+Gui 20: Font, s11 Bold c1D4F8D, Segoe UI
+Gui 20: Add, Text, % "x25 y" . (hotkeyHeadingY+4) . " w310 h22 Center BackgroundTrans", Script Hotkeys
+Gui 20: Add, Text, % "x21 y" . (hotkeyHeadingY+28) . " w318 h1 Disabled BackgroundD0DAE7"
+; Separate key labels from actual key combinations. Values are bold and
+; retain the familiar 11pt reading size; no opaque Edit field is needed.
+hotkeyRowY := hotkeyTextY + 4
+Loop, Parse, scriptHotkeys, `n, `r
+{
+    hotkeyLine := A_LoopField
+    colonPos := InStr(hotkeyLine, ":")
+    if (colonPos > 0)
+    {
+        hotkeyCaption := SubStr(hotkeyLine, 1, colonPos)
+        hotkeyValue := Trim(SubStr(hotkeyLine, colonPos + 1))
+        Gui 20: Font, s11 Norm c24324A, Segoe UI
+        Gui 20: Add, Text, % "x26 y" . hotkeyRowY . " w160 h23 Right BackgroundTrans", %hotkeyCaption%
+        Gui 20: Font, s11 Bold c24324A, Segoe UI
+        Gui 20: Add, Text, % "x192 y" . hotkeyRowY . " w142 h23 BackgroundTrans", %hotkeyValue%
+    }
+    else
+    {
+        Gui 20: Font, s11 Bold c24324A, Segoe UI
+        Gui 20: Add, Text, % "x27 y" . hotkeyRowY . " w305 h23 Center BackgroundTrans", %hotkeyLine%
+    }
+    hotkeyRowY += hotkeyRowHeight
+}
+; Script Information is a real major section, with nested Options.
+Gui 20: Add, Text, % "x21 y" . informationHeadingY . " w318 h28 Disabled BackgroundEAF1FB"
+Gui 20: Add, Text, % "x21 y" . informationHeadingY . " w4 h28 Disabled Background3676E8"
+Gui 20: Font, s11 Bold c1D4F8D, Segoe UI
+Gui 20: Add, Text, % "x25 y" . (informationHeadingY+4) . " w310 h22 Center BackgroundTrans", Script Information
+Gui 20: Add, Text, % "x21 y" . (informationHeadingY+28) . " w318 h1 Disabled BackgroundD0DAE7"
+Gui 20: Font, s11 Bold c45689A, Segoe UI
+Gui 20: Add, Text, x25 y%optionsHeadingY% w310 h21 Center BackgroundTrans, Script Options
+Gui 20: Font, s11 Bold c253650, Segoe UI
+Gui 20: Add, Text, x35 y%optionsRow1Y% w155 h20 BackgroundTrans, Logout
+Gui 20: Add, Text, x35 y%optionsRow2Y% w155 h20 BackgroundTrans, Random Sleep
+Gui 20: Add, Text, x35 y%optionsRow3Y% w155 h20 BackgroundTrans, Sleep Chance
+Gui 20: Font, s11 Bold c24324A, Segoe UI
+Gui 20: Add, Text, x193 y%optionsRow1Y% w132 h20 Right BackgroundTrans, %logout%
+Gui 20: Add, Text, x193 y%optionsRow2Y% w132 h20 Right BackgroundTrans, %sleepoption%
+Gui 20: Add, Text, x193 y%optionsRow3Y% w132 h20 Right BackgroundTrans, %chance%`%
+; Script Notes uses a second genuine header band, not just bold body text.
+Gui 20: Add, Text, % "x21 y" . notesHeadingY . " w318 h28 Disabled BackgroundEAF1FB"
+Gui 20: Add, Text, % "x21 y" . notesHeadingY . " w4 h28 Disabled Background3676E8"
+Gui 20: Font, s11 Bold c1D4F8D, Segoe UI
+Gui 20: Add, Text, % "x25 y" . (notesHeadingY+4) . " w310 h22 Center BackgroundTrans", Script Notes
+Gui 20: Add, Text, % "x21 y" . (notesHeadingY+28) . " w318 h1 Disabled BackgroundD0DAE7"
+Gui 20: Font, s11 Norm c24324A, Segoe UI
+Gui 20: Add, Text, x30 y%notesTextY% w301 h%notesTextHeight% Center BackgroundTrans, Additional notes/comments can be found in the script Config.ini file, available from Config Settings.
+Gui 20: Add, Text, % "x21 y" . (mitY-7) . " w318 h1 Disabled BackgroundD0DAE7"
+Gui 20: Font, s11 Bold c2868D9 underline, Segoe UI
+Gui 20: Add, Text, x24 y%mitY% w312 h20 Center BackgroundTrans gMIT, MIT License
+Gui 20: Font, s11 Norm c24324A, Segoe UI
+Gui 20: Add, Text, x104 y%createdY% w88 h20 Right BackgroundTrans, Created by
+Gui 20: Font, s11 Bold c24324A, Segoe UI
+Gui 20: Add, Text, x197 y%createdY% w82 h20 BackgroundTrans, Gubna
+; Resources is an actionable area and gets its own prominent heading.
+Gui 20: Add, Text, % "x21 y" . resourcesHeadingY . " w318 h28 Disabled BackgroundEAF1FB"
+Gui 20: Add, Text, % "x21 y" . resourcesHeadingY . " w4 h28 Disabled Background3676E8"
+Gui 20: Font, s11 Bold c1D4F8D, Segoe UI
+Gui 20: Add, Text, % "x25 y" . (resourcesHeadingY+4) . " w310 h22 Center BackgroundTrans", Resources
+Gui 20: Add, Text, % "x21 y" . (resourcesHeadingY+28) . " w318 h1 Disabled BackgroundD0DAE7"
+Gui 20: Font, s10 Bold c24324A, Segoe UI
+Gui 20: Add, Button, x24 y%resourceButtonY% w150 h33 gDeveloperMode, Developer Mode
+Gui 20: Add, Button, x186 y%resourceButtonY% w150 h33 gInfoVerifyLLARSFiles, Verify LLARS Files
+Gui 20: Add, Button, x24 y%resourceButtonY2% w150 h33 gInfoCreateSupportBundle, Create Support Bundle
+Gui 20: Add, Button, x186 y%resourceButtonY2% w150 h33 gDiscord, Discord
+Gui 20: Add, Text, % "x21 y" . (closeInfoY-8) . " w318 h1 Disabled BackgroundD0DAE7"
+Gui 20: Add, Button, x92 y%closeInfoY% w176 h34 gCloseInfo, Close Information
+Gui 20: Show, center w360 h%informationHeight%, Information
+LLARS_VisualFinish("20")
 LLARS_DeveloperUIAction("Information")
 return
 
@@ -1924,36 +1751,35 @@ EnableHotkey()
 Gui Combo: Hide
 Gui 21: Destroy
 Gui 21: +AlwaysOnTop +OwnDialogs +LastFound +ToolWindow -caption +HwndLLARSInputSettingsGuiHwnd
-Gui 21: Font, s12 Bold cBlack
-Gui 21: Add, Text, x5 y5 w490 h25 Center, LLARS
-Gui 21: Font, s11 Bold cBlack
-Gui 21: Add, Text, x5 y30 w490 h20 Center, Input Settings
-Gui 21: Add, Text, x12 y55 w476 h2 0x10
-Gui 21: Font, s10 Norm cBlack
-Gui 21: Add, Text, x20 y67 w460 h42 Center, AutoHotInterception (AHI) is the recommended LLARS input backend.`nStandard AutoHotkey remains available as a fallback.
-Gui 21: Font, s10 Bold cBlack
-Gui 21: Add, Text, x20 y115 w460 h20 Center, Current Input Status
-Gui 21: Add, Text, x15 y140 w470 h20 Center vInputBackendStatus
-Gui 21: Add, Text, x15 y164 w470 h20 Center vInputActiveStatus
-Gui 21: Add, Text, x15 y188 w470 h20 Center vInputDriverStatus
-Gui 21: Add, Text, x12 y214 w476 h2 0x10
-Gui 21: Font, s10 Norm cBlack
-Gui 21: Add, Text, x20 y225 w460 h20 vInputMouseRoute
-Gui 21: Add, Text, x20 y249 w460 h20 vInputKeyboardRoute
-Gui 21: Add, Text, x20 y273 w460 h20 vInputLastMouse
-Gui 21: Add, Text, x20 y297 w460 h20 vInputLastKeyboard
-Gui 21: Add, Text, x20 y321 w460 h20 vInputStartupTiming
-Gui 21: Add, Text, x20 y345 w460 h20 vInputFallbackStatus
-Gui 21: Add, Text, x12 y373 w476 h2 0x10
-Gui 21: Font, s10 Bold cBlack
-Gui 21: Add, Button, x20 y385 w220 h31 gInputTestAHI, Test AHI
-Gui 21: Add, Button, x260 y385 w220 h31 gInputEnableAHI, Enable / Repair AHI
-Gui 21: Add, Button, x20 y421 w220 h31 gInputUseStandard, Use Standard AutoHotkey
-Gui 21: Add, Button, x260 y421 w220 h31 gInputUninstallAHI vInputUninstallButton, Uninstall AHI / Interception
-Gui 21: Add, Text, x12 y462 w476 h2 0x10
-Gui 21: Add, Button, x135 y475 w230 h31 gCloseInputSettings, Close Input Settings
+LLARS_VisualPrepare("21")
+Gui 21: Color, FFFFFF, FFFFFF
+LLARS_VisualModalHeader("21", 500, "Input Settings")
+Gui 21: Font, s10 Norm c24324A, Segoe UI
+Gui 21: Add, Text, BackgroundTrans x20 y96 w460 h42 Center, AutoHotInterception (AHI) is the recommended LLARS input backend.`nStandard AutoHotkey remains available as a fallback.
+Gui 21: Font, s10 Bold c24324A, Segoe UI
+Gui 21: Add, Text, BackgroundTrans x20 y144 w460 h20 Center, Current Input Status
+Gui 21: Add, Text, BackgroundTrans x15 y169 w470 h20 Center vInputBackendStatus
+Gui 21: Add, Text, BackgroundTrans x15 y193 w470 h20 Center vInputActiveStatus
+Gui 21: Add, Text, BackgroundTrans x15 y217 w470 h20 Center vInputDriverStatus
+Gui 21: Add, Text, x12 y243 w476 h2 0x10
+Gui 21: Font, s10 Norm c24324A, Segoe UI
+Gui 21: Add, Text, BackgroundTrans x20 y254 w460 h20 vInputMouseRoute
+Gui 21: Add, Text, BackgroundTrans x20 y278 w460 h20 vInputKeyboardRoute
+Gui 21: Add, Text, BackgroundTrans x20 y302 w460 h20 vInputLastMouse
+Gui 21: Add, Text, BackgroundTrans x20 y326 w460 h20 vInputLastKeyboard
+Gui 21: Add, Text, BackgroundTrans x20 y350 w460 h20 vInputStartupTiming
+Gui 21: Add, Text, BackgroundTrans x20 y374 w460 h20 vInputFallbackStatus
+Gui 21: Add, Text, x12 y402 w476 h2 0x10
+Gui 21: Font, s10 Bold c24324A, Segoe UI
+Gui 21: Add, Button, x20 y414 w220 h31 gInputTestAHI, Test AHI
+Gui 21: Add, Button, x260 y414 w220 h31 gInputEnableAHI, Enable / Repair AHI
+Gui 21: Add, Button, x20 y450 w220 h31 gInputUseStandard, Use Standard AutoHotkey
+Gui 21: Add, Button, x260 y450 w220 h31 gInputUninstallAHI vInputUninstallButton, Uninstall AHI / Interception
+Gui 21: Add, Text, x12 y491 w476 h2 0x10
+Gui 21: Add, Button, x135 y504 w230 h31 gCloseInputSettings, Close Input Settings
 Gosub, RefreshInputSettings
-Gui 21: Show, Center w500 h516, Input Settings
+Gui 21: Show, Center w500 h552, Input Settings
+LLARS_VisualFinish("21")
 return
 
 RefreshInputSettings:
@@ -2057,18 +1883,19 @@ if (LLARS_DeveloperLightweight)
 	return
 }
 
-LLARS_DeveloperDestroyInspectorPanel()
-LLARS_DeveloperDestroyHotkeysPanel()
 Gui Dev: Destroy
 Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound +HwndDeveloperGuiHwnd
+LLARS_VisualPrepare("Dev")
+LLARS_VisualBanner("Dev", 560, 66)
 
-Gui Dev: Font, s12 Bold cBlack
-Gui Dev: Add, Text, x5 y4 w550 h22 Center, LLARS
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x5 y25 w550 h17 Center, Developer Mode
-Gui Dev: Font, s11 Norm cGray
-Gui Dev: Add, Text, x5 y43 w550 h18 Center, %scriptname%
-Gui Dev: Add, Text, x130 y63 w300 h2 0x10
+Gui Dev: Color, FFFFFF, FFFFFF
+; Native read-only panes avoid independently shown child windows obscuring labels.
+Gui Dev: Font, s14 Bold cFFFFFF, Segoe UI
+Gui Dev: Add, Text, x5 y4 w550 h24 Center BackgroundTrans, LLARS
+Gui Dev: Font, s10 Bold cDCE7F4, Segoe UI
+Gui Dev: Add, Text, x5 y28 w550 h18 Center BackgroundTrans, Developer Mode
+Gui Dev: Font, s10 Bold cDCE7F4, Segoe UI
+Gui Dev: Add, Text, x5 y45 w550 h18 Center BackgroundTrans, %scriptname%
 
 if (LLARS_RUNNING)
 {
@@ -2133,57 +1960,56 @@ developerInputEngine := IsFunc("LLARS_AHI_DeveloperDisplay") ? LLARS_AHI_Develop
 developerDiagnostics := LLARS_DeveloperConfigDiagnostics()
 
 ; Compact two-row run summary.
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x20 y71 w70 h18 Right, State:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x94 y71 w96 h18 vDeveloperRunningText, %developerRunning%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x195 y71 w78 h18 Right, Run Type:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x277 y71 w88 h18 vDeveloperRunTypeText, %developerRunType%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x370 y71 w74 h18 Right, Progress:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x448 y71 w92 h18 vDeveloperProgressText, %developerProgress%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x65 y92 w78 h18 Right, Elapsed:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x147 y92 w123 h18 vDeveloperElapsedText, %developerElapsed%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x290 y92 w88 h18 Right, Final Sleep:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x382 y92 w113 h18 vDeveloperFinalSleepText, %developerFinalSleep%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x5 y113 w82 h18 Right, Input Engine:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x91 y113 w464 h18 -Wrap vDeveloperInputEngineText, %developerInputEngine%
 Gui Dev: Add, Text, x20 y139 w520 h2 0x10
 
-; Top row: the entire Live Inspector scrolls as one pane, matching the
-; Active Hotkeys pane while keeping normal LLARS label/value formatting.
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x20 y149 w250 h18 Center, Live Inspector
-Gui Dev: Add, GroupBox, x20 y170 w250 h198
-
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x290 y149 w250 h18 Center, Active Hotkeys
-Gui Dev: Add, GroupBox, x290 y170 w250 h198
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
+Gui Dev: Add, Text, x30 y151 w230 h22 Center BackgroundTrans, Live Inspector
+Gui Dev: Add, Text, x300 y151 w230 h22 Center BackgroundTrans, Active Hotkeys
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
+initialInspectorText := LLARS_DeveloperInspectorSummary(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets)
+Gui Dev: Add, Edit, x30 y179 w230 h186 ReadOnly -TabStop +VScroll vDeveloperInspectorSummaryText, %initialInspectorText%
+Gui Dev: Add, Edit, x300 y179 w230 h186 ReadOnly -TabStop +VScroll vDeveloperHotkeysSummaryText, %developerHotkeys%
+LLARS_DeveloperLastInspectorText := initialInspectorText
 
 ; Full-width diagnostics keep this section easy to scan.
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x20 y378 w520 h18 Center, Configuration Diagnostics
-Gui Dev: Add, GroupBox, x20 y399 w520 h83
-Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Edit, x30 y417 w500 h53 ReadOnly -TabStop +VScroll +0x4 +0x40 -0x80 vDeveloperDiagnosticsText, %developerDiagnostics%
 
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x20 y487 w520 h18 Center, Recent Framework Actions
-Gui Dev: Add, GroupBox, x20 y507 w520 h156
-Gui Dev: Font, s10 Norm cBlack
-Gui Dev: Add, Edit, x30 y524 w500 h132 ReadOnly +VScroll -TabStop hwndDeveloperActionsHwnd vDeveloperActionsText
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
+Gui Dev: Add, Edit, x30 y402 w500 h73 ReadOnly -TabStop +VScroll +0x4 +0x40 -0x80 vDeveloperDiagnosticsText, %developerDiagnostics%
+
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
+Gui Dev: Add, Text, x20 y482 w520 h18 Center, Recent Framework Actions
+
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
+Gui Dev: Add, Edit, x30 y505 w500 h151 ReadOnly +VScroll -TabStop hwndDeveloperActionsHwnd vDeveloperActionsText
 LLARS_DeveloperConfigureActionControl(DeveloperActionsHwnd)
 
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Button, x20 y671 w125 h27 gToggleDeveloperLightweight, Lightweight
 Gui Dev: Add, Button, x152 y671 w125 h27 gDeveloperTimingAudit, Timing Audit
 Gui Dev: Add, Button, x284 y671 w125 h27 gCopyAHISupportReport, Copy Support
@@ -2193,8 +2019,7 @@ Gui Dev: -Caption
 ; Build the full dashboard while the parent is hidden so the hotkey toggle
 ; never exposes the unfinished Developer Mode shell before its child panes exist.
 Gui Dev: Show, Hide w560 h711, Developer Mode
-LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd)
-LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd)
+; The inspector and hotkey information is already held in native parent controls.
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
 {
 	if (LLARS_RUNNING)
@@ -2209,6 +2034,7 @@ else
 	else
 		Gui Dev: Show, Center w560 h711, Developer Mode
 }
+LLARS_VisualFinish("Dev")
 
 ; Populate the console only after the final Show and mark a snapshot current
 ; only after the read-only Edit control verifies the complete ordered text.
@@ -2222,18 +2048,17 @@ if LLARS_DeveloperRenderActions(DeveloperActionsHwnd, developerActions)
 
 LLARS_EnableDeveloperHotkey()
 LLARS_DeveloperLastHotkeys := developerHotkeys
-LLARS_DeveloperLastInspectorSignature := LLARS_DeveloperInspectorSignature(developerPixelTargets)
 LLARS_DeveloperLastInputEngine := developerInputEngine
 LLARS_DeveloperLastDiagnostics := developerDiagnostics
 SetTimer, LLARS_DeveloperAutoRefresh, 250
 return
 
 DeveloperModeLightweightDashboard:
-LLARS_DeveloperDestroyInspectorPanel()
-LLARS_DeveloperDestroyHotkeysPanel()
 Gui Dev: Destroy
 DeveloperGuiHwnd := 0
 Gui Dev: +AlwaysOnTop +OwnDialogs +LastFound +HwndDeveloperGuiHwnd
+LLARS_VisualPrepare("Dev")
+LLARS_VisualBanner("Dev", 560, 66)
 
 developerActionSnapshot := LLARS_DeveloperActionSnapshot()
 developerActions := developerActionSnapshot.Text
@@ -2250,61 +2075,61 @@ developerLWEngine := developerLightweightDebug.Engine
 developerLWMouseRoute := developerLightweightDebug.MouseRoute
 developerLWKeyboardRoute := developerLightweightDebug.KeyboardRoute
 
-Gui Dev: Font, s12 Bold cBlack
-Gui Dev: Add, Text, x5 y5 w550 h25 Center, LLARS
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, Text, x5 y29 w550 h18 Center, Developer Mode - Lightweight
-Gui Dev: Font, s11 Norm cGray
-Gui Dev: Add, Text, x5 y48 w550 h20 Center, %scriptname%
-Gui Dev: Add, Text, x130 y69 w300 h2 0x10
+Gui Dev: Color, FFFFFF, FFFFFF
+Gui Dev: Font, s14 Bold cFFFFFF, Segoe UI
+Gui Dev: Add, Text, x5 y4 w550 h25 Center BackgroundTrans, LLARS
+Gui Dev: Font, s10 Bold cDCE7F4, Segoe UI
+Gui Dev: Add, Text, x5 y29 w550 h18 Center BackgroundTrans, Developer Mode - Lightweight
+Gui Dev: Font, s10 Bold cDCE7F4, Segoe UI
+Gui Dev: Add, Text, x5 y47 w550 h18 Center BackgroundTrans, %scriptname%
 
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, GroupBox, x20 y82 w520 h108, Live Debug Snapshot
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
+
 
 ; Keep Lightweight focused on the status a user needs at a glance.
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x32 y102 w42 h18 Right, State:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x80 y102 w78 h18 -Wrap vDeveloperLWStateText, %developerLWState%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x170 y102 w68 h18 Right, Run Type:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x244 y102 w120 h18 -Wrap vDeveloperLWRunTypeText, %developerLWRunType%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x370 y102 w65 h18 Right, Progress:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x441 y102 w85 h18 -Wrap vDeveloperLWProgressText, %developerLWProgress%
 
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x32 y123 w58 h18 Right, Elapsed:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x96 y123 w132 h18 -Wrap vDeveloperLWElapsedText, %developerLWElapsed%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x246 y123 w82 h18 Right, Final Sleep:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x334 y123 w150 h18 -Wrap vDeveloperLWFinalSleepText, %developerLWFinalSleep%
 
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x32 y144 w92 h18 Right, Input Engine:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x130 y144 w396 h18 -Wrap vDeveloperLWEngineText, %developerLWEngine%
 
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x32 y165 w82 h18 Right, Mouse Route:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x120 y165 w145 h18 -Wrap vDeveloperLWMouseRouteText, %developerLWMouseRoute%
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Text, x274 y165 w104 h18 Right, Keyboard Route:
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Text, x384 y165 w142 h18 -Wrap vDeveloperLWKeyboardRouteText, %developerLWKeyboardRoute%
 
-Gui Dev: Font, s10 Bold cBlack
-Gui Dev: Add, GroupBox, x20 y198 w520 h250, Recent Framework Actions
-Gui Dev: Font, s10 Norm cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
+
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
 Gui Dev: Add, Edit, x30 y220 w500 h216 ReadOnly +VScroll -TabStop hwndDeveloperActionsHwnd vDeveloperActionsText
 LLARS_DeveloperConfigureActionControl(DeveloperActionsHwnd)
 
-Gui Dev: Font, s10 Bold cBlack
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
 Gui Dev: Add, Button, x20 y460 w125 h27 gToggleDeveloperLightweight, Full Mode
 Gui Dev: Add, Button, x152 y460 w125 h27 gDeveloperTimingAudit, Timing Audit
 Gui Dev: Add, Button, x284 y460 w125 h27 gCopyAHISupportReport, Copy Support
@@ -2325,6 +2150,7 @@ else
 	else
 		Gui Dev: Show, Center w560 h498, Developer Mode
 }
+LLARS_VisualFinish("Dev")
 
 LLARS_DeveloperLastActions := ""
 LLARS_DeveloperLastActionSerial := -1
@@ -2374,19 +2200,22 @@ DeveloperTimingAuditFilter := ""
 DeveloperTimingAuditSortColumn := 0
 DeveloperTimingAuditSortDirection := "Asc"
 Gui Audit: +AlwaysOnTop +OwnDialogs +ToolWindow +HwndDeveloperTimingAuditHwnd
-Gui Audit: Font, s13 Bold cBlack
-Gui Audit: Add, Text, x5 y5 w530 h26 Center, LLARS
-Gui Audit: Font, s11 Bold cBlack
-Gui Audit: Add, Text, x5 y30 w530 h19 Center, Timing Audit
-Gui Audit: Font, s10 Norm cGray
-Gui Audit: Add, Text, x5 y51 w530 h19 Center, Last 500 audit actions. Newest first.
-Gui Audit: Add, Text, x50 y73 w440 h2 0x10
-Gui Audit: Font, s10 Norm cBlack, Segoe UI
+LLARS_VisualPrepare("Audit")
+LLARS_VisualBanner("Audit", 540, 77)
+LLARS_VisualCard("Audit", 12, 80, 516, 295)
+LLARS_VisualCard("Audit", 12, 378, 516, 43)
+Gui Audit: Font, s14 Bold cFFFFFF, Segoe UI
+Gui Audit: Add, Text, x5 y5 w530 h26 Center BackgroundTrans, LLARS
+Gui Audit: Font, s11 Bold cDCE7F4, Segoe UI
+Gui Audit: Add, Text, x5 y30 w530 h19 Center BackgroundTrans, Timing Audit
+Gui Audit: Font, s10 Norm cDCE7F4, Segoe UI
+Gui Audit: Add, Text, x5 y51 w530 h19 Center BackgroundTrans, Last 500 audit actions. Newest first.
+Gui Audit: Font, s10 Norm c24324A, Segoe UI
 Gui Audit: Add, Text, x20 y87 w42 h22 +0x200, Filter:
 Gui Audit: Add, Edit, x64 y86 w326 h23 gDeveloperTimingAuditFilterChanged vDeveloperTimingAuditFilter
-Gui Audit: Font, s9 Bold cBlack, Segoe UI
+Gui Audit: Font, s9 Bold c24324A, Segoe UI
 Gui Audit: Add, Button, x400 y85 w120 h25 gResetDeveloperTimingAuditView, Reset View
-Gui Audit: Font, s10 Norm cBlack, Segoe UI
+Gui Audit: Font, s10 Norm c24324A, Segoe UI
 Gui Audit: Add, ListView, x20 y119 w500 h253 Grid -Multi AltSubmit gDeveloperTimingAuditListEvent +HwndDeveloperTimingAuditListHwnd vDeveloperTimingAuditList, Action|Detail|Value
 Gui Audit: Default
 Gui Audit: ListView, DeveloperTimingAuditList
@@ -2394,11 +2223,12 @@ LV_ModifyCol(1, 105)
 LV_ModifyCol(2, 230)
 LV_ModifyCol(3, 145)
 LLARS_DeveloperPopulateTimingAudit()
-Gui Audit: Font, s11 Bold cBlack, Segoe UI
+Gui Audit: Font, s11 Bold c24324A, Segoe UI
 Gui Audit: Add, Button, x115 y385 w145 h28 gToggleDeveloperTimingAuditPause vDeveloperTimingAuditPauseButton, Pause
 Gui Audit: Add, Button, x280 y385 w145 h28 gCloseDeveloperTimingAudit, Close
 Gui Audit: -Caption
 Gui Audit: Show, Center w540 h425, Timing Audit
+LLARS_VisualFinish("Audit")
 SetTimer, LLARS_DeveloperTimingAuditAutoRefresh, 750
 Gui Dev: Default
 return
@@ -2809,20 +2639,16 @@ GuiControl, Dev:, DeveloperProgressText, %developerProgress%
 GuiControl, Dev:, DeveloperElapsedText, %developerElapsed%
 GuiControl, Dev:, DeveloperFinalSleepText, %developerFinalSleep%
 
-developerInspectorSignature := LLARS_DeveloperInspectorSignature(developerPixelTargets)
-if (developerInspectorSignature != LLARS_DeveloperLastInspectorSignature)
+developerInspectorText := LLARS_DeveloperInspectorSummary(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets)
+if (developerInspectorText != LLARS_DeveloperLastInspectorText)
 {
-	LLARS_DeveloperCreateInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets, DeveloperGuiHwnd, true)
-	LLARS_DeveloperLastInspectorSignature := developerInspectorSignature
+    GuiControl, Dev:, DeveloperInspectorSummaryText, %developerInspectorText%
+    LLARS_DeveloperLastInspectorText := developerInspectorText
 }
-else
-	LLARS_DeveloperRefreshInspectorPanel(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets)
-
-; Active Hotkeys uses the same scrollable child-pane method as Live Inspector.
 if (developerHotkeys != LLARS_DeveloperLastHotkeys)
 {
-	LLARS_DeveloperCreateHotkeysPanel(developerHotkeys, DeveloperGuiHwnd, true)
-	LLARS_DeveloperLastHotkeys := developerHotkeys
+    GuiControl, Dev:, DeveloperHotkeysSummaryText, %developerHotkeys%
+    LLARS_DeveloperLastHotkeys := developerHotkeys
 }
 
 if (developerActionSerial != LLARS_DeveloperLastActionSerial)
@@ -2928,8 +2754,6 @@ LLARS_DeveloperTimingAuditPaused := false
 DeveloperTimingAuditLastText := ""
 LLARS_DeveloperSavePosition(DeveloperGuiHwnd)
 LLARS_DeveloperUIAction("Developer Mode", "Closed")
-LLARS_DeveloperDestroyInspectorPanel()
-LLARS_DeveloperDestroyHotkeysPanel()
 Gui Dev: Destroy
 DeveloperGuiHwnd := 0
 Gui 1: Default
@@ -3051,510 +2875,31 @@ LLARS_DeveloperPixelTargets()
 	return targets
 }
 
-; Creates one scrollable Live Inspector pane.
-LLARS_DeveloperCreateInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor, targets, parentHwnd, preserveScroll := false)
+; Human-readable, scrollable inspector snapshot. Visible panes are native
+; controls on the Developer Mode window, so their labels cannot disappear
+; behind independently displayed child GUIs. Values still refresh live.
+LLARS_DeveloperInspectorSummary(status, mouseX, mouseY, mouseColor, targets)
 {
-	static inspectorMessagesRegistered := false
-	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
-	global DeveloperInspectorScrollPos, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
-	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd, DeveloperInspectorDetectionHwnd
-	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
-
-	preservedScroll := preserveScroll ? LLARS_DeveloperGetInspectorScrollPos() : 0
-	LLARS_DeveloperDestroyInspectorPanel(false)
-
-	DeveloperInspectorViewHeight := 174
-	DeveloperInspectorScrollPos := 0
-	DeveloperInspectorActualHwnds := []
-	DeveloperInspectorTargetHwnds := []
-
-	Gui DevInspector: +Parent%parentHwnd% -Caption -Border +ToolWindow +HwndDeveloperInspectorHwnd +0x200000
-	Gui DevInspector: Margin, 0, 0
-
-	rowY := 3
-	LLARS_DeveloperAddInspectorRow("Game Status", inspectorStatus, rowY, DeveloperInspectorStatusHwnd)
-	rowY += 21
-	LLARS_DeveloperAddInspectorRow("Mouse POS X", mouseX, rowY, DeveloperInspectorMouseXHwnd)
-	rowY += 21
-	LLARS_DeveloperAddInspectorRow("Mouse POS Y", mouseY, rowY, DeveloperInspectorMouseYHwnd)
-	rowY += 21
-	LLARS_DeveloperAddInspectorRow("Mouse RGB", mouseColor, rowY, DeveloperInspectorMouseColorHwnd)
-	rowY += 21
-	detectionText := IsFunc("LLARS_DetectionDisplay") ? LLARS_DetectionDisplay(true) : "None"
-	LLARS_DeveloperAddInspectorRow("Detection", detectionText, rowY, DeveloperInspectorDetectionHwnd)
-	rowY += 29
-
-	if (!IsObject(targets) || targets.Length() = 0)
-		targets := [{Message: "No configured color targets."}]
-
-	if (targets[1].HasKey("Message"))
-	{
-		messageText := targets[1].Message
-		Gui DevInspector: Font, s10 Norm cBlack
-		Gui DevInspector: Add, Text, x5 y%rowY% w195 h36, %messageText%
-		rowY += 40
-	}
-	else
-	{
-		for targetIndex, targetInfo in targets
-		{
-			sectionName := targetInfo.Name
-			coordinates := targetInfo.Coordinates
-			actualColor := targetInfo.ActualColor
-			targetColor := targetInfo.TargetColor
-
-			sectionDisplay := sectionName
-			sectionHeight := 18
-			if RegExMatch(sectionName, "i)^(Resource|Deposit) Color ([0-9]+)$", sectionParts)
-			{
-				sectionDisplay := sectionParts1 . "`nColor " . sectionParts2
-				sectionHeight := 36
-			}
-			valueY := rowY + Floor((sectionHeight - 18) / 2)
-
-			Gui DevInspector: Font, s10 Norm cBlack
-			Gui DevInspector: Add, Text, x5 y%rowY% w108 h%sectionHeight%, %sectionDisplay%
-			; Keep the right-side mode/value deliberately short so long target names stay readable inside the fixed-width Live Inspector pane.
-			Gui DevInspector: Font, s10 Bold cBlack
-			Gui DevInspector: Add, Text, x116 y%valueY% w84 h20 Right -Wrap, %coordinates%
-			rowY += sectionHeight + 5
-
-			actualHwnd := ""
-			targetHwnd := ""
-			if (targetInfo.HasFixedPoint)
-			{
-				LLARS_DeveloperAddInspectorRow("Actual RGB", actualColor, rowY, actualHwnd)
-				rowY += 21
-				LLARS_DeveloperAddInspectorRow("Target RGB", targetColor, rowY, targetHwnd)
-				rowY += 29
-			}
-			else
-			{
-				LLARS_DeveloperAddInspectorRow("Target RGB", targetColor, rowY, targetHwnd)
-				rowY += 29
-			}
-			DeveloperInspectorActualHwnds.Push(actualHwnd)
-			DeveloperInspectorTargetHwnds.Push(targetHwnd)
-		}
-	}
-
-	DeveloperInspectorContentHeight := Max(rowY, DeveloperInspectorViewHeight)
-
-	; Show the child GUI hidden first, then position it with SetWindowPos.
-	Gui DevInspector: Show, Hide w230 h%DeveloperInspectorViewHeight%
-	DllCall("SetWindowPos", "Ptr", DeveloperInspectorHwnd, "Ptr", 0
-		, "Int", 30, "Int", 184, "Int", 230, "Int", DeveloperInspectorViewHeight
-		, "UInt", 0x0040)
-	DllCall("RedrawWindow", "Ptr", DeveloperInspectorHwnd, "Ptr", 0, "Ptr", 0, "UInt", 0x0085)
-	LLARS_DeveloperConfigureInspectorScroll()
-	if (preservedScroll > 0)
-		LLARS_DeveloperSetInspectorScroll(preservedScroll)
-
-	if (!inspectorMessagesRegistered)
-	{
-		OnMessage(0x115, "LLARS_DeveloperPaneVScroll")
-		OnMessage(0x20A, "LLARS_DeveloperPaneMouseWheel")
-		inspectorMessagesRegistered := true
-	}
-}
-
-LLARS_DeveloperAddInspectorRow(labelText, valueText, rowY, ByRef valueHwnd)
-{
-	Gui DevInspector: Font, s10 Norm cBlack
-	Gui DevInspector: Add, Text, x5 y%rowY% w105 h18 -Wrap, %labelText%
-	Gui DevInspector: Font, s10 Bold cBlack
-	Gui DevInspector: Add, Text, x109 y%rowY% w116 h18 Right -Wrap hwndDeveloperInspectorValueHwnd, %valueText%
-	valueHwnd := DeveloperInspectorValueHwnd
-}
-
-LLARS_DeveloperRefreshInspectorPanel(inspectorStatus, mouseX, mouseY, mouseColor, targets)
-{
-	global DeveloperInspectorHwnd, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
-	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd, DeveloperInspectorDetectionHwnd
-	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
-
-	if (!DeveloperInspectorHwnd)
-		return
-
-	LLARS_DeveloperSetInspectorText(DeveloperInspectorStatusHwnd, inspectorStatus)
-	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseXHwnd, mouseX)
-	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseYHwnd, mouseY)
-	LLARS_DeveloperSetInspectorText(DeveloperInspectorMouseColorHwnd, mouseColor)
-	detectionText := IsFunc("LLARS_DetectionDisplay") ? LLARS_DetectionDisplay(true) : "None"
-	LLARS_DeveloperSetInspectorText(DeveloperInspectorDetectionHwnd, detectionText)
-
-	if (!IsObject(targets) || targets.Length() = 0 || targets[1].HasKey("Message"))
-		return
-
-	for targetIndex, targetInfo in targets
-	{
-		actualHwnd := DeveloperInspectorActualHwnds[targetIndex]
-		targetHwnd := DeveloperInspectorTargetHwnds[targetIndex]
-		LLARS_DeveloperSetInspectorText(actualHwnd, targetInfo.ActualColor)
-		LLARS_DeveloperSetInspectorText(targetHwnd, targetInfo.TargetColor)
-	}
-}
-
-LLARS_DeveloperSetInspectorText(controlHwnd, valueText)
-{
-	if (controlHwnd)
-		ControlSetText,, %valueText%, ahk_id %controlHwnd%
-}
-
-LLARS_DeveloperCreateHotkeysPanel(hotkeysText, parentHwnd, preserveScroll := false)
-{
-	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight, DeveloperHotkeysViewHeight
-	global DeveloperHotkeysScrollPos
-
-	preservedScroll := preserveScroll ? LLARS_DeveloperGetHotkeysScrollPos() : 0
-	LLARS_DeveloperDestroyHotkeysPanel(false)
-
-	DeveloperHotkeysViewHeight := 174
-	DeveloperHotkeysScrollPos := 0
-
-	Gui DevHotkeys: +Parent%parentHwnd% -Caption -Border +ToolWindow +HwndDeveloperHotkeysHwnd +0x200000
-	Gui DevHotkeys: Margin, 0, 0
-
-	rowY := 3
-	if (Trim(hotkeysText, " `t`r`n") = "")
-		hotkeysText := "No active hotkeys"
-
-	Loop, Parse, hotkeysText, `n, `r
-	{
-		lineText := A_LoopField
-		if (Trim(lineText) = "")
-		{
-			rowY += 9
-			continue
-		}
-
-		separatorPos := InStr(lineText, ":")
-		if (separatorPos > 0)
-		{
-			labelText := Trim(SubStr(lineText, 1, separatorPos - 1))
-			valueText := Trim(SubStr(lineText, separatorPos + 1))
-			LLARS_DeveloperAddHotkeyRow(labelText, valueText, rowY)
-		}
-		else
-		{
-			Gui DevHotkeys: Font, s10 Norm cBlack
-			Gui DevHotkeys: Add, Text, x5 y%rowY% w196 h18 -Wrap, %lineText%
-		}
-		rowY += 21
-	}
-
-	DeveloperHotkeysContentHeight := Max(rowY, DeveloperHotkeysViewHeight)
-	Gui DevHotkeys: Show, Hide w230 h%DeveloperHotkeysViewHeight%
-	DllCall("SetWindowPos", "Ptr", DeveloperHotkeysHwnd, "Ptr", 0
-		, "Int", 300, "Int", 184, "Int", 230, "Int", DeveloperHotkeysViewHeight
-		, "UInt", 0x0040)
-	DllCall("RedrawWindow", "Ptr", DeveloperHotkeysHwnd, "Ptr", 0, "Ptr", 0, "UInt", 0x0085)
-	LLARS_DeveloperConfigureHotkeysScroll()
-	if (preservedScroll > 0)
-		LLARS_DeveloperSetHotkeysScroll(preservedScroll)
-}
-
-LLARS_DeveloperAddHotkeyRow(labelText, valueText, rowY)
-{
-	Gui DevHotkeys: Font, s10 Norm cBlack
-	Gui DevHotkeys: Add, Text, x5 y%rowY% w118 h18 -Wrap, %labelText%
-	Gui DevHotkeys: Font, s10 Bold cBlack
-	Gui DevHotkeys: Add, Text, x126 y%rowY% w87 h18 Right -Wrap, %valueText%
-}
-
-LLARS_DeveloperConfigureHotkeysScroll()
-{
-	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight
-	global DeveloperHotkeysViewHeight, DeveloperHotkeysScrollPos
-
-	if (!DeveloperHotkeysHwnd)
-		return
-
-	maxPos := Max(0, DeveloperHotkeysContentHeight - DeveloperHotkeysViewHeight)
-	DeveloperHotkeysScrollPos := Max(0, Min(maxPos, DeveloperHotkeysScrollPos + 0))
-
-	VarSetCapacity(scrollInfo, 28, 0)
-	NumPut(28, scrollInfo, 0, "UInt")
-	NumPut(0x17, scrollInfo, 4, "UInt")
-	NumPut(0, scrollInfo, 8, "Int")
-	NumPut(Max(0, DeveloperHotkeysContentHeight - 1), scrollInfo, 12, "Int")
-	NumPut(DeveloperHotkeysViewHeight, scrollInfo, 16, "UInt")
-	NumPut(DeveloperHotkeysScrollPos, scrollInfo, 20, "Int")
-	DllCall("SetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
-	DllCall("ShowScrollBar", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Int", maxPos > 0)
-}
-
-LLARS_DeveloperGetHotkeysScrollPos()
-{
-	global DeveloperHotkeysHwnd, DeveloperHotkeysScrollPos
-
-	if (!DeveloperHotkeysHwnd)
-		return DeveloperHotkeysScrollPos + 0
-
-	VarSetCapacity(scrollInfo, 28, 0)
-	NumPut(28, scrollInfo, 0, "UInt")
-	NumPut(0x4, scrollInfo, 4, "UInt")
-	if DllCall("GetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo)
-		return NumGet(scrollInfo, 20, "Int")
-	return DeveloperHotkeysScrollPos + 0
-}
-
-LLARS_DeveloperSetHotkeysScroll(newPos)
-{
-	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight
-	global DeveloperHotkeysViewHeight, DeveloperHotkeysScrollPos
-
-	if (!DeveloperHotkeysHwnd)
-		return
-
-	maxPos := Max(0, DeveloperHotkeysContentHeight - DeveloperHotkeysViewHeight)
-	newPos := Max(0, Min(maxPos, Round(newPos)))
-	oldPos := DeveloperHotkeysScrollPos + 0
-	if (newPos = oldPos)
-		return
-
-	DeveloperHotkeysScrollPos := newPos
-	DllCall("ScrollWindowEx", "Ptr", DeveloperHotkeysHwnd, "Int", 0, "Int", oldPos - newPos
-		, "Ptr", 0, "Ptr", 0, "Ptr", 0, "Ptr", 0, "UInt", 0x0007)
-
-	VarSetCapacity(scrollInfo, 28, 0)
-	NumPut(28, scrollInfo, 0, "UInt")
-	NumPut(0x4, scrollInfo, 4, "UInt")
-	NumPut(newPos, scrollInfo, 20, "Int")
-	DllCall("SetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
-	DllCall("UpdateWindow", "Ptr", DeveloperHotkeysHwnd)
-}
-
-LLARS_DeveloperDestroyHotkeysPanel(resetScroll := true)
-{
-	global DeveloperHotkeysHwnd, DeveloperHotkeysContentHeight
-	global DeveloperHotkeysViewHeight, DeveloperHotkeysScrollPos
-
-	Gui DevHotkeys: Destroy
-	DeveloperHotkeysHwnd := ""
-	DeveloperHotkeysContentHeight := 0
-	DeveloperHotkeysViewHeight := 0
-	if (resetScroll)
-		DeveloperHotkeysScrollPos := 0
-}
-
-LLARS_DeveloperInspectorSignature(targets)
-{
-	if (!IsObject(targets) || targets.Length() = 0)
-		return ""
-
-	if (targets[1].HasKey("Message"))
-		return "MESSAGE|" . targets[1].Message
-
-	signature := ""
-	for targetIndex, targetInfo in targets
-		signature .= targetInfo.Name . "|" . targetInfo.Coordinates . "`n"
-	return signature
-}
-
-LLARS_DeveloperConfigureInspectorScroll()
-{
-	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight
-	global DeveloperInspectorViewHeight, DeveloperInspectorScrollPos
-
-	if (!DeveloperInspectorHwnd)
-		return
-
-	maxPos := Max(0, DeveloperInspectorContentHeight - DeveloperInspectorViewHeight)
-	DeveloperInspectorScrollPos := Max(0, Min(maxPos, DeveloperInspectorScrollPos + 0))
-
-	VarSetCapacity(scrollInfo, 28, 0)
-	NumPut(28, scrollInfo, 0, "UInt")
-	NumPut(0x17, scrollInfo, 4, "UInt")
-	NumPut(0, scrollInfo, 8, "Int")
-	NumPut(Max(0, DeveloperInspectorContentHeight - 1), scrollInfo, 12, "Int")
-	NumPut(DeveloperInspectorViewHeight, scrollInfo, 16, "UInt")
-	NumPut(DeveloperInspectorScrollPos, scrollInfo, 20, "Int")
-	DllCall("SetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
-	DllCall("ShowScrollBar", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Int", maxPos > 0)
-}
-
-LLARS_DeveloperGetInspectorScrollPos()
-{
-	global DeveloperInspectorHwnd, DeveloperInspectorScrollPos
-
-	if (!DeveloperInspectorHwnd)
-		return DeveloperInspectorScrollPos + 0
-
-	VarSetCapacity(scrollInfo, 28, 0)
-	NumPut(28, scrollInfo, 0, "UInt")
-	NumPut(0x4, scrollInfo, 4, "UInt")
-	if DllCall("GetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo)
-		return NumGet(scrollInfo, 20, "Int")
-	return DeveloperInspectorScrollPos + 0
-}
-
-LLARS_DeveloperSetInspectorScroll(newPos)
-{
-	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight
-	global DeveloperInspectorViewHeight, DeveloperInspectorScrollPos
-
-	if (!DeveloperInspectorHwnd)
-		return
-
-	maxPos := Max(0, DeveloperInspectorContentHeight - DeveloperInspectorViewHeight)
-	newPos := Max(0, Min(maxPos, Round(newPos)))
-	oldPos := DeveloperInspectorScrollPos + 0
-	if (newPos = oldPos)
-		return
-
-	DeveloperInspectorScrollPos := newPos
-	DllCall("ScrollWindowEx", "Ptr", DeveloperInspectorHwnd, "Int", 0, "Int", oldPos - newPos
-		, "Ptr", 0, "Ptr", 0, "Ptr", 0, "Ptr", 0, "UInt", 0x0007)
-
-	VarSetCapacity(scrollInfo, 28, 0)
-	NumPut(28, scrollInfo, 0, "UInt")
-	NumPut(0x4, scrollInfo, 4, "UInt")
-	NumPut(newPos, scrollInfo, 20, "Int")
-	DllCall("SetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo, "Int", true)
-	DllCall("UpdateWindow", "Ptr", DeveloperInspectorHwnd)
-}
-
-LLARS_DeveloperPaneVScroll(wParam, lParam, msg, hWnd)
-{
-	global DeveloperInspectorHwnd, DeveloperHotkeysHwnd
-
-	if (hWnd = DeveloperInspectorHwnd)
-		return LLARS_DeveloperInspectorVScroll(wParam, lParam, msg, hWnd)
-	if (hWnd = DeveloperHotkeysHwnd)
-		return LLARS_DeveloperHotkeysVScroll(wParam, lParam, msg, hWnd)
-}
-
-LLARS_DeveloperHotkeysVScroll(wParam, lParam, msg, hWnd)
-{
-	global DeveloperHotkeysHwnd, DeveloperHotkeysScrollPos
-	global DeveloperHotkeysContentHeight, DeveloperHotkeysViewHeight
-
-	if (!DeveloperHotkeysHwnd || hWnd != DeveloperHotkeysHwnd)
-		return
-
-	scrollCode := wParam & 0xFFFF
-	newPos := DeveloperHotkeysScrollPos + 0
-	pageAmount := Max(42, DeveloperHotkeysViewHeight - 21)
-	maxPos := Max(0, DeveloperHotkeysContentHeight - DeveloperHotkeysViewHeight)
-
-	if (scrollCode = 0)
-		newPos -= 21
-	else if (scrollCode = 1)
-		newPos += 21
-	else if (scrollCode = 2)
-		newPos -= pageAmount
-	else if (scrollCode = 3)
-		newPos += pageAmount
-	else if (scrollCode = 4 || scrollCode = 5)
-	{
-		VarSetCapacity(scrollInfo, 28, 0)
-		NumPut(28, scrollInfo, 0, "UInt")
-		NumPut(0x10, scrollInfo, 4, "UInt")
-		if DllCall("GetScrollInfo", "Ptr", DeveloperHotkeysHwnd, "Int", 1, "Ptr", &scrollInfo)
-			newPos := NumGet(scrollInfo, 24, "Int")
-	}
-	else if (scrollCode = 6)
-		newPos := 0
-	else if (scrollCode = 7)
-		newPos := maxPos
-	else
-		return 0
-
-	LLARS_DeveloperSetHotkeysScroll(newPos)
-	return 0
-}
-
-LLARS_DeveloperPaneMouseWheel(wParam, lParam, msg, hWnd)
-{
-	global DeveloperInspectorHwnd, DeveloperHotkeysHwnd
-	global DeveloperInspectorScrollPos, DeveloperHotkeysScrollPos
-
-	MouseGetPos,,, hoveredWindow, hoveredControl, 2
-
-	isOverInspector := (hoveredWindow = DeveloperInspectorHwnd || hoveredControl = DeveloperInspectorHwnd)
-	if (!isOverInspector && hoveredControl != "" && DeveloperInspectorHwnd)
-		isOverInspector := DllCall("IsChild", "Ptr", DeveloperInspectorHwnd, "Ptr", hoveredControl)
-
-	isOverHotkeys := (hoveredWindow = DeveloperHotkeysHwnd || hoveredControl = DeveloperHotkeysHwnd)
-	if (!isOverHotkeys && hoveredControl != "" && DeveloperHotkeysHwnd)
-		isOverHotkeys := DllCall("IsChild", "Ptr", DeveloperHotkeysHwnd, "Ptr", hoveredControl)
-
-	if (!isOverInspector && !isOverHotkeys)
-		return
-
-	wheelDelta := (wParam >> 16) & 0xFFFF
-	if (wheelDelta > 32767)
-		wheelDelta -= 65536
-	if (wheelDelta = 0)
-		return 0
-
-	if (isOverInspector)
-		LLARS_DeveloperSetInspectorScroll(DeveloperInspectorScrollPos - ((wheelDelta / 120) * 42))
-	else
-		LLARS_DeveloperSetHotkeysScroll(DeveloperHotkeysScrollPos - ((wheelDelta / 120) * 42))
-	return 0
-}
-
-LLARS_DeveloperInspectorVScroll(wParam, lParam, msg, hWnd)
-{
-	global DeveloperInspectorHwnd, DeveloperInspectorScrollPos
-	global DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
-
-	if (!DeveloperInspectorHwnd || hWnd != DeveloperInspectorHwnd)
-		return
-
-	scrollCode := wParam & 0xFFFF
-	newPos := DeveloperInspectorScrollPos + 0
-	pageAmount := Max(42, DeveloperInspectorViewHeight - 21)
-	maxPos := Max(0, DeveloperInspectorContentHeight - DeveloperInspectorViewHeight)
-
-	if (scrollCode = 0)
-		newPos -= 21
-	else if (scrollCode = 1)
-		newPos += 21
-	else if (scrollCode = 2)
-		newPos -= pageAmount
-	else if (scrollCode = 3)
-		newPos += pageAmount
-	else if (scrollCode = 4 || scrollCode = 5)
-	{
-		VarSetCapacity(scrollInfo, 28, 0)
-		NumPut(28, scrollInfo, 0, "UInt")
-		NumPut(0x10, scrollInfo, 4, "UInt")
-		if DllCall("GetScrollInfo", "Ptr", DeveloperInspectorHwnd, "Int", 1, "Ptr", &scrollInfo)
-			newPos := NumGet(scrollInfo, 24, "Int")
-	}
-	else if (scrollCode = 6)
-		newPos := 0
-	else if (scrollCode = 7)
-		newPos := maxPos
-	else
-		return 0
-
-	LLARS_DeveloperSetInspectorScroll(newPos)
-	return 0
-}
-
-LLARS_DeveloperDestroyInspectorPanel(resetScroll := true)
-{
-	global DeveloperInspectorHwnd, DeveloperInspectorContentHeight, DeveloperInspectorViewHeight
-	global DeveloperInspectorScrollPos, DeveloperInspectorStatusHwnd, DeveloperInspectorMouseXHwnd
-	global DeveloperInspectorMouseYHwnd, DeveloperInspectorMouseColorHwnd
-	global DeveloperInspectorActualHwnds, DeveloperInspectorTargetHwnds
-
-	Gui DevInspector: Destroy
-	DeveloperInspectorHwnd := ""
-	DeveloperInspectorContentHeight := 0
-	DeveloperInspectorViewHeight := 0
-	DeveloperInspectorStatusHwnd := ""
-	DeveloperInspectorMouseXHwnd := ""
-	DeveloperInspectorMouseYHwnd := ""
-	DeveloperInspectorMouseColorHwnd := ""
-	DeveloperInspectorActualHwnds := []
-	DeveloperInspectorTargetHwnds := []
-	if (resetScroll)
-		DeveloperInspectorScrollPos := 0
+    output := "Game Status: " . status . "`r`n"
+    output .= "Mouse X: " . mouseX . "`r`n"
+    output .= "Mouse Y: " . mouseY . "`r`n"
+    output .= "Mouse RGB: " . mouseColor . "`r`n"
+    output .= "Detection: " . (IsFunc("LLARS_DetectionDisplay") ? LLARS_DetectionDisplay(true) : "None")
+    if (!IsObject(targets) || targets.Length() = 0)
+        return output . "`r`n`r`nNo configured color targets."
+    for _, targetInfo in targets
+    {
+        if (targetInfo.HasKey("Message"))
+            output .= "`r`n`r`n" . targetInfo.Message
+        else
+        {
+            output .= "`r`n`r`n" . targetInfo.Name . ": " . targetInfo.Coordinates
+            output .= "`r`nTarget RGB: " . targetInfo.TargetColor
+            if (targetInfo.HasFixedPoint)
+                output .= "`r`nActual RGB: " . targetInfo.ActualColor
+        }
+    }
+    return output
 }
 
 LLARS_DeveloperConfigSectionActive(ConfigPath, section)
@@ -3867,13 +3212,14 @@ if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe")
 	{
 		Menu, Tray, NoIcon
 		Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-		Gui Client: Font, S13 bold underline cRed
+		LLARS_VisualPrepare("Client")
+		Gui Client: Font, s13 Bold cEF4444, Segoe UI
 		Gui Client: Add, Text, Center w220 x5, ERROR
 		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Font, s12 norm bold
+		Gui Client: Font, s12 Bold c24324A, Segoe UI
 		Gui Client: Add, Text, Center w220 x5, RuneScape and Jagex Launcher Both Found.
 		Gui Client: Add, Text, center x5 w220,
-		Gui Client: Font, cBlack
+		Gui Client: Font, s10 Norm c24324A, Segoe UI
 		Gui Client: Add, Text, Center w220 x5, Please select below either RuneScape or Jagex to launch the appropriate client for your account.
 		Gui Client: Add, Text, center x5 w220,
 		Gui Client: Add, Button, gJagex w150 x40 center, Jagex
@@ -3881,6 +3227,7 @@ if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe")
 		Gui Client: +ToolWindow
 		Gui Client: -caption
 		Gui Client: Show, center w230, Multiple Client
+		LLARS_VisualFinish("Client")
 		return
 	}
 	else
@@ -3902,13 +3249,14 @@ else
 {
 	Menu, Tray, NoIcon
 	Gui Client: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui Client: Font, S13 bold underline cRed
+	LLARS_VisualPrepare("Client")
+	Gui Client: Font, s13 Bold cEF4444, Segoe UI
 	Gui Client: Add, Text, Center w220 x5, ERROR
 	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Font, s12 norm bold
+	Gui Client: Font, s12 Bold c24324A, Segoe UI
 	Gui Client: Add, Text, Center w220 x5, Neither RuneScape Nor Jagex Launcher Were Found.
 	Gui Client: Add, Text, center x5 w220,
-	Gui Client: Font, cBlack
+	Gui Client: Font, s10 Norm c24324A, Segoe UI
 	Gui Client: Add, Text, Center w220 x5, No game client was detected in its expected location, please manually launch RuneScape.
 	Gui Client: Add, Text, center x5 w220,
 	Gui Client: Add, Text, Center w220 x5, Please ensure that RuneScape is open before attempting to start the script again.
@@ -3917,6 +3265,7 @@ else
 	Gui Client: +ToolWindow
 	Gui Client: -caption
 	Gui Client: Show, center w230, No Client Detected
+	LLARS_VisualFinish("Client")
 	return
 }
 

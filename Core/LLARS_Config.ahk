@@ -15,25 +15,6 @@ LLARS_ConfigReadFile(configPath, section, key, default := "ERROR")
     return value
 }
 
-; Configurable opacity belongs only to LLARS's main setup/running GUI.
-; Utility windows, prompts, Selector and overlays keep their own native visuals.
-LLARS_GuiOpacity(configPath)
-{
-    opacity := LLARS_ConfigReadFile(configPath, "Transparent", "value", "215")
-    if (!RegExMatch(opacity, "^\d+$"))
-        return 215
-    return Max(0, Min(255, opacity + 0))
-}
-
-LLARS_ApplyGuiOpacity(hwnd, configPath)
-{
-    if (!hwnd || !DllCall("IsWindow", "Ptr", hwnd))
-        return false
-    opacity := LLARS_GuiOpacity(configPath)
-    WinSet, Transparent, %opacity%, % "ahk_id " . hwnd
-    return true
-}
-
 LLARS_ConfigReadSection(configPath, section, default := "ERROR")
 {
     if !FileExist(configPath)

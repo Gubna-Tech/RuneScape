@@ -1,4 +1,4 @@
-﻿; ================================================================
+; ================================================================
 ; |     LLARS CORE     -     LLARS CORE                          |
 ; ================================================================
 
@@ -688,6 +688,8 @@ LLARS_UpdateConfigStatus()
 	LLARS_SetConfigStatusState("ConfigStatusColors", "ConfigStatusColorsLabel", LLARS_SETUP_PREFLIGHT.Items["Colors"].State)
 	LLARS_SetConfigStatusState("ConfigStatusTimer", "ConfigStatusTimerLabel", LLARS_SETUP_PREFLIGHT.Items["Timer"].State)
 	LLARS_SetConfigStatusState("ConfigStatusScriptConfig", "ConfigStatusScriptConfigLabel", LLARS_SETUP_PREFLIGHT.Items["Script Config"].State)
+	if (!LLARS_RUNNING && !LLARS_PAUSED)
+		LLARS_VisualSetHeaderStatus(LLARS_CONFIG_READY ? "READY" : "SETUP REQUIRED")
 	return LLARS_CONFIG_READY
 }
 
@@ -697,38 +699,37 @@ LLARS_UpdateConfigStatus()
 ; stay visually neutral and their handlers remain inert.
 LLARS_SetConfigStatusState(controlName, labelName, state)
 {
+    global LLARS_ConfigStatusPaintCache
+    GuiControlGet, statusHwnd, 1:Hwnd, %controlName%
+    if (!statusHwnd)
+        return
+    if (!IsObject(LLARS_ConfigStatusPaintCache))
+        LLARS_ConfigStatusPaintCache := {}
+    prior := LLARS_ConfigStatusPaintCache[controlName]
+    if (IsObject(prior) && prior.Hwnd = statusHwnd && prior.State = state)
+        return  ; No font, text or transparent control repaint on unchanged preflight.
 	if (state = "Invalid" || state = "Missing")
-	{
-		statusColor := "Red"
-		labelColor := "Red"
-		labelUnderline := true
-	}
-	else if (state = "Ready")
-	{
-		statusColor := "Green"
-		labelColor := "Black"
-		labelUnderline := false
-	}
-	else
-	{
-		statusColor := "Black"
-		labelColor := "Black"
-		labelUnderline := false
-	}
+    {
+        statusColor := "EF4444"
+        labelColor := "253650"
+    }
+    else if (state = "Ready")
+    {
+        statusColor := "16836F"
+        labelColor := "253650"
+    }
+    else
+    {
+        statusColor := "64748B"
+        labelColor := "253650"
+    }
 
-	; Reset inherited font decoration first, then explicitly restore Bold. This
-	; keeps Setup Status typography consistent with the Status section above it.
-	Gui, 1: Font, s10 Norm c%labelColor%
-	if (labelUnderline)
-		Gui, 1: Font, s10 Bold Underline c%labelColor%
-	else
-		Gui, 1: Font, s10 Bold c%labelColor%
-	GuiControl, 1: Font, %labelName%
-
-	Gui, 1: Font, s10 Norm c%statusColor%
-	Gui, 1: Font, s10 Bold c%statusColor%
-	GuiControl, 1: Font, %controlName%
+    Gui, 1:Font, s10 Bold c%labelColor%, Segoe UI
+    GuiControl, 1:Font, %labelName%
+    Gui, 1:Font, s10 Bold c%statusColor%, Segoe UI
+    GuiControl, 1:Font, %controlName%
 	GuiControl, 1:, %controlName%, %state%
+    LLARS_ConfigStatusPaintCache[controlName] := {Hwnd: statusHwnd, State: state}
 }
 
 ; Returns true only when the current preflight says the named setup item needs attention.
@@ -756,65 +757,63 @@ LLARS_SetupItemIsAvailable(itemName)
 ; object also powers Selector metadata, main Setup Status, and Setup controls.
 LLARS_ShowSetupPreflight()
 {
-	global LLARS_SETUP_PREFLIGHT, LLARS_COMBO_TIMER_LABEL, value, LLARS_CONFIG_FILE
+    global LLARS_SETUP_PREFLIGHT, LLARS_COMBO_TIMER_LABEL
 
-	LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(true)
-	LLARS_SupportEvent("Setup preflight", LLARS_SETUP_PREFLIGHT.Overall)
-	Gui SetupCheck: Destroy
-	Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop +ToolWindow -Caption +HwndLLARSSetupCheckHwnd
-	Gui SetupCheck: Font, s12 Bold cBlack
-	Gui SetupCheck: Add, Text, x5 y5 w350 h25 Center, LLARS
-	Gui SetupCheck: Font, s10 Bold cGray
-	Gui SetupCheck: Add, Text, x5 y29 w350 h18 Center, Check Setup
-	Gui SetupCheck: Add, Text, x10 y50 w340 h2 0x10
+    LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(true)
+    LLARS_SupportEvent("Setup preflight", LLARS_SETUP_PREFLIGHT.Overall)
+    Gui SetupCheck: Destroy
+    Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop +ToolWindow -Caption +HwndLLARSSetupCheckHwnd
+    LLARS_VisualPrepare("SetupCheck")
+    Gui SetupCheck: Color, FFFFFF, FFFFFF
+    LLARS_VisualModalHeader("SetupCheck", 440, "Check Setup")
 
-	y := 61
-	for _, itemName in ["Hotkeys", "Coordinates", "Colors", "Timer", "Script Config", "Input Backend"]
-	{
-		item := LLARS_SETUP_PREFLIGHT.Items[itemName]
-		state := item.State
-		Gui SetupCheck: Font, s10 Bold cBlack
-		Gui SetupCheck: Add, Text, x18 y%y% w145 h22 +0x200, %itemName%
-		if (state = "Ready")
-			Gui SetupCheck: Font, s10 Bold cGreen
-		else if (state = "Missing" || state = "Invalid")
-			Gui SetupCheck: Font, s10 Bold cRed
-		else
-			Gui SetupCheck: Font, s10 Bold cBlack
-		Gui SetupCheck: Add, Text, x168 y%y% w92 h22 Center +0x200, %state%
-
-		if (state = "Missing" || state = "Invalid")
-		{
-			if (itemName = "Hotkeys")
-				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckHotkeys, Open
-			else if (itemName = "Coordinates")
-				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckCoordinates, Open
-			else if (itemName = "Colors")
-				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckColors, Open
-			else if (itemName = "Timer" && LLARS_COMBO_TIMER_LABEL != "")
-				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckTimer, Open
-			else if (itemName = "Input Backend")
-				Gui SetupCheck: Add, Button, x270 y%y% w72 h22 gSetupCheckInput, Open
-		}
-		y += 26
-	}
-
-	Gui SetupCheck: Add, Text, x10 y%y% w340 h2 0x10
-	y += 8
-	Gui SetupCheck: Font, s10 Bold cBlack
-	Gui SetupCheck: Add, Text, x18 y%y% w145 h24 +0x200, Overall
-	overall := LLARS_SETUP_PREFLIGHT.Overall
-	if (overall = "Ready")
-		Gui SetupCheck: Font, s10 Bold cGreen
-	else
-		Gui SetupCheck: Font, s10 Bold cRed
-	Gui SetupCheck: Add, Text, x127 y%y% w174 h24 Center +0x200, %overall%
-	y += 34
-	Gui SetupCheck: Font, s10 Bold cBlack
-	Gui SetupCheck: Add, Button, x90 y%y% w175 h28 gCloseSetupCheck, Close Check Setup
-	height := y + 38
-	Gui SetupCheck: Show, Center w360 h%height%, Check Setup
-	return LLARS_SETUP_PREFLIGHT
+    ; Use one readable status table. All cells have a uniform white background;
+    ; no alternating text-box fills or stretched panel art.
+    y := 97
+    for _, itemName in ["Hotkeys", "Coordinates", "Colors", "Timer", "Script Config", "Input Backend"]
+    {
+        item := LLARS_SETUP_PREFLIGHT.Items[itemName]
+        state := item.State
+        Gui SetupCheck: Font, s10 Bold c24324A, Segoe UI
+        Gui SetupCheck: Add, Text, % "x25 y" . y . " w156 h22 +0x200 BackgroundTrans", %itemName%
+        if (state = "Ready")
+            severityColor := "128C79"
+        else if (state = "Missing" || state = "Invalid")
+            severityColor := "EF4444"
+        else
+            severityColor := "60768F"
+        Gui SetupCheck: Font, s10 Bold c%severityColor%, Segoe UI
+        Gui SetupCheck: Add, Text, % "x181 y" . y . " w146 h22 Center +0x200 BackgroundTrans", %state%
+        if (state = "Missing" || state = "Invalid")
+        {
+            if (itemName = "Hotkeys")
+                Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckHotkeys", Open
+            else if (itemName = "Coordinates")
+                Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckCoordinates", Open
+            else if (itemName = "Colors")
+                Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckColors", Open
+            else if (itemName = "Timer" && LLARS_COMBO_TIMER_LABEL != "")
+                Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckTimer", Open
+            else if (itemName = "Input Backend")
+                Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckInput", Open
+        }
+        y += 36
+        if (itemName != "Input Backend")
+            LLARS_VisualDivider("SetupCheck", 25, y-6, 390)
+    }
+    LLARS_VisualDivider("SetupCheck", 25, y+1, 390)
+    Gui SetupCheck: Font, s10 Bold c24324A, Segoe UI
+    Gui SetupCheck: Add, Text, % "x25 y" . (y+16) . " w155 h25 +0x200 BackgroundTrans", Overall
+    overall := LLARS_SETUP_PREFLIGHT.Overall
+    severityColor := overall = "Ready" ? "128C79" : "EF4444"
+    Gui SetupCheck: Font, s10 Bold c%severityColor%, Segoe UI
+    Gui SetupCheck: Add, Text, % "x181 y" . (y+16) . " w146 h25 Center +0x200 BackgroundTrans", %overall%
+    Gui SetupCheck: Font, s10 Bold c24324A, Segoe UI
+    Gui SetupCheck: Add, Button, % "x128 y" . (y+68) . " w184 h34 gCloseSetupCheck", Close Check Setup
+    height := y + 115
+    Gui SetupCheck: Show, Center w440 h%height%, Check Setup
+    LLARS_VisualFinish("SetupCheck")
+    return LLARS_SETUP_PREFLIGHT
 }
 
 ; Locks normal LLARS controls while a configuration/editor flow is active.
@@ -996,7 +995,7 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	frcount = 0
 	LastClickTime := 0
 	clickspot := 1
-	SetTimer, CheckLLARSConfig, 1000
+	; Start the config monitor after the first main-window paint and input bootstrap.
 	scriptname := regexreplace(A_scriptname,"\..*","")
 	LLARS_GUIScriptName := RegExReplace(scriptname, "i)\s+Script Template$")
 	if (LLARS_GUIScriptName = "")
@@ -1031,6 +1030,7 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	OnMessage(0x0201, "WM_LBUTTONDOWN")
 	OnMessage(0x0232, "WM_EXITSIZEMOVE")
 	LLARS_DeveloperRefreshHotkeyMap(true)
+	SetTimer, CheckLLARSConfig, 1000
 	return true
 }
 
@@ -1585,18 +1585,19 @@ LLARS_CheckGame()
 
 	Gui 1: Hide
 	Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui GNF: Font, S13 bold underline cRed
+	LLARS_VisualPrepare("GNF")
+	Gui GNF: Font, s13 Bold cEF4444, Segoe UI
 	Gui GNF: Add, Text, Center w220 x5, ERROR
 	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, s12 norm bold
+	Gui GNF: Font, s12 Bold c24324A, Segoe UI
 	Gui GNF: Add, Text, Center w220 x5, RuneScape Not Found
 	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, cBlack
+	Gui GNF: Font, s10 Norm c24324A, Segoe UI
 	Gui GNF: Add, Text, Center w220 x5, RuneScape was not found to be running.`n`n`nRuneScape will attempt to be auto-launched upon closing this error message.
 	Gui GNF: Add, Text, center x5 w220,
-	Gui GNF: Font, norm italic s10 c0x152039
+	Gui GNF: Font, s10 Italic c516B89, Segoe UI
 	Gui GNF: Add, Text, Center w220 x5, If RuneScape is already open and you're seeing this message, please use the Discord button below to contact Gubna for assistance.
-	Gui GNF: Font, s11 norm Bold c0x152039
+	Gui GNF: Font, s11 Bold c24324A, Segoe UI
 	Gui GNF: Add, Text, center x5 w220,
 	Gui GNF: Add, Text, Center w220 x5, Created by Gubna
 	Gui GNF: Add, Button, gDiscordError w150 x40 center, Discord
@@ -1604,6 +1605,7 @@ LLARS_CheckGame()
 	Gui GNF: +ToolWindow
 	Gui GNF: -caption
 	Gui GNF: Show, center w230, Game Not Found
+	LLARS_VisualFinish("GNF")
 	return false
 }
 
@@ -1617,17 +1619,18 @@ LLARS_ShowMissingConfigFile(fileName)
 {
 	Menu, Tray, NoIcon
 	Gui Error: +LastFound +OwnDialogs +AlwaysOnTop
-	Gui Error: Font, S13 bold underline cRed
+	LLARS_VisualPrepare("Error")
+	Gui Error: Font, s13 Bold cEF4444, Segoe UI
 	Gui Error: Add, Text, Center w220 x5,ERROR
 	Gui Error: Add, Text, center x5 w220,
-	Gui Error: Font, s12 norm bold
+	Gui Error: Font, s12 Bold c24324A, Segoe UI
 	Gui Error: Add, Text, Center w220 x5, % fileName . " not found"
 	Gui Error: Add, Text, center x5 w220,
-	Gui Error: Font, cBlack
+	Gui Error: Font, s10 Norm c24324A, Segoe UI
 	Gui Error: Add, Text, Center w220 x5, Please ensure that you have all the original files from:
-	Gui Error: Font, underline s12
+	Gui Error: Font, s12 Underline c2868D9, Segoe UI
 	Gui Error: Add, Text, cBlue gGitLink center w220 x5, Gubna-Tech Github
-	Gui Error: Font, s11 norm Bold c0x152039
+	Gui Error: Font, s11 Bold c24324A, Segoe UI
 	Gui Error: Add, Text, center x5 w220,
 	Gui Error: Add, Text, Center w220 x5,Created by Gubna
 	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
@@ -1635,6 +1638,7 @@ LLARS_ShowMissingConfigFile(fileName)
 	Gui Error: +ToolWindow
 	Gui Error: -caption
 	Gui Error: Show, center w230, Config Error
+	LLARS_VisualFinish("Error")
 }
 
 ; Checks that the script and shared LLARS configuration files are present.
@@ -1691,6 +1695,7 @@ LLARS_ShowConfigError(file, message, logDetails)
 		Run, %A_ScriptDir%\%file%
 	GuiControl,, ScriptRed, CONFIG
 	GuiControl,, State2, ERROR
+	LLARS_VisualShowStatus("red")
 	LLARS_ReportError("Config Error", message
 		, "Opened the affected configuration file and stopped normal startup."
 		, "Enter a valid value, save the file, then allow LLARS to reload."
@@ -2908,13 +2913,15 @@ LLARS_HumanMouseClick(button := "left")
 	DllCall("QueryPerformanceCounter", "Int64*", mouseHoldStartCounter)
 	Sleep, %holdTime%
 	DllCall("QueryPerformanceCounter", "Int64*", mouseHoldEndCounter)
-	LLARS_InputMouseButton(button, 0)
+	released := LLARS_InputMouseButton(button, 0)
 	if (!wasCritical)
 		Critical, Off
 
 	actualHoldTime := Round(((mouseHoldEndCounter - mouseHoldStartCounter) * 1000.0) / mouseHoldPerformanceFrequency)
 	displayButton := (button = "right") ? "Right" : (button = "middle") ? "Middle" : (button = "xbutton1") ? "XButton1" : (button = "xbutton2") ? "XButton2" : "Left"
 	transportName := IsFunc("LLARS_AHI_TransportName") ? LLARS_AHI_TransportName("mouse") : "Standard AutoHotkey"
+	if (!released)
+		return 0
 	LLARS_DeveloperAction(displayButton . " Click || Hold=" . actualHoldTime . " ms || " . transportName)
 	return actualHoldTime
 }
@@ -3142,7 +3149,8 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 	correctionDistance := Sqrt((correctionDX * correctionDX) + (correctionDY * correctionDY))
 	if (correctionDistance <= 1)
 	{
-		LLARS_InputMouseMove(targetX, targetY, 0)
+		if !LLARS_InputMouseMove(targetX, targetY, 0, runeScapeHwnd)
+			return -1
 		return 1
 	}
 
@@ -3292,7 +3300,8 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 		currentY := Round(point1.y + ((point2.y - point1.y) * blend))
 		if (currentX != previousX || currentY != previousY)
 		{
-			LLARS_InputMouseMove(currentX, currentY, 0)
+			if !LLARS_InputMouseMove(currentX, currentY, 0, runeScapeHwnd)
+				return -1
 			previousX := currentX
 			previousY := currentY
 		}
@@ -3308,7 +3317,8 @@ LLARS_NaturalClickCorrectOvershoot(missX, missY, targetX, targetY, runeScapeHwnd
 		}
 	}
 
-	LLARS_InputMouseMove(targetX, targetY, 0)
+	if !LLARS_InputMouseMove(targetX, targetY, 0, runeScapeHwnd)
+		return -1
 	LLARS_DeveloperAction("NaturalClick Overshoot Correction || (" . missX . ", " . missY . ") > (" . targetX . ", " . targetY . ") || Arc=" . Round(totalLength) . " px || " . duration . " ms")
 	return 1
 }
@@ -3613,6 +3623,47 @@ LLARS_AbortRunForMisclick(x, y, clickTarget := "")
 	return false
 }
 
+; A physical cursor/coordinate failure is not a Red X failure. Stop the run
+; before any further input, with a diagnostic that points to the actual problem.
+LLARS_AbortRunForCoordinateFailure(x, y, clickTarget := "")
+{
+    global LLARS_RUNNING, LLARS_PAUSED, LLARS_RunStartTick, LLARS_RunRuneScapeHwnd
+    global LLARS_DeveloperKeyStates, LLARS_DeveloperControlKeyStates, LLARS_RUN_TYPE
+    if (clickTarget = "")
+        clickTarget := "mouse target"
+    LLARS_DeveloperAction("Coordinate Fidelity Failed || " . clickTarget . " || (" . x . ", " . y . ") || Run aborted")
+    if IsFunc("LLARS_AHI_ReleaseAllInput")
+        LLARS_AHI_ReleaseAllInput()
+    LLARS_StopRunTimersForMisclick()
+    LLARS_RUNNING := false
+    LLARS_PAUSED := false
+    LLARS_RunStartTick := 0
+    LLARS_RunRuneScapeHwnd := 0
+    LLARS_DeveloperKeyStates := {}
+    LLARS_DeveloperControlKeyStates := {}
+    LLARS_DeveloperCoordinateOverlayHideSafe()
+    if IsFunc("EnableButton")
+        EnableButton()
+    if IsFunc("SetLLARSHOTKEYS")
+        SetLLARSHOTKEYS("On")
+    if IsFunc("LLARS_SetStatus")
+        LLARS_SetStatus("Error", "Coordinate mismatch")
+    if (LLARS_RUN_TYPE = "Timer")
+    {
+        try
+            GuiControl,, TimerCount, Coordinate Error
+        catch
+        {
+        }
+    }
+    LLARS_ReportError("LLARS Coordinate Error"
+        , "The physical cursor could not be confirmed at the saved RuneScape client coordinate.`nTarget: " . clickTarget . "`nCoordinate: (" . x . ", " . y . ")"
+        , "Stopped this run and released LLARS-held input before clicking the wrong location."
+        , "Check window scaling, RuneScape focus, and mouse transport before starting again."
+        , "Target=" . clickTarget . " || Coordinate=(" . x . ", " . y . ")")
+    return false
+}
+
 ; Direct-coordinate verified click. This keeps NaturalClick's movement,
 ; overshoot/correction, focus safety, and click timing unchanged. A failed
 ; verification is fatal for the active run.
@@ -3644,7 +3695,8 @@ NaturalClick(x, y, button := "left", coordinateSection := "", coordinateScope :=
 	if (!runeScapeHwnd)
 		return false
 
-	; Retry from the current cursor position if final verification is displaced.
+	; Retry bounded coordinate/transport failures without clicking elsewhere.
+	coordinateFailures := 0
 	Loop
 	{
 		if (runBound && IsFunc("LLARS_RunActive") && !LLARS_RunActive())
@@ -3670,6 +3722,18 @@ NaturalClick(x, y, button := "left", coordinateSection := "", coordinateScope :=
 		{
 			LLARS_DeveloperCoordinateOverlayHideSafe()
 			return false
+		}
+
+		; A changed focus can be reclaimed by the run guard. Persistent failures
+		; while the correct client is focused indicate a real coordinate/transport issue.
+		if (WinExist("A") = runeScapeHwnd)
+		{
+			coordinateFailures++
+			if (coordinateFailures >= 3)
+			{
+				LLARS_AbortRunForCoordinateFailure(x, y, coordinateSection)
+				Exit
+			}
 		}
 
 		if (!DllCall("IsWindow", "Ptr", runeScapeHwnd) || !LLARS_IsRuneScapeWindow(runeScapeHwnd))
@@ -3705,7 +3769,8 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick attempt", runeScapeHwnd))
 		return -1
 
-	MouseGetPos, startX, startY
+	if !LLARS_AHI_CursorClientPoint(runeScapeHwnd, startX, startY)
+		return -1
 	dx := x - startX
 	dy := y - startY
 	distance := Sqrt((dx * dx) + (dy * dy))
@@ -3724,7 +3789,8 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	{
 		DllCall("QueryPerformanceFrequency", "Int64*", movementPerformanceFrequency)
 		DllCall("QueryPerformanceCounter", "Int64*", movementStartCounter)
-		LLARS_InputMouseMove(x, y, 0)
+		if !LLARS_InputMouseMove(x, y, 0, runeScapeHwnd)
+			return -1
 		DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
 		actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
 		moveTransport := IsFunc("LLARS_AHI_TransportName") ? LLARS_AHI_TransportName("mouse") : "Standard AutoHotkey"
@@ -3733,18 +3799,17 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		Sleep, %pause%
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick verification", runeScapeHwnd))
 			return -1
-		MouseGetPos, clickX, clickY
-		if (clickX != x || clickY != y)
+		if !LLARS_AHI_VerifyCursorClientPoint(runeScapeHwnd, x, y)
 			return -1
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus immediately before NaturalClick", runeScapeHwnd))
 			return -1
-		MouseGetPos, clickX, clickY
-		if (clickX != x || clickY != y)
+		if !LLARS_AHI_VerifyCursorClientPoint(runeScapeHwnd, x, y)
 			return -1
 		verificationButton := Trim(button)
 		StringLower, verificationButton, verificationButton
 		redBaselineMask := (verifyRedClick && verificationButton != "right") ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
-		LLARS_HumanMouseClick(button)
+		if !LLARS_HumanMouseClick(button)
+			return -1
 		if (verifyRedClick)
 		{
 			verificationType := (verificationButton = "right") ? "ContextMenu" : "RedX"
@@ -3912,7 +3977,11 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		currentY := Round(currentY)
 		if (currentX != previousX || currentY != previousY)
 		{
-			LLARS_InputMouseMove(currentX, currentY, 0)
+			if !LLARS_InputMouseMove(currentX, currentY, 0, runeScapeHwnd)
+			{
+				movementResult := -1
+				break
+			}
 			previousX := currentX
 			previousY := currentY
 		}
@@ -3950,7 +4019,11 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 		LLARS_NaturalMovementTimingEnd()
 		return -1
 	}
-	LLARS_InputMouseMove(movementX, movementY, 0)
+	if !LLARS_InputMouseMove(movementX, movementY, 0, runeScapeHwnd)
+	{
+		LLARS_NaturalMovementTimingEnd()
+		return -1
+	}
 	if IsObject(overshootPlan)
 	{
 		correctionResult := LLARS_NaturalClickCorrectOvershoot(movementX, movementY, x, y, runeScapeHwnd, runBound, startX, startY)
@@ -3963,7 +4036,11 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	}
 	else
 	{
-		LLARS_InputMouseMove(x, y, 0)
+		if !LLARS_InputMouseMove(x, y, 0, runeScapeHwnd)
+		{
+			LLARS_NaturalMovementTimingEnd()
+			return -1
+		}
 	}
 	DllCall("QueryPerformanceCounter", "Int64*", movementEndCounter)
 	actualMovementElapsed := Round(((movementEndCounter - movementStartCounter) * 1000.0) / movementPerformanceFrequency)
@@ -3974,24 +4051,17 @@ LLARS_NaturalClickAttempt(x, y, button, runeScapeHwnd, runBound := false, coordi
 	Sleep, %pause%
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before NaturalClick verification", runeScapeHwnd))
 		return -1
-	MouseGetPos, clickX, clickY
-	if (clickX != x || clickY != y)
-	{
-		LLARS_DeveloperAction("Cursor Validation || Target=(" . x . ", " . y . ") || Actual=(" . clickX . ", " . clickY . ") || Retry")
+	if !LLARS_AHI_VerifyCursorClientPoint(runeScapeHwnd, x, y)
 		return -1
-	}
 	if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus immediately before NaturalClick", runeScapeHwnd))
 		return -1
-	MouseGetPos, clickX, clickY
-	if (clickX != x || clickY != y)
-	{
-		LLARS_DeveloperAction("Cursor Validation || Target=(" . x . ", " . y . ") || Actual=(" . clickX . ", " . clickY . ") || Retry")
+	if !LLARS_AHI_VerifyCursorClientPoint(runeScapeHwnd, x, y)
 		return -1
-	}
 	verificationButton := Trim(button)
 	StringLower, verificationButton, verificationButton
 	redBaselineMask := (verifyRedClick && verificationButton != "right") ? LLARS_RedClickArmMask(x, y, runeScapeHwnd) : 0
-	LLARS_HumanMouseClick(button)
+	if !LLARS_HumanMouseClick(button)
+		return -1
 	if (verifyRedClick)
 	{
 		verificationType := (verificationButton = "right") ? "ContextMenu" : "RedX"
@@ -4022,7 +4092,8 @@ AntiAFKNaturalClick(x, y, movementStream := "AntiAFKNaturalClick")
 	if (!runeScapeHwnd)
 		return false
 
-	MouseGetPos, startX, startY
+	if !LLARS_AHI_CursorClientPoint(runeScapeHwnd, startX, startY)
+		return false
 	dx := x - startX
 	dy := y - startY
 	distance := Sqrt((dx * dx) + (dy * dy))
@@ -4035,8 +4106,7 @@ AntiAFKNaturalClick(x, y, movementStream := "AntiAFKNaturalClick")
 			return false
 		if (!LLARS_NaturalClickRuneScapeGuard("RuneScape lost focus before AntiAFKNaturalClick movement", runeScapeHwnd))
 			return false
-		LLARS_InputMouseMove(x, y, 0)
-		return true
+		return LLARS_InputMouseMove(x, y, 0, runeScapeHwnd)
 	}
 
 	movementProfile := LLARS_NaturalMovementProfile(distance, movementStream)
@@ -4202,7 +4272,11 @@ AntiAFKNaturalClick(x, y, movementStream := "AntiAFKNaturalClick")
 
 		if (currentX != previousX || currentY != previousY)
 		{
-			LLARS_InputMouseMove(currentX, currentY, 0)
+			if !LLARS_InputMouseMove(currentX, currentY, 0, runeScapeHwnd)
+			{
+				movementResult := false
+				break
+			}
 			previousX := currentX
 			previousY := currentY
 		}
@@ -4237,9 +4311,9 @@ AntiAFKNaturalClick(x, y, movementStream := "AntiAFKNaturalClick")
 		LLARS_NaturalMovementTimingEnd()
 		return false
 	}
-	LLARS_InputMouseMove(x, y, 0)
+	finalMoved := LLARS_InputMouseMove(x, y, 0, runeScapeHwnd)
 	LLARS_NaturalMovementTimingEnd()
-	return true
+	return finalMoved
 }
 
 ; Produces layered deterministic noise used to vary natural mouse movement.

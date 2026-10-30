@@ -2729,23 +2729,93 @@ LLARS_AHI_OnExit(exitReason := "", exitCode := 0)
     LLARS_AHI_NativeTransportDispose()
 }
 
-; Converts the active window's client coordinate to the Interception virtual-
-; desktop absolute space. NaturalClick owns the trajectory and cadence; the
-; transport sends each calculated point without creating another movement path.
-LLARS_AHI_ClientPointToAbsolute(x, y, ByRef absoluteX, ByRef absoluteY)
+; Canonical RuneScape client-coordinate conversion for both AHI and native moves.
+; This never uses an unrelated foreground window as a coordinate origin.
+; The Selector includes the AHI transport without Core. Resolve the optional
+; RuneScape validator dynamically so Selector entrypoints stay independent.
+LLARS_AHI_IsValidRuneScapeTarget(hwnd)
 {
-    hwnd := DllCall("GetForegroundWindow", "Ptr")
-    if (!hwnd)
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd) || !IsFunc("LLARS_IsRuneScapeWindow"))
         return false
+    return Func("LLARS_IsRuneScapeWindow").Call(hwnd)
+}
 
+LLARS_AHI_ResolveMouseWindow(requestedHwnd := "")
+{
+    global LLARS_RunRuneScapeHwnd, LLARS_RUNNING
+    hwnd := requestedHwnd
+    if (hwnd = "" && LLARS_RUNNING && LLARS_RunRuneScapeHwnd)
+        hwnd := LLARS_RunRuneScapeHwnd
+    if (hwnd = "")
+        hwnd := DllCall("user32\GetForegroundWindow", "Ptr")
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd) || !LLARS_AHI_IsValidRuneScapeTarget(hwnd))
+        return 0
+    ; LLARS' run guard may reclaim the game and retry. Never inject a point
+    ; while another HWND owns focus (including during a focus transition).
+    if (DllCall("user32\GetForegroundWindow", "Ptr") != hwnd)
+        return 0
+    return hwnd
+}
+
+LLARS_AHI_ClientPointToScreen(x, y, hwnd, ByRef screenX, ByRef screenY)
+{
+    screenX := "", screenY := ""
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd) || !LLARS_AHI_IsValidRuneScapeTarget(hwnd))
+        return false
     VarSetCapacity(point, 8, 0)
     NumPut(Round(x), point, 0, "Int")
     NumPut(Round(y), point, 4, "Int")
-    if !DllCall("ClientToScreen", "Ptr", hwnd, "Ptr", &point)
+    if !DllCall("user32\ClientToScreen", "Ptr", hwnd, "Ptr", &point)
         return false
-
     screenX := NumGet(point, 0, "Int")
     screenY := NumGet(point, 4, "Int")
+    return true
+}
+
+; GetCursorPos always returns physical screen coordinates. ScreenToClient
+; maps those coordinates back through the SAME RuneScape window, regardless
+; of current AutoHotkey CoordMode or another window's client origin.
+LLARS_AHI_CursorClientPoint(hwnd, ByRef clientX, ByRef clientY, ByRef screenX := "", ByRef screenY := "")
+{
+    clientX := "", clientY := "", screenX := "", screenY := ""
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd) || !LLARS_AHI_IsValidRuneScapeTarget(hwnd))
+        return false
+    VarSetCapacity(point, 8, 0)
+    if !DllCall("user32\GetCursorPos", "Ptr", &point)
+        return false
+    screenX := NumGet(point, 0, "Int")
+    screenY := NumGet(point, 4, "Int")
+    if !DllCall("user32\ScreenToClient", "Ptr", hwnd, "Ptr", &point)
+        return false
+    clientX := NumGet(point, 0, "Int")
+    clientY := NumGet(point, 4, "Int")
+    return true
+}
+
+; Verify the physical pointer BEFORE a button event. AHI movement acceptance
+; does not by itself prove that Windows moved the pointer to the requested cell.
+LLARS_AHI_VerifyCursorClientPoint(hwnd, x, y, tolerance := 2)
+{
+    if !LLARS_AHI_ClientPointToScreen(x, y, hwnd, expectedScreenX, expectedScreenY)
+        return false
+    if !LLARS_AHI_CursorClientPoint(hwnd, currentX, currentY, cursorScreenX, cursorScreenY)
+        return false
+    if (Abs(currentX-x) > tolerance || Abs(currentY-y) > tolerance
+        || Abs(cursorScreenX-expectedScreenX) > tolerance || Abs(cursorScreenY-expectedScreenY) > tolerance)
+    {
+        LLARS_AHI_DeveloperAction("Coordinate Mismatch || Hwnd=" . hwnd . " || TargetClient=(" . x . ", " . y . ") || TargetScreen=(" . expectedScreenX . ", " . expectedScreenY . ") || CursorClient=(" . currentX . ", " . currentY . ") || CursorScreen=(" . cursorScreenX . ", " . cursorScreenY . ")")
+        return false
+    }
+    return true
+}
+
+; Client -> physical screen -> virtual-desktop absolute; the supplied HWND is
+; fixed by the caller for the entire NaturalClick trajectory.
+LLARS_AHI_ClientPointToAbsolute(x, y, ByRef absoluteX, ByRef absoluteY, runeScapeHwnd := "")
+{
+    hwnd := LLARS_AHI_ResolveMouseWindow(runeScapeHwnd)
+    if (!hwnd || !LLARS_AHI_ClientPointToScreen(x, y, hwnd, screenX, screenY))
+        return false
     SysGet, virtualLeft, 76
     SysGet, virtualTop, 77
     SysGet, virtualWidth, 78
@@ -2754,17 +2824,10 @@ LLARS_AHI_ClientPointToAbsolute(x, y, ByRef absoluteX, ByRef absoluteY)
         return false
     if (screenX < virtualLeft || screenY < virtualTop || screenX >= (virtualLeft + virtualWidth) || screenY >= (virtualTop + virtualHeight))
         return false
-
     absoluteX := Round(((screenX - virtualLeft) * 65535.0) / (virtualWidth - 1))
     absoluteY := Round(((screenY - virtualTop) * 65535.0) / (virtualHeight - 1))
-    if (absoluteX < 0)
-        absoluteX := 0
-    else if (absoluteX > 65535)
-        absoluteX := 65535
-    if (absoluteY < 0)
-        absoluteY := 0
-    else if (absoluteY > 65535)
-        absoluteY := 65535
+    absoluteX := Max(0, Min(65535, absoluteX))
+    absoluteY := Max(0, Min(65535, absoluteY))
     return true
 }
 
@@ -2775,20 +2838,40 @@ LLARS_AHI_ClientPointToAbsolute(x, y, ByRef absoluteX, ByRef absoluteY)
 ;   * When AHI is active, every requested endpoint is transported through AHI.
 ;     The legacy speed argument is retained for caller compatibility/diagnostics;
 ;     LLARS never falls through to native MouseMove while AHI mode is active.
-LLARS_InputMouseMove(x, y, speed := "")
+LLARS_InputMouseMove(x, y, speed := "", runeScapeHwnd := "")
 {
     global LLARS_AHI_Object, LLARS_AHI_MOUSE_ID, LLARS_AHI_MOUSE_READY
     global LLARS_AHI_STATUS_DETAIL, LLARS_AHI_ABSOLUTE_TRANSPORT_FAILED
     global LLARS_AHI_PROJECT_ROOT
 
-    ; Explicit Standard mode keeps the legacy transport. When AHI is selected,
-    ; every movement stays on AHI: route recovery + one retry, then fail closed.
+    hwnd := LLARS_AHI_ResolveMouseWindow(runeScapeHwnd)
+    if (!hwnd)
+    {
+        LLARS_AHI_LogTransportFailure("Mouse", "RuneScape window unavailable or lost focus during movement")
+        return false
+    }
+
+    ; Standard mode also uses the SAME locked client origin. For the explicit
+    ; NaturalClick points, SetCursorPos avoids active-window CoordMode drift.
     if (LLARS_AHI_PROJECT_ROOT != "" && LLARS_AHI_Mode(LLARS_AHI_PROJECT_ROOT) != "ahi")
     {
-        if (speed = "")
-            MouseMove, %x%, %y%
+        if !LLARS_AHI_ClientPointToScreen(x, y, hwnd, screenX, screenY)
+        {
+            LLARS_AHI_LogTransportFailure("Mouse", "Client-to-screen conversion failed")
+            return false
+        }
+        if (speed = 0 || speed = "")
+        {
+            if !DllCall("user32\SetCursorPos", "Int", screenX, "Int", screenY)
+                return false
+        }
         else
-            MouseMove, %x%, %y%, %speed%
+        {
+            ; The native compatibility speed applies in physical screen space.
+            CoordMode, Mouse, Screen
+            MouseMove, %screenX%, %screenY%, %speed%
+            CoordMode, Mouse, Client
+        }
         LLARS_AHI_RecordTransport("mouse", "Standard AHK compatibility move | " . (speed = "" ? "Default speed" : "Speed=" . speed))
         return true
     }
@@ -2802,7 +2885,7 @@ LLARS_InputMouseMove(x, y, speed := "")
         }
     }
 
-    if !LLARS_AHI_ClientPointToAbsolute(x, y, absoluteX, absoluteY)
+    if !LLARS_AHI_ClientPointToAbsolute(x, y, absoluteX, absoluteY, hwnd)
     {
         LLARS_AHI_LogTransportFailure("Mouse", "Movement coordinate conversion failed")
         return false
@@ -2967,12 +3050,15 @@ LLARS_InputMouseButton(button := "left", state := 1)
 ; movement and held-button helpers as NaturalClick so the selected backend stays consistent.
 LLARS_InputMouseDrag(startX, startY, endX, endY, button := "left", speed := 0)
 {
-    if !LLARS_InputMouseMove(startX, startY, 0)
+    hwnd := LLARS_AHI_ResolveMouseWindow()
+    if (!hwnd)
+        return false
+    if !LLARS_InputMouseMove(startX, startY, 0, hwnd)
         return false
     if !LLARS_InputMouseButton(button, 1)
         return false
 
-    moved := LLARS_InputMouseMove(endX, endY, speed)
+    moved := LLARS_InputMouseMove(endX, endY, speed, hwnd)
     released := LLARS_InputMouseButton(button, 0)
     transportName := LLARS_AHI_TransportName("mouse")
     LLARS_AHI_DeveloperAction("Mouse Drag || " . button . " || (" . startX . ", " . startY . ") -> (" . endX . ", " . endY . ") || " . transportName)

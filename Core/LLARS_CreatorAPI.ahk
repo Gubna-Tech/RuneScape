@@ -804,6 +804,7 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 
 	LLARS_CreatorCurrentStatus := "Restoring RuneScape"
 	GuiControl, 1:, State3, Restoring Game
+	LLARS_VisualShowStatus("blue")
 
 	; Prevent managed timers from entering another creator callback while focus recovery is in progress.
 	LLARS_EnableDeveloperHotkey(LLARS_lhk5)
@@ -852,6 +853,7 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 	LLARS_CreatorCurrentStatus := previousStatus
 	LLARS_CreatorCurrentActivity := previousActivity
 	GuiControl, 1:, State3, %previousStatus%
+	LLARS_VisualShowStatus("blue")
 	LLARS_DeveloperAction("Focus || RuneScape reclaimed || " . action)
 	LLARS_ReportRecovery("RuneScape focus restored", action)
 	return true
@@ -1760,6 +1762,8 @@ LLARS_SetStatus(status, activity := "")
 		GuiControl, 1:, ScriptBlue, %activity%
 		GuiControl, 1:, State3, %status%
 	}
+
+	LLARS_VisualShowStatus(normalizedStatus = "error" ? "red" : "blue")
 
 	if (status != lastStatus || activity != lastActivity)
 	{
