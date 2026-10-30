@@ -148,6 +148,7 @@ sa2 := LLARS_ConfigRead("Timer", "max", "ERROR")
 
 
 Gui 5: +LastFound +AlwaysOnTop +OwnDialogs
+LLARS_VisualPrepare("5")
 Gui 5: Font, bold s12
 Gui 5: Add, Text, x5 w190 center, Click Timer Interval
 Gui 5: Font, s10
@@ -164,6 +165,7 @@ Gui 5: Add, Button, Default gAutoClickerTimerSave x50 w100, Save Timer
 Gui 5: +ToolWindow
 Gui 5: -caption
 Gui 5: Show, center w200, Timer
+LLARS_VisualFinish("5")
 return
 
 ; Validates and saves AutoClicker's minimum and maximum click intervals.

@@ -228,6 +228,7 @@ sa1 := LLARS_ConfigRead("AFK", "min", "ERROR")
 sa2 := LLARS_ConfigRead("AFK", "max", "ERROR")
 
 Gui 5: +LastFound +AlwaysOnTop +OwnDialogs
+LLARS_VisualPrepare("5")
 Gui 5: Font, bold s12
 Gui 5: Add, Text, x5 w210 center, Anti-AFK Timer Interval
 Gui 5: Font, s10
@@ -244,6 +245,7 @@ Gui 5: Add, Button, Default gAntiAFKTimerSave x55 w100, Save Timer
 Gui 5: +ToolWindow
 Gui 5: -caption
 Gui 5: Show, center w220, Timer
+LLARS_VisualFinish("5")
 return
 
 AntiAFKTimerSave:
