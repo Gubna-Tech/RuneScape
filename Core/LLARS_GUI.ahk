@@ -362,8 +362,8 @@ LLARS_GUIRuntimeActivity(y, mode := "initial")
     LLARS_GUIRuntimeSection("CURRENT ACTIVITY", 39, y+13)
     Gui, Font, s9 Bold c70829C, Segoe UI
     Gui, Add, Text, % "x" . LLARS_GUIRuntimeSize(341) . " y" . LLARS_GUIRuntimeY(y+14) . " w" . LLARS_GUIRuntimeSize(90) . " h" . LLARS_GUIRuntimeControlHeight(19) . " Right BackgroundTrans", STATUS
-    nameX := LLARS_GUIRuntimeSize(37), nameW := LLARS_GUIRuntimeSize(239)
-    stateX := LLARS_GUIRuntimeSize(279), stateW := LLARS_GUIRuntimeSize(151)
+    nameX := LLARS_GUIRuntimeSize(37), nameW := LLARS_GUIRuntimeSize(184)
+    stateX := LLARS_GUIRuntimeSize(224), stateW := LLARS_GUIRuntimeSize(206)
     textY := LLARS_GUIRuntimeY(y+45), textH := LLARS_GUIRuntimeControlHeight(24)
     Gui, Font, s11 Bold c20334E, Segoe UI
     if (mode = "running")
