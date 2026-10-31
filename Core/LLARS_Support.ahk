@@ -6,9 +6,18 @@
 
 ; Records framework warning/error/recovery state in the existing Developer Action stream.
 ; This is intentionally lightweight: no additional log file or persistent telemetry store is created.
-LLARS_DiagnosticRecord(kind, summary, detail := "")
+LLARS_DiagnosticRecord(kind, summary, detail := "", category := "Framework")
 {
 	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
+	global LLARS_LastDiagnosticCategory
+	; The category is explicit; never infer a verified click failure from a
+	; configuration problem or a failure before input dispatch.
+	category := Trim(category)
+	if (category = "")
+		category := "Framework"
+	if !LLARS_DiagnosticCategoryValid(category)
+		category := "Framework"
+	LLARS_LastDiagnosticCategory := category
 
 	kind := Trim(kind)
 	summary := Trim(summary)
@@ -28,21 +37,48 @@ LLARS_DiagnosticRecord(kind, summary, detail := "")
 		LLARS_DiagnosticRecoveries++
 
 	LLARS_LastDiagnostic := kind . ": " . summary
-	LLARS_SupportEvent("Diagnostic " . kind, summary)
-	action := "Diagnostic || " . kind . " || " . summary
+	LLARS_SupportEvent("Diagnostic " . kind, category . " | " . summary)
+	action := "Diagnostic || " . kind . " || " . category . " || " . summary
 	if (detail != "")
 		action .= " || " . detail
 	LLARS_DeveloperAction(action)
 	return true
 }
 
+; Categories describe observed stages, not speculative root causes.
+LLARS_DiagnosticCategoryValid(category)
+{
+	return (category = "Framework" || category = "Configuration" || category = "Focus"
+		|| category = "Input readiness" || category = "Input transport"
+		|| category = "Interaction verification" || category = "Cursor alignment")
+}
+
+LLARS_DiagnosticNextStep(category)
+{
+	if (category = "Configuration")
+		return "Open the existing Config Settings and correct the indicated value."
+	if (category = "Focus")
+		return "Bring the RuneScape client into view and check window focus."
+	if (category = "Input readiness" || category = "Input transport")
+		return "Open Input Settings, check the selected backend and run Test AHI; the test sends no gameplay input."
+	if (category = "Cursor alignment")
+		return "Check display scaling, client position and the selected mouse route."
+	if (category = "Interaction verification")
+		return "A click was attempted but the expected confirmation was not seen; inspect the game state before retrying."
+	return "Review Developer Mode details or create a privacy-safe support bundle."
+}
+
 ; Returns the compact diagnostic state consumed by Developer/support reporting.
 LLARS_DiagnosticSnapshot()
 {
 	global LLARS_DiagnosticWarnings, LLARS_DiagnosticErrors, LLARS_DiagnosticRecoveries, LLARS_LastDiagnostic
+	global LLARS_LastDiagnosticCategory
+	category := LLARS_LastDiagnosticCategory = "" ? "Framework" : LLARS_LastDiagnosticCategory
 	return {Warnings:(LLARS_DiagnosticWarnings + 0)
 		, Errors:(LLARS_DiagnosticErrors + 0)
 		, Recoveries:(LLARS_DiagnosticRecoveries + 0)
+		, Category:category
+		, NextStep:LLARS_DiagnosticNextStep(category)
 		, Last:(LLARS_LastDiagnostic = "" ? "None" : LLARS_LastDiagnostic)}
 }
 
@@ -206,6 +242,8 @@ LLARS_SupportDiagnosticsText()
 	text .= "Errors: " . diagnostic.Errors . "`r`n"
 	text .= "Recoveries: " . diagnostic.Recoveries . "`r`n"
 	text .= "Last Diagnostic: " . diagnostic.Last . "`r`n"
+	text .= "Last Category: " . diagnostic.Category . "`r`n"
+	text .= "Suggested Action: " . diagnostic.NextStep . "`r`n"
 	text .= "Runtime Estimate Source: " . estimateSource . "`r`n"
 	text .= "Runtime Estimate Confidence: " . estimateConfidence . "`r`n"
 	text .= "AHI Status: " . (LLARS_AHI_STATUS_REASON = "" ? "None" : LLARS_AHI_STATUS_REASON) . "`r`n"
@@ -372,7 +410,7 @@ LLARS_DetectionDisplay(short := false)
 }
 
 ; Standard user-facing issue format: what happened, what LLARS did, and what to do next.
-LLARS_ReportIssue(severity, title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+LLARS_ReportIssue(severity, title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true, category := "Framework")
 {
 	severity := Trim(severity)
 	title := Trim(title)
@@ -384,15 +422,18 @@ LLARS_ReportIssue(severity, title, whatHappened, whatLLARSDid := "", whatUserSho
 	if (whatHappened = "")
 		whatHappened := "An unexpected framework condition occurred."
 
-	LLARS_DiagnosticRecord(severity, whatHappened, detail)
+	LLARS_DiagnosticRecord(severity, whatHappened, detail, category)
 	if (!showMessage)
 		return false
 
 	message := "What happened:`n" . whatHappened
+	if (LLARS_DiagnosticCategoryValid(category) && category != "Framework")
+		message := "Issue: " . category . "`n`n" . message
 	if (whatLLARSDid != "")
 		message .= "`n`nWhat LLARS did:`n" . whatLLARSDid
-	if (whatUserShouldDo != "")
-		message .= "`n`nWhat you should do:`n" . whatUserShouldDo
+	if (whatUserShouldDo = "")
+		whatUserShouldDo := LLARS_DiagnosticNextStep(category)
+	message .= "`n`nWhat you should do:`n" . whatUserShouldDo
 
 	severityLower := severity
 	StringLower, severityLower, severityLower
@@ -406,18 +447,18 @@ LLARS_ReportIssue(severity, title, whatHappened, whatLLARSDid := "", whatUserSho
 	return false
 }
 
-LLARS_ReportWarning(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+LLARS_ReportWarning(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true, category := "Framework")
 {
-	return LLARS_ReportIssue("Warning", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
+	return LLARS_ReportIssue("Warning", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage, category)
 }
 
-LLARS_ReportError(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true)
+LLARS_ReportError(title, whatHappened, whatLLARSDid := "", whatUserShouldDo := "", detail := "", showMessage := true, category := "Framework")
 {
-	return LLARS_ReportIssue("Error", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage)
+	return LLARS_ReportIssue("Error", title, whatHappened, whatLLARSDid, whatUserShouldDo, detail, showMessage, category)
 }
 
 ; Recovery events stay non-modal and flow into the same existing Developer/support stream.
-LLARS_ReportRecovery(summary, detail := "")
+LLARS_ReportRecovery(summary, detail := "", category := "Framework")
 {
-	return LLARS_DiagnosticRecord("Recovery", summary, detail)
+	return LLARS_DiagnosticRecord("Recovery", summary, detail, category)
 }

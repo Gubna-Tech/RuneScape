@@ -1,4 +1,4 @@
-#Requires AutoHotkey v1.1.37.02
+﻿#Requires AutoHotkey v1.1.37.02
 #NoEnv
 #SingleInstance Force
 
@@ -176,11 +176,16 @@ Gui, Font, s10 Bold c24324A, Segoe UI
 Gui, Add, Button, gSelect w110 h34 x24 y446 Center, Select Script
 Gui, Add, Button, gSelectorToggleFavorite w128 h34 x146 y446 vSelectorFavoriteButton Center, Add Favorite
 Gui, Add, Button, gSelectorClearFilters w110 h34 x286 y446 Center, Clear Filters
+Gui, Add, Button, gSelectorHeaderPreferences w112 h34 x24 y488 Center, Header Style
 Gui, Add, Button, gExit w128 h34 x146 y488 Center, Close Selector
+Gui, Add, Button, gSelectorCustomScripts w110 h34 x286 y488 Center, Import Scripts
 if LLARS_SelectorLoadWindowPosition(selectorX, selectorY)
 	selectorShowOptions := "w420 h550 x" . selectorX . " y" . selectorY
 else
 	selectorShowOptions := "w420 h550 Center"
+; Switch buttons to owner-draw before showing them; the shared visual finalizer
+; synchronously paints all children on first display.
+LLARS_VisualStyleControls(LLARSSelectorHwnd)
 Gui, Show, %selectorShowOptions%, Script Selector
 LLARS_VisualWindow(LLARSSelectorHwnd)
 LLARS_HideUpdateCheckSplash()
@@ -194,7 +199,9 @@ if FileExist(LLARS_SelectorIconPath)
 CheckPOS(LLARSSelectorHwnd)
 LLARS_SelectorSavePosition(LLARSSelectorHwnd)
 LLARS_SelectorApplyFilter()
-GuiControl, Focus, ScriptListBox
+GuiControl, 1:Focus, ScriptListBox
+; End the auto-execute section: never fall through into the Custom Scripts g-label.
+return
 
 ; Builds the single authoritative in-code catalog used by list, info, and launch paths.
 LLARS_SelectorBuildRegistry()
@@ -325,9 +332,10 @@ LLARS_SelectorBuildRegistry()
 		target := A_ScriptDir . "\" . item.RootDirectory . "\" . item.RelativeDirectory . "\" . item.FileName
 		if !FileExist(target)
 			continue
-		LLARS_SelectorRegistryAdd(registry, item.Name, item.InfoTitle, item.Difficulty
+		added := LLARS_SelectorRegistryAdd(registry, item.Name, item.InfoTitle, item.Difficulty
 			, item.Description, item.RelativeDirectory, item.FileName, item.Category
 			, item.RootDirectory, item.ScriptFamily)
+		added.Author := item.Author
 	}
 
 	return registry
@@ -603,13 +611,13 @@ LLARS_SelectorRememberRecent(scriptName)
 LLARS_SelectorApplyFilter()
 {
 	global scriptArray, ScriptTotal, LLARS_SelectorFavorites, LLARS_SelectorRecent
-	global LLARS_SelectorFilteredCount
+	global LLARS_SelectorFilteredCount, LLARS_SelectorVisibleList
 
-	GuiControlGet, searchText, , SelectorSearch
-	GuiControlGet, selectorView, , SelectorView
-	GuiControlGet, selectorCategory, , SelectorCategory
-	GuiControlGet, selectorDifficulty, , SelectorDifficulty
-	GuiControlGet, selectorScriptFamily, , SelectorScriptFamily
+	GuiControlGet, searchText, 1:, SelectorSearch
+	GuiControlGet, selectorView, 1:, SelectorView
+	GuiControlGet, selectorCategory, 1:, SelectorCategory
+	GuiControlGet, selectorDifficulty, 1:, SelectorDifficulty
+	GuiControlGet, selectorScriptFamily, 1:, SelectorScriptFamily
 	searchText := Trim(searchText)
 
 	if (selectorView = "Recent")
@@ -645,10 +653,11 @@ LLARS_SelectorApplyFilter()
 		Sort, filtered, D|
 
 	LLARS_SelectorFilteredCount := count
-	GuiControl, , ScriptListBox, |%filtered%
-	GuiControl, , TS, % "Showing: " . count . " of " . ScriptTotal
+	LLARS_SelectorVisibleList := filtered
+	GuiControl, 1:, ScriptListBox, |%filtered%
+	GuiControl, 1:, TS, % "Showing: " . count . " of " . ScriptTotal
 	if (count > 0)
-		GuiControl, Choose, ScriptListBox, 1
+		GuiControl, 1:Choose, ScriptListBox, 1
 
 	GuiReset()
 	LLARS_SelectorUpdateFavoriteButton()
@@ -658,25 +667,436 @@ LLARS_SelectorApplyFilter()
 LLARS_SelectorUpdateFavoriteButton()
 {
 	global LLARS_SelectorFavorites
-	GuiControlGet, selectedScript, , ScriptListBox
+	GuiControlGet, selectedScript, 1:, ScriptListBox
 	if (selectedScript != "" && LLARS_SelectorListContains(LLARS_SelectorFavorites, selectedScript))
 		buttonText := "Remove Favorite"
 	else
 		buttonText := "Add Favorite"
-	GuiControl, , SelectorFavoriteButton, %buttonText%
+	GuiControl, 1:, SelectorFavoriteButton, %buttonText%
 	return true
 }
+
+; Rebuild from the existing in-code and Creator/imported registry owners.
+; The previous UI catalog remains untouched if a newly written registry fails validation.
+LLARS_SelectorRefreshRegistry(selectName := "", showAll := false)
+{
+    global LLARS_SelectorRegistry, LLARS_SelectorRegistryLoadError, scriptArray, ScriptTotal, LLARSSelectorHwnd
+    global LLARS_SelectorCategoryList, LLARS_SelectorCategoryOptions, LLARS_SelectorVisibleList
+    LLARS_SelectorRegistryLoadError := ""
+    refreshed := LLARS_SelectorBuildRegistry()
+    if (LLARS_SelectorRegistryLoadError != "" || !LLARS_SelectorValidateRegistry(refreshed, validationError))
+        return false
+    LLARS_SelectorRegistry := refreshed
+    scriptArray := LLARS_SelectorRegistryNameList(refreshed)
+    ScriptTotal := refreshed.Entries.Length()
+    LLARS_SelectorCategoryList := LLARS_SelectorRegistryCategoryList(refreshed)
+    LLARS_SelectorCategoryOptions := "All Categories" . (LLARS_SelectorCategoryList = "" ? "" : "|" . LLARS_SelectorCategoryList)
+    ; All Selector control updates MUST address GUI 1. This helper is often
+    ; invoked from an Import Scripts dialog g-label, not from the main GUI.
+    GuiControl, 1:, SelectorCategory, % "|" . LLARS_SelectorCategoryOptions
+    GuiControl, 1:ChooseString, SelectorCategory, All Categories
+    if (showAll)
+    {
+        GuiControl, 1:, SelectorSearch,
+        GuiControl, 1:ChooseString, SelectorView, All Scripts
+        GuiControl, 1:ChooseString, SelectorDifficulty, All Difficulties
+        GuiControl, 1:ChooseString, SelectorScriptFamily, All Types
+    }
+    LLARS_SelectorLoadPreferences()
+    LLARS_SelectorSavePreferences()
+    LLARS_SelectorApplyFilter()
+    if (selectName != "")
+    {
+        ; Choose by exact item index, not ChooseString's prefix match.
+        for position, item in StrSplit(LLARS_SelectorVisibleList, "|")
+        {
+            if (item = selectName)
+            {
+                GuiControl, 1:Choose, ScriptListBox, %position%
+                break
+            }
+        }
+        LLARS_SelectorUpdateFavoriteButton()
+        GuiControl, 1:Focus, ScriptListBox
+    }
+    ; Refresh native controls after programmatic list replacement. AHK button
+    ; owner-draw and translucent labels can otherwise wait for a later repaint.
+    LLARS_VisualPaintReady(LLARSSelectorHwnd)
+    return true
+}
+
+; Header Appearance remains an optional Selector modal. No preview, Cancel or
+; settings navigation changes the active session theme or launch cursor.
+; Script imports are opt-in and never run code while importing. The folder
+; chooser copies the selected script's entire directory, preserving local INI
+; files, relative includes and assets; registration and copying are separate.
+LLARS_CustomScriptsShow()
+{
+    global LLARSCustomHwnd, LLARSCustomSelected, LLARSCustomSource, LLARSCustomLastImported, LLARSCustomPath, LLARSCustomName, LLARSCustomCategory
+    global LLARSCustomDifficulty, LLARSCustomDescription, LLARSCustomManagedChoice, LLARSCustomViewButton, LLARS_SelectorRegistry
+    ; Do not inherit the selected main-Selector entry. Import Scripts always
+    ; opens with the same clean default state, regardless of previous imports.
+    LLARSCustomSource := ""
+    ; Each opening begins with an unselected form, even if Selector highlights
+    ; a previously imported script or there is only one managed import.
+    LLARSCustomSelected := ""
+    LLARSCustomLastImported := ""
+    managedChoices := LLARS_CustomScriptsManagedChoices()
+    Gui, Info:Destroy
+    Gui, CustomScripts:Destroy
+    Gui, CustomScripts:New, +Owner1 +OwnDialogs +AlwaysOnTop +ToolWindow +HwndLLARSCustomHwnd, Import Scripts
+    Gui, CustomScripts:Margin, 0, 0
+    LLARS_VisualPrepare("CustomScripts")
+    LLARS_VisualModalHeader("CustomScripts", 480, "IMPORT SCRIPTS")
+    LLARS_VisualCard("CustomScripts", 10, 82, 460, 337)
+    Gui, CustomScripts:Font, s9 Norm c24324A, Segoe UI
+    Gui, CustomScripts:Add, Text, x22 y93 w434 h36 +Wrap BackgroundTrans, Import copies a script folder; root-level .ahk files are copied alone. Review code before launching. Nothing runs during import.
+    Gui, CustomScripts:Add, Text, x22 y133 w434 h34 vLLARSCustomPath +Wrap BackgroundTrans, No source selected
+    Gui, CustomScripts:Add, Button, x22 y170 w132 h30 gCustomBrowse, Choose .ahk File
+    Gui, CustomScripts:Add, Text, x22 y210 w105 h18 BackgroundTrans, Display name
+    Gui, CustomScripts:Add, Edit, x132 y207 w320 h24 vLLARSCustomName
+    Gui, CustomScripts:Add, Text, x22 y241 w100 h18 BackgroundTrans, Category
+    Gui, CustomScripts:Add, Edit, x132 y238 w148 h24 vLLARSCustomCategory, Custom
+    Gui, CustomScripts:Add, Text, x286 y241 w64 h18 BackgroundTrans, Difficulty
+    Gui, CustomScripts:Add, DropDownList, x348 y238 w106 vLLARSCustomDifficulty Choose2, Easy|Intermediate|Hard
+    Gui, CustomScripts:Add, Text, x22 y272 w105 h18 BackgroundTrans, Description
+    ; Blank by default: the user supplies actual metadata, not a canned description.
+    Gui, CustomScripts:Add, Edit, x132 y269 w320 h52 +Multi vLLARSCustomDescription
+    Gui, CustomScripts:Font, s8 Norm c526783, Segoe UI
+    Gui, CustomScripts:Add, Text, x22 y337 w108 h18 BackgroundTrans, Manage existing
+    Gui, CustomScripts:Add, DropDownList, x132 y329 w320 vLLARSCustomManagedChoice gCustomSelectManaged Choose1, %managedChoices%
+    Gui, CustomScripts:Font, s9 Norm c24324A, Segoe UI
+    Gui, CustomScripts:Add, Button, x22 y367 w104 h32 gCustomImport, Import Copy
+    Gui, CustomScripts:Add, Button, x136 y367 w100 h32 gCustomEdit, Edit Details
+    Gui, CustomScripts:Add, Button, x246 y367 w101 h32 gCustomRemove, Unregister
+    Gui, CustomScripts:Add, Button, x357 y367 w99 h32 vLLARSCustomViewButton gCustomView, View Folder
+    Gui, CustomScripts:Add, Button, x184 y433 w112 h31 gCustomClose, Close
+    LLARS_VisualStyleControls(LLARSCustomHwnd)
+    Gui, CustomScripts:Show, w480 h474 Center, Import Scripts
+    LLARS_VisualFinish("CustomScripts")
+    LLARS_CustomScriptsResetForm()
+    LLARS_VisualPaintReady(LLARSCustomHwnd)
+}
+
+; Build the current choices from the single authoritative Creator/import registry.
+; Names are already validated against the DropDownList separator by that owner.
+LLARS_CustomScriptsManagedChoices()
+{
+    global LLARS_SelectorRegistry
+    choices := "Select existing import"
+    for _, item in LLARS_SelectorRegistry.Entries
+        if LLARS_ImportIsManaged(item)
+            choices .= "|" . item.Name
+    return choices
+}
+
+; Rebuild the picker after a successful import. This is deliberately separate
+; from form reset so a newly added entry is immediately available for editing.
+LLARS_CustomScriptsRefreshManagedPicker()
+{
+    choices := LLARS_CustomScriptsManagedChoices()
+    GuiControl, CustomScripts:, LLARSCustomManagedChoice, % "|" . choices
+    GuiControl, CustomScripts:Choose, LLARSCustomManagedChoice, 1
+}
+
+; Opening the dialog, choosing the default picker item, or completing Import
+; Copy must all produce the same neutral state; do not preselect last import.
+LLARS_CustomScriptsResetForm()
+{
+    global LLARSCustomSelected, LLARSCustomSource
+    LLARSCustomSelected := ""
+    LLARSCustomSource := ""
+    GuiControl, CustomScripts:, LLARSCustomPath, No source selected
+    GuiControl, CustomScripts:, LLARSCustomName,
+    GuiControl, CustomScripts:, LLARSCustomCategory, Custom
+    GuiControl, CustomScripts:ChooseString, LLARSCustomDifficulty, Intermediate
+    GuiControl, CustomScripts:, LLARSCustomDescription,
+    GuiControl, CustomScripts:Choose, LLARSCustomManagedChoice, 1
+}
+
+; Load a managed entry explicitly, independently of the main list box's
+; selection or the current default GUI (which may be a modal dialog).
+LLARS_CustomScriptsLoadManaged(name)
+{
+    global LLARSCustomSelected, LLARSCustomSource
+    record := LLARS_SelectorGetRecord(name)
+    if !LLARS_ImportIsManaged(record)
+    {
+        LLARSCustomSelected := ""
+        return false
+    }
+    LLARSCustomSelected := record.Name
+    LLARSCustomSource := ""
+    GuiControl, CustomScripts:, LLARSCustomPath, % "Managed script: " . record.RelativeDirectory
+    GuiControl, CustomScripts:, LLARSCustomName, % record.Name
+    GuiControl, CustomScripts:, LLARSCustomCategory, % record.Category
+    GuiControl, CustomScripts:, LLARSCustomDescription, % record.Description
+    GuiControl, CustomScripts:ChooseString, LLARSCustomDifficulty, % record.Difficulty
+    return true
+}
+
+LLARS_CustomScriptsAlert(iconOptions, title, message)
+{
+    global LLARSCustomHwnd
+    if (LLARSCustomHwnd && DllCall("user32\IsWindow", "Ptr", LLARSCustomHwnd))
+        Gui, CustomScripts:Default
+    else
+        Gui, 1:Default
+    Gui, +OwnDialogs +AlwaysOnTop
+    MsgBox, % (iconOptions | 0x40000), %title%, %message%
+    ; Repaint after an owned dialog closes; the modal may have obscured an
+    ; owner-drawn control. Do not leave Selector's default GUI switched.
+    if (LLARSCustomHwnd && DllCall("user32\IsWindow", "Ptr", LLARSCustomHwnd))
+        LLARS_VisualPaintReady(LLARSCustomHwnd)
+    Gui, 1:Default
+}
+
+LLARS_CustomScriptsConfirm(title, message)
+{
+    global LLARSCustomHwnd
+    Gui, CustomScripts:Default
+    Gui, +OwnDialogs +AlwaysOnTop
+    MsgBox, 0x40024, %title%, %message%
+    IfMsgBox, Yes
+        accepted := true
+    else
+        accepted := false
+    if (LLARSCustomHwnd && DllCall("user32\IsWindow", "Ptr", LLARSCustomHwnd))
+        LLARS_VisualPaintReady(LLARSCustomHwnd)
+    Gui, 1:Default
+    return accepted
+}
+
+SelectorCustomScripts:
+LLARS_CustomScriptsShow()
+return
+
+CustomSelectManaged:
+GuiControlGet, managedChoice, CustomScripts:, LLARSCustomManagedChoice
+if (managedChoice = "Select existing import")
+{
+    LLARS_CustomScriptsResetForm()
+    return
+}
+LLARS_CustomScriptsLoadManaged(managedChoice)
+return
+
+CustomBrowse:
+Gui, CustomScripts:Default
+Gui, +OwnDialogs
+FileSelectFile, selectedSource, 3,, Choose an LLARS-compatible script, AutoHotkey Script (*.ahk)
+if (selectedSource != "")
+{
+    if (LLARSCustomSelected != "")
+        LLARS_CustomScriptsResetForm()
+    LLARSCustomSource := selectedSource
+    SplitPath, selectedSource, sourceName, sourceFolder,, sourceBase
+    GuiControl, CustomScripts:, LLARSCustomPath, %selectedSource%
+    ; Preserve a manually typed display name/description when browsing.
+    GuiControlGet, existingName, CustomScripts:, LLARSCustomName
+    if (Trim(existingName) = "")
+        GuiControl, CustomScripts:, LLARSCustomName, % "Custom - " . sourceBase
+}
+return
+
+CustomImport:
+if (LLARSCustomSource = "")
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", "Choose an .ahk file first.")
+    return
+}
+GuiControlGet, importName, CustomScripts:, LLARSCustomName
+GuiControlGet, importCategory, CustomScripts:, LLARSCustomCategory
+GuiControlGet, importDescription, CustomScripts:, LLARSCustomDescription
+GuiControlGet, importDifficulty, CustomScripts:, LLARSCustomDifficulty
+if !LLARS_CustomScriptsConfirm("Import Custom Script", "Copy this script into managed imports?`n" . LLARSCustomSource . "`n`nA root-level .ahk is copied alone; other imports copy the containing folder. Review source before running it.`n`nContinue?")
+    return
+if !LLARS_ImportScript(A_ScriptDir, LLARSCustomSource, importName, importDifficulty, importDescription, importCategory, importError)
+{
+    LLARS_CustomScriptsAlert(48, "Custom Script Import", importError)
+    return
+}
+if !LLARS_SelectorRefreshRegistry(importName, true)
+{
+    LLARS_CustomScriptsAlert(48, "Custom Script Import", "The copied script was registered but the Selector could not refresh. Restart LLARS to reload the catalog.")
+    return
+}
+; Keep the Import Scripts dialog open and reset it, so each new import begins
+; with the same empty form and the default managed-selection placeholder.
+LLARS_CustomScriptsRefreshManagedPicker()
+LLARSCustomLastImported := importName
+LLARS_CustomScriptsResetForm()
+; A neutral import form can still open the last successful import's folder.
+; Keep the native button caption and visibility after the picker is rebuilt.
+GuiControl, CustomScripts:, LLARSCustomViewButton, View Folder
+GuiControl, CustomScripts:Show, LLARSCustomViewButton
+LLARS_VisualPaintReady(LLARSCustomHwnd)
+LLARS_CustomScriptsAlert(64, "Custom Script Import", "Imported successfully. Script files and settings were copied without execution.")
+return
+
+CustomEdit:
+GuiControlGet, managedChoice, CustomScripts:, LLARSCustomManagedChoice
+if (managedChoice != "Select existing import")
+    LLARSCustomSelected := managedChoice
+if (LLARSCustomSelected = "")
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", "Choose an imported script under Manage existing before editing.")
+    return
+}
+selectedRecord := LLARS_SelectorGetRecord(LLARSCustomSelected)
+GuiControlGet, editName, CustomScripts:, LLARSCustomName
+GuiControlGet, editCategory, CustomScripts:, LLARSCustomCategory
+GuiControlGet, editDescription, CustomScripts:, LLARSCustomDescription
+GuiControlGet, editDifficulty, CustomScripts:, LLARSCustomDifficulty
+if !LLARS_ImportUpdateMetadata(A_ScriptDir, selectedRecord, editName, editDifficulty, editDescription, editCategory, editError)
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", editError)
+    return
+}
+; Keep Favorites and Recent entries when an imported display name is edited.
+if (editName != LLARSCustomSelected)
+{
+    LLARS_SelectorFavorites := LLARS_SelectorReplacePreference(LLARS_SelectorFavorites, LLARSCustomSelected, editName)
+    LLARS_SelectorRecent := LLARS_SelectorReplacePreference(LLARS_SelectorRecent, LLARSCustomSelected, editName)
+    ; Refresh reloads Favorites/Recent from disk. Persist the rename BEFORE
+    ; refreshing, or the old name gets sanitized away and both lists lose it.
+    if !LLARS_SelectorSavePreferences()
+        LLARS_CustomScriptsAlert(48, "Custom Scripts", "Details were updated but Favorites/Recent could not be saved. Check LLARS Config.ini write permissions.")
+}
+if !LLARS_SelectorRefreshRegistry(editName, true)
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", "Details saved but refresh failed. Restart Selector.")
+    Gui, CustomScripts:Destroy
+    return
+}
+Gui, CustomScripts:Destroy
+LLARS_CustomScriptsAlert(64, "Custom Scripts", "Imported script details updated.")
+return
+
+CustomRemove:
+GuiControlGet, managedChoice, CustomScripts:, LLARSCustomManagedChoice
+if (managedChoice != "Select existing import")
+    LLARSCustomSelected := managedChoice
+if (LLARSCustomSelected = "")
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", "Choose an imported script under Manage existing before unregistering.")
+    return
+}
+selectedRecord := LLARS_SelectorGetRecord(LLARSCustomSelected)
+if !LLARS_CustomScriptsConfirm("Unregister Custom Script", "Remove '" . LLARSCustomSelected . "' from the Selector?`n`nIts folder, scripts, settings and assets will NOT be deleted.")
+    return
+if !LLARS_ImportUnregister(A_ScriptDir, selectedRecord, removeError)
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", removeError)
+    return
+}
+if !LLARS_SelectorRefreshRegistry()
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", "Registration removed but refresh failed. Restart Selector.")
+    Gui, CustomScripts:Destroy
+    return
+}
+Gui, CustomScripts:Destroy
+LLARS_CustomScriptsAlert(64, "Custom Scripts", "Registration removed. The original and copied files remain on disk.")
+return
+
+CustomView:
+GuiControlGet, managedChoice, CustomScripts:, LLARSCustomManagedChoice
+; The folder shortcut must NOT secretly select an entry for Edit/Unregister.
+; Keep the import form's placeholder and neutral selected state intact.
+if (managedChoice != "Select existing import")
+    viewName := managedChoice
+else if (LLARSCustomSelected != "")
+    viewName := LLARSCustomSelected
+else
+    viewName := LLARSCustomLastImported
+if (viewName = "")
+{
+    LLARS_CustomScriptsAlert(48, "Custom Scripts", "Choose an imported script under Manage existing before viewing its folder.")
+    return
+}
+selectedRecord := LLARS_SelectorGetRecord(viewName)
+if LLARS_ImportIsManaged(selectedRecord)
+{
+    importFolder := A_ScriptDir . "\" . selectedRecord.RootDirectory . "\" . selectedRecord.RelativeDirectory
+    Run, % "explorer.exe """ . importFolder . """"
+}
+return
+
+CustomClose:
+CustomScriptsGuiClose:
+CustomScriptsGuiEscape:
+Gui, CustomScripts:Destroy
+LLARSCustomHwnd := 0
+return
+
+LLARS_SelectorReplacePreference(list, oldName, newName)
+{
+    result := ""
+    for _, item in StrSplit(list, "|")
+    {
+        if (item = "")
+            continue
+        if (item = oldName)
+            item := newName
+        result .= (result = "" ? "" : "|") . item
+    }
+    return result
+}
+
+SelectorHeaderPreferences:
+LLARS_HeaderPrefsShow()
+return
+
+HeaderPrefsPrevious:
+headerCatalog := LLARS_VisualHeaderCatalog()
+LLARSHeaderPrefsIndex := (LLARSHeaderPrefsIndex <= 1) ? headerCatalog.Length() : LLARSHeaderPrefsIndex - 1
+LLARS_HeaderPrefsRedraw()
+return
+
+HeaderPrefsNext:
+headerCatalog := LLARS_VisualHeaderCatalog()
+LLARSHeaderPrefsIndex := Mod(LLARSHeaderPrefsIndex, headerCatalog.Length()) + 1
+LLARS_HeaderPrefsRedraw()
+return
+
+HeaderPrefsSave:
+GuiControlGet, headerMode, HeaderPrefs:, LLARSHeaderPrefsMode
+StringLower, headerMode, headerMode
+headerItems := LLARS_VisualHeaderCatalog()
+headerName := headerItems[LLARSHeaderPrefsIndex].Id
+if !LLARS_VisualHeaderSavePreferences(headerMode, headerName, preferenceError)
+{
+    MsgBox, 262192, Header Appearance, %preferenceError%
+    return
+}
+Gui, HeaderPrefs:Destroy
+Gui, 1:Default
+Gui, +OwnDialogs
+MsgBox, 262208, Header Appearance, Preference saved. Your active session keeps its current header; the next launch uses the new setting.
+return
+
+HeaderPrefsCancel:
+HeaderPrefsGuiClose:
+HeaderPrefsGuiEscape:
+Gui, HeaderPrefs:Destroy
+return
 
 SelectorFilterChanged:
 LLARS_SelectorApplyFilter()
 return
 
 SelectorFocusSearch:
-GuiControl, Focus, SelectorSearch
+; Modal file pickers and confirmation boxes may own the focus. Never
+; let the global Enter/Ctrl+F hotkeys launch a script while either dialog exists.
+if ((LLARSHeaderPrefsHwnd && DllCall("user32\IsWindow", "Ptr", LLARSHeaderPrefsHwnd))
+    || (LLARSCustomHwnd && DllCall("user32\IsWindow", "Ptr", LLARSCustomHwnd)))
+    return
+GuiControl, 1:Focus, SelectorSearch
 return
 
 SelectorToggleFavorite:
-GuiControlGet, selectedScript, , ScriptListBox
+GuiControlGet, selectedScript, 1:, ScriptListBox
 if (selectedScript = "")
 	return
 if LLARS_SelectorListContains(LLARS_SelectorFavorites, selectedScript)
@@ -695,7 +1115,7 @@ else
 	LLARS_SelectorFavorites .= (LLARS_SelectorFavorites = "" ? "" : "|") . selectedScript
 }
 LLARS_SelectorSavePreferences()
-GuiControlGet, selectorView, , SelectorView
+GuiControlGet, selectorView, 1:, SelectorView
 if (selectorView = "Favorites")
 	LLARS_SelectorApplyFilter()
 else
@@ -703,13 +1123,13 @@ else
 return
 
 SelectorClearFilters:
-GuiControl, , SelectorSearch,
-GuiControl, ChooseString, SelectorView, All Scripts
-GuiControl, ChooseString, SelectorCategory, All Categories
-GuiControl, ChooseString, SelectorDifficulty, All Difficulties
-GuiControl, ChooseString, SelectorScriptFamily, All Types
+GuiControl, 1:, SelectorSearch,
+GuiControl, 1:ChooseString, SelectorView, All Scripts
+GuiControl, 1:ChooseString, SelectorCategory, All Categories
+GuiControl, 1:ChooseString, SelectorDifficulty, All Difficulties
+GuiControl, 1:ChooseString, SelectorScriptFamily, All Types
 LLARS_SelectorApplyFilter()
-GuiControl, Focus, SelectorSearch
+GuiControl, 1:Focus, SelectorSearch
 return
 
 ; ==================================================================================
@@ -870,7 +1290,7 @@ if (A_GuiEvent = "DoubleClick")
 
 if A_GuiEvent = Normal
 {
-	GuiControlGet, selectedScript, , ScriptListBox
+	GuiControlGet, selectedScript, 1:, ScriptListBox
 	LLARS_SelectorUpdateFavoriteButton()
 	record := LLARS_SelectorGetRecord(selectedScript)
 	if !IsObject(record)
@@ -995,7 +1415,12 @@ LLARS_SelectorSetDifficultyFont(Difficulty)
 
 ; Selection, information, and launch all resolve from the same registry record.
 Select:
-GuiControlGet, selectedScript, , ScriptListBox
+; Modal file pickers and confirmation boxes may own the focus. Never
+; let the global Enter/Ctrl+F hotkeys launch a script while either dialog exists.
+if ((LLARSHeaderPrefsHwnd && DllCall("user32\IsWindow", "Ptr", LLARSHeaderPrefsHwnd))
+    || (LLARSCustomHwnd && DllCall("user32\IsWindow", "Ptr", LLARSCustomHwnd)))
+    return
+GuiControlGet, selectedScript, 1:, ScriptListBox
 
 if (selectedScript = "")
 	return
@@ -1003,7 +1428,7 @@ if (selectedScript = "")
 record := LLARS_SelectorGetRecord(selectedScript)
 if !IsObject(record)
 {
-	MsgBox, 48, Script Missing, No registry entry is configured for:`n%selectedScript%
+	MsgBox, 262192, Script Missing, No registry entry is configured for:`n%selectedScript%
 	return
 }
 
@@ -1033,7 +1458,7 @@ ValidateSelectedScript(ScriptDirectory, ScriptFile, ByRef FullDiskPath, ByRef Di
 	if !FileExist(FullDiskPath)
 	{
 		Gui, Hide
-		MsgBox, 48, Script Missing
+		MsgBox, 262192, Script Missing
 			, The selected script could not be found.`n`nExpected Location:`nLLARS\%DisplayPath%
 		return false
 	}
@@ -1078,6 +1503,18 @@ return
 
 Exit:
 GuiClose:
+if (LLARSHeaderPrefsHwnd && DllCall("user32\IsWindow", "Ptr", LLARSHeaderPrefsHwnd))
+{
+    if WinActive("ahk_id " . LLARSHeaderPrefsHwnd)
+        Gui, HeaderPrefs:Destroy
+    return
+}
+if (LLARSCustomHwnd && DllCall("user32\IsWindow", "Ptr", LLARSCustomHwnd))
+{
+    if WinActive("ahk_id " . LLARSCustomHwnd)
+        Gui, CustomScripts:Destroy
+    return
+}
 ExitApp
 
 GitLink:

@@ -2321,6 +2321,14 @@ LLARS_AHI_SelfTest(projectRoot := "", ByRef summary := "")
     if (LLARS_AHI_MOUSE_ACTIVITY_ID)
         mousePhysical .= " | Last event AHI #" . LLARS_AHI_MOUSE_ACTIVITY_ID
     routeRole := LLARS_AHI_MOUSE_ALTERNATE_ACTIVE ? "Stable transport (separate physical pointer)" : "Stable AHI transport"
+    routeAdvisory := ""
+    ; Physical activity identifies the device that was used for observation.
+    ; It is not proof that a separately selected output transport has failed.
+    if (LLARS_AHI_MOUSE_ACTIVITY_ID && LLARS_AHI_MOUSE_ID
+        && LLARS_AHI_MOUSE_ACTIVITY_ID != LLARS_AHI_MOUSE_ID)
+        routeAdvisory := "`nDevice note: observed physical mouse AHI #" . LLARS_AHI_MOUSE_ACTIVITY_ID
+            . " differs from output AHI #" . LLARS_AHI_MOUSE_ID
+            . ". This may be intentional. Recheck the selected route if clicks do not arrive."
     summary := "AHI health check passed.`n`nMouse output route: AHI #" . LLARS_AHI_MOUSE_ID . " | " . routeRole
         . "`nMouse transport reliability: " . LLARS_AHI_DeviceReliabilityText(LLARS_AHI_MOUSE_INFO, true)
         . "`nPhysical mouse route: " . mousePhysical
@@ -2328,6 +2336,7 @@ LLARS_AHI_SelfTest(projectRoot := "", ByRef summary := "")
         . "`nKeyboard route: AHI #" . LLARS_AHI_KEYBOARD_ID
         . " | " . LLARS_AHI_DeviceReliabilityText(LLARS_AHI_KEYBOARD_INFO, false)
         . "`nKeyboard lifecycle subscription: " . (LLARS_AHI_KEYBOARD_SUBSCRIBED_ID ? "AHI #" . LLARS_AHI_KEYBOARD_SUBSCRIBED_ID : "Not active")
+        . routeAdvisory
         . "`n`nSubscriptions are non-blocking. No input was sent during this test."
     return true
 }

@@ -56,6 +56,38 @@ LLARS_GUIRuntimeHeight(mode)
     return (mode = "running") ? 499 : (mode = "timer") ? 422 : 336
 }
 
+; Measure the actual Segoe UI 13pt Bold title instead of reducing the font.
+; Only the script-name overlay may grow into the reserved header margin;
+; the four dashboard bodies, window dimensions and running status controls stay unchanged.
+LLARS_GUIHeaderTextHeight(caption, logicalWidth)
+{
+    if (caption = "")
+        return 26
+    dpi := A_ScreenDPI > 0 ? A_ScreenDPI : 96
+    dc := DllCall("GetDC", "Ptr", 0, "Ptr")
+    if (!dc)
+        return 26
+    font := DllCall("Gdi32\CreateFontW", "Int", -Round(13 * dpi / 72)
+        , "Int", 0, "Int", 0, "Int", 0, "Int", 700
+        , "UInt", 0, "UInt", 0, "UInt", 0, "UInt", 1
+        , "UInt", 0, "UInt", 0, "UInt", 0, "UInt", 0
+        , "WStr", "Segoe UI", "Ptr")
+    if (!font)
+    {
+        DllCall("ReleaseDC", "Ptr", 0, "Ptr", dc)
+        return 26
+    }
+    oldFont := DllCall("Gdi32\SelectObject", "Ptr", dc, "Ptr", font, "Ptr")
+    VarSetCapacity(extent, 8, 0)
+    ok := DllCall("Gdi32\GetTextExtentPoint32W", "Ptr", dc, "WStr", caption, "Int", StrLen(caption), "Ptr", &extent)
+    needed := ok ? NumGet(extent, 0, "Int") : 0
+    DllCall("Gdi32\SelectObject", "Ptr", dc, "Ptr", oldFont)
+    DllCall("Gdi32\DeleteObject", "Ptr", font)
+    DllCall("ReleaseDC", "Ptr", 0, "Ptr", dc)
+    ; A small lateral safety margin absorbs glyph overhang and non-96 DPI.
+    return (needed > Round((logicalWidth - 12) * dpi / 96)) ? 36 : 26
+}
+
 LLARS_GUIBase(scriptName, hwnd, mode := "setup")
 {
     global LLARS_GUICompactMode, LLARS_GUIRuntimeMode, LLARS_GUIRemainingPaintCache
@@ -78,7 +110,8 @@ LLARS_GUIBase(scriptName, hwnd, mode := "setup")
     Gui, Font, s9 Bold cD6E5F8, Segoe UI
     Gui, Add, Text, Center x28 y35 w377 h30 +0x200 BackgroundTrans, Local Library of Automated Routines and Scripts
     Gui, Font, s13 Bold cFFFFFF, Segoe UI
-    Gui, Add, Text, Center x28 y67 w377 h26 +0x4000 BackgroundTrans, %scriptName%
+    titleHeight := LLARS_GUIHeaderTextHeight(scriptName, 377)
+    Gui, Add, Text, % "Center x28 y67 w377 h" . titleHeight . " BackgroundTrans", %scriptName%
 }
 
 LLARS_GUISection(caption, x, y, width := 325)
@@ -334,7 +367,8 @@ LLARS_GUIRuntimeBase(scriptName, hwnd, mode)
     Gui, Font, s9 Bold cD6E5F8, Segoe UI
     Gui, Add, Text, % "Center x" . x . " y35 w" . w . " h" . LLARS_GUIRuntimeControlHeight(30) . " +0x200 BackgroundTrans", Local Library of Automated Routines and Scripts
     Gui, Font, s13 Bold cFFFFFF, Segoe UI
-    Gui, Add, Text, % "Center x" . x . " y67 w" . w . " h" . LLARS_GUIRuntimeControlHeight(26) . " +0x4000 BackgroundTrans", %scriptName%
+    titleHeight := LLARS_GUIHeaderTextHeight(scriptName, w)
+    Gui, Add, Text, % "Center x" . x . " y67 w" . w . " h" . titleHeight . " BackgroundTrans", %scriptName%
 }
 
 LLARS_GUIRuntimeSection(caption, x, y, width := 325)

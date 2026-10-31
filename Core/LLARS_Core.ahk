@@ -907,7 +907,7 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	LLARS_CONFIG_FILE := LLARS_ROOT "\LLARS Config.ini"
 	if (LLARS_ROOT = "")
 	{
-		MsgBox, 48, LLARS Error, Unable to locate the LLARS Core folder.`n`nThe script must be located somewhere inside the LLARS Scripts folder.
+		MsgBox, 262192, LLARS Error, Unable to locate the LLARS Core folder.`n`nThe script must be located somewhere inside the LLARS Scripts folder.
 		return false
 	}
 
@@ -983,7 +983,7 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 
 	if !SetLLARSHOTKEYS("On")
 	{
-		MsgBox, 16, LLARS Exit Hotkey Error, The configured Exit hotkey is invalid.`n`nLLARS will close instead of running without a working Exit key.
+		MsgBox, 262160, LLARS Exit Hotkey Error, The configured Exit hotkey is invalid.`n`nLLARS will close instead of running without a working Exit key.
 		ExitApp
 	}
 	LLARS_DeveloperInitializeKeyboardHook()
@@ -1648,7 +1648,7 @@ LLARS_CheckStartupFiles()
 
 	if !FileExist(LLARS_ROOT "\VERSION")
 	{
-		MsgBox, 48, LLARS Files Missing, LLARS is missing VERSION.`n`nRe-extract or redownload the complete LLARS release before continuing.
+		MsgBox, 262192, LLARS Files Missing, LLARS is missing VERSION.`n`nRe-extract or redownload the complete LLARS release before continuing.
 		return false
 	}
 
@@ -1699,7 +1699,7 @@ LLARS_ShowConfigError(file, message, logDetails)
 	LLARS_ReportError("Config Error", message
 		, "Opened the affected configuration file and stopped normal startup."
 		, "Enter a valid value, save the file, then allow LLARS to reload."
-		, logDetails)
+		, logDetails, true, "Configuration")
 	Reload
 }
 
@@ -3619,7 +3619,7 @@ LLARS_AbortRunForMisclick(x, y, clickTarget := "")
 	LLARS_ReportError("LLARS Misclick Detected", misclickWhat
 		, "Stopped this run, stopped run timers, and released LLARS-held input."
 		, "Check RuneScape and start the run again when ready."
-		, "Target=" . clickTarget . " || Coordinate=(" . x . ", " . y . ")")
+		, "Target=" . clickTarget . " || Coordinate=(" . x . ", " . y . ")", true, "Interaction verification")
 	return false
 }
 
@@ -3660,7 +3660,7 @@ LLARS_AbortRunForCoordinateFailure(x, y, clickTarget := "")
         , "The physical cursor could not be confirmed at the saved RuneScape client coordinate.`nTarget: " . clickTarget . "`nCoordinate: (" . x . ", " . y . ")"
         , "Stopped this run and released LLARS-held input before clicking the wrong location."
         , "Check window scaling, RuneScape focus, and mouse transport before starting again."
-        , "Target=" . clickTarget . " || Coordinate=(" . x . ", " . y . ")")
+        , "Target=" . clickTarget . " || Coordinate=(" . x . ", " . y . ")", true, "Cursor alignment")
     return false
 }
 

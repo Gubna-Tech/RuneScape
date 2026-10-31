@@ -19,44 +19,292 @@
     return ""
 }
 
+LLARS_VisualHeaderFolder()
+{
+    global LLARS_ROOT
+    for _, root in [LLARS_ROOT, A_ScriptDir, A_ScriptDir . "\.."]
+    {
+        if (root != "" && FileExist(root . "\Assets\UI\banner.png"))
+            return root . "\Assets\UI"
+    }
+    return ""
+}
+
+; The catalog is discovered once per process and shared by rotation and preview.
+; Ten bundled themes are pinned first; user-added header_*.png files follow.
+LLARS_VisualHeaderCatalog()
+{
+    global LLARS_VisualHeaderCatalogCache, LLARS_VisualHeaderCatalogIssues
+    if IsObject(LLARS_VisualHeaderCatalogCache)
+        return LLARS_VisualHeaderCatalogCache
+    items := []
+    seen := {}
+    LLARS_VisualHeaderCatalogIssues := ""
+    uiDir := LLARS_VisualHeaderFolder()
+    for _, id in ["ribbon", "terrain", "topographic", "honeycomb", "mosaic", "spiral"
+        , "digital_wave", "polygon_grid", "nebula_cloud", "shadow_botanica"]
+    {
+        path := LLARS_VisualAsset("header_" . id . ".png")
+        reason := ""
+        if LLARS_VisualHeaderValidateAsset(path, reason, w, h)
+        {
+            displayName := StrReplace(id, "_", " ")
+            if InStr(id, "_")
+                StringUpper, displayName, displayName, T
+            items.Push({Id:id, Name:displayName, Path:path, Width:w, Height:h, Shipped:true})
+            seen[id] := true
+        }
+        else
+            LLARS_VisualHeaderCatalogIssues .= "Bundled header " . id . ": " . reason . "`n"
+    }
+    if (uiDir != "")
+    {
+        files := ""
+        pattern := uiDir . "\header_*.png"
+        Loop, Files, %pattern%, F
+            files .= A_LoopFileName . "`n"
+        Sort, files
+        counts := {}
+        Loop, Parse, files, `n, `r
+        {
+            if RegExMatch(A_LoopField, "i)^header_([a-z0-9][a-z0-9_-]{0,63})\.png$", candidate)
+            {
+                candidateId := candidate1
+                StringLower, candidateId, candidateId
+                counts[candidateId] := counts.HasKey(candidateId) ? counts[candidateId]+1 : 1
+            }
+        }
+        Loop, Parse, files, `n, `r
+        {
+            fileName := A_LoopField
+            if (fileName = "")
+                continue
+            if !RegExMatch(fileName, "i)^header_([a-z0-9][a-z0-9_-]{0,63})\.png$", match)
+            {
+                LLARS_VisualHeaderCatalogIssues .= "Skipped invalid header filename: " . fileName . "`n"
+                continue
+            }
+            id := match1
+            StringLower, id, id
+            if (counts[id] > 1 && !seen.HasKey(id))
+            {
+                LLARS_VisualHeaderCatalogIssues .= "Skipped ambiguous case-colliding header: " . fileName . "`n"
+                continue
+            }
+            if seen.HasKey(id)
+            {
+                ; Bundled header names are already registered; case-only duplicates
+                ; and collisions cannot shadow a previously accepted entry.
+                continue
+            }
+            path := uiDir . "\" . fileName
+            attrs := DllCall("GetFileAttributesW", "WStr", path, "UInt")
+            if (attrs = 0xFFFFFFFF || (attrs & 0x400) || (attrs & 0x10))
+            {
+                LLARS_VisualHeaderCatalogIssues .= "Skipped unsafe header file: " . fileName . "`n"
+                continue
+            }
+            reason := ""
+            if !LLARS_VisualHeaderValidateAsset(path, reason, w, h)
+            {
+                LLARS_VisualHeaderCatalogIssues .= "Skipped " . fileName . ": " . reason . "`n"
+                continue
+            }
+            items.Push({Id:id, Name:StrReplace(SubStr(fileName, 8, StrLen(fileName)-11), "_", " ")
+                , Path:path, Width:w, Height:h, Shipped:false})
+            seen[id] := true
+        }
+    }
+    LLARS_VisualHeaderCatalogCache := items
+    return items
+}
+
+LLARS_VisualHeaderValidateAsset(path, ByRef reason, ByRef width := 0, ByRef height := 0)
+{
+    reason := ""
+    width := 0
+    height := 0
+    if (path = "" || !FileExist(path))
+    {
+        reason := "file is missing"
+        return false
+    }
+    FileGetSize, bytes, %path%
+    if (ErrorLevel || bytes < 48 || bytes > 20000000)
+    {
+        reason := "file size is outside supported limits"
+        return false
+    }
+    file := FileOpen(path, "r")
+    if !IsObject(file)
+    {
+        reason := "cannot read the image"
+        return false
+    }
+    VarSetCapacity(signature, 8, 0)
+    count := file.RawRead(signature, 8)
+    file.Close()
+    if (count != 8 || NumGet(signature, 0, "UInt") != 0x474E5089
+        || NumGet(signature, 4, "UInt") != 0x0A1A0A0D)
+    {
+        reason := "file is not a PNG"
+        return false
+    }
+    ; LoadPicture checks the actual decoded bitmap, not only the .png suffix.
+    handle := LoadPicture(path, "", bitmapType)
+    if (!handle || bitmapType != 0)
+    {
+        if (handle)
+            DllCall("DeleteObject", "Ptr", handle)
+        reason := "not a decodable PNG bitmap"
+        return false
+    }
+    bitmapSize := (A_PtrSize = 8) ? 32 : 24
+    VarSetCapacity(bitmap, bitmapSize, 0)
+    result := DllCall("GetObjectW", "Ptr", handle, "Int", bitmapSize, "Ptr", &bitmap, "Int")
+    if (result)
+    {
+        width := NumGet(bitmap, 4, "Int")
+        height := NumGet(bitmap, 8, "Int")
+    }
+    DllCall("DeleteObject", "Ptr", handle)
+    if (!result || width < 400 || width > 4096 || height < 60 || height > 1024
+        || width < height*4 || width > height*12 || width*height > 6000000)
+    {
+        reason := "header dimensions or aspect ratio are unsupported"
+        return false
+    }
+    return true
+}
+
+LLARS_VisualHeaderIndex(items, id)
+{
+    if (id = "")
+        return 0
+    StringLower, id, id
+    for index, item in items
+    {
+        if (item.Id = id)
+            return index
+    }
+    return 0
+}
+
 LLARS_VisualHeaderVariantName()
 {
-    global LLARS_VisualHeaderVariantSelected
+    global LLARS_VisualHeaderVariantSelected, LLARS_VisualHeaderLastIssue
     if (LLARS_VisualHeaderVariantSelected != "")
         return LLARS_VisualHeaderVariantSelected
+    items := LLARS_VisualHeaderCatalog()
+    total := items.Length()
+    if (!total)
+        return ""
 
-    ; A script launched from the Selector retains its selected session theme.
+    ; Selector -> child sessions use the same valid discovered theme. An
+    ; inherited theme must never advance the next-launch rotation cursor.
     EnvGet, inheritedHeaderTheme, LLARS_HEADER_THEME
-    if (inheritedHeaderTheme = "ribbon" || inheritedHeaderTheme = "terrain"
-        || inheritedHeaderTheme = "topographic" || inheritedHeaderTheme = "honeycomb"
-        || inheritedHeaderTheme = "mosaic" || inheritedHeaderTheme = "spiral")
+    index := LLARS_VisualHeaderIndex(items, inheritedHeaderTheme)
+    if (index)
     {
-        LLARS_VisualHeaderVariantSelected := inheritedHeaderTheme
+        LLARS_VisualHeaderVariantSelected := items[index].Id
         return LLARS_VisualHeaderVariantSelected
     }
 
     configPath := LLARS_VisualConfigPath()
+    mode := LLARS_ConfigReadFile(configPath, "GUI Header", "mode", "sequential")
+    StringLower, mode, mode
     lastVariant := LLARS_ConfigReadFile(configPath, "GUI Header", "last_variant", "0")
-    if lastVariant is not integer
+    if !RegExMatch(lastVariant, "^\d+$")
         lastVariant := 0
-    if (lastVariant < 0 || lastVariant > 6)
+    if (lastVariant > total)
         lastVariant := 0
-    nextVariant := Mod(lastVariant, 6) + 1
-    if (nextVariant = 1)
-        LLARS_VisualHeaderVariantSelected := "ribbon"
-    else if (nextVariant = 2)
-        LLARS_VisualHeaderVariantSelected := "terrain"
-    else if (nextVariant = 3)
-        LLARS_VisualHeaderVariantSelected := "topographic"
-    else if (nextVariant = 4)
-        LLARS_VisualHeaderVariantSelected := "honeycomb"
-    else if (nextVariant = 5)
-        LLARS_VisualHeaderVariantSelected := "mosaic"
+    lastName := LLARS_ConfigReadFile(configPath, "GUI Header", "last_name", "")
+    previous := LLARS_VisualHeaderIndex(items, lastName)
+    if (!previous)
+        previous := lastVariant
+
+    if (mode = "fixed")
+    {
+        fixedName := LLARS_ConfigReadFile(configPath, "GUI Header", "fixed_theme", "")
+        index := LLARS_VisualHeaderIndex(items, fixedName)
+        if (!index)
+        {
+            LLARS_VisualHeaderLastIssue := "Fixed header is unavailable; showing the first valid header."
+            index := 1
+        }
+    }
+    else if (mode = "random" && total > 1)
+    {
+        if (previous >= 1 && previous <= total)
+        {
+            maxChoice := total - 1
+            Random, index, 1, %maxChoice%
+            if (index >= previous)
+                index += 1
+        }
+        else
+            Random, index, 1, %total%
+    }
     else
-        LLARS_VisualHeaderVariantSelected := "spiral"
-    if (configPath != "")
-        LLARS_ConfigWriteFile(configPath, "GUI Header", "last_variant", nextVariant)
+        index := Mod(previous, total) + 1
+
+    LLARS_VisualHeaderVariantSelected := items[index].Id
+    if (mode != "fixed" && configPath != "")
+    {
+        LLARS_ConfigWriteFile(configPath, "GUI Header", "last_variant", index)
+        LLARS_ConfigWriteFile(configPath, "GUI Header", "last_name", LLARS_VisualHeaderVariantSelected)
+    }
     return LLARS_VisualHeaderVariantSelected
+}
+
+LLARS_VisualHeaderSavePreferences(mode, fixedTheme, ByRef error)
+{
+    error := ""
+    if (mode != "sequential" && mode != "random" && mode != "fixed")
+    {
+        error := "Unsupported header selection mode."
+        return false
+    }
+    items := LLARS_VisualHeaderCatalog()
+    if (mode = "fixed" && !LLARS_VisualHeaderIndex(items, fixedTheme))
+    {
+        error := "Select a valid fixed header before saving."
+        return false
+    }
+    configPath := LLARS_VisualConfigPath()
+    if (configPath = "")
+    {
+        error := "The shared LLARS Config.ini was not found."
+        return false
+    }
+    ; Protect the entire existing INI if either write fails. Cancel never
+    ; calls this function and leaves the configuration byte-for-byte intact.
+    rollback := configPath . ".headerprefs.rollback"
+    FileCopy, %configPath%, %rollback%, 1
+    if ErrorLevel
+    {
+        error := "Could not prepare a configuration rollback."
+        return false
+    }
+    ok := LLARS_ConfigWriteFile(configPath, "GUI Header", "mode", mode)
+    if (ok && mode = "fixed")
+        ok := LLARS_ConfigWriteFile(configPath, "GUI Header", "fixed_theme", fixedTheme)
+    if (!ok)
+    {
+        FileCopy, %rollback%, %configPath%, 1
+        restoreFailed := ErrorLevel
+        LLARS_ConfigInvalidateSnapshot(configPath)
+        if (restoreFailed)
+            error := "Preference save failed. Restore the original from " . rollback
+        else
+        {
+            error := "Could not save the header preference; original configuration was restored."
+            FileDelete, %rollback%
+        }
+        return false
+    }
+    FileDelete, %rollback%
+    return true
 }
 
 LLARS_VisualHeaderAsset(kind, mode := "")
@@ -116,9 +364,13 @@ LLARS_VisualDashboard(guiName, mode := "setup")
 
 LLARS_VisualPrepare(guiName := "1", textSize := 10)
 {
-    global LLARS_VisualButtons, LLARS_VisualHookInstalled, LLARS_VisualHoverHwnd
+    global LLARS_VisualButtons, LLARS_VisualButtonCaptions, LLARS_VisualHookInstalled, LLARS_VisualHoverHwnd
     if (!IsObject(LLARS_VisualButtons))
         LLARS_VisualButtons := {}
+    ; A button's HWND can outlive changes in GUI focus/default GUI. Store its
+    ; native caption when styling; never depend on WinGetTitle inside WM_DRAWITEM.
+    if (!IsObject(LLARS_VisualButtonCaptions))
+        LLARS_VisualButtonCaptions := {}
     if (!LLARS_VisualHookInstalled)
     {
         OnMessage(0x2B, "LLARS_VisualDrawButton") ; WM_DRAWITEM
@@ -346,6 +598,24 @@ LLARS_VisualWindow(hwnd)
     corner := 2
     DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", hwnd, "UInt", 33, "UInt*", corner, "UInt", 4, "Int")
     LLARS_VisualStyleControls(hwnd)
+    ; Updating a control to BS_OWNERDRAW after creation only invalidates it.
+    ; Force a full synchronous first paint so no caption, icon or control can
+    ; be left blank until hover, focus or a later window activation.
+    LLARS_VisualPaintReady(hwnd)
+}
+
+; Read child-button captions using the native HWND instead of window-title
+; matching, which can return no text for a child during nested GUI/MsgBox paint.
+LLARS_VisualControlCaption(hwnd)
+{
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd))
+        return ""
+    length := DllCall("user32\GetWindowTextLengthW", "Ptr", hwnd, "Int")
+    if (length <= 0 || length > 1024)
+        return ""
+    VarSetCapacity(buffer, (length + 1) * 2, 0)
+    written := DllCall("user32\GetWindowTextW", "Ptr", hwnd, "Ptr", &buffer, "Int", length + 1, "Int")
+    return written > 0 ? StrGet(&buffer, written, "UTF-16") : ""
 }
 
 ; Turn ordinary push buttons into original LLARS-drawn rounded controls.
@@ -353,7 +623,7 @@ LLARS_VisualWindow(hwnd)
 ; Skip radio buttons, checkboxes, group boxes, and graphical/icon buttons.
 LLARS_VisualStyleControls(hwnd)
 {
-    global LLARS_VisualButtons
+    global LLARS_VisualButtons, LLARS_VisualButtonCaptions
     WinGet, controls, ControlListHwnd, ahk_id %hwnd%
     Loop, Parse, controls, `n, `r
     {
@@ -369,9 +639,10 @@ LLARS_VisualStyleControls(hwnd)
             buttonType := style & 0xF
             if ((buttonType != 0 && buttonType != 0xB) || (style & 0xC0))
                 continue
-            WinGetTitle, caption, ahk_id %control%
+            caption := LLARS_VisualControlCaption(control)
             if (caption = "")
                 continue
+            LLARS_VisualButtonCaptions[control] := caption
             LLARS_VisualButtons[control] := LLARS_VisualButtonRole(caption)
             if (buttonType != 0xB)
             {
@@ -443,23 +714,40 @@ LLARS_VisualMouseLeave(wParam, lParam, msg, hwnd)
 ; WM_DRAWITEM is scoped to only the button HWNDs registered above.
 LLARS_VisualDrawButton(wParam, lParam, msg, parentHwnd)
 {
-    global LLARS_VisualButtons, LLARS_VisualHoverHwnd
+    global LLARS_VisualButtons, LLARS_VisualButtonCaptions, LLARS_VisualHoverHwnd
     if (!IsObject(LLARS_VisualButtons) || !lParam)
         return
     if (NumGet(lParam + 0, 0, "UInt") != 4) ; ODT_BUTTON
         return
     ptrOffset := (A_PtrSize = 8 ? 24 : 20)
     control := NumGet(lParam + 0, ptrOffset, "Ptr")
-    if (!LLARS_VisualButtons.HasKey(control))
+    if (!LLARS_VisualButtons.HasKey(control) || !DllCall("user32\IsWindow", "Ptr", control))
+        return
+    VarSetCapacity(buttonClass, 64, 0)
+    DllCall("user32\GetClassNameW", "Ptr", control, "Ptr", &buttonClass, "Int", 32)
+    if (StrGet(&buttonClass, "UTF-16") != "Button")
         return
 
     state := NumGet(lParam + 0, 16, "UInt")
     hdc := NumGet(lParam + 0, ptrOffset + A_PtrSize, "Ptr")
+    if (!hdc)
+        return
     rect := lParam + ptrOffset + 2 * A_PtrSize
     left := NumGet(rect + 0, 0, "Int")
     top := NumGet(rect + 0, 4, "Int")
     right := NumGet(rect + 0, 8, "Int")
     bottom := NumGet(rect + 0, 12, "Int")
+    ; AHK controls can update their text (e.g. Add/Remove Favorite). Refresh
+    ; a valid caption, but preserve the last known caption during a transient
+    ; empty Win32 read so the button never paints as an unlabelled rectangle.
+    caption := LLARS_VisualControlCaption(control)
+    if (caption != "")
+    {
+        LLARS_VisualButtonCaptions[control] := caption
+        LLARS_VisualButtons[control] := LLARS_VisualButtonRole(caption)
+    }
+    else if (IsObject(LLARS_VisualButtonCaptions) && LLARS_VisualButtonCaptions.HasKey(control))
+        caption := LLARS_VisualButtonCaptions[control]
     role := LLARS_VisualButtons[control]
     selected := (state & 0x1) != 0
     hovered := (LLARS_VisualHoverHwnd = control)
@@ -502,7 +790,6 @@ LLARS_VisualDrawButton(wParam, lParam, msg, parentHwnd)
     DllCall("gdi32\DeleteObject", "Ptr", pen)
     DllCall("gdi32\DeleteObject", "Ptr", brush)
 
-    WinGetTitle, caption, ahk_id %control%
     if (caption != "")
     {
         DllCall("gdi32\SetBkMode", "Ptr", hdc, "Int", 1)
@@ -578,3 +865,76 @@ LLARS_VisualMainIcon(hwnd, root)
         DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x80, "Ptr", 1, "Ptr", hIcon)
     }
 }
+
+; Shared Header Appearance modal is available from Selector and a running
+; script's Setup window. It previews only; active artwork stays unchanged.
+LLARS_HeaderPrefsShow(ownerGui := "1")
+{
+    global LLARSHeaderPrefsIndex, LLARSHeaderPrefsMode, LLARSHeaderPrefsPicture
+    global LLARSHeaderPrefsName, LLARSHeaderPrefsHwnd, LLARS_VisualHeaderCatalogIssues
+    items := LLARS_VisualHeaderCatalog()
+    if (!items.Length())
+    {
+        MsgBox, 262192, Header Appearance, No valid header images are available. Restore the bundled Assets\UI headers.
+        return
+    }
+    mode := LLARS_ConfigReadFile(LLARS_VisualConfigPath(), "GUI Header", "mode", "sequential")
+    StringLower, mode, mode
+    if (mode != "random" && mode != "fixed")
+        mode := "sequential"
+    selected := LLARS_VisualHeaderVariantName()
+    if (mode = "fixed")
+    {
+        savedFixed := LLARS_ConfigReadFile(LLARS_VisualConfigPath(), "GUI Header", "fixed_theme", "")
+        if LLARS_VisualHeaderIndex(items, savedFixed)
+            selected := savedFixed
+    }
+    LLARSHeaderPrefsIndex := LLARS_VisualHeaderIndex(items, selected)
+    if (!LLARSHeaderPrefsIndex)
+        LLARSHeaderPrefsIndex := 1
+
+    Gui, HeaderPrefs:Destroy
+    Gui, HeaderPrefs:New, % "+Owner" . ownerGui . " +OwnDialogs +AlwaysOnTop +ToolWindow +HwndLLARSHeaderPrefsHwnd", Header Appearance
+    Gui, HeaderPrefs:Margin, 0, 0
+    LLARS_VisualPrepare("HeaderPrefs")
+    LLARS_VisualModalHeader("HeaderPrefs", 440, "HEADER APPEARANCE")
+    LLARS_VisualCard("HeaderPrefs", 10, 82, 420, 220)
+    Gui, HeaderPrefs:Font, s10 Bold c173A61, Segoe UI
+    Gui, HeaderPrefs:Add, Text, x22 y94 w390 h21 BackgroundTrans, Header rotation
+    Gui, HeaderPrefs:Font, s10 Norm c24324A, Segoe UI
+    Gui, HeaderPrefs:Add, DropDownList, x22 y117 w390 h120 vLLARSHeaderPrefsMode, Sequential|Random|Fixed
+    modeTitle := (mode = "random") ? "Random" : (mode = "fixed") ? "Fixed" : "Sequential"
+    GuiControl, HeaderPrefs:ChooseString, LLARSHeaderPrefsMode, %modeTitle%
+    Gui, HeaderPrefs:Font, s9 Norm c526783, Segoe UI
+    Gui, HeaderPrefs:Add, Text, x22 y151 w390 h36 BackgroundTrans, Preview uses the installed image. Changes take effect on the next launch.
+    Gui, HeaderPrefs:Add, Picture, x22 y190 w396 h53 vLLARSHeaderPrefsPicture
+    Gui, HeaderPrefs:Font, s11 Bold cFFFFFF, Segoe UI
+    Gui, HeaderPrefs:Add, Text, x32 y195 w376 h24 Center BackgroundTrans, LLARS
+    Gui, HeaderPrefs:Font, s9 Bold c173A61, Segoe UI
+    Gui, HeaderPrefs:Add, Text, x22 y253 w396 h20 Center BackgroundTrans vLLARSHeaderPrefsName
+    Gui, HeaderPrefs:Add, Button, x99 y311 w114 h35 gHeaderPrefsPrevious, Previous
+    Gui, HeaderPrefs:Add, Button, x227 y311 w114 h35 gHeaderPrefsNext, Next
+    Gui, HeaderPrefs:Add, Button, x23 y361 w190 h36 gHeaderPrefsSave, Save preference
+    Gui, HeaderPrefs:Add, Button, x227 y361 w190 h36 gHeaderPrefsCancel, Cancel
+    Gui, HeaderPrefs:Show, w440 h412 Center, Header Appearance
+    LLARS_VisualFinish("HeaderPrefs")
+    LLARS_HeaderPrefsRedraw()
+    if (LLARS_VisualHeaderCatalogIssues != "")
+        MsgBox, 262192, Header Appearance, % "Some images were skipped:`n" . SubStr(LLARS_VisualHeaderCatalogIssues, 1, 600)
+}
+
+LLARS_HeaderPrefsRedraw()
+{
+    global LLARSHeaderPrefsIndex
+    items := LLARS_VisualHeaderCatalog()
+    if (!items.Length())
+        return
+    if (LLARSHeaderPrefsIndex < 1 || LLARSHeaderPrefsIndex > items.Length())
+        LLARSHeaderPrefsIndex := 1
+    item := items[LLARSHeaderPrefsIndex]
+    imagePath := item.Path
+    GuiControl, HeaderPrefs:, LLARSHeaderPrefsPicture, % "*w396 *h53 " . imagePath
+    titleText := item.Name . "  (" . LLARSHeaderPrefsIndex . " of " . items.Length() . ")"
+    GuiControl, HeaderPrefs:, LLARSHeaderPrefsName, %titleText%
+}
+

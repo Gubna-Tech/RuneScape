@@ -4,6 +4,7 @@ LLARS includes `Backup\Config Backup.bat` and `Backup\Config Restore.bat` to pro
 
 The tools preserve:
 
+- User-added `Assets/UI/header_*.png` files (the ten official headers are left to the release package), the Creator Selector registry, managed imports under `Scripts/Custom`, and script folders referenced by valid Creator registry entries. User files are staged inside `User Files` with SHA-256 hashes; restoration adds missing files but refuses to overwrite different existing files. Unknown unregistered projects and scripts outside the registry still require a complete installation backup.
 - The root `LLARS Config.ini` used for shared hotkeys, input-backend settings, GUI positions, and framework options.
 - Every script-local `Config.ini` found under `Scripts` and `Scripts - Menu Entry Swapper`.
 
@@ -20,6 +21,10 @@ You can also use **Information → Backup Config** from a running LLARS script. 
 Run `Backup\Config Restore.bat` to copy the **latest** saved shared configuration and script-local configuration files from `Backup\Config Backup` back into the current LLARS folder. The two older retained snapshots remain available as `Config Backup 1` and `Config Backup 2` for manual recovery if needed.
 
 You can also use **Information → Restore Config**. LLARS asks for confirmation before restoring because current configuration files will be overwritten, then reloads so the restored shared settings take effect.
+
+## Safe restoration of user-owned files
+
+The restore tool first verifies the `User Files` snapshot and restores only missing user-owned files. A conflict with a changed installed file stops the restore without replacing that file; resolve it by reviewing both copies rather than deleting either. A snapshot created by older LLARS versions without the `User Files` folder remains usable for config restoration. Always keep a separate complete installation backup when migrating to a new folder or moving projects not registered in the Selector.
 
 ## Updates
 

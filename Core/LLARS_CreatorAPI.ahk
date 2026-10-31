@@ -12,12 +12,12 @@ LLARS_CreatorConfigError(message)
 	if (message = "")
 		message := "Unknown creator API configuration error"
 
-	LLARS_DiagnosticRecord("Error", "Creator API configuration", message)
+	LLARS_DiagnosticRecord("Error", "Creator API configuration", message, "Configuration")
 	return false
 }
 
 ; Reports blocked creator input without sending it.
-LLARS_CreatorInputBlocked(action, reason)
+LLARS_CreatorInputBlocked(action, reason, category := "Input readiness")
 {
 	action := Trim(action)
 	reason := Trim(reason)
@@ -26,7 +26,7 @@ LLARS_CreatorInputBlocked(action, reason)
 	if (reason = "")
 		reason := "Input safety check failed"
 
-	LLARS_DiagnosticRecord("Warning", "Input blocked: " . action, reason)
+	LLARS_DiagnosticRecord("Warning", "Input blocked: " . action, reason, category)
 	return false
 }
 
@@ -846,7 +846,7 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 
 	if (DllCall("GetForegroundWindow", "Ptr") != runeScapeHwnd)
 	{
-		LLARS_CreatorInputBlocked(action, "RuneScape could not be restored to the foreground")
+		LLARS_CreatorInputBlocked(action, "RuneScape could not be restored to the foreground", "Focus")
 		return false
 	}
 
@@ -855,7 +855,7 @@ LLARS_WaitForRuneScape(action := "Automation", requireRun := true)
 	GuiControl, 1:, State3, %previousStatus%
 	LLARS_VisualShowStatus("blue")
 	LLARS_DeveloperAction("Focus || RuneScape reclaimed || " . action)
-	LLARS_ReportRecovery("RuneScape focus restored", action)
+	LLARS_ReportRecovery("RuneScape focus restored", action, "Focus")
 	return true
 }
 
@@ -999,7 +999,7 @@ LLARS_CreatorRunError(error, iteration := "", totalRuns := "")
 	if IsFunc("LLARS_AHI_ReleaseAllInput")
 		LLARS_AHI_ReleaseAllInput()
 	LLARS_DeveloperAction("Script Error || " . message)
-	MsgBox, 4112, LLARS Script Error, %message%
+	MsgBox, 266256, LLARS Script Error, %message%
 	return false
 }
 
@@ -1532,7 +1532,7 @@ LLARS_CreatorKeyboardDeliveryFailed(action, sendSequence := "", detail := "")
 	message := action . " was not sent. " . detail
 	if (sendSequence != "")
 		message .= " | Key=" . sendSequence
-	LLARS_CreatorInputBlocked(action, message)
+	LLARS_CreatorInputBlocked(action, message, "Input transport")
 	if IsFunc("LLARS_DeveloperAction")
 		LLARS_DeveloperAction("Keyboard Dispatch Failed || " . message . " || Input mode=" . mode)
 
@@ -4513,7 +4513,7 @@ LLARS_ValidateUniqueColorSet(sections, groupName, requiredCount := 3, scope := "
 			{
 				message := groupName . " requires " . requiredCount . " configured colors. [" . section . "] is not configured."
 				LLARS_CreatorConfigError(message)
-				MsgBox, 48, %messageTitle%, %message%
+				MsgBox, 262192, %messageTitle%, %message%
 				return false
 			}
 			continue
@@ -4523,7 +4523,7 @@ LLARS_ValidateUniqueColorSet(sections, groupName, requiredCount := 3, scope := "
 		{
 			message := groupName . " must use unique RGB values. [" . section . "] matches [" . seen[color] . "] at " . color . "."
 			LLARS_CreatorConfigError(message)
-			MsgBox, 48, %messageTitle%, %message%
+			MsgBox, 262192, %messageTitle%, %message%
 			return false
 		}
 		seen[color] := section

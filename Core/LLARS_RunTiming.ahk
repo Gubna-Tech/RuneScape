@@ -34,13 +34,13 @@ LLARS_StartRun()
 
 	if (runcount = "" || !RegExMatch(runcount, "^\d+$") || runcount <= 0)
 	{
-		MsgBox, 48, Invalid Input, Please enter a valid whole number greater than 0.
+		MsgBox, 262192, Invalid Input, Please enter a valid whole number greater than 0.
 		return false
 	}
 
 	if (runcount > 1000)
 	{
-		MsgBox, 48, Invalid Input, Please enter a number between 1 and 1000.
+		MsgBox, 262192, Invalid Input, Please enter a number between 1 and 1000.
 		return false
 	}
 
@@ -75,7 +75,7 @@ LLARS_StartRun()
 		GuiControl,, EstRunRemaining, Estimate Error
 		Gui, Show
 		Sleep, 250
-		MsgBox, 48, LLARS Estimate Error, Unable to calculate the estimated loop/run time.`n`nRunCount scripts need at least one enabled LLARS_Sleep("Sleep Section") or LLARS_RandomSleep() call inside the editable script section so LLARS can estimate the loop safely.`n`nThe automation loop will not start.
+		MsgBox, 262192, LLARS Estimate Error, Unable to calculate the estimated loop/run time.`n`nRunCount scripts need at least one enabled LLARS_Sleep("Sleep Section") or LLARS_RandomSleep() call inside the editable script section so LLARS can estimate the loop safely.`n`nThe automation loop will not start.
 		LLARS_RUNNING := false
 		EnableButton()
 		return false
@@ -183,7 +183,7 @@ LLARS_StartTimerRun()
 	timeToRunMinutes := Trim(timeToRunMinutes)
 	if (!RegExMatch(timeToRunMinutes, "^\d+(\.\d+)?$") || timeToRunMinutes <= 0)
 	{
-		MsgBox, 48, Invalid Input, Please enter a valid number greater than 0.
+		MsgBox, 262192, Invalid Input, Please enter a valid number greater than 0.
 		return false
 	}
 
@@ -705,7 +705,7 @@ LLARS_RunComplete()
 	TotalSleepSeconds := Mod(totalSleepTimeSeconds, 60)
 	SoundPlay, C:\Windows\Media\Ring06.wav, 1
 	chance := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Random Sleep", "chance", "ERROR")
-	MsgBox, 64, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
+	MsgBox, 262208, LLARS Run Info, %scriptname% has completed %runcount3% runs`n`nTotal time: %TotalTimeHours%h : %TotalTimeMinutes%m : %TotalTimeSecondsDisplay%s`nAverage loop: %AverageTimeMinutes%m : %AverageTimeSecondsDisplay%s`n`nStart time: %StartTimeStamp%`nEnd time: %EndTimeStamp%`n`nSet sleep chance: %chance%`%`nActual sleep chance: %percentage%`%`nTotal random sleeps: %sleepcount%`nTotal time slept: %TotalSleepHours%h : %TotalSleepMinutes%m : %TotalSleepSeconds%s
 	LLARS_RUNNING := false
 	LLARS_RunStartTick := 0
 	LLARS_RunRuneScapeHwnd := 0

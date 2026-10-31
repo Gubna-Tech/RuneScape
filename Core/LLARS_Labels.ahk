@@ -258,7 +258,7 @@ Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSetupGuiHwnd
 LLARS_VisualPrepare("Combo")
 setupCaps := LLARS_GetScriptCapabilities()
 setupHasTimer := (setupCaps.Timer && LLARS_COMBO_TIMER_LABEL != "")
-setupButtonCount := 6 + (setupHasTimer ? 1 : 0)
+setupButtonCount := 7 + (setupHasTimer ? 1 : 0)
 setupLayout := LLARS_VisualStackLayout(setupButtonCount)
 LLARS_VisualModalHeader("Combo", setupLayout.width, "Setup")
 LLARS_VisualModalCards("Combo", setupLayout)
@@ -286,12 +286,62 @@ setupY += setupLayout.step
 Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gInputSettings", Input Settings
 setupY += setupLayout.step
 Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCheckSetup", Check Setup
+setupY += setupLayout.step
+Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gLLARS_SetupHeaderStyle", Header Style
 Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupLayout.footerButtonY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCloseCombo", Close Setup
 Gui Combo: +ToolWindow
 Gui Combo: -caption
 Gui Combo: Show, % "Center w" . setupLayout.width . " h" . setupLayout.height, Setup
 LLARS_VisualFinish("Combo")
 LLARS_DeveloperUIAction("Setup")
+return
+
+; The same Header Appearance panel is available from the Setup menu.
+; Its preview is isolated from the current script session.
+LLARS_SetupHeaderStyle:
+LLARS_HeaderPrefsShow("Combo")
+return
+
+HeaderPrefsPrevious:
+headerCatalog := LLARS_VisualHeaderCatalog()
+if (headerCatalog.Length())
+{
+    LLARSHeaderPrefsIndex := (LLARSHeaderPrefsIndex <= 1) ? headerCatalog.Length() : LLARSHeaderPrefsIndex - 1
+    LLARS_HeaderPrefsRedraw()
+}
+return
+
+HeaderPrefsNext:
+headerCatalog := LLARS_VisualHeaderCatalog()
+if (headerCatalog.Length())
+{
+    LLARSHeaderPrefsIndex := Mod(LLARSHeaderPrefsIndex, headerCatalog.Length()) + 1
+    LLARS_HeaderPrefsRedraw()
+}
+return
+
+HeaderPrefsSave:
+GuiControlGet, headerMode, HeaderPrefs:, LLARSHeaderPrefsMode
+StringLower, headerMode, headerMode
+headerItems := LLARS_VisualHeaderCatalog()
+headerName := headerItems[LLARSHeaderPrefsIndex].Id
+if !LLARS_VisualHeaderSavePreferences(headerMode, headerName, preferenceError)
+{
+    Gui, HeaderPrefs:Default
+    Gui, +OwnDialogs +AlwaysOnTop
+    MsgBox, 262192, Header Appearance, %preferenceError%
+    return
+}
+Gui, HeaderPrefs:Destroy
+Gui, Combo:Default
+Gui, +OwnDialogs +AlwaysOnTop
+MsgBox, 262208, Header Appearance, Preference saved. Your active session keeps its current header; the next launch uses the new setting.
+return
+
+HeaderPrefsCancel:
+HeaderPrefsGuiClose:
+HeaderPrefsGuiEscape:
+Gui, HeaderPrefs:Destroy
 return
 
 ; Opens the local script Config.ini without changing the active Setup window.
@@ -391,7 +441,7 @@ if LLARS_SetupItemIsAvailable("Script Config")
 	if FileExist(LLARS_SCRIPT_DIR . "\Config.ini")
 		GoSub, SetupOpenScriptConfig
 	else
-		MsgBox, 48, LLARS Setup, The required script Config.ini is missing.`n`nRe-extract or redownload the complete LLARS package.
+		MsgBox, 262192, LLARS Setup, The required script Config.ini is missing.`n`nRe-extract or redownload the complete LLARS package.
 }
 return
 
@@ -522,7 +572,7 @@ Gui Reset: Destroy
 
 if !LLARS_ResetConfigItem("Config.ini", resetSection, resetType)
 {
-	MsgBox, 48, Reset Configuration, The selected configuration value could not be reset.
+	MsgBox, 262192, Reset Configuration, The selected configuration value could not be reset.
 	GoSub, ConfigSettings
 	return
 }
@@ -546,7 +596,7 @@ if (resetCount = 0)
 
 LLARS_DeveloperUIAction("Reset Configuration", "Closed")
 Gui Reset: Destroy
-MsgBox, 36, Reset Configuration, Clear all saved Hotkeys, Coordinates, and Colors?`n`nOffsets, timers, options, ranges, and all other settings will remain unchanged.
+MsgBox, 262180, Reset Configuration, Clear all saved Hotkeys, Coordinates, and Colors?`n`nOffsets, timers, options, ranges, and all other settings will remain unchanged.
 IfMsgBox, No
 {
 	GoSub, ConfigSettings
@@ -564,7 +614,7 @@ for resetDisplay, resetItem in resetConfigItems
 
 if !resetChanged
 {
-	MsgBox, 48, Reset Configuration, No saved Hotkeys, Coordinates, or Colors could be reset.
+	MsgBox, 262192, Reset Configuration, No saved Hotkeys, Coordinates, or Colors could be reset.
 	GoSub, ConfigSettings
 	return
 }
@@ -1809,7 +1859,8 @@ InputTestAHI:
 inputTestSummary := ""
 inputTestPassed := IsFunc("LLARS_AHI_SelfTest") ? LLARS_AHI_SelfTest(LLARS_ROOT, inputTestSummary) : false
 if (inputTestSummary = "")
-	inputTestSummary := "AHI health test is unavailable."
+	inputTestSummary := "AHI health test is unavailable. Open Input Settings and inspect the selected backend."
+; Test AHI is observation-only. Do not send a sample gameplay click or key.
 if (inputTestPassed)
 	MsgBox, 0x40040, LLARS AHI Test, %inputTestSummary%
 else

@@ -12,6 +12,21 @@ set "failed=0"
 
 if /I "%~1"=="--auto" set "automatic=1"
 
+rem Refuse a missing root snapshot before adding any user-owned files.
+if not exist "%backupRoot%\LLARS Config.ini" (
+    set "failed=1"
+    goto :finish
+)
+
+rem Preflight user-owned assets before overwriting shared configuration.
+rem Older snapshots with no User Files directory remain compatible.
+powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%~dp0User Files Snapshot.ps1" -Mode Restore -Root "%llarsRoot%" -Snapshot "%backupRoot%"
+if errorlevel 1 (
+    set "failed=1"
+    if "%automatic%"=="0" echo User file restore was blocked; existing files were preserved.
+    goto :finish
+)
+
 if exist "%backupRoot%\LLARS Config.ini" (
     copy /Y "%backupRoot%\LLARS Config.ini" "%llarsRoot%\LLARS Config.ini" >nul
     if errorlevel 1 (
@@ -61,6 +76,7 @@ if exist "%sourceMES%" if exist "%destinationMES%" (
     )
 )
 
+:finish
 if "%automatic%"=="0" (
     echo.
     if "%failed%"=="0" (

@@ -1,4 +1,4 @@
-# LLARS v2.3.1 required runtime manifest
+# LLARS v2.3.2 required runtime manifest
 # Runtime dependencies required for a complete LLARS installation.
 # User-editable Config.ini values are intentionally not hash-enforced.
 required	VERSION
@@ -7,6 +7,7 @@ required	Script Selector.ahk
 required	Core/LLARS.ahk
 required	Core/LLARS_Timing.ahk
 required	Core/LLARS_Config.ahk
+required	Backup/User Files Snapshot.ps1
 required	Core/LLARS_RunTiming.ahk
 required	Core/LLARS_Support.ahk
 required	Core/LLARS_Update.ahk
@@ -28,6 +29,10 @@ required	Assets/UI/header_topographic.png
 required	Assets/UI/header_honeycomb.png
 required	Assets/UI/header_mosaic.png
 required	Assets/UI/header_spiral.png
+required	Assets/UI/header_digital_wave.png
+required	Assets/UI/header_polygon_grid.png
+required	Assets/UI/header_nebula_cloud.png
+required	Assets/UI/header_shadow_botanica.png
 required	Assets/UI/script_info_easy.png
 required	Assets/UI/script_info_intermediate.png
 required	Assets/UI/script_info_hard.png

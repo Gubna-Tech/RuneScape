@@ -80,6 +80,13 @@ if "%failed%"=="0" if exist "%sourceMES%" (
     )
 )
 
+if "%failed%"=="0" (
+    rem Include optional user headers, the Creator registry, and registered user scripts.
+    rem The helper fails closed on unsafe paths or failed copies; no old snapshot rotates.
+    powershell.exe -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "%~dp0User Files Snapshot.ps1" -Mode Stage -Root "%llarsRoot%" -Snapshot "%staging%" >nul
+    if errorlevel 1 set "failed=1"
+)
+
 if not "%failed%"=="0" (
     if exist "%staging%" rmdir /S /Q "%staging%" >nul 2>&1
     goto :finish
