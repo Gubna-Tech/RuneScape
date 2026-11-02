@@ -1260,7 +1260,7 @@ LLARS_TimerSchedule(labelName, section, repeat := false, scope := "script")
 	SetTimer, %timerHandler%, %timerPeriod%
 
 	timerMode := repeat ? "Repeating" : "One Shot"
-	LLARS_DeveloperAction("Legacy Timer Scheduled || " . labelName . " || " . section . " || " . interval . " ms || " . timerMode)
+	LLARS_DeveloperAction("Timer Scheduled || " . labelName . " || " . section . " || " . interval . " ms || " . timerMode)
 	LLARS_SupportEvent("Timer scheduled", section . " | " . timerMode)
 	return interval
 }
@@ -1326,7 +1326,7 @@ LLARS_TimerStop(timerRef)
 		SetTimer, %labelName%, Off
 	}
 	LLARS_CreatorTimers.Delete(labelName)
-	LLARS_DeveloperAction("Legacy Timer Stopped || " . labelName)
+	LLARS_DeveloperAction("Timer Stopped || " . labelName)
 	return true
 }
 

@@ -259,6 +259,7 @@ LLARS_VisualHeaderVariantName()
 
 LLARS_VisualHeaderSavePreferences(mode, fixedTheme, ByRef error)
 {
+    global LLARS_VisualHeaderVariantSelected
     error := ""
     if (mode != "sequential" && mode != "random" && mode != "fixed")
     {
@@ -277,8 +278,10 @@ LLARS_VisualHeaderSavePreferences(mode, fixedTheme, ByRef error)
         error := "The shared LLARS Config.ini was not found."
         return false
     }
-    ; Protect the entire existing INI if either write fails. Cancel never
-    ; calls this function and leaves the configuration byte-for-byte intact.
+    previousMode := LLARS_ConfigReadFile(configPath, "GUI Header", "mode", "sequential")
+    previousFixed := LLARS_ConfigReadFile(configPath, "GUI Header", "fixed_theme", "")
+    ; Protect the existing INI from partial writes or failed read-back.
+    ; Cancel never calls this function.
     rollback := configPath . ".headerprefs.rollback"
     FileCopy, %configPath%, %rollback%, 1
     if ErrorLevel
@@ -289,6 +292,13 @@ LLARS_VisualHeaderSavePreferences(mode, fixedTheme, ByRef error)
     ok := LLARS_ConfigWriteFile(configPath, "GUI Header", "mode", mode)
     if (ok && mode = "fixed")
         ok := LLARS_ConfigWriteFile(configPath, "GUI Header", "fixed_theme", fixedTheme)
+    ; A successful API call alone is not proof that the new setting persisted.
+    if (ok)
+    {
+        savedMode := LLARS_ConfigReadFile(configPath, "GUI Header", "mode", "")
+        savedFixed := LLARS_ConfigReadFile(configPath, "GUI Header", "fixed_theme", "")
+        ok := (savedMode = mode && (mode != "fixed" || savedFixed = fixedTheme))
+    }
     if (!ok)
     {
         FileCopy, %rollback%, %configPath%, 1
@@ -304,6 +314,10 @@ LLARS_VisualHeaderSavePreferences(mode, fixedTheme, ByRef error)
         return false
     }
     FileDelete, %rollback%
+    ; A saved change applies when a new script is launched from Selector.
+    ; The already-created GUI keeps its current image.
+    if (previousMode != mode || (mode = "fixed" && previousFixed != fixedTheme))
+        LLARS_VisualHeaderVariantSelected := ""
     return true
 }
 
@@ -349,8 +363,8 @@ LLARS_VisualDashboard(guiName, mode := "setup")
     ; This avoids storing repeated full-window themed composites while preserving the same UI.
     dashboardAssetPath := LLARS_VisualHeaderAsset("dashboard", mode)
     w := (mode = "setup") ? 432 : 417
-    h := (mode = "setup") ? 633 : (mode = "running") ? 499 : (mode = "timer") ? 422 : 336
-    headerH := 105
+    h := (mode = "setup") ? 606 : (mode = "running") ? 472 : (mode = "timer") ? 395 : 309
+    headerH := 96
     bodyH := h - headerH
     if (dashboardAssetPath = "")
     {
@@ -621,9 +635,34 @@ LLARS_VisualControlCaption(hwnd)
 ; Turn ordinary push buttons into original LLARS-drawn rounded controls.
 ; Keep the real HWND/button class, accelerator, g-label, tab order, and clicks.
 ; Skip radio buttons, checkboxes, group boxes, and graphical/icon buttons.
+; Drop captions and roles for controls whose Win32 handles were destroyed.
+; A long-running LLARS session opens and closes many modal dialogs. The
+; retained caption fallback must not accumulate dead entries indefinitely.
+LLARS_VisualPruneButtonRegistry()
+{
+    global LLARS_VisualButtons, LLARS_VisualButtonCaptions, LLARS_VisualHoverHwnd
+    if !IsObject(LLARS_VisualButtons)
+        return
+    stale := []
+    for controlHwnd, role in LLARS_VisualButtons
+    {
+        if !DllCall("user32\IsWindow", "Ptr", controlHwnd)
+            stale.Push(controlHwnd)
+    }
+    for _, controlHwnd in stale
+    {
+        LLARS_VisualButtons.Delete(controlHwnd)
+        if (IsObject(LLARS_VisualButtonCaptions) && LLARS_VisualButtonCaptions.HasKey(controlHwnd))
+            LLARS_VisualButtonCaptions.Delete(controlHwnd)
+        if (LLARS_VisualHoverHwnd = controlHwnd)
+            LLARS_VisualHoverHwnd := 0
+    }
+}
+
 LLARS_VisualStyleControls(hwnd)
 {
     global LLARS_VisualButtons, LLARS_VisualButtonCaptions
+    LLARS_VisualPruneButtonRegistry()
     WinGet, controls, ControlListHwnd, ahk_id %hwnd%
     Loop, Parse, controls, `n, `r
     {
@@ -906,7 +945,7 @@ LLARS_HeaderPrefsShow(ownerGui := "1")
     modeTitle := (mode = "random") ? "Random" : (mode = "fixed") ? "Fixed" : "Sequential"
     GuiControl, HeaderPrefs:ChooseString, LLARSHeaderPrefsMode, %modeTitle%
     Gui, HeaderPrefs:Font, s9 Norm c526783, Segoe UI
-    Gui, HeaderPrefs:Add, Text, x22 y151 w390 h36 BackgroundTrans, Preview uses the installed image. Changes take effect on the next launch.
+    Gui, HeaderPrefs:Add, Text, x22 y151 w390 h36 BackgroundTrans, Previous/Next selects Fixed. Changes take effect on the next launch.
     Gui, HeaderPrefs:Add, Picture, x22 y190 w396 h53 vLLARSHeaderPrefsPicture
     Gui, HeaderPrefs:Font, s11 Bold cFFFFFF, Segoe UI
     Gui, HeaderPrefs:Add, Text, x32 y195 w376 h24 Center BackgroundTrans, LLARS
@@ -921,6 +960,14 @@ LLARS_HeaderPrefsShow(ownerGui := "1")
     LLARS_HeaderPrefsRedraw()
     if (LLARS_VisualHeaderCatalogIssues != "")
         MsgBox, 262192, Header Appearance, % "Some images were skipped:`n" . SubStr(LLARS_VisualHeaderCatalogIssues, 1, 600)
+}
+
+LLARS_HeaderPrefsPreviewChosen()
+{
+    ; Browsing an image is a request to select that image. The mode control
+    ; visibly switches to Fixed; users may still choose Sequential or Random.
+    GuiControl, HeaderPrefs:ChooseString, LLARSHeaderPrefsMode, Fixed
+    LLARS_HeaderPrefsRedraw()
 }
 
 LLARS_HeaderPrefsRedraw()

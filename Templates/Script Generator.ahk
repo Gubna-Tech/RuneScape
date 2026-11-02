@@ -2948,7 +2948,7 @@ Generator_ShowCreatorHelp(selectedFunction := "")
     Gui, APIHelp:Font, s10 Norm c24324A, Segoe UI
     Gui, APIHelp:Add, Text, x18 y52 w62 h22, Search
     Gui, APIHelp:Add, Edit, x80 y48 w325 h25 vGeneratorCreatorHelpSearch gGeneratorCreatorHelpFilter
-    Gui, APIHelp:Add, CheckBox, % "x421 y50 w215 h24 vGeneratorCreatorHelpAdvanced gGeneratorCreatorHelpFilter Checked" . GeneratorCreatorHelpAdvanced, Include advanced and legacy
+    Gui, APIHelp:Add, CheckBox, % "x421 y50 w215 h24 vGeneratorCreatorHelpAdvanced gGeneratorCreatorHelpFilter Checked" . GeneratorCreatorHelpAdvanced, Include advanced actions
     Gui, APIHelp:Add, CheckBox, x662 y50 w230 h24 vGeneratorCreatorHelpTechnical gGeneratorCreatorHelpFilter, Show technical signatures
     Gui, APIHelp:Add, ListView, x18 y90 w405 h485 vGeneratorCreatorHelpList Grid -Multi gGeneratorCreatorHelpSelected, Function|Category|Access
     Gui, APIHelp:Add, Edit, x438 y90 w567 h485 vGeneratorCreatorHelpDetails ReadOnly -Wrap HScroll
@@ -2971,6 +2971,8 @@ Generator_RefreshCreatorHelp()
     selectedRow := 0
     for name, entry in catalog
     {
+        if (entry.Classification = "Compatibility" || entry.Classification = "Deprecated")
+            continue
         if (!GeneratorCreatorHelpAdvanced && entry.Classification != "Creator Public")
             continue
         haystack := entry.Name . " " . entry.DisplayName . " " . entry.Purpose . " " . entry.Category
@@ -2979,8 +2981,6 @@ Generator_RefreshCreatorHelp()
         if (search != "" && !InStr(haystack, search, false))
             continue
         access := entry.GeneratorSafe ? "Generator action" : "AHK reference only"
-        if (entry.Classification = "Legacy Compatibility" || entry.Classification = "Deprecated")
-            access := "Legacy reference"
         row := LV_Add("", name, entry.Category, access)
         if (name = GeneratorCreatorHelpSelection)
             selectedRow := row
@@ -5778,7 +5778,7 @@ Generator_RunCreatorPreflight(checkDestination := true)
 		if !Generator_ValidateConfigSectionName(section.Name, sectionError)
 			Generator_PreflightAdd(report, "Error", "CONFIG_NAME", sectionError)
 		if section.ReadOnly
-			Generator_PreflightAdd(report, "Info", "IMPORTED_CONFIG", "Imported [" . section.Name . "] is preserved read-only; its arbitrary legacy values are not fully validated.")
+			Generator_PreflightAdd(report, "Info", "IMPORTED_CONFIG", "Imported [" . section.Name . "] is preserved read-only; its arbitrary existing values are not fully validated.")
 		if section.Orphan
 			Generator_PreflightAdd(report, "Info", "ORPHAN_CONFIG", "Unreferenced [" . section.Name . "] is retained by choice.")
 	}

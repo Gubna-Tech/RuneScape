@@ -4,8 +4,8 @@
 
 
 
-; Preserve every native control and font size. Only the dashboard coordinates
-; and existing four background assets are compacted to remove excess spacing.
+; Preserve native fonts, callbacks and control IDs. The dashboard body assets
+; omit the unused upper divider and ten pixels of top-card whitespace.
 LLARS_GUIRuntimeSize(value)
 {
     return Round(value * 0.89)
@@ -23,15 +23,15 @@ LLARS_GUISetupY(value)
     ; Keep all native font/control heights. Shorten the shared navy header by
     ; moving the body layout up in lockstep with its background art.
     if (value >= 645)
-        return value - 72
+        return value - 99
     if (value >= 550)
-        return value - 60
+        return value - 87
     if (value >= 470)
-        return value - 47
+        return value - 74
     if (value >= 275)
-        return value - 36
+        return value - 63
     if (value >= 135)
-        return value - 19
+        return value - 46
     return value
 }
 
@@ -44,21 +44,19 @@ LLARS_GUIRuntimeY(value)
         offset := (value >= 480) ? 37 : (value >= 380) ? 29 : (value >= 275) ? 7 : 0
     else
         offset := (value >= 560) ? 37 : (value >= 450) ? 29 : (value >= 275) ? 7 : 0
-    ; Align every running-mode section and its buttons with the raised body card.
-    ; The Actions heading and two button rows keep their inner breathing room;
-    ; later sections gain the full 17-pixel header reduction.
-    moveUp := (value = 143 || value = 175 || value = 216) ? 10 : (value >= 135 ? 17 : 0)
+    ; Match the shortened dashboard card while preserving button row spacing.
+    moveUp := (value = 143 || value = 175 || value = 216) ? 37 : (value >= 135 ? 44 : 0)
     return Round(value * 0.89) - offset - moveUp
 }
 
 LLARS_GUIRuntimeHeight(mode)
 {
-    return (mode = "running") ? 499 : (mode = "timer") ? 422 : 336
+    return (mode = "running") ? 472 : (mode = "timer") ? 395 : 309
 }
 
 ; Measure the actual Segoe UI 13pt Bold title instead of reducing the font.
-; Only the script-name overlay may grow into the reserved header margin;
-; the four dashboard bodies, window dimensions and running status controls stay unchanged.
+; Keep a taller overlay for long names inside the 96-pixel header;
+; all running-state controls and native font sizes are retained.
 LLARS_GUIHeaderTextHeight(caption, logicalWidth)
 {
     if (caption = "")
@@ -111,7 +109,8 @@ LLARS_GUIBase(scriptName, hwnd, mode := "setup")
     Gui, Add, Text, Center x28 y35 w377 h30 +0x200 BackgroundTrans, Local Library of Automated Routines and Scripts
     Gui, Font, s13 Bold cFFFFFF, Segoe UI
     titleHeight := LLARS_GUIHeaderTextHeight(scriptName, 377)
-    Gui, Add, Text, % "Center x28 y67 w377 h" . titleHeight . " BackgroundTrans", %scriptName%
+    titleY := (titleHeight > 26) ? 59 : 64
+    Gui, Add, Text, % "Center x28 y" . titleY . " w377 h" . titleHeight . " BackgroundTrans", %scriptName%
 }
 
 LLARS_GUISection(caption, x, y, width := 325)
@@ -134,19 +133,19 @@ LLARS_GUIActions(active := false)
         LLARS_GUIRuntimeActions()
         return
     }
-    LLARS_GUISection("ACTIONS", 39, 143)
+    ; The buttons are self-explanatory; omit the redundant Actions caption.
     Gui, Font, s10 Norm c20334E, Segoe UI
-    Gui, Add, Button, x33 y156 w175 h36 gStart, Start
-    Gui, Add, Button, x222 y156 w175 h36 gInfo, Information
+    Gui, Add, Button, x33 y131 w175 h36 gStart, Start
+    Gui, Add, Button, x222 y131 w175 h36 gInfo, Information
     if (active)
     {
-        Gui, Add, Button, x33 y197 w175 h35 gPauseb, Pause
-        Gui, Add, Button, x222 y197 w175 h35 gResumeb, Resume
+        Gui, Add, Button, x33 y172 w175 h35 gPauseb, Pause
+        Gui, Add, Button, x222 y172 w175 h35 gResumeb, Resume
     }
     else
     {
-        Gui, Add, Button, x33 y197 w175 h35 gCombo, Setup
-        Gui, Add, Button, x222 y197 w175 h35 gConfigSettings, Config Settings
+        Gui, Add, Button, x33 y172 w175 h35 gCombo, Setup
+        Gui, Add, Button, x222 y172 w175 h35 gConfigSettings, Config Settings
     }
 }
 
@@ -233,23 +232,23 @@ LLARS_CreateMainGUI()
 
     LLARS_GUISection("SETUP CHECKLIST", 39, 286)
     Gui, Font, s10 Bold c253650, Segoe UI
-    Gui, Add, Text, x36 y291 w209 h23 vConfigStatusHotkeysLabel gSetupStatusHotkeys BackgroundTrans, Hotkeys
-    Gui, Add, Text, x36 y318 w209 h23 vConfigStatusCoordinatesLabel gSetupStatusCoordinates BackgroundTrans, Coordinates
-    Gui, Add, Text, x36 y345 w209 h23 vConfigStatusColorsLabel gSetupStatusColors BackgroundTrans, Colors
-    Gui, Add, Text, x36 y372 w209 h23 vConfigStatusTimerLabel gSetupStatusTimer BackgroundTrans, Timer
-    Gui, Add, Text, x36 y399 w209 h23 vConfigStatusScriptConfigLabel gSetupStatusScriptConfig BackgroundTrans, Script Config
+    Gui, Add, Text, x36 y274 w209 h23 vConfigStatusHotkeysLabel gSetupStatusHotkeys BackgroundTrans, Hotkeys
+    Gui, Add, Text, x36 y301 w209 h23 vConfigStatusCoordinatesLabel gSetupStatusCoordinates BackgroundTrans, Coordinates
+    Gui, Add, Text, x36 y328 w209 h23 vConfigStatusColorsLabel gSetupStatusColors BackgroundTrans, Colors
+    Gui, Add, Text, x36 y355 w209 h23 vConfigStatusTimerLabel gSetupStatusTimer BackgroundTrans, Timer
+    Gui, Add, Text, x36 y382 w209 h23 vConfigStatusScriptConfigLabel gSetupStatusScriptConfig BackgroundTrans, Script Config
     Gui, Font, s10 Bold c2868D9, Segoe UI
-    Gui, Add, Text, x252 y291 w146 h23 Right +0x4000 vConfigStatusHotkeys gSetupStatusHotkeys BackgroundTrans, Checking
-    Gui, Add, Text, x252 y318 w146 h23 Right +0x4000 vConfigStatusCoordinates gSetupStatusCoordinates BackgroundTrans, Checking
-    Gui, Add, Text, x252 y345 w146 h23 Right +0x4000 vConfigStatusColors gSetupStatusColors BackgroundTrans, Checking
-    Gui, Add, Text, x252 y372 w146 h23 Right +0x4000 vConfigStatusTimer gSetupStatusTimer BackgroundTrans, Checking
-    Gui, Add, Text, x252 y399 w146 h23 Right +0x4000 vConfigStatusScriptConfig gSetupStatusScriptConfig BackgroundTrans, Checking
+    Gui, Add, Text, x252 y274 w146 h23 Right +0x4000 vConfigStatusHotkeys gSetupStatusHotkeys BackgroundTrans, Checking
+    Gui, Add, Text, x252 y301 w146 h23 Right +0x4000 vConfigStatusCoordinates gSetupStatusCoordinates BackgroundTrans, Checking
+    Gui, Add, Text, x252 y328 w146 h23 Right +0x4000 vConfigStatusColors gSetupStatusColors BackgroundTrans, Checking
+    Gui, Add, Text, x252 y355 w146 h23 Right +0x4000 vConfigStatusTimer gSetupStatusTimer BackgroundTrans, Checking
+    Gui, Add, Text, x252 y382 w146 h23 Right +0x4000 vConfigStatusScriptConfig gSetupStatusScriptConfig BackgroundTrans, Checking
 
     LLARS_GUISection("RUN CONFIGURATION", 39, 483)
     Gui, Font, s10 Bold c253650, Segoe UI
-    Gui, Add, Text, x36 y466 w189 h23 BackgroundTrans, % (LLARS_SCRIPT_TYPE = "UntilDone" ? "Run mode" : "Run count")
+    Gui, Add, Text, x36 y449 w189 h23 BackgroundTrans, % (LLARS_SCRIPT_TYPE = "UntilDone" ? "Run mode" : "Run count")
     Gui, Font, s11 Bold cEF4444, Segoe UI
-    Gui, Add, Text, x229 y465 w169 h24 Right vCounter BackgroundTrans, % (LLARS_SCRIPT_TYPE = "UntilDone" ? "Until complete" : "** NOT SET **")
+    Gui, Add, Text, x229 y448 w169 h24 Right vCounter BackgroundTrans, % (LLARS_SCRIPT_TYPE = "UntilDone" ? "Until complete" : "** NOT SET **")
     LLARS_GUIActivity(559, "initial")
     LLARS_GUIExit(654)
     LLARS_UpdateConfigStatus()
@@ -259,7 +258,7 @@ LLARS_CreateMainGUI()
     if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
         Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
     hasPosition := LLARS_MainLoadPosition(x, y)
-    LLARS_GUIPresent(title, 633, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, x, y)
+    LLARS_GUIPresent(title, 606, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, x, y)
 }
 
 LLARS_CreateRunCountGUI()
@@ -368,7 +367,8 @@ LLARS_GUIRuntimeBase(scriptName, hwnd, mode)
     Gui, Add, Text, % "Center x" . x . " y35 w" . w . " h" . LLARS_GUIRuntimeControlHeight(30) . " +0x200 BackgroundTrans", Local Library of Automated Routines and Scripts
     Gui, Font, s13 Bold cFFFFFF, Segoe UI
     titleHeight := LLARS_GUIHeaderTextHeight(scriptName, w)
-    Gui, Add, Text, % "Center x" . x . " y67 w" . w . " h" . titleHeight . " BackgroundTrans", %scriptName%
+    titleY := (titleHeight > 26) ? 59 : 64
+    Gui, Add, Text, % "Center x" . x . " y" . titleY . " w" . w . " h" . titleHeight . " BackgroundTrans", %scriptName%
 }
 
 LLARS_GUIRuntimeSection(caption, x, y, width := 325)
@@ -379,10 +379,10 @@ LLARS_GUIRuntimeSection(caption, x, y, width := 325)
 
 LLARS_GUIRuntimeActions()
 {
-    LLARS_GUIRuntimeSection("ACTIONS", 39, 143)
+    ; Removing the redundant label keeps the full button grid and its hotkeys.
     Gui, Font, s10 Norm c20334E, Segoe UI
     left := LLARS_GUIRuntimeSize(36), right := LLARS_GUIRuntimeSize(240)
-    top := LLARS_GUIRuntimeY(175), bottom := LLARS_GUIRuntimeY(216)
+    top := LLARS_GUIRuntimeY(175) + 2, bottom := LLARS_GUIRuntimeY(216) + 2
     width := LLARS_GUIRuntimeSize(190), topH := LLARS_GUIRuntimeControlHeight(36), bottomH := LLARS_GUIRuntimeControlHeight(35)
     Gui, Add, Button, % "x" . left . " y" . top . " w" . width . " h" . topH . " gStart", Start
     Gui, Add, Button, % "x" . right . " y" . top . " w" . width . " h" . topH . " gInfo", Information

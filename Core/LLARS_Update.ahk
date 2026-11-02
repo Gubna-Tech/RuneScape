@@ -665,7 +665,7 @@ LLARS_VerifyInstallation(root := "", verifyVendorHashes := true)
     iniCount := 0
     if !LLARS_IntegrityCheckIniEncoding(root, badIniFiles, iniCount)
     {
-        result.Issues.Push("One or more active LLARS config files could not be parsed. Legacy UTF-8/UTF-16 BOM configs are supported; restore only the affected config from a clean release or backup.")
+        result.Issues.Push("One or more active LLARS config files could not be parsed. UTF-8/UTF-16 BOM configs are supported; restore only the affected config from a clean release or backup.")
     }
     result.IniChecked := iniCount
 

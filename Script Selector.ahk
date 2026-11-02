@@ -1051,19 +1051,26 @@ return
 HeaderPrefsPrevious:
 headerCatalog := LLARS_VisualHeaderCatalog()
 LLARSHeaderPrefsIndex := (LLARSHeaderPrefsIndex <= 1) ? headerCatalog.Length() : LLARSHeaderPrefsIndex - 1
-LLARS_HeaderPrefsRedraw()
+LLARS_HeaderPrefsPreviewChosen()
 return
 
 HeaderPrefsNext:
 headerCatalog := LLARS_VisualHeaderCatalog()
 LLARSHeaderPrefsIndex := Mod(LLARSHeaderPrefsIndex, headerCatalog.Length()) + 1
-LLARS_HeaderPrefsRedraw()
+LLARS_HeaderPrefsPreviewChosen()
 return
 
 HeaderPrefsSave:
 GuiControlGet, headerMode, HeaderPrefs:, LLARSHeaderPrefsMode
 StringLower, headerMode, headerMode
 headerItems := LLARS_VisualHeaderCatalog()
+if (LLARSHeaderPrefsIndex < 1 || LLARSHeaderPrefsIndex > headerItems.Length())
+{
+    Gui, HeaderPrefs:Default
+    Gui, +OwnDialogs +AlwaysOnTop
+    MsgBox, 262192, Header Appearance, The selected header is unavailable. Please reopen Header Style.
+    return
+}
 headerName := headerItems[LLARSHeaderPrefsIndex].Id
 if !LLARS_VisualHeaderSavePreferences(headerMode, headerName, preferenceError)
 {

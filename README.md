@@ -123,13 +123,7 @@ Script creators who want to create or update LLARS-compatible scripts should rea
 - **[LLARS - Script Creator & Framework Guide](Documentation/LLARS%20-%20Script%20Creator%20%26%20Framework%20Guide.pdf)**
 - **[LLARS - Script Creator Library](Documentation/LLARS%20-%20Script%20Creator%20Library.pdf)**
 
-These are the recommended resources for new and maintained LLARS scripts. They cover the current Creator API, framework behavior, reusable components, templates, and copy/paste patterns used throughout the project.
-
-For creators who intentionally want to use more traditional AutoHotkey v1 methods or maintain older LLARS-style code, the project also includes:
-
-- **[LLARS - Legacy Script Creator Guide](Documentation/LLARS%20-%20Legacy%20Script%20Creator%20Guide.pdf)**
-
-The Legacy Script Creator Guide covers lower-level and traditional AutoHotkey patterns separately so the current Creator API documentation can stay focused on the framework used by new LLARS scripts.
+These are the recommended resources for LLARS v2.x and newer scripts. They cover the current Creator API, framework behavior, reusable components, templates, and copy/paste patterns used throughout the project.
 
 ### Config.ini Instructions
 

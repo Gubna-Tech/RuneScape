@@ -307,7 +307,7 @@ headerCatalog := LLARS_VisualHeaderCatalog()
 if (headerCatalog.Length())
 {
     LLARSHeaderPrefsIndex := (LLARSHeaderPrefsIndex <= 1) ? headerCatalog.Length() : LLARSHeaderPrefsIndex - 1
-    LLARS_HeaderPrefsRedraw()
+    LLARS_HeaderPrefsPreviewChosen()
 }
 return
 
@@ -316,7 +316,7 @@ headerCatalog := LLARS_VisualHeaderCatalog()
 if (headerCatalog.Length())
 {
     LLARSHeaderPrefsIndex := Mod(LLARSHeaderPrefsIndex, headerCatalog.Length()) + 1
-    LLARS_HeaderPrefsRedraw()
+    LLARS_HeaderPrefsPreviewChosen()
 }
 return
 
@@ -324,6 +324,13 @@ HeaderPrefsSave:
 GuiControlGet, headerMode, HeaderPrefs:, LLARSHeaderPrefsMode
 StringLower, headerMode, headerMode
 headerItems := LLARS_VisualHeaderCatalog()
+if (LLARSHeaderPrefsIndex < 1 || LLARSHeaderPrefsIndex > headerItems.Length())
+{
+    Gui, HeaderPrefs:Default
+    Gui, +OwnDialogs +AlwaysOnTop
+    MsgBox, 262192, Header Appearance, The selected header is unavailable. Please reopen Header Style.
+    return
+}
 headerName := headerItems[LLARSHeaderPrefsIndex].Id
 if !LLARS_VisualHeaderSavePreferences(headerMode, headerName, preferenceError)
 {
@@ -1142,7 +1149,7 @@ if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 	colorCoordinateSection := LLARS_ColorMatchingPointSection(colorConfigFile, ButtonText)
 if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 {
-	; Preserve legacy LLARS scripts that intentionally use [Pixel Coordinate]
+	; Continue supporting scripts that use the shared [Pixel Coordinate]
 	; as their shared color sample point.
 	legacyColorX := LLARS_ConfigReadFile(colorConfigFile, "Pixel Coordinate", "x", "ERROR")
 	legacyColorY := LLARS_ConfigReadFile(colorConfigFile, "Pixel Coordinate", "y", "ERROR")
@@ -2042,7 +2049,17 @@ Gui Dev: Add, Text, x30 y151 w230 h22 Center BackgroundTrans, Live Inspector
 Gui Dev: Add, Text, x300 y151 w230 h22 Center BackgroundTrans, Active Hotkeys
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
 initialInspectorText := LLARS_DeveloperInspectorSummary(developerInspectorStatus, developerMouseX, developerMouseY, developerPixelColor, developerPixelTargets)
-Gui Dev: Add, Edit, x30 y179 w230 h186 ReadOnly -TabStop +VScroll vDeveloperInspectorSummaryText, %initialInspectorText%
+Gui Dev: Add, Edit, x30 y179 w230 h154 ReadOnly -TabStop +VScroll vDeveloperInspectorSummaryText, %initialInspectorText%
+; Keep the hovered Mouse RGB and its native preview together in a fixed row,
+; independent of the scrolling list of configured target colors.
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
+Gui Dev: Add, Text, x36 y347 w78 h20 BackgroundTrans, Mouse RGB:
+developerActualRGB := LLARS_DeveloperActualRGBText(developerInspectorStatus, developerPixelColor)
+Gui Dev: Add, Text, x115 y347 w95 h20 BackgroundTrans vDeveloperActualRGBText, %developerActualRGB%
+LLARS_DeveloperLastActualRGB := developerActualRGB
+developerSwatchColor := LLARS_DeveloperSwatchColor(developerInspectorStatus, developerPixelColor)
+Gui Dev: Add, Progress, x216 y343 w24 h24 +Border -Theme c%developerSwatchColor% BackgroundE1E7EF vDeveloperColorSwatch Range0-100, 100
+LLARS_DeveloperLastSwatchColor := developerSwatchColor
 Gui Dev: Add, Edit, x300 y179 w230 h186 ReadOnly -TabStop +VScroll vDeveloperHotkeysSummaryText, %developerHotkeys%
 LLARS_DeveloperLastInspectorText := initialInspectorText
 
@@ -2696,6 +2713,19 @@ if (developerInspectorText != LLARS_DeveloperLastInspectorText)
     GuiControl, Dev:, DeveloperInspectorSummaryText, %developerInspectorText%
     LLARS_DeveloperLastInspectorText := developerInspectorText
 }
+developerActualRGB := LLARS_DeveloperActualRGBText(developerInspectorStatus, developerPixelColor)
+if (developerActualRGB != LLARS_DeveloperLastActualRGB)
+{
+    GuiControl, Dev:, DeveloperActualRGBText, %developerActualRGB%
+    LLARS_DeveloperLastActualRGB := developerActualRGB
+}
+developerSwatchColor := LLARS_DeveloperSwatchColor(developerInspectorStatus, developerPixelColor)
+if (developerSwatchColor != LLARS_DeveloperLastSwatchColor)
+{
+    GuiControl, Dev: +c%developerSwatchColor%, DeveloperColorSwatch
+    GuiControl, Dev:, DeveloperColorSwatch, 100
+    LLARS_DeveloperLastSwatchColor := developerSwatchColor
+}
 if (developerHotkeys != LLARS_DeveloperLastHotkeys)
 {
     GuiControl, Dev:, DeveloperHotkeysSummaryText, %developerHotkeys%
@@ -2869,7 +2899,7 @@ LLARS_DeveloperPixelTargets()
 		return targets
 	}
 
-	; Only the legacy [Pixel Coordinate] section is treated as an implicit shared
+	; Only the shared [Pixel Coordinate] section is treated as an implicit shared
 	; fixed pixel.
 	sharedPoint := ""
 	for _, pointInfo in pointSections
@@ -2926,6 +2956,24 @@ LLARS_DeveloperPixelTargets()
 	return targets
 }
 
+; The fixed readout and swatch share the same active-game mouse sample.
+LLARS_DeveloperActualRGBText(status, mouseColor)
+{
+    if (status != "ACTIVE" || !RegExMatch(mouseColor, "i)^0x[0-9a-f]{6}$"))
+        return "--"
+    StringUpper, mouseColor, mouseColor
+    return "0x" . SubStr(mouseColor, 3)
+}
+
+; Avoid stale/wrong-app colors when RuneScape loses focus.
+LLARS_DeveloperSwatchColor(status, mouseColor)
+{
+    if (status != "ACTIVE" || !RegExMatch(mouseColor, "i)^0x[0-9a-f]{6}$"))
+        return "E1E7EF"
+    StringUpper, mouseColor, mouseColor
+    return SubStr(mouseColor, 3)
+}
+
 ; Human-readable, scrollable inspector snapshot. Visible panes are native
 ; controls on the Developer Mode window, so their labels cannot disappear
 ; behind independently displayed child GUIs. Values still refresh live.
@@ -2934,7 +2982,6 @@ LLARS_DeveloperInspectorSummary(status, mouseX, mouseY, mouseColor, targets)
     output := "Game Status: " . status . "`r`n"
     output .= "Mouse X: " . mouseX . "`r`n"
     output .= "Mouse Y: " . mouseY . "`r`n"
-    output .= "Mouse RGB: " . mouseColor . "`r`n"
     output .= "Detection: " . (IsFunc("LLARS_DetectionDisplay") ? LLARS_DetectionDisplay(true) : "None")
     if (!IsObject(targets) || targets.Length() = 0)
         return output . "`r`n`r`nNo configured color targets."
@@ -2946,8 +2993,6 @@ LLARS_DeveloperInspectorSummary(status, mouseX, mouseY, mouseColor, targets)
         {
             output .= "`r`n`r`n" . targetInfo.Name . ": " . targetInfo.Coordinates
             output .= "`r`nTarget RGB: " . targetInfo.TargetColor
-            if (targetInfo.HasFixedPoint)
-                output .= "`r`nActual RGB: " . targetInfo.ActualColor
         }
     }
     return output
