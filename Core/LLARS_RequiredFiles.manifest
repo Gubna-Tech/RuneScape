@@ -1,4 +1,4 @@
-# LLARS v2.3.4 required runtime manifest
+# LLARS v2.3.3 required runtime manifest
 # Runtime dependencies required for a complete LLARS installation.
 # User-editable Config.ini values are intentionally not hash-enforced.
 required	VERSION
