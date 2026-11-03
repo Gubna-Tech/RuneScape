@@ -971,6 +971,12 @@ LLARS_CreatorRunError(error, iteration := "", totalRuns := "")
 	{
 		if (error.Message != "")
 			message .= ": " . error.Message
+		if (error.File != "")
+		{
+			errorPath := error.File
+			SplitPath, errorPath, errorFileName
+			message .= " | File=" . errorFileName
+		}
 		if (error.Line != "")
 			message .= " | Line=" . error.Line
 	}

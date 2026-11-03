@@ -76,9 +76,7 @@ GeneratorOpenConfigDisk := ""
 GeneratorOpenConfigOriginal := {}
 GeneratorSyncingScriptName := false
 
-GeneratorIconPath := GeneratorRoot . "\Assets\Logo\LLARS\LLARS Logo.ico"
-if FileExist(GeneratorIconPath)
-	Menu, Tray, Icon, %GeneratorIconPath%
+LLARS_VisualEnsureIcon(GeneratorRoot)
 
 Generator_GetTemplate(GeneratorTemplateChoice, GeneratorSourceFolder, GeneratorSourceScript, GeneratorDescription)
 

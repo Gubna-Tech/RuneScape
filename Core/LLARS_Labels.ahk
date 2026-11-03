@@ -1624,7 +1624,7 @@ resourceButtonY2 := resourceButtonY + 40
 closeInfoY := resourceButtonY2 + 45
 informationHeight := closeInfoY + 45
 
-Gui 20: +AlwaysOnTop +OwnDialogs +LastFound +HwndLLARSInfoGuiHwnd +ToolWindow -Caption
+Gui 20: +AlwaysOnTop +OwnDialogs +LastFound +HwndLLARSInfoGuiHwnd -ToolWindow -Caption
 LLARS_VisualPrepare("20")
 Gui 20: Color, FFFFFF, FFFFFF
 LLARS_VisualBanner("20", 360, 73)
@@ -1807,7 +1807,7 @@ InputSettings:
 EnableHotkey()
 Gui Combo: Hide
 Gui 21: Destroy
-Gui 21: +AlwaysOnTop +OwnDialogs +LastFound +ToolWindow -caption +HwndLLARSInputSettingsGuiHwnd
+Gui 21: +AlwaysOnTop +OwnDialogs +LastFound -ToolWindow -caption +HwndLLARSInputSettingsGuiHwnd
 LLARS_VisualPrepare("21")
 Gui 21: Color, FFFFFF, FFFFFF
 LLARS_VisualModalHeader("21", 500, "Input Settings")
@@ -2082,7 +2082,7 @@ Gui Dev: Add, Button, x20 y671 w125 h27 gToggleDeveloperLightweight, Lightweight
 Gui Dev: Add, Button, x152 y671 w125 h27 gDeveloperTimingAudit, Timing Audit
 Gui Dev: Add, Button, x284 y671 w125 h27 gCopyAHISupportReport, Copy Support
 Gui Dev: Add, Button, x416 y671 w124 h27 gCloseDeveloperMode, Close
-Gui Dev: +ToolWindow
+Gui Dev: -ToolWindow
 Gui Dev: -Caption
 ; Build the full dashboard while the parent is hidden so the hotkey toggle
 ; never exposes the unfinished Developer Mode shell before its child panes exist.
@@ -2142,6 +2142,9 @@ developerLWFinalSleep := developerLightweightDebug.FinalSleep
 developerLWEngine := developerLightweightDebug.Engine
 developerLWMouseRoute := developerLightweightDebug.MouseRoute
 developerLWKeyboardRoute := developerLightweightDebug.KeyboardRoute
+LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor, developerInspectorStatus)
+developerLWMouseRGB := LLARS_DeveloperActualRGBText(developerInspectorStatus, developerPixelColor)
+developerLWSwatch := LLARS_DeveloperSwatchColor(developerInspectorStatus, developerPixelColor)
 
 Gui Dev: Color, FFFFFF, FFFFFF
 Gui Dev: Font, s14 Bold cFFFFFF, Segoe UI
@@ -2156,67 +2159,73 @@ Gui Dev: Font, s10 Bold c24324A, Segoe UI
 
 ; Keep Lightweight focused on the status a user needs at a glance.
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x32 y102 w42 h18 Right, State:
+Gui Dev: Add, Text, x32 y78 w42 h18 Right, State:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x80 y102 w78 h18 -Wrap vDeveloperLWStateText, %developerLWState%
+Gui Dev: Add, Text, x80 y78 w78 h18 -Wrap vDeveloperLWStateText, %developerLWState%
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x170 y102 w68 h18 Right, Run Type:
+Gui Dev: Add, Text, x170 y78 w68 h18 Right, Run Type:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x244 y102 w120 h18 -Wrap vDeveloperLWRunTypeText, %developerLWRunType%
+Gui Dev: Add, Text, x244 y78 w120 h18 -Wrap vDeveloperLWRunTypeText, %developerLWRunType%
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x370 y102 w65 h18 Right, Progress:
+Gui Dev: Add, Text, x370 y78 w65 h18 Right, Progress:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x441 y102 w85 h18 -Wrap vDeveloperLWProgressText, %developerLWProgress%
+Gui Dev: Add, Text, x441 y78 w85 h18 -Wrap vDeveloperLWProgressText, %developerLWProgress%
 
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x32 y123 w58 h18 Right, Elapsed:
+Gui Dev: Add, Text, x32 y99 w58 h18 Right, Elapsed:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x96 y123 w132 h18 -Wrap vDeveloperLWElapsedText, %developerLWElapsed%
+Gui Dev: Add, Text, x96 y99 w132 h18 -Wrap vDeveloperLWElapsedText, %developerLWElapsed%
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x246 y123 w82 h18 Right, Final Sleep:
+Gui Dev: Add, Text, x246 y99 w82 h18 Right, Final Sleep:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x334 y123 w150 h18 -Wrap vDeveloperLWFinalSleepText, %developerLWFinalSleep%
+Gui Dev: Add, Text, x334 y99 w150 h18 -Wrap vDeveloperLWFinalSleepText, %developerLWFinalSleep%
 
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x32 y144 w92 h18 Right, Input Engine:
+Gui Dev: Add, Text, x32 y120 w92 h18 Right, Input Engine:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x130 y144 w396 h18 -Wrap vDeveloperLWEngineText, %developerLWEngine%
+Gui Dev: Add, Text, x130 y120 w396 h18 -Wrap vDeveloperLWEngineText, %developerLWEngine%
 
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x32 y165 w82 h18 Right, Mouse Route:
+Gui Dev: Add, Text, x32 y141 w82 h18 Right, Mouse Route:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x120 y165 w145 h18 -Wrap vDeveloperLWMouseRouteText, %developerLWMouseRoute%
+Gui Dev: Add, Text, x120 y141 w145 h18 -Wrap vDeveloperLWMouseRouteText, %developerLWMouseRoute%
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Text, x274 y165 w104 h18 Right, Keyboard Route:
+Gui Dev: Add, Text, x274 y141 w104 h18 Right, Keyboard Route:
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Text, x384 y165 w142 h18 -Wrap vDeveloperLWKeyboardRouteText, %developerLWKeyboardRoute%
-
-Gui Dev: Font, s10 Bold c24324A, Segoe UI
+Gui Dev: Add, Text, x384 y141 w142 h18 -Wrap vDeveloperLWKeyboardRouteText, %developerLWKeyboardRoute%
 
 Gui Dev: Font, s10 Norm c24324A, Segoe UI
-Gui Dev: Add, Edit, x30 y220 w500 h216 ReadOnly +VScroll -TabStop hwndDeveloperActionsHwnd vDeveloperActionsText
+Gui Dev: Add, Text, x36 y166 w88 h20 BackgroundTrans, Mouse RGB:
+Gui Dev: Font, s10 Bold c24324A, Segoe UI
+Gui Dev: Add, Text, x130 y166 w98 h20 BackgroundTrans vDeveloperLWMouseRGBText, %developerLWMouseRGB%
+Gui Dev: Font, s10 Norm c24324A, Segoe UI
+Gui Dev: Add, Progress, x236 y162 w24 h24 +Border -Theme c%developerLWSwatch% BackgroundE1E7EF vDeveloperLWColorSwatch Range0-100, 100
+LLARS_DeveloperLastActualRGB := developerLWMouseRGB
+LLARS_DeveloperLastSwatchColor := developerLWSwatch
+
+Gui Dev: Add, Edit, x30 y199 w500 h210 ReadOnly +VScroll -TabStop hwndDeveloperActionsHwnd vDeveloperActionsText
 LLARS_DeveloperConfigureActionControl(DeveloperActionsHwnd)
 
 Gui Dev: Font, s10 Bold c24324A, Segoe UI
-Gui Dev: Add, Button, x20 y460 w125 h27 gToggleDeveloperLightweight, Full Mode
-Gui Dev: Add, Button, x152 y460 w125 h27 gDeveloperTimingAudit, Timing Audit
-Gui Dev: Add, Button, x284 y460 w125 h27 gCopyAHISupportReport, Copy Support
-Gui Dev: Add, Button, x416 y460 w124 h27 gCloseDeveloperMode, Close
-Gui Dev: +ToolWindow
+Gui Dev: Add, Button, x20 y424 w125 h27 gToggleDeveloperLightweight, Full Mode
+Gui Dev: Add, Button, x152 y424 w125 h27 gDeveloperTimingAudit, Timing Audit
+Gui Dev: Add, Button, x284 y424 w125 h27 gCopyAHISupportReport, Copy Support
+Gui Dev: Add, Button, x416 y424 w124 h27 gCloseDeveloperMode, Close
+Gui Dev: -ToolWindow
 Gui Dev: -Caption
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
 {
 	if (LLARS_RUNNING)
-		Gui Dev: Show, NoActivate x%DeveloperGUIx% y%DeveloperGUIy% w560 h498, Developer Mode
+		Gui Dev: Show, NoActivate x%DeveloperGUIx% y%DeveloperGUIy% w560 h462, Developer Mode
 	else
-		Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h498, Developer Mode
+		Gui Dev: Show, x%DeveloperGUIx% y%DeveloperGUIy% w560 h462, Developer Mode
 }
 else
 {
 	if (LLARS_RUNNING)
-		Gui Dev: Show, NoActivate Center w560 h498, Developer Mode
+		Gui Dev: Show, NoActivate Center w560 h462, Developer Mode
 	else
-		Gui Dev: Show, Center w560 h498, Developer Mode
+		Gui Dev: Show, Center w560 h462, Developer Mode
 }
 LLARS_VisualFinish("Dev")
 
@@ -2267,7 +2276,7 @@ DeveloperTimingAuditLastText := ""
 DeveloperTimingAuditFilter := ""
 DeveloperTimingAuditSortColumn := 0
 DeveloperTimingAuditSortDirection := "Asc"
-Gui Audit: +AlwaysOnTop +OwnDialogs +ToolWindow +HwndDeveloperTimingAuditHwnd
+Gui Audit: +AlwaysOnTop +OwnDialogs -ToolWindow +HwndDeveloperTimingAuditHwnd
 LLARS_VisualPrepare("Audit")
 LLARS_VisualBanner("Audit", 540, 77)
 LLARS_VisualCard("Audit", 12, 80, 516, 295)
@@ -2626,6 +2635,21 @@ if (LLARS_DeveloperLightweight)
 		GuiControl, Dev:, DeveloperLWMouseRouteText, %developerLWMouseRoute%
 		GuiControl, Dev:, DeveloperLWKeyboardRouteText, %developerLWKeyboardRoute%
 		LLARS_DeveloperLastLightweightDebug := developerLightweightDebug.Signature
+	}
+
+	LLARS_DeveloperMousePixel(developerMouseX, developerMouseY, developerPixelColor, developerInspectorStatus)
+	developerLWMouseRGB := LLARS_DeveloperActualRGBText(developerInspectorStatus, developerPixelColor)
+	if (developerLWMouseRGB != LLARS_DeveloperLastActualRGB)
+	{
+		GuiControl, Dev:, DeveloperLWMouseRGBText, %developerLWMouseRGB%
+		LLARS_DeveloperLastActualRGB := developerLWMouseRGB
+	}
+	developerLWSwatch := LLARS_DeveloperSwatchColor(developerInspectorStatus, developerPixelColor)
+	if (developerLWSwatch != LLARS_DeveloperLastSwatchColor)
+	{
+		GuiControl, Dev: +c%developerLWSwatch%, DeveloperLWColorSwatch
+		GuiControl, Dev:, DeveloperLWColorSwatch, 100
+		LLARS_DeveloperLastSwatchColor := developerLWSwatch
 	}
 
 	if (developerActionSerial != LLARS_DeveloperLastActionSerial)

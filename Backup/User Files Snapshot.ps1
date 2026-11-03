@@ -100,7 +100,7 @@ try {
         if ($RelativePath -match '^(?i:Scripts\\Custom\\).+') { return }
         if ($RelativePath -match '^(?i:Assets\\UI\\header_)([A-Za-z0-9_-]+)\.png$') {
             $id = $Matches[1].ToLowerInvariant()
-            if ($id -in @('ribbon','terrain','topographic','honeycomb','mosaic','spiral','digital_wave','polygon_grid','nebula_cloud','shadow_botanica')) {
+            if ($id -in @('ribbon','terrain','topographic','honeycomb','mosaic','spiral','digital_wave','polygon_grid','nebula_cloud','shadow_botanica','wild_horses','owl','lotus','mushrooms','forest_naturescape')) {
                 throw 'Shipped header images cannot be restored from user snapshots.'
             }
             return
@@ -118,7 +118,7 @@ try {
         Add-Tree (Join-Path $Root 'Scripts\Custom') $Root $files
         foreach ($path in @(Creator-Directories $Root)) { Add-Tree $path $Root $files }
         $assetRoot = Join-Path $Root 'Assets\UI'
-        $originals = @('header_ribbon.png','header_terrain.png','header_topographic.png','header_honeycomb.png','header_mosaic.png','header_spiral.png','header_digital_wave.png','header_polygon_grid.png','header_nebula_cloud.png','header_shadow_botanica.png')
+        $originals = @('header_ribbon.png','header_terrain.png','header_topographic.png','header_honeycomb.png','header_mosaic.png','header_spiral.png','header_digital_wave.png','header_polygon_grid.png','header_nebula_cloud.png','header_shadow_botanica.png','header_wild_horses.png','header_owl.png','header_lotus.png','header_mushrooms.png','header_forest_naturescape.png')
         if (Test-Path -LiteralPath $assetRoot) {
             foreach ($file in (Get-ChildItem -LiteralPath $assetRoot -File -Force -ErrorAction Stop)) {
                 if ($file.Name -match '^header_[A-Za-z0-9_-]+\.png$' -and $originals -notcontains $file.Name) {

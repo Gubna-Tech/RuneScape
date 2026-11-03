@@ -904,6 +904,7 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	CoordMode, Mouse, Client
 	LLARS_SCRIPT_DIR := A_ScriptDir
 	LLARS_ROOT := LLARS_FindRoot()
+	LLARS_VisualEnsureIcon(LLARS_ROOT)
 	LLARS_CONFIG_FILE := LLARS_ROOT "\LLARS Config.ini"
 	if (LLARS_ROOT = "")
 	{

@@ -255,8 +255,7 @@ LLARS_CreateMainGUI()
     GuiControl, 1:, ScriptRed, %name%
     GuiControl, 1:, State2, ** OFF **
     LLARS_VisualShowStatus("red")
-    if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
-        Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
+    LLARS_VisualEnsureIcon(LLARS_ROOT)
     hasPosition := LLARS_MainLoadPosition(x, y)
     LLARS_GUIPresent(title, 606, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, x, y)
 }
@@ -292,8 +291,7 @@ LLARS_CreateRunCountGUI()
     GuiControl, 1:, ScriptRed, %name%
     GuiControl, 1:, State2, ** OFF **
     LLARS_VisualShowStatus("red")
-    if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
-        Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
+    LLARS_VisualEnsureIcon(LLARS_ROOT)
     LLARS_GUIPresent(title, 621, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, X, Y)
     count = 0
     ++frcount
@@ -322,8 +320,7 @@ LLARS_CreateTimerGUI()
     GuiControl, 1:, ScriptRed, %name%
     GuiControl, 1:, State2, ** OFF **
     LLARS_VisualShowStatus("red")
-    if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
-        Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
+    LLARS_VisualEnsureIcon(LLARS_ROOT)
     LLARS_GUIPresent(title, 535, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, X, Y)
 }
 
@@ -346,8 +343,7 @@ LLARS_CreateUntilDoneGUI()
     GuiControl, 1:, ScriptRed, %name%
     GuiControl, 1:, State2, ** OFF **
     LLARS_VisualShowStatus("red")
-    if FileExist(LLARS_ROOT "\Assets\Logo\LLARS\LLARS Logo.ico")
-        Menu, Tray, Icon, %LLARS_ROOT%\Assets\Logo\LLARS\LLARS Logo.ico
+    LLARS_VisualEnsureIcon(LLARS_ROOT)
     LLARS_GUIPresent(title, 421, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, X, Y)
 }
 

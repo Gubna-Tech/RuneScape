@@ -4,7 +4,7 @@ LLARS includes `Backup\Config Backup.bat` and `Backup\Config Restore.bat` to pro
 
 The tools preserve:
 
-- User-added `Assets/UI/header_*.png` files (the ten official headers are left to the release package), the Creator Selector registry, managed imports under `Scripts/Custom`, and script folders referenced by valid Creator registry entries. User files are staged inside `User Files` with SHA-256 hashes; restoration adds missing files but refuses to overwrite different existing files. Unknown unregistered projects and scripts outside the registry still require a complete installation backup.
+- User-added `Assets/UI/header_*.png` files (the fifteen official headers are left to the release package), the Creator Selector registry, managed imports under `Scripts/Custom`, and script folders referenced by valid Creator registry entries. User files are staged inside `User Files` with SHA-256 hashes; restoration adds missing files but refuses to overwrite different existing files. Unknown unregistered projects and scripts outside the registry still require a complete installation backup.
 - The root `LLARS Config.ini` used for shared hotkeys, input-backend settings, GUI positions, and framework options.
 - Every script-local `Config.ini` found under `Scripts` and `Scripts - Menu Entry Swapper`.
 

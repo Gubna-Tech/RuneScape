@@ -31,7 +31,7 @@ LLARS_VisualHeaderFolder()
 }
 
 ; The catalog is discovered once per process and shared by rotation and preview.
-; Ten bundled themes are pinned first; user-added header_*.png files follow.
+; Bundled themes are pinned first; user-added header_*.png files follow.
 LLARS_VisualHeaderCatalog()
 {
     global LLARS_VisualHeaderCatalogCache, LLARS_VisualHeaderCatalogIssues
@@ -42,7 +42,8 @@ LLARS_VisualHeaderCatalog()
     LLARS_VisualHeaderCatalogIssues := ""
     uiDir := LLARS_VisualHeaderFolder()
     for _, id in ["ribbon", "terrain", "topographic", "honeycomb", "mosaic", "spiral"
-        , "digital_wave", "polygon_grid", "nebula_cloud", "shadow_botanica"]
+        , "digital_wave", "polygon_grid", "nebula_cloud", "shadow_botanica"
+        , "wild_horses", "owl", "lotus", "mushrooms", "forest_naturescape"]
     {
         path := LLARS_VisualAsset("header_" . id . ".png")
         reason := ""
@@ -392,6 +393,7 @@ LLARS_VisualPrepare(guiName := "1", textSize := 10)
         OnMessage(0x2A3, "LLARS_VisualMouseLeave") ; WM_MOUSELEAVE
         LLARS_VisualHookInstalled := true
     }
+    LLARS_VisualEnsureIcon()
     Gui, %guiName%:Color, F3F6FB, FFFFFF
     Gui, %guiName%:Font, % "s" . textSize . " Norm c24324A", Segoe UI
 }
@@ -611,6 +613,7 @@ LLARS_VisualWindow(hwnd)
     DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", hwnd, "UInt", 36, "UInt*", ink, "UInt", 4, "Int")
     corner := 2
     DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", hwnd, "UInt", 33, "UInt*", corner, "UInt", 4, "Int")
+    LLARS_VisualMainIcon(hwnd)
     LLARS_VisualStyleControls(hwnd)
     ; Updating a control to BS_OWNERDRAW after creation only invalidates it.
     ; Force a full synchronous first paint so no caption, icon or control can
@@ -663,7 +666,11 @@ LLARS_VisualStyleControls(hwnd)
 {
     global LLARS_VisualButtons, LLARS_VisualButtonCaptions
     LLARS_VisualPruneButtonRegistry()
+    ; Pre-show control lookup must also discover buttons on hidden GUIs.
+    wasDetectHidden := A_DetectHiddenWindows
+    DetectHiddenWindows, On
     WinGet, controls, ControlListHwnd, ahk_id %hwnd%
+    DetectHiddenWindows, %wasDetectHidden%
     Loop, Parse, controls, `n, `r
     {
         control := A_LoopField
@@ -884,25 +891,115 @@ LLARS_VisualShowStatus(mode := "red")
         {
             target := A_LoopField
             controlHwnd := 0
-            GuiControlGet, controlHwnd, 1:Hwnd, %target%
-            if (controlHwnd)
-                GuiControl, 1:%action%, %target%
+            try
+            {
+                GuiControlGet, controlHwnd, 1:Hwnd, %target%
+                if (controlHwnd)
+                    GuiControl, 1:%action%, %target%
+            }
+            catch error
+            {
+                if (error.Message != 1)
+                    throw error
+            }
         }
     }
 }
 
-LLARS_VisualMainIcon(hwnd, root)
+LLARS_VisualIconPath(root := "")
 {
-    path := root . "\Assets\Logo\LLARS\LLARS Logo.ico"
-    if (!FileExist(path))
-        return
-    hIcon := DllCall("user32\LoadImageW", "Ptr", 0, "WStr", path
-        , "UInt", 1, "Int", 0, "Int", 0, "UInt", 0x10, "Ptr")
-    if (hIcon)
+    global LLARS_ROOT
+    if (root != "" && FileExist(root . "\Assets\Logo\LLARS\LLARS Logo.ico"))
+        return root . "\Assets\Logo\LLARS\LLARS Logo.ico"
+    if (LLARS_ROOT != "" && FileExist(LLARS_ROOT . "\Assets\Logo\LLARS\LLARS Logo.ico"))
+        return LLARS_ROOT . "\Assets\Logo\LLARS\LLARS Logo.ico"
+    candidate := A_ScriptDir
+    Loop, 9
     {
-        DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x80, "Ptr", 0, "Ptr", hIcon)
-        DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x80, "Ptr", 1, "Ptr", hIcon)
+        path := candidate . "\Assets\Logo\LLARS\LLARS Logo.ico"
+        if FileExist(path)
+            return path
+        SplitPath, candidate, , parent
+        if (parent = "" || parent = candidate)
+            break
+        candidate := parent
     }
+    return ""
+}
+
+LLARS_VisualEnsureIcon(root := "")
+{
+    global LLARS_VisualCurrentIconPath, LLARS_VisualIconTimerStarted, LLARS_VisualIconTimerCallback
+    path := LLARS_VisualIconPath(root)
+    if (path = "")
+        return false
+    if (LLARS_VisualCurrentIconPath != path || A_IconFile != path)
+    {
+        Menu, Tray, Icon, %path%,, 1
+        LLARS_VisualCurrentIconPath := path
+    }
+    if (!LLARS_VisualIconTimerStarted)
+    {
+        LLARS_VisualIconTimerCallback := Func("LLARS_VisualSyncProcessIcons")
+        SetTimer, % LLARS_VisualIconTimerCallback, 500
+        LLARS_VisualIconTimerStarted := true
+    }
+    return true
+}
+
+LLARS_VisualMainIcon(hwnd, root := "")
+{
+    global LLARS_VisualIconSmall, LLARS_VisualIconLarge, LLARS_VisualIconHandlePath
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd))
+        return false
+    if !LLARS_VisualEnsureIcon(root)
+        return false
+    path := LLARS_VisualIconPath(root)
+    if (LLARS_VisualIconHandlePath != path)
+    {
+        LLARS_VisualIconSmall := DllCall("user32\LoadImageW", "Ptr", 0, "WStr", path
+            , "UInt", 1, "Int", 16, "Int", 16, "UInt", 0x10, "Ptr")
+        LLARS_VisualIconLarge := DllCall("user32\LoadImageW", "Ptr", 0, "WStr", path
+            , "UInt", 1, "Int", 32, "Int", 32, "UInt", 0x10, "Ptr")
+        LLARS_VisualIconHandlePath := path
+    }
+    if (LLARS_VisualIconSmall)
+    {
+        currentSmall := DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x7F, "Ptr", 0, "Ptr", 0, "Ptr")
+        if (currentSmall != LLARS_VisualIconSmall)
+            DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x80, "Ptr", 0, "Ptr", LLARS_VisualIconSmall)
+    }
+    if (LLARS_VisualIconLarge)
+    {
+        currentLarge := DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x7F, "Ptr", 1, "Ptr", 0, "Ptr")
+        if (currentLarge != LLARS_VisualIconLarge)
+            DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x80, "Ptr", 1, "Ptr", LLARS_VisualIconLarge)
+    }
+    return true
+}
+
+LLARS_VisualSyncProcessIcons()
+{
+    global LLARS_VisualIconEnumCallback
+    if (!LLARS_VisualIconEnumCallback)
+        LLARS_VisualIconEnumCallback := RegisterCallback("LLARS_VisualIconEnumWindow", "", 2)
+    if (LLARS_VisualIconEnumCallback)
+        DllCall("user32\EnumWindows", "Ptr", LLARS_VisualIconEnumCallback, "Ptr", 0)
+}
+
+LLARS_VisualIconEnumWindow(hwnd, unused)
+{
+    ownerPid := 0
+    DllCall("user32\GetWindowThreadProcessId", "Ptr", hwnd, "UInt*", ownerPid)
+    if (ownerPid != DllCall("kernel32\GetCurrentProcessId", "UInt"))
+        return true
+    VarSetCapacity(className, 128, 0)
+    if (!DllCall("user32\GetClassNameW", "Ptr", hwnd, "Ptr", &className, "Int", 64, "Int"))
+        return true
+    className := StrGet(&className, "UTF-16")
+    if (className = "AutoHotkeyGUI" || className = "#32770")
+        LLARS_VisualMainIcon(hwnd)
+    return true
 }
 
 ; Shared Header Appearance modal is available from Selector and a running

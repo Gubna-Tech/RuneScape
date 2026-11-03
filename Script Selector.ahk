@@ -15,6 +15,7 @@
 EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
 if (LLARSValidationMode = "1")
 	ExitApp
+LLARS_VisualEnsureIcon(A_ScriptDir)
 
 ; Confirms the complete LLARS project structure is available before the
 ; Script Selector attempts to use project folders or launch scripts.
@@ -44,7 +45,7 @@ if (!FileExist(A_ScriptDir . "\Core")
 	Gui Error: Add, Button, gDiscordError w150 x40 Center, Discord
 	Gui Error: Add, Button, gCloseError w150 x40 Center, Close Error
 
-	Gui Error: +ToolWindow
+	Gui Error: -ToolWindow
 
 	Gui Error: -caption
 	Gui Error: Show, Center w230, File Error
@@ -53,9 +54,7 @@ if (!FileExist(A_ScriptDir . "\Core")
 	return
 }
 
-LLARS_SelectorIconPath := A_ScriptDir . "\Assets\Logo\LLARS\LLARS Logo.ico"
-if FileExist(LLARS_SelectorIconPath)
-	Menu, Tray, Icon, %LLARS_SelectorIconPath%
+LLARS_VisualEnsureIcon(A_ScriptDir)
 
 ; Loads the local release version used by update checks and GUI titles.
 LLARS_GetVersion(A_ScriptDir)
@@ -189,19 +188,26 @@ LLARS_VisualStyleControls(LLARSSelectorHwnd)
 Gui, Show, %selectorShowOptions%, Script Selector
 LLARS_VisualWindow(LLARSSelectorHwnd)
 LLARS_HideUpdateCheckSplash()
-Gui, +ToolWindow
-if FileExist(LLARS_SelectorIconPath)
-{
-	hIcon := DllCall("LoadImage", uint, 0, str, LLARS_SelectorIconPath, uint, 1, int, 0, int, 0, uint, 0x10)
-	SendMessage, 0x80, 0, hIcon,, ahk_id %LLARSSelectorHwnd%
-	SendMessage, 0x80, 1, hIcon,, ahk_id %LLARSSelectorHwnd%
-}
+Gui, -ToolWindow
+LLARS_VisualMainIcon(LLARSSelectorHwnd, A_ScriptDir)
 CheckPOS(LLARSSelectorHwnd)
 LLARS_SelectorSavePosition(LLARSSelectorHwnd)
 LLARS_SelectorApplyFilter()
 GuiControl, 1:Focus, ScriptListBox
+; Recheck native button painting after the initial window messages settle.
+LLARS_SelectorPaintCallback := Func("LLARS_SelectorFinalizeButtonPaint")
+SetTimer, % LLARS_SelectorPaintCallback, -120
 ; End the auto-execute section: never fall through into the Custom Scripts g-label.
 return
+
+LLARS_SelectorFinalizeButtonPaint()
+{
+    global LLARSSelectorHwnd
+    if (!LLARSSelectorHwnd || !DllCall("user32\IsWindowVisible", "Ptr", LLARSSelectorHwnd))
+        return
+    LLARS_VisualStyleControls(LLARSSelectorHwnd)
+    LLARS_VisualPaintReady(LLARSSelectorHwnd)
+}
 
 ; Builds the single authoritative in-code catalog used by list, info, and launch paths.
 LLARS_SelectorBuildRegistry()
