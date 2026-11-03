@@ -113,8 +113,13 @@ AntiAFKShowNextAction()
     if (remaining < 0)
         return
 
-    GuiControl, 1:, ScriptBlue, Anti-AFK
-    GuiControl, 1:, State3, % "Next move in " . LLARS_TimerRemainingText(remaining)
+    nextText := "Next move in " . LLARS_TimerRemainingText(remaining)
+    GuiControlGet, shownActivity, 1:, ScriptBlue
+    if (shownActivity != "Anti-AFK")
+        GuiControl, 1:, ScriptBlue, Anti-AFK
+    GuiControlGet, shownStatus, 1:, State3
+    if (shownStatus != nextText)
+        GuiControl, 1:, State3, %nextText%
 }
 
 AntiAFKMoveOnce()
