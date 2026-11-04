@@ -81,8 +81,6 @@ LLARS is designed for both:
 >
 > Normal script configuration should be performed through the **LLARS GUI**, the root `LLARS Config.ini`, and any script-local `Config.ini` provided for that activity. Some scripts do not require a local `Config.ini`.
 
-**Upgrading from v2.3.4 or earlier:** The v2.3.5 shared configuration uses schema `2`; older installations use schema `1`. If LLARS reports that the shared configuration is outdated, first make a copy of your root `LLARS Config.ini`. Then copy `Documentation/LLARS Config - Current.ini` into the LLARS main folder and rename that copy to `LLARS Config.ini` (replacing the outdated root file). Reconfigure shared hotkeys and preferences in LLARS. Script-specific `Config.ini` files do not need to be replaced. Do not restore an old root configuration over the current one.
-
 **The included scripts are designed for RuneScape 3 (RS3/EoC) only.** LLARS recognizes Old School RuneScape (OSRS) through the official client and RuneLite, and creators can use its framework and Script Generator to build OSRS scripts. **No ready-made OSRS scripts are included.**
 
 Make sure to use these scripts only with the appropriate version of the game and understand the risks and responsibilities associated with game automation.
