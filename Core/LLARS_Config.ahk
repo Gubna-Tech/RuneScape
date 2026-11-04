@@ -194,7 +194,7 @@ LLARS_ConfigSnapshotRead(snapshot, section, key, default := "ERROR")
 
 LLARS_ConfigSchemaCurrent()
 {
-    return 1
+    return 2
 }
 
 ; Reads the schema directly from a root LLARS configuration file. Configs that
@@ -435,8 +435,8 @@ LLARS_ValidateRootConfigFile(configPath, ByRef schema := 0, ByRef errorDetail :=
     return true
 }
 
-; Migration edges are added only when an actual incompatible root-config
-; change requires them. Schema 1 remains current until then.
+; No automatic configuration migration is currently supported. Older root
+; configurations must be replaced by the user after backing up their settings.
 LLARS_ApplyConfigMigrationStep(configPath, fromSchema, toSchema, ByRef errorDetail := "")
 {
     errorDetail := "No LLARS config migration exists from schema " . fromSchema . " to schema " . toSchema . "."
@@ -542,8 +542,31 @@ LLARS_MigrateConfig(oldSchema, targetSchema, root := "", ByRef errorDetail := ""
     return true
 }
 
-; Refuse malformed/future configuration. When a real older schema exists, run
-; the sequential backup-first migration dispatcher before startup continues.
+; Validate the v2.3.5 F11 layout even when a file declares schema 2.
+LLARS_ConfigHasCurrentHotkeyLayout(configPath, ByRef errorDetail := "")
+{
+    errorDetail := ""
+    currentSection := "Setup/Pause/Resume Hotkey"
+    if !LLARS_ConfigSectionExistsFile(configPath, currentSection)
+    {
+        if LLARS_ConfigSectionExistsFile(configPath, "Color/Coordinate/Hotkey Hotkey")
+            errorDetail := "This LLARS Config.ini uses the v2.3.4-or-earlier Setup hotkey section."
+        else
+            errorDetail := "The required [Setup/Pause/Resume Hotkey] section is missing."
+        return false
+    }
+
+    sectionType := Trim(LLARS_ConfigReadFile(configPath, currentSection, "type", ""))
+    StringLower, sectionType, sectionType
+    if (sectionType != "hotkey")
+    {
+        errorDetail := "The [Setup/Pause/Resume Hotkey] section must contain type=hotkey."
+        return false
+    }
+    return true
+}
+
+; Refuse invalid, older, or future shared configuration without changing it.
 LLARS_CheckConfigCompatibility(root := "")
 {
     currentSchema := LLARS_ConfigSchemaCurrent()
@@ -564,12 +587,17 @@ LLARS_CheckConfigCompatibility(root := "")
 
     if (configSchema < currentSchema)
     {
-        migrationError := ""
-        if !LLARS_MigrateConfig(configSchema, currentSchema, root, migrationError)
-        {
-            MsgBox, 262192, LLARS Configuration, LLARS could not safely migrate the shared configuration.`n`n%migrationError%`n`nThe original configuration was left recoverable and startup has stopped.
-            return false
-        }
+        MsgBox, 262192, LLARS Configuration Update Required, % "This LLARS Config.ini uses configuration schema " . configSchema . ", but LLARS v2.3.5 requires schema " . currentSchema . ".`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then configure your shared hotkeys and preferences using the LLARS GUI and restart.`n`nThe existing file was not modified. Script-specific Config.ini files do not need replacing."
+        return false
+    }
+
+    configRoot := (root != "") ? root : A_ScriptDir
+    configPath := RTrim(configRoot, "\/") . "\LLARS Config.ini"
+    layoutError := ""
+    if !LLARS_ConfigHasCurrentHotkeyLayout(configPath, layoutError)
+    {
+        MsgBox, 262192, LLARS Configuration Update Required, % "LLARS v2.3.5 needs the current LLARS Config.ini before startup can continue.`n`n" . layoutError . "`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then set up your shared hotkeys and preferences in LLARS and restart.`n`nYour existing file was not changed. Script-specific Config.ini files do not need replacing."
+        return false
     }
 
     return true

@@ -379,7 +379,7 @@ LLARS_VisualDashboard(guiName, mode := "setup")
 
 LLARS_VisualPrepare(guiName := "1", textSize := 10)
 {
-    global LLARS_VisualButtons, LLARS_VisualButtonCaptions, LLARS_VisualHookInstalled, LLARS_VisualHoverHwnd
+    global LLARS_VisualButtons, LLARS_VisualButtonCaptions, LLARS_VisualHookInstalled, LLARS_VisualHoverHwnd, LLARS_VisualShowHookInstalled
     if (!IsObject(LLARS_VisualButtons))
         LLARS_VisualButtons := {}
     ; A button's HWND can outlive changes in GUI focus/default GUI. Store its
@@ -392,6 +392,11 @@ LLARS_VisualPrepare(guiName := "1", textSize := 10)
         OnMessage(0x200, "LLARS_VisualMouseMove") ; WM_MOUSEMOVE
         OnMessage(0x2A3, "LLARS_VisualMouseLeave") ; WM_MOUSELEAVE
         LLARS_VisualHookInstalled := true
+    }
+    if (!LLARS_VisualShowHookInstalled)
+    {
+        OnMessage(0x18, "LLARS_VisualOnShowWindow")
+        LLARS_VisualShowHookInstalled := true
     }
     LLARS_VisualEnsureIcon()
     Gui, %guiName%:Color, F3F6FB, FFFFFF
@@ -471,6 +476,64 @@ LLARS_VisualConfigNotice(title, detail, context := "", duration := 1500)
     Gui, 13:Show, % "NoActivate xCenter y24 w" . width . " h" . height, LLARS Settings Confirmation
     Sleep, %duration%
     Gui, 13:Destroy
+}
+
+LLARS_VisualColorNotice(sectionName, rgb, matches, context := "", duration := 1800)
+{
+    if (!RegExMatch(rgb, "i)^0x[0-9a-f]{6}$"))
+    {
+        LLARS_VisualConfigNotice("COLOR UPDATED", sectionName . " = " . rgb, context, duration)
+        return
+    }
+    StringUpper, rgb, rgb
+    width := 444
+    sectionHeight := LLARS_VisualNoticeTextHeight(sectionName, 13, width - 84)
+    matchesText := (matches = "") ? "Unique" : "Matches: " . matches
+    matchesHeight := LLARS_VisualNoticeTextHeight(matchesText, 10, width - 70)
+    sectionY := 104
+    rgbY := sectionY + sectionHeight + 7
+    matchesY := rgbY + 32
+    contextY := matchesY + matchesHeight + 9
+    height := contextY + (context != "" ? 23 : 0) + 19
+
+    Gui, 13u:Destroy
+    Gui, 13:Destroy
+    Gui, 13:+LastFound +AlwaysOnTop +ToolWindow -Caption +Disabled
+    Gui, 13:Margin, 0, 0
+    LLARS_VisualPrepare("13")
+    LLARS_VisualBanner("13", width, 44)
+    LLARS_VisualCard("13", 12, 52, width - 24, height - 62)
+    Gui, 13:Font, s10 Bold cFFFFFF, Segoe UI
+    Gui, 13:Add, Text, % "x14 y9 w" . (width - 28) . " h25 Center BackgroundTrans", LLARS  |  SETTINGS SAVED
+    Gui, 13:Font, s11 Bold c173A61, Segoe UI
+    Gui, 13:Add, Text, % "x25 y64 w" . (width - 50) . " h25 Center BackgroundTrans", COLOR UPDATED
+    LLARS_VisualDivider("13", 30, 94, width - 60)
+    Gui, 13:Font, s13 Bold c173A61, Segoe UI
+    Gui, 13:Add, Text, % "x42 y" . sectionY . " w" . (width - 84) . " h" . sectionHeight . " Center BackgroundTrans", %sectionName%
+    Gui, 13:Add, Text, % "x147 y" . rgbY . " w124 h27 Center BackgroundTrans", %rgb%
+    swatchColor := SubStr(rgb, 3)
+    Gui, 13:Add, Progress, % "x276 y" . (rgbY + 1) . " w24 h24 +Border -Theme c" . swatchColor . " BackgroundE1E7EF Range0-100", 100
+    Gui, 13:Font, s10 Bold c526783, Segoe UI
+    Gui, 13:Add, Text, % "x35 y" . matchesY . " w" . (width - 70) . " h" . matchesHeight . " Center BackgroundTrans", %matchesText%
+    if (context != "")
+        Gui, 13:Add, Text, % "x30 y" . contextY . " w" . (width - 60) . " h23 Center BackgroundTrans", %context%
+    Gui, 13:Show, % "NoActivate xCenter y24 w" . width . " h" . height, LLARS Settings Confirmation
+    Sleep, %duration%
+    Gui, 13:Destroy
+}
+
+LLARS_VisualNoticeTextHeight(text, size, width)
+{
+    global LLARSNoticeMeasure
+    Gui, 19:Destroy
+    Gui, 19:+ToolWindow -Caption
+    Gui, 19:Margin, 0, 0
+    Gui, 19:Font, % "s" . size . " Bold c173A61", Segoe UI
+    Gui, 19:Add, Text, % "x0 y0 w" . width . " vLLARSNoticeMeasure Center", %text%
+    Gui, 19:Show, Hide AutoSize, LLARSNoticeMeasure
+    GuiControlGet, textPos, 19:Pos, LLARSNoticeMeasure
+    Gui, 19:Destroy
+    return (textPosH > 27) ? textPosH : 27
 }
 
 LLARS_VisualCapturePrompt(guiName, title, detail, width := 540)
@@ -662,6 +725,40 @@ LLARS_VisualPruneButtonRegistry()
     }
 }
 
+LLARS_VisualRegisterButton(hwnd, caption)
+{
+    global LLARS_VisualButtons, LLARS_VisualButtonCaptions
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd))
+        return false
+    VarSetCapacity(className, 64, 0)
+    DllCall("user32\GetClassNameW", "Ptr", hwnd, "Ptr", &className, "Int", 32)
+    if (StrGet(&className, "UTF-16") != "Button")
+        return false
+    style := DllCall("user32\GetWindowLong" . (A_PtrSize = 8 ? "PtrW" : "W"), "Ptr", hwnd, "Int", -16, "Ptr")
+    buttonType := style & 0xF
+    if (buttonType != 0xB)
+    {
+        if ((buttonType != 0 && buttonType != 1) || (style & 0xC0))
+            return false
+        newStyle := (style & ~0xF) | 0xB
+        DllCall("user32\SetWindowLong" . (A_PtrSize = 8 ? "PtrW" : "W"), "Ptr", hwnd, "Int", -16, "Ptr", newStyle, "Ptr")
+        style := DllCall("user32\GetWindowLong" . (A_PtrSize = 8 ? "PtrW" : "W"), "Ptr", hwnd, "Int", -16, "Ptr")
+        if ((style & 0xF) != 0xB)
+            return false
+    }
+    if (!IsObject(LLARS_VisualButtons))
+        LLARS_VisualButtons := {}
+    if (!IsObject(LLARS_VisualButtonCaptions))
+        LLARS_VisualButtonCaptions := {}
+    actualCaption := LLARS_VisualControlCaption(hwnd)
+    if (actualCaption != "")
+        caption := actualCaption
+    LLARS_VisualButtonCaptions[hwnd] := caption
+    LLARS_VisualButtons[hwnd] := LLARS_VisualButtonRole(caption)
+    DllCall("user32\InvalidateRect", "Ptr", hwnd, "Ptr", 0, "Int", 1)
+    return true
+}
+
 LLARS_VisualStyleControls(hwnd)
 {
     global LLARS_VisualButtons, LLARS_VisualButtonCaptions
@@ -699,6 +796,61 @@ LLARS_VisualStyleControls(hwnd)
         }
         else if (class = "SysListView32" || class = "SysTreeView32" || class = "Edit" || class = "ComboBox" || class = "ListBox")
             DllCall("uxtheme\SetWindowTheme", "Ptr", control, "WStr", "Explorer", "Ptr", 0)
+    }
+}
+
+LLARS_VisualIsGuiWindow(hwnd)
+{
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd))
+        return false
+    VarSetCapacity(className, 64, 0)
+    DllCall("user32\GetClassNameW", "Ptr", hwnd, "Ptr", &className, "Int", 32)
+    return StrGet(&className, "UTF-16") = "AutoHotkeyGUI"
+}
+
+LLARS_VisualOnShowWindow(isShowing, lParam, msg, hwnd)
+{
+    global LLARS_VisualButtons, LLARS_VisualPostShowPending
+    if (!isShowing || !LLARS_VisualIsGuiWindow(hwnd))
+        return
+    ; Apply the process icon before the first visible GUI paint.
+    LLARS_VisualMainIcon(hwnd)
+    LLARS_VisualStyleControls(hwnd)
+    if (!IsObject(LLARS_VisualButtons))
+        return
+    hasButtons := false
+    for buttonHwnd, role in LLARS_VisualButtons
+    {
+        if (DllCall("user32\GetParent", "Ptr", buttonHwnd, "Ptr") = hwnd)
+        {
+            hasButtons := true
+            break
+        }
+    }
+    if (!hasButtons)
+        return
+    if (!IsObject(LLARS_VisualPostShowPending))
+        LLARS_VisualPostShowPending := {}
+    if (LLARS_VisualPostShowPending.HasKey(hwnd))
+        return
+    LLARS_VisualPostShowPending[hwnd] := true
+    paintCallback := Func("LLARS_VisualPostShowPaint").Bind(hwnd)
+    SetTimer, % paintCallback, -80
+}
+
+LLARS_VisualPostShowPaint(hwnd)
+{
+    global LLARS_VisualButtons, LLARS_VisualPostShowPending
+    if (IsObject(LLARS_VisualPostShowPending))
+        LLARS_VisualPostShowPending.Delete(hwnd)
+    if (!LLARS_VisualIsGuiWindow(hwnd) || !DllCall("user32\IsWindowVisible", "Ptr", hwnd))
+        return
+    LLARS_VisualStyleControls(hwnd)
+    for buttonHwnd, role in LLARS_VisualButtons
+    {
+        if (DllCall("user32\GetParent", "Ptr", buttonHwnd, "Ptr") = hwnd
+            && DllCall("user32\IsWindowVisible", "Ptr", buttonHwnd))
+            DllCall("user32\RedrawWindow", "Ptr", buttonHwnd, "Ptr", 0, "Ptr", 0, "UInt", 0x105)
     }
 }
 
@@ -797,7 +949,7 @@ LLARS_VisualDrawButton(wParam, lParam, msg, parentHwnd)
     role := LLARS_VisualButtons[control]
     selected := (state & 0x1) != 0
     hovered := (LLARS_VisualHoverHwnd = control)
-    disabled := (state & 0x4) != 0
+    disabled := ((state & 0x4) != 0 || !DllCall("user32\IsWindowEnabled", "Ptr", control))
     focused := (state & 0x10) != 0
 
     ; These RGB values are original LLARS theme tokens.
@@ -826,15 +978,26 @@ LLARS_VisualDrawButton(wParam, lParam, msg, parentHwnd)
         border := 0xDEDEDE
         ink := 0xA0A0A0
     }
-    brush := DllCall("gdi32\CreateSolidBrush", "UInt", fill, "Ptr")
-    pen := DllCall("gdi32\CreatePen", "Int", 0, "Int", (focused || hovered) ? 3 : 2, "UInt", border, "Ptr")
-    oldBrush := DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", brush, "Ptr")
-    oldPen := DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", pen, "Ptr")
-    DllCall("gdi32\RoundRect", "Ptr", hdc, "Int", left+1, "Int", top+1, "Int", right-1, "Int", bottom-1, "Int", 12, "Int", 12)
-    DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", oldPen, "Ptr")
-    DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", oldBrush, "Ptr")
-    DllCall("gdi32\DeleteObject", "Ptr", pen)
-    DllCall("gdi32\DeleteObject", "Ptr", brush)
+    if (disabled && caption = "Start")
+    {
+        ; Erase the entire former button outline, including stale focus edges.
+        ; Disabled Start is muted text on the card, not an interactive border.
+        backgroundBrush := DllCall("gdi32\CreateSolidBrush", "UInt", 0xFFFFFF, "Ptr")
+        DllCall("user32\FillRect", "Ptr", hdc, "Ptr", rect, "Ptr", backgroundBrush)
+        DllCall("gdi32\DeleteObject", "Ptr", backgroundBrush)
+    }
+    else
+    {
+        brush := DllCall("gdi32\CreateSolidBrush", "UInt", fill, "Ptr")
+        pen := DllCall("gdi32\CreatePen", "Int", 0, "Int", (focused || hovered) ? 3 : 2, "UInt", border, "Ptr")
+        oldBrush := DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", brush, "Ptr")
+        oldPen := DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", pen, "Ptr")
+        DllCall("gdi32\RoundRect", "Ptr", hdc, "Int", left+1, "Int", top+1, "Int", right-1, "Int", bottom-1, "Int", 12, "Int", 12)
+        DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", oldPen, "Ptr")
+        DllCall("gdi32\SelectObject", "Ptr", hdc, "Ptr", oldBrush, "Ptr")
+        DllCall("gdi32\DeleteObject", "Ptr", pen)
+        DllCall("gdi32\DeleteObject", "Ptr", brush)
+    }
 
     if (caption != "")
     {
@@ -880,9 +1043,23 @@ LLARS_VisualSetHeaderStatus(status)
 }
 
 ; Keep one selected state pair visible. All status controls remain addressable by scripts.
+LLARS_VisualSetStatusText(controlName, value)
+{
+    GuiControlGet, existing, 1:, %controlName%
+    if (existing != value)
+        GuiControl, 1:, %controlName%, %value%
+}
+
 LLARS_VisualShowStatus(mode := "red")
 {
     global LLARS_CONFIG_READY, LLARS_PAUSED
+    global LLARS_VisualCurrentStatusMode, LLARS_VisualCurrentStatusHwnd
+    Gui, 1:+LastFoundExist
+    currentHwnd := WinExist()
+    if (currentHwnd && LLARS_VisualCurrentStatusHwnd = currentHwnd && LLARS_VisualCurrentStatusMode = mode)
+        return
+    LLARS_VisualCurrentStatusHwnd := currentHwnd
+    LLARS_VisualCurrentStatusMode := mode
     for _, group in ["ScriptGreen|State1", "ScriptBlue|State3", "ScriptRed|State2"]
     {
         current := (InStr(group, "Green") ? "green" : InStr(group, "Blue") ? "blue" : "red")
@@ -938,6 +1115,10 @@ LLARS_VisualEnsureIcon(root := "")
         Menu, Tray, Icon, %path%,, 1
         LLARS_VisualCurrentIconPath := path
     }
+    ; Cache the exact same icon for ordinary GUIs and native Windows dialogs.
+    ; Message boxes can open before the first LLARS GUI is shown.
+    LLARS_VisualLoadIconHandles(path)
+    LLARS_VisualEnsureDialogIconHook()
     if (!LLARS_VisualIconTimerStarted)
     {
         LLARS_VisualIconTimerCallback := Func("LLARS_VisualSyncProcessIcons")
@@ -947,22 +1128,21 @@ LLARS_VisualEnsureIcon(root := "")
     return true
 }
 
-LLARS_VisualMainIcon(hwnd, root := "")
+LLARS_VisualLoadIconHandles(path)
 {
     global LLARS_VisualIconSmall, LLARS_VisualIconLarge, LLARS_VisualIconHandlePath
-    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd))
-        return false
-    if !LLARS_VisualEnsureIcon(root)
-        return false
-    path := LLARS_VisualIconPath(root)
-    if (LLARS_VisualIconHandlePath != path)
-    {
-        LLARS_VisualIconSmall := DllCall("user32\LoadImageW", "Ptr", 0, "WStr", path
-            , "UInt", 1, "Int", 16, "Int", 16, "UInt", 0x10, "Ptr")
-        LLARS_VisualIconLarge := DllCall("user32\LoadImageW", "Ptr", 0, "WStr", path
-            , "UInt", 1, "Int", 32, "Int", 32, "UInt", 0x10, "Ptr")
-        LLARS_VisualIconHandlePath := path
-    }
+    if (LLARS_VisualIconHandlePath = path && LLARS_VisualIconSmall && LLARS_VisualIconLarge)
+        return
+    LLARS_VisualIconSmall := DllCall("user32\LoadImageW", "Ptr", 0, "WStr", path
+        , "UInt", 1, "Int", 16, "Int", 16, "UInt", 0x10, "Ptr")
+    LLARS_VisualIconLarge := DllCall("user32\LoadImageW", "Ptr", 0, "WStr", path
+        , "UInt", 1, "Int", 32, "Int", 32, "UInt", 0x10, "Ptr")
+    LLARS_VisualIconHandlePath := path
+}
+
+LLARS_VisualApplyIconHandles(hwnd)
+{
+    global LLARS_VisualIconSmall, LLARS_VisualIconLarge
     if (LLARS_VisualIconSmall)
     {
         currentSmall := DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x7F, "Ptr", 0, "Ptr", 0, "Ptr")
@@ -975,6 +1155,49 @@ LLARS_VisualMainIcon(hwnd, root := "")
         if (currentLarge != LLARS_VisualIconLarge)
             DllCall("user32\SendMessageW", "Ptr", hwnd, "UInt", 0x80, "Ptr", 1, "Ptr", LLARS_VisualIconLarge)
     }
+}
+
+LLARS_VisualEnsureDialogIconHook()
+{
+    global LLARS_VisualIconCbtCallback, LLARS_VisualIconCbtHook, LLARS_VisualIconCbtAttempted
+    if (LLARS_VisualIconCbtAttempted)
+        return
+    LLARS_VisualIconCbtAttempted := true
+    ; A thread-local CBT activation hook reaches native #32770 message boxes
+    ; before they appear. The periodic process-window pass remains a fallback.
+    LLARS_VisualIconCbtCallback := RegisterCallback("LLARS_VisualIconCbt", "Fast", 3)
+    if (LLARS_VisualIconCbtCallback)
+    {
+        threadId := DllCall("kernel32\GetCurrentThreadId", "UInt")
+        LLARS_VisualIconCbtHook := DllCall("user32\SetWindowsHookExW", "Int", 5
+            , "Ptr", LLARS_VisualIconCbtCallback, "Ptr", 0, "UInt", threadId, "Ptr")
+    }
+}
+
+LLARS_VisualIconCbt(code, hwnd, eventInfo)
+{
+    global LLARS_VisualIconCbtHook
+    if (code = 5 && hwnd)
+    {
+        VarSetCapacity(className, 96, 0)
+        if DllCall("user32\GetClassNameW", "Ptr", hwnd, "Ptr", &className, "Int", 48)
+        {
+            className := StrGet(&className, "UTF-16")
+            if (className = "#32770" || className = "AutoHotkeyGUI")
+                LLARS_VisualApplyIconHandles(hwnd)
+        }
+    }
+    return DllCall("user32\CallNextHookEx", "Ptr", LLARS_VisualIconCbtHook
+        , "Int", code, "Ptr", hwnd, "Ptr", eventInfo, "Ptr")
+}
+
+LLARS_VisualMainIcon(hwnd, root := "")
+{
+    if (!hwnd || !DllCall("user32\IsWindow", "Ptr", hwnd))
+        return false
+    if !LLARS_VisualEnsureIcon(root)
+        return false
+    LLARS_VisualApplyIconHandles(hwnd)
     return true
 }
 

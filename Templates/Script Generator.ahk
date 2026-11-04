@@ -4,6 +4,7 @@
 #Requires AutoHotkey v1.1.37.02
 #SingleInstance Force
 #Include %A_ScriptDir%\..\Core\LLARS_Visual.ahk
+#Include %A_ScriptDir%\..\Core\LLARS_Config.ahk
 SetBatchLines, -1
 
 EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
@@ -77,10 +78,12 @@ GeneratorOpenConfigOriginal := {}
 GeneratorSyncingScriptName := false
 
 LLARS_VisualEnsureIcon(GeneratorRoot)
+if !LLARS_CheckConfigCompatibility(GeneratorRoot)
+    ExitApp
 
 Generator_GetTemplate(GeneratorTemplateChoice, GeneratorSourceFolder, GeneratorSourceScript, GeneratorDescription)
 
-Gui, +OwnDialogs +HwndGeneratorGuiHWND
+Gui, +OwnDialogs -ToolWindow +E0x40000 +HwndGeneratorGuiHWND
 LLARS_VisualPrepare("1", 11)
 LLARS_VisualAccent("1", 730)
 LLARS_VisualBanner("1", 730, 97)
@@ -1605,8 +1608,8 @@ Generator_OpenExistingCreatorProject()
     GuiControl, Sequence:ChooseString, GeneratorSequenceBankingMethod, % Generator_BankingLabel(family)
     GuiControl, Sequence:Disable, GeneratorSequenceBankingMethod
     GuiControl, 1:Disable, GeneratorMainBankingMethod
-    GuiControl, Sequence:Disable, GeneratorSequenceFamilyBrowse
-    GuiControl, Sequence:, GeneratorSequenceOutputParent, %parentFolder%
+    GuiControl, Sequence:Disable, GeneratorSequenceFolderButton
+    
     Generator_ReconcileConfigRequirements(false)
     Generator_RefreshSequence()
     GuiControl, Sequence:, GeneratorProjectStatus, % "Editing: " . GeneratorScriptName . " (AHK protected; Config.ini values preserved)"
@@ -1991,11 +1994,11 @@ Generator_ShowSequenceBuilder()
     global GeneratorSequenceRemoveButton, GeneratorSequenceUpButton, GeneratorSequenceDownButton
     global GeneratorSequenceClearButton, GeneratorSequenceReviewButton, GeneratorSequenceRuntimeButton
     global GeneratorSequenceBackButton, GeneratorSequenceOpenButton, GeneratorSequenceCreateButton
-    global GeneratorSequenceHelpNote, GeneratorSequenceCloseButton, GeneratorSequenceScriptNameLabel
-    global GeneratorSequenceIdentityButton, GeneratorSequenceBankingNote, GeneratorSequenceSaveLabel
+    global GeneratorSequenceCloseButton, GeneratorSequenceScriptNameLabel
+    global GeneratorSequenceIdentityButton
     global GeneratorSequenceFolderButton
     global GeneratorSequenceBuildRunOrderButton, GeneratorSequenceReviewRunOrderButton
-    global GeneratorSequenceTopDivider, GeneratorSequenceBottomDivider
+    global GeneratorSequenceTopDivider
 
     if !IsObject(GeneratorSequence)
         GeneratorSequence := []
@@ -2027,7 +2030,7 @@ Generator_ShowSequenceBuilder()
     Gui, Sequence:Add, Button, x1000 y24 w216 h34 gGeneratorSequenceBeginnerHelp, Step-by-Step Help
 
     Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
-    Gui, Sequence:Add, Tab2, x20 y79 w1210 h441 vGeneratorSequencePage gGeneratorSequencePageChanged, Build Actions|Review && Save
+    Gui, Sequence:Add, Tab2, x20 y79 w1210 h534 vGeneratorSequencePage gGeneratorSequencePageChanged, Build Actions|Review && Save
     Gui, Sequence:Tab, 1
     Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Button, x34 y116 w200 h33 gGeneratorSequenceStarterTemplates, Start From Example
@@ -2056,16 +2059,16 @@ Generator_ShowSequenceBuilder()
     Gui, Sequence:Font, s11 Bold c24324A, Segoe UI
     Gui, Sequence:Add, Text, x34 y338 w1160 h26, 2. Arrange the steps in the order they will run (double-click one to edit it)
     Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
-    Gui, Sequence:Add, ListView, x34 y366 w1180 h98 vGeneratorSequenceList Grid -Multi gGeneratorSequenceListEvent, #|Action|Details
+    Gui, Sequence:Add, ListView, x34 y366 w1180 h190 vGeneratorSequenceList Grid -Multi gGeneratorSequenceListEvent, #|Action|Details
     Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
-    Gui, Sequence:Add, Button, x34 y474 w142 h31 vGeneratorSequenceEditButton gGeneratorSequenceEdit, Edit Step
-    Gui, Sequence:Add, Button, x184 y474 w142 h31 vGeneratorSequenceDuplicateButton gGeneratorSequenceDuplicate, Duplicate
-    Gui, Sequence:Add, Button, x334 y474 w142 h31 vGeneratorSequenceRemoveButton gGeneratorSequenceDelete, Remove
-    Gui, Sequence:Add, Button, x484 y474 w125 h31 vGeneratorSequenceUpButton gGeneratorSequenceMoveUp, Move Up
-    Gui, Sequence:Add, Button, x617 y474 w125 h31 vGeneratorSequenceDownButton gGeneratorSequenceMoveDown, Move Down
-    Gui, Sequence:Add, Button, x750 y474 w135 h31 vGeneratorSequenceClearButton gGeneratorSequenceClear, Remove All Steps
-    Gui, Sequence:Add, Button, x893 y474 w101 h31 vGeneratorSequenceBuildRunOrderButton gGeneratorSequenceRunOrder, Run Order
-    Gui, Sequence:Add, Button, x1003 y474 w211 h32 vGeneratorSequenceReviewButton gGeneratorSequenceReviewPage, Next: Check My Script
+    Gui, Sequence:Add, Button, x34 y568 w142 h31 vGeneratorSequenceEditButton gGeneratorSequenceEdit, Edit Step
+    Gui, Sequence:Add, Button, x184 y568 w142 h31 vGeneratorSequenceDuplicateButton gGeneratorSequenceDuplicate, Duplicate
+    Gui, Sequence:Add, Button, x334 y568 w142 h31 vGeneratorSequenceRemoveButton gGeneratorSequenceDelete, Remove
+    Gui, Sequence:Add, Button, x484 y568 w125 h31 vGeneratorSequenceUpButton gGeneratorSequenceMoveUp, Move Up
+    Gui, Sequence:Add, Button, x617 y568 w125 h31 vGeneratorSequenceDownButton gGeneratorSequenceMoveDown, Move Down
+    Gui, Sequence:Add, Button, x750 y568 w135 h31 vGeneratorSequenceClearButton gGeneratorSequenceClear, Remove All Steps
+    Gui, Sequence:Add, Button, x893 y568 w101 h31 vGeneratorSequenceBuildRunOrderButton gGeneratorSequenceRunOrder, Run Order
+    Gui, Sequence:Add, Button, x1003 y568 w211 h32 vGeneratorSequenceReviewButton gGeneratorSequenceReviewPage, Next: Check My Script
 
     GuiControl, Sequence:Hide, GeneratorSequenceCustomCode
     Gui, Sequence:Tab, 2
@@ -2085,46 +2088,36 @@ Generator_ShowSequenceBuilder()
     Gui, Sequence:Add, Text, x34 y324 w550 h24, Generated script (advanced preview)
     Gui, Sequence:Add, Text, x634 y324 w570 h24, Generated setup file (advanced preview)
     Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
-    Gui, Sequence:Add, Edit, x34 y353 w568 h109 vGeneratorSequencePreview ReadOnly +Wrap
-    Gui, Sequence:Add, Edit, x634 y353 w580 h109 vGeneratorConfigPreview ReadOnly +Wrap
-    Gui, Sequence:Add, Text, x34 y477 w642 h24 vGeneratorRuntimeEstimateSummary, An estimated duration appears here when LLARS can calculate one.
-    Gui, Sequence:Add, Button, x707 y474 w150 h31 vGeneratorSequenceReviewRunOrderButton gGeneratorSequenceRunOrder, Read Run Order
-    Gui, Sequence:Add, Button, x867 y474 w155 h31 vGeneratorSequenceRuntimeButton gGeneratorSequenceRuntimeDetails, Time Estimate
-    Gui, Sequence:Add, Button, x1034 y474 w180 h31 vGeneratorSequenceBackButton gGeneratorSequenceBuildPage, Back to My Steps
+    Gui, Sequence:Add, Edit, x34 y353 w568 h196 vGeneratorSequencePreview ReadOnly +Wrap
+    Gui, Sequence:Add, Edit, x634 y353 w580 h196 vGeneratorConfigPreview ReadOnly +Wrap
+    Gui, Sequence:Add, Text, x34 y571 w642 h24 vGeneratorRuntimeEstimateSummary, An estimated duration appears here when LLARS can calculate one.
+    Gui, Sequence:Add, Button, x707 y568 w150 h31 vGeneratorSequenceReviewRunOrderButton gGeneratorSequenceRunOrder, Read Run Order
+    Gui, Sequence:Add, Button, x867 y568 w155 h31 vGeneratorSequenceRuntimeButton gGeneratorSequenceRuntimeDetails, Time Estimate
+    Gui, Sequence:Add, Button, x1034 y568 w180 h31 vGeneratorSequenceBackButton gGeneratorSequenceBuildPage, Back to My Steps
 
-    ; These always-visible controls remain outside the tabs, so opening/saving
-    ; does not require hunting for controls on a different page.
+    ; Keep the saved-project picker and save-folder chooser on demand. A single
+    ; compact footer makes room for more steps without enlarging the window.
     Gui, Sequence:Tab
-    Gui, Sequence:Add, Text, x22 y519 w1206 h1 Disabled BackgroundE6ECF3 vGeneratorSequenceTopDivider
-    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
-    Gui, Sequence:Add, Button, x20 y529 w174 h34 vGeneratorSequenceOpenButton gGeneratorSequenceOpenProject, Open Saved Script
-    Gui, Sequence:Add, Button, x205 y529 w158 h34 gGeneratorSequenceSaveProject vGeneratorSequenceSaveProject Disabled, Save Changes
-    Gui, Sequence:Add, Button, x374 y529 w200 h34 vGeneratorSequenceCreateButton gGeneratorSequenceCreate, Create My Script
-    Gui, Sequence:Add, Text, x598 y534 w452 h25 vGeneratorSequenceHelpNote, Help: Step-by-Step Help explains the process.
-
-    Gui, Sequence:Add, Text, x22 y569 w1206 h1 Disabled BackgroundE6ECF3 vGeneratorSequenceBottomDivider
-    Gui, Sequence:Font, s11 Norm c24324A, Segoe UI
-    Gui, Sequence:Add, Text, x22 y578 w107 h25 vGeneratorSequenceScriptNameLabel, Script name
-    Gui, Sequence:Add, Edit, x130 y573 w262 h29 vGeneratorSequenceScriptName hwndGeneratorSequenceScriptNameHwnd gGeneratorSequenceScriptNameChanged, %GeneratorSequenceScriptName%
-    Gui, Sequence:Add, Button, x402 y570 w130 h34 vGeneratorSequenceIdentityButton gGeneratorSequenceIdentity, Script Details
     Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
-    Gui, Sequence:Add, Text, x552 y578 w675 h27 vGeneratorSequenceBankingNote, Banking type is selected at the top, before your steps.
-    Gui, Sequence:Font, s11 Norm c24324A, Segoe UI
-    Gui, Sequence:Add, Text, x22 y614 w96 h25 vGeneratorSequenceSaveLabel, Save to
-    Gui, Sequence:Add, Edit, x130 y609 w937 h28 vGeneratorSequenceOutputParent ReadOnly, %GeneratorSequenceOutputParent%
-    Gui, Sequence:Add, Button, x1077 y608 w153 h32 vGeneratorSequenceFolderButton gGeneratorSequenceFamilyBrowse, Choose Folder
-    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
-    Gui, Sequence:Add, Text, x22 y651 w1020 h27 vGeneratorProjectStatus, New script: choose Start From Example, or add your first step above.
-    ; Close remains beneath Choose Folder, aligned to its right edge.
-    ; The 700px client minimum leaves 13px below Close, not a blank band.
+    Gui, Sequence:Add, Text, x22 y619 w1206 h19 vGeneratorProjectStatus, New script: choose Start From Example, or add your first step above.
+    Gui, Sequence:Add, Text, x22 y642 w1206 h1 Disabled BackgroundE6ECF3 vGeneratorSequenceTopDivider
     Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
-    Gui, Sequence:Add, Button, x1077 y653 w153 h34 vGeneratorSequenceCloseButton gGeneratorSequenceClose, Close
+    Gui, Sequence:Add, Text, x22 y656 w83 h25 vGeneratorSequenceScriptNameLabel, Script name
+    Gui, Sequence:Font, s10 Norm c24324A, Segoe UI
+    Gui, Sequence:Add, Edit, x107 y650 w199 h29 vGeneratorSequenceScriptName hwndGeneratorSequenceScriptNameHwnd gGeneratorSequenceScriptNameChanged, %GeneratorSequenceScriptName%
+    Gui, Sequence:Font, s10 Bold c24324A, Segoe UI
+    Gui, Sequence:Add, Button, x314 y649 w135 h34 vGeneratorSequenceIdentityButton gGeneratorSequenceIdentity, Script Details
+    Gui, Sequence:Add, Button, x457 y649 w168 h34 vGeneratorSequenceOpenButton gGeneratorSequenceOpenProject, Open Saved Script
+    Gui, Sequence:Add, Button, x633 y649 w142 h34 gGeneratorSequenceSaveProject vGeneratorSequenceSaveProject Disabled, Save Changes
+    Gui, Sequence:Add, Button, x783 y649 w176 h34 vGeneratorSequenceCreateButton gGeneratorSequenceCreate, Create My Script
+    Gui, Sequence:Add, Button, x967 y649 w151 h34 vGeneratorSequenceFolderButton gGeneratorSequenceFamilyBrowse, Choose Folder
+    Gui, Sequence:Add, Button, x1126 y649 w102 h34 vGeneratorSequenceCloseButton gGeneratorSequenceClose, Close
 
     if (GeneratorOpenProjectPath != "")
     {
         GuiControl, Sequence:Disable, GeneratorSequenceBankingMethod
         GuiControl, Sequence:Disable, GeneratorSequenceScriptName
-        GuiControl, Sequence:Disable, GeneratorSequenceFamilyBrowse
+        GuiControl, Sequence:Disable, GeneratorSequenceFolderButton
         GuiControl, Sequence:Disable, GeneratorSequenceCreate
         GuiControl, Sequence:Enable, GeneratorSequenceSaveProject
         GuiControl, Sequence:, GeneratorProjectStatus, % "Editing: " . GeneratorScriptName
@@ -2132,9 +2125,8 @@ Generator_ShowSequenceBuilder()
     Generator_RefreshActionLibrary(false)
     Generator_ReconcileConfigRequirements(false)
     Generator_RefreshSequence()
-    ; Compact footer: preserve a deliberate 13px bottom inset for Close at
-    ; minimum size, and expand the step/preview areas only when resized.
-    Gui, Sequence:Show, w1250 h705, LLARS Guided Script Builder
+    ; Grow the step list and previews when the builder is resized.
+    Gui, Sequence:Show, w1250 h700, LLARS Guided Script Builder
     LLARS_VisualFinish("Sequence")
     LLARS_VisualWindow(GeneratorSequenceHWND)
     GuiControl, Sequence:Focus, GeneratorSequenceScriptName
@@ -2150,24 +2142,21 @@ Generator_ResizeBuilder(height)
     extra := height - 700
     if (extra < 0)
         extra := 0
-    GuiControl, Sequence:Move, GeneratorSequencePage, % "h" . (441 + extra)
-    GuiControl, Sequence:Move, GeneratorSequenceList, % "h" . (98 + extra)
-    GuiControl, Sequence:Move, GeneratorSequencePreview, % "h" . (109 + extra)
-    GuiControl, Sequence:Move, GeneratorConfigPreview, % "h" . (109 + extra)
-    for control, y in {GeneratorSequenceEditButton:474, GeneratorSequenceDuplicateButton:474
-        , GeneratorSequenceRemoveButton:474, GeneratorSequenceUpButton:474
-        , GeneratorSequenceDownButton:474, GeneratorSequenceClearButton:474
-        , GeneratorSequenceBuildRunOrderButton:474, GeneratorSequenceReviewButton:474
-        , GeneratorRuntimeEstimateSummary:477, GeneratorSequenceReviewRunOrderButton:474
-        , GeneratorSequenceRuntimeButton:474, GeneratorSequenceBackButton:474
-        , GeneratorSequenceOpenButton:529, GeneratorSequenceSaveProject:529
-        , GeneratorSequenceCreateButton:529, GeneratorSequenceHelpNote:534
-        , GeneratorSequenceCloseButton:653, GeneratorSequenceScriptNameLabel:578
-        , GeneratorSequenceScriptName:573, GeneratorSequenceIdentityButton:570
-        , GeneratorSequenceBankingNote:578, GeneratorSequenceSaveLabel:614
-        , GeneratorSequenceOutputParent:609, GeneratorSequenceFolderButton:608
-        , GeneratorSequenceTopDivider:519, GeneratorSequenceBottomDivider:569
-        , GeneratorProjectStatus:651}
+    GuiControl, Sequence:Move, GeneratorSequencePage, % "h" . (534 + extra)
+    GuiControl, Sequence:Move, GeneratorSequenceList, % "h" . (190 + extra)
+    GuiControl, Sequence:Move, GeneratorSequencePreview, % "h" . (196 + extra)
+    GuiControl, Sequence:Move, GeneratorConfigPreview, % "h" . (196 + extra)
+    for control, y in {GeneratorSequenceEditButton:568, GeneratorSequenceDuplicateButton:568
+        , GeneratorSequenceRemoveButton:568, GeneratorSequenceUpButton:568
+        , GeneratorSequenceDownButton:568, GeneratorSequenceClearButton:568
+        , GeneratorSequenceBuildRunOrderButton:568, GeneratorSequenceReviewButton:568
+        , GeneratorRuntimeEstimateSummary:571, GeneratorSequenceReviewRunOrderButton:568
+        , GeneratorSequenceRuntimeButton:568, GeneratorSequenceBackButton:568
+        , GeneratorSequenceOpenButton:649, GeneratorSequenceSaveProject:649
+        , GeneratorSequenceCreateButton:649, GeneratorSequenceCloseButton:649
+        , GeneratorSequenceScriptNameLabel:656, GeneratorSequenceScriptName:650
+        , GeneratorSequenceIdentityButton:649, GeneratorSequenceFolderButton:649
+        , GeneratorSequenceTopDivider:642, GeneratorProjectStatus:619}
         GuiControl, Sequence:Move, %control%, % "y" . (y + extra)
 }
 
@@ -2240,7 +2229,7 @@ Generator_SetSequenceFamily(family)
 	GeneratorSequenceOutputParent := GeneratorSequenceFamilyParents[family]
 	GuiControl, Sequence:ChooseString, GeneratorSequenceBankingMethod, % Generator_BankingLabel(family)
 	GuiControl, 1:ChooseString, GeneratorMainBankingMethod, % Generator_BankingLabel(family)
-	GuiControl, Sequence:, GeneratorSequenceOutputParent, %GeneratorSequenceOutputParent%
+	
 	Generator_RefreshCreatorPreflight()
 	return true
 }
@@ -2260,7 +2249,7 @@ Generator_BrowseSequenceFamily()
 	}
 	GeneratorSequenceOutputParent := RTrim(chosen, "\")
 	GeneratorSequenceFamilyParents[GeneratorSequenceFamily] := GeneratorSequenceOutputParent
-	GuiControl, Sequence:, GeneratorSequenceOutputParent, %GeneratorSequenceOutputParent%
+	GuiControl, Sequence:, GeneratorProjectStatus, % "Save folder: " . GeneratorSequenceOutputParent
 	Generator_RefreshCreatorPreflight()
 }
 

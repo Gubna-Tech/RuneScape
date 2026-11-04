@@ -1754,21 +1754,17 @@ LLARS_SetStatus(status, activity := "")
 	; The main LLARS GUI already has separate blue and red status controls.
 	normalizedStatus := Trim(status)
 	StringLower, normalizedStatus, normalizedStatus
+	; Transparent controls are only repainted when their actual text changes.
 	if (normalizedStatus = "error")
 	{
-		GuiControl, 1:, ScriptBlue,
-		GuiControl, 1:, State3,
-		GuiControl, 1:, ScriptRed, %activity%
-		GuiControl, 1:, State2, %status%
+		LLARS_VisualSetStatusText("ScriptRed", activity)
+		LLARS_VisualSetStatusText("State2", status)
 	}
 	else
 	{
-		GuiControl, 1:, ScriptRed,
-		GuiControl, 1:, State2,
-		GuiControl, 1:, ScriptBlue, %activity%
-		GuiControl, 1:, State3, %status%
+		LLARS_VisualSetStatusText("ScriptBlue", activity)
+		LLARS_VisualSetStatusText("State3", status)
 	}
-
 	LLARS_VisualShowStatus(normalizedStatus = "error" ? "red" : "blue")
 
 	if (status != lastStatus || activity != lastActivity)

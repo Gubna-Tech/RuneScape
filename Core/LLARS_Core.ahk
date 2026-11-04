@@ -305,7 +305,9 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 		return true
 
 	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information Hotkey", "hotkey", "ERROR")
-	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "color/coordinate/hotkey Hotkey", "hotkey", "ERROR")
+	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Setup/Pause/Resume Hotkey", "hotkey", "ERROR")
+	if (lhk3 = "ERROR")
+		lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Color/Coordinate/Hotkey Hotkey", "hotkey", "ERROR")
 	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Exit Hotkey", "hotkey", "ERROR")
 	if (lhk2 = "ERROR")
 		lhk2 := ""
@@ -324,65 +326,50 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	oldlhk4 := LLARS_HookHotkey(LLARS_lhk4)
 	newlhk4 := LLARS_HookHotkey(lhk4)
 
-	; Disable the previously configured Information/Pause hotkey if it changed.
+	; Information remains available throughout the run on its own binding.
 	if (oldlhk2 != "" && LLARS_lhk2 != lhk2)
 	{
 		Hotkey, %oldlhk2%, Info, Off
-		Hotkey, %oldlhk2%, pauseb, Off
+		Hotkey, %oldlhk2%, PauseB, Off
 	}
-
-	; Save the current Information/Pause hotkey.
 	LLARS_lhk2 := lhk2
 	if (newlhk2 != "")
 	{
+		Hotkey, %newlhk2%, PauseB, Off
 		if (state = "On" && !LLARS_CONTROLS_LOCKED)
-		{
-			if (LLARS_RUNNING)
-			{
-				Hotkey, %newlhk2%, Info, Off
-				Hotkey, %newlhk2%, pauseb, On
-			}
-			else
-			{
-				Hotkey, %newlhk2%, pauseb, Off
-				Hotkey, %newlhk2%, Info, On
-			}
-		}
+			Hotkey, %newlhk2%, Info, On
 		else
-		{
 			Hotkey, %newlhk2%, Info, Off
-			Hotkey, %newlhk2%, pauseb, Off
-		}
 	}
 
-	; Disable the previously configured Combo/Resume hotkey if it changed.
+	; The Setup binding opens Setup while idle and toggles Pause/Resume while running.
 	if (oldlhk3 != "" && LLARS_lhk3 != lhk3)
 	{
 		Hotkey, %oldlhk3%, Combo, Off
-		Hotkey, %oldlhk3%, resumeb, Off
+		Hotkey, %oldlhk3%, ResumeB, Off
+		Hotkey, %oldlhk3%, TogglePauseResume, Off
 	}
-
-	; Save the current Combo/Resume hotkey.
 	LLARS_lhk3 := lhk3
 	if (newlhk3 != "")
 	{
+		Hotkey, %newlhk3%, ResumeB, Off
 		if (state = "On" && !LLARS_CONTROLS_LOCKED)
 		{
 			if (LLARS_RUNNING)
 			{
 				Hotkey, %newlhk3%, Combo, Off
-				Hotkey, %newlhk3%, resumeb, On
+				Hotkey, %newlhk3%, TogglePauseResume, On
 			}
 			else
 			{
-				Hotkey, %newlhk3%, resumeb, Off
+				Hotkey, %newlhk3%, TogglePauseResume, Off
 				Hotkey, %newlhk3%, Combo, On
 			}
 		}
 		else
 		{
 			Hotkey, %newlhk3%, Combo, Off
-			Hotkey, %newlhk3%, resumeb, Off
+			Hotkey, %newlhk3%, TogglePauseResume, Off
 		}
 	}
 
@@ -440,7 +427,9 @@ LLARS_CheckHotkeyConfig()
 
 	lhk1 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Start Hotkey", "hotkey", "ERROR")
 	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information Hotkey", "hotkey", "ERROR")
-	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "color/coordinate/hotkey Hotkey", "hotkey", "ERROR")
+	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Setup/Pause/Resume Hotkey", "hotkey", "ERROR")
+	if (lhk3 = "ERROR")
+		lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Color/Coordinate/Hotkey Hotkey", "hotkey", "ERROR")
 	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "exit Hotkey", "hotkey", "ERROR")
 	lhk5 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Developer Mode", "hotkey", "ERROR")
 
@@ -762,7 +751,7 @@ LLARS_ShowSetupPreflight()
     LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(true)
     LLARS_SupportEvent("Setup preflight", LLARS_SETUP_PREFLIGHT.Overall)
     Gui SetupCheck: Destroy
-    Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop +ToolWindow -Caption +HwndLLARSSetupCheckHwnd
+    Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop -ToolWindow +E0x40000 -Caption +HwndLLARSSetupCheckHwnd
     LLARS_VisualPrepare("SetupCheck")
     Gui SetupCheck: Color, FFFFFF, FFFFFF
     LLARS_VisualModalHeader("SetupCheck", 440, "Check Setup")
@@ -1603,7 +1592,7 @@ LLARS_CheckGame()
 	Gui GNF: Add, Text, Center w220 x5, Created by Gubna
 	Gui GNF: Add, Button, gDiscordError w150 x40 center, Discord
 	Gui GNF: Add, Button, gCloseGNF w150 x40 center, Close Error
-	Gui GNF: +ToolWindow
+	Gui GNF: -ToolWindow +E0x40000
 	Gui GNF: -caption
 	Gui GNF: Show, center w230, Game Not Found
 	LLARS_VisualFinish("GNF")
@@ -1636,7 +1625,7 @@ LLARS_ShowMissingConfigFile(fileName)
 	Gui Error: Add, Text, Center w220 x5,Created by Gubna
 	Gui Error: Add, Button, gDiscordError w150 x40 center,Discord
 	Gui Error: add, button, gCloseError w150 x40 center,Close Error
-	Gui Error: +ToolWindow
+	Gui Error: -ToolWindow +E0x40000
 	Gui Error: -caption
 	Gui Error: Show, center w230, Config Error
 	LLARS_VisualFinish("Error")
@@ -1687,35 +1676,51 @@ ConfigError()
 	return false
 }
 
-; Opens the affected config, shows one framework error, logs it, and reloads.
-LLARS_ShowConfigError(file, message, logDetails)
+; Reports a blocked Start and sends the user to the existing setup editor.
+LLARS_ShowConfigError(file, message, logDetails, section, key)
 {
-	if InStr(file, ":\")
-		Run, %file%
-	else
-		Run, %A_ScriptDir%\%file%
-	GuiControl,, ScriptRed, CONFIG
-	GuiControl,, State2, ERROR
-	LLARS_VisualShowStatus("red")
-	LLARS_ReportError("Config Error", message
-		, "Opened the affected configuration file and stopped normal startup."
-		, "Enter a valid value, save the file, then allow LLARS to reload."
-		, logDetails, true, "Configuration")
-	Reload
+    global LLARS_SCRIPT_DIR, LLARS_ConfigRepairKind
+
+    configPath := InStr(file, ":\") ? file : LLARS_SCRIPT_DIR . "\" . file
+    editor := GetConfigType(configPath, section)
+    if (editor = "color")
+        editorName := "Colors"
+    else if (editor = "coordinate")
+        editorName := "Coordinates"
+    else if (editor = "hotkey")
+        editorName := "Hotkeys"
+    else
+    {
+        editor := "setup"
+        editorName := "Setup"
+    }
+
+    GuiControl, 1:, ScriptRed, CONFIG
+    GuiControl, 1:, State2, ERROR
+    LLARS_VisualShowStatus("red")
+    LLARS_ReportError("Config Error", message, "Start was blocked; no automation began."
+        , "Correct the indicated setting in " . editorName . " and try Start again."
+        , logDetails, false, "Configuration")
+    notice := message . "`n`nStart was stopped. Select OK to open " . editorName . "."
+    if (editor = "setup")
+        notice .= "`nUse Script Config in Setup only if this field has no dedicated editor."
+    MsgBox, 0x40030, LLARS Setup Required, %notice%
+    LLARS_ConfigRepairKind := editor
+    SetTimer, LLARS_ConfigRepairOpen, -10
 }
 
 ; Reports a required configuration value that is missing or blank.
 ConfigErrorMessage(file, section, key)
 {
-	message := "Please enter a value for:`n`n[" . section . "]`n" . key
-	LLARS_ShowConfigError(file, message, file . " | [" . section . "] " . key . " is blank")
+    message := "Please enter a value for:`n`n[" . section . "]`n" . key
+    LLARS_ShowConfigError(file, message, file . " | [" . section . "] " . key . " is blank", section, key)
 }
 
 ; Reports a present configuration value that fails semantic validation.
 ConfigSemanticErrorMessage(file, section, key, details)
 {
-	message := "Invalid configuration value:`n`n[" . section . "]`n" . key . "`n`n" . details
-	LLARS_ShowConfigError(file, message, file . " | [" . section . "] " . key . " | " . details)
+    message := "Invalid configuration value:`n`n[" . section . "]`n" . key . "`n`n" . details
+    LLARS_ShowConfigError(file, message, file . " | [" . section . "] " . key . " | " . details, section, key)
 }
 
 ; Returns true when a value is a complete signed integer or decimal.

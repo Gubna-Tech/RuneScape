@@ -45,7 +45,7 @@ if (!FileExist(A_ScriptDir . "\Core")
 	Gui Error: Add, Button, gDiscordError w150 x40 Center, Discord
 	Gui Error: Add, Button, gCloseError w150 x40 Center, Close Error
 
-	Gui Error: -ToolWindow
+	Gui Error: -ToolWindow +E0x40000
 
 	Gui Error: -caption
 	Gui Error: Show, Center w230, File Error
@@ -139,13 +139,13 @@ Hotkey, Esc, Exit
 ; The status splash creates a named GUI. Always build Selector on GUI 1.
 Gui, 1:Default
 ; Creates the script selector GUI.
-Gui +LastFound +OwnDialogs +AlwaysOnTop -caption
+Gui +LastFound +OwnDialogs +AlwaysOnTop -caption -ToolWindow +E0x40000
 Gui, +HwndLLARSSelectorHwnd
 LLARS_VisualPrepare("1")
 LLARS_VisualAccent("1", 420)
 LLARS_VisualBanner("1", 420, 88)
 LLARS_VisualCard("1", 8, 92, 404, 68)
-LLARS_VisualCard("1", 8, 430, 404, 108)
+LLARS_VisualCard("1", 8, 430, 404, 150)
 LLARS_SelectorMoving := false
 ; Register borderless-window movement before the first handler label so these
 ; callbacks are active during the Selector's entire lifetime. Display changes
@@ -172,23 +172,24 @@ Gui, Add, Text, x20 y171 w250 h19, AVAILABLE SCRIPTS
 Gui, Font, s11 Norm c24324A, Segoe UI
 Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y194 w396 h226, %scriptArray%
 Gui, Font, s10 Bold c24324A, Segoe UI
-Gui, Add, Button, gSelect w110 h34 x24 y446 Center, Select Script
-Gui, Add, Button, gSelectorToggleFavorite w128 h34 x146 y446 vSelectorFavoriteButton Center, Add Favorite
-Gui, Add, Button, gSelectorClearFilters w110 h34 x286 y446 Center, Clear Filters
-Gui, Add, Button, gSelectorHeaderPreferences w112 h34 x24 y488 Center, Header Style
-Gui, Add, Button, gExit w128 h34 x146 y488 Center, Close Selector
-Gui, Add, Button, gSelectorCustomScripts w110 h34 x286 y488 Center, Import Scripts
+Gui, Add, Button, gSelect w110 h34 x24 y446 Center +0xB hwndLLARSSelectorSelectButtonHwnd, Select Script
+Gui, Add, Button, gSelectorToggleFavorite w128 h34 x146 y446 vSelectorFavoriteButton Center +0xB hwndLLARSSelectorFavoriteButtonHwnd, Add Favorite
+Gui, Add, Button, gSelectorClearFilters w110 h34 x286 y446 Center +0xB hwndLLARSSelectorClearButtonHwnd, Clear Filters
+Gui, Add, Button, gSelectorHeaderPreferences w112 h34 x24 y488 Center +0xB hwndLLARSSelectorHeaderButtonHwnd, Header Style
+Gui, Add, Button, gSelectorCreateScript w128 h34 x146 y488 Center +0xB hwndLLARSSelectorCreateButtonHwnd, Create Script
+Gui, Add, Button, gExit w128 h34 x146 y532 Center +0xB hwndLLARSSelectorExitButtonHwnd, Close Selector
+Gui, Add, Button, gSelectorCustomScripts w110 h34 x286 y488 Center +0xB hwndLLARSSelectorImportButtonHwnd, Import Scripts
+; Register Selector buttons before the window first becomes visible.
+LLARS_SelectorRegisterButtons()
 if LLARS_SelectorLoadWindowPosition(selectorX, selectorY)
-	selectorShowOptions := "w420 h550 x" . selectorX . " y" . selectorY
+	selectorShowOptions := "w420 h592 x" . selectorX . " y" . selectorY
 else
-	selectorShowOptions := "w420 h550 Center"
-; Switch buttons to owner-draw before showing them; the shared visual finalizer
-; synchronously paints all children on first display.
+	selectorShowOptions := "w420 h592 Center"
+; The shared visual finalizer also styles remaining native controls.
 LLARS_VisualStyleControls(LLARSSelectorHwnd)
 Gui, Show, %selectorShowOptions%, Script Selector
 LLARS_VisualWindow(LLARSSelectorHwnd)
 LLARS_HideUpdateCheckSplash()
-Gui, -ToolWindow
 LLARS_VisualMainIcon(LLARSSelectorHwnd, A_ScriptDir)
 CheckPOS(LLARSSelectorHwnd)
 LLARS_SelectorSavePosition(LLARSSelectorHwnd)
@@ -200,13 +201,56 @@ SetTimer, % LLARS_SelectorPaintCallback, -120
 ; End the auto-execute section: never fall through into the Custom Scripts g-label.
 return
 
+SelectorCreateScript:
+; Focus an already-open Creator rather than replacing unsaved work.
+IfWinExist, LLARS Script Generator ahk_class AutoHotkeyGUI
+{
+    WinRestore, LLARS Script Generator ahk_class AutoHotkeyGUI
+    WinActivate, LLARS Script Generator ahk_class AutoHotkeyGUI
+    ExitApp
+}
+creatorPath := A_ScriptDir . "\Templates\Script Generator.ahk"
+if !FileExist(creatorPath)
+{
+    MsgBox, 16, LLARS Script Selector, The Script Generator is missing from the Templates folder.
+    return
+}
+Run, "%A_AhkPath%" "%creatorPath%", %A_ScriptDir%, UseErrorLevel
+if (ErrorLevel)
+{
+    MsgBox, 16, LLARS Script Selector, Could not open the Script Generator. Check that AutoHotkey and the Templates folder are available.
+    return
+}
+ExitApp
+
 LLARS_SelectorFinalizeButtonPaint()
 {
     global LLARSSelectorHwnd
+    global LLARSSelectorSelectButtonHwnd, LLARSSelectorFavoriteButtonHwnd, LLARSSelectorClearButtonHwnd
+    global LLARSSelectorHeaderButtonHwnd, LLARSSelectorExitButtonHwnd, LLARSSelectorImportButtonHwnd, LLARSSelectorCreateButtonHwnd
     if (!LLARSSelectorHwnd || !DllCall("user32\IsWindowVisible", "Ptr", LLARSSelectorHwnd))
         return
-    LLARS_VisualStyleControls(LLARSSelectorHwnd)
+    LLARS_SelectorRegisterButtons()
     LLARS_VisualPaintReady(LLARSSelectorHwnd)
+    for _, button in [LLARSSelectorSelectButtonHwnd, LLARSSelectorFavoriteButtonHwnd, LLARSSelectorClearButtonHwnd
+        , LLARSSelectorHeaderButtonHwnd, LLARSSelectorCreateButtonHwnd, LLARSSelectorExitButtonHwnd, LLARSSelectorImportButtonHwnd]
+    {
+        if (button && DllCall("user32\IsWindow", "Ptr", button))
+            DllCall("user32\RedrawWindow", "Ptr", button, "Ptr", 0, "Ptr", 0, "UInt", 0x105)
+    }
+}
+
+LLARS_SelectorRegisterButtons()
+{
+    global LLARSSelectorSelectButtonHwnd, LLARSSelectorFavoriteButtonHwnd, LLARSSelectorClearButtonHwnd
+    global LLARSSelectorHeaderButtonHwnd, LLARSSelectorExitButtonHwnd, LLARSSelectorImportButtonHwnd, LLARSSelectorCreateButtonHwnd
+    LLARS_VisualRegisterButton(LLARSSelectorSelectButtonHwnd, "Select Script")
+    LLARS_VisualRegisterButton(LLARSSelectorFavoriteButtonHwnd, "Add Favorite")
+    LLARS_VisualRegisterButton(LLARSSelectorClearButtonHwnd, "Clear Filters")
+    LLARS_VisualRegisterButton(LLARSSelectorHeaderButtonHwnd, "Header Style")
+    LLARS_VisualRegisterButton(LLARSSelectorCreateButtonHwnd, "Create Script")
+    LLARS_VisualRegisterButton(LLARSSelectorExitButtonHwnd, "Close Selector")
+    LLARS_VisualRegisterButton(LLARSSelectorImportButtonHwnd, "Import Scripts")
 }
 
 ; Builds the single authoritative in-code catalog used by list, info, and launch paths.

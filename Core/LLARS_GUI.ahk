@@ -51,7 +51,7 @@ LLARS_GUIRuntimeY(value)
 
 LLARS_GUIRuntimeHeight(mode)
 {
-    return (mode = "running") ? 472 : (mode = "timer") ? 395 : 309
+    return (mode = "running") ? 430 : (mode = "timer") ? 353 : 267
 }
 
 ; Measure the actual Segoe UI 13pt Bold title instead of reducing the font.
@@ -127,7 +127,7 @@ LLARS_GUISection(caption, x, y, width := 325)
 
 LLARS_GUIActions(active := false)
 {
-    global LLARS_GUICompactMode
+    global LLARS_GUICompactMode, LLARSRunPauseButton
     if (LLARS_GUICompactMode)
     {
         LLARS_GUIRuntimeActions()
@@ -139,8 +139,8 @@ LLARS_GUIActions(active := false)
     Gui, Add, Button, x222 y131 w175 h36 gInfo, Information
     if (active)
     {
-        Gui, Add, Button, x33 y172 w175 h35 gPauseb, Pause
-        Gui, Add, Button, x222 y172 w175 h35 gResumeb, Resume
+        Gui, Add, Button, x33 y172 w175 h35 gTogglePauseResume vLLARSRunPauseButton, Pause
+        Gui, Add, Button, x222 y172 w175 h35 gExitB, Exit LLARS
     }
     else
     {
@@ -183,10 +183,7 @@ LLARS_GUIExit(y)
 {
     global LLARS_GUICompactMode
     if (LLARS_GUICompactMode)
-    {
-        LLARS_GUIRuntimeExit(y)
         return
-    }
     Gui, Font, s10 Norm c20334E, Segoe UI
     Gui, Add, Button, % "x147 y" . LLARS_GUISetupY(y) . " w138 h36 gExitb", Exit LLARS
 }
@@ -195,6 +192,7 @@ LLARS_GUIPresent(title, height, hwnd, root, hasPosition := false, x := "", y := 
 {
     ; Create the native owner-draw state before the first Show to avoid flash.
     LLARS_VisualStyleControls(hwnd)
+    Gui, -ToolWindow +E0x40000
     global LLARS_GUICompactMode, LLARS_GUIRuntimeMode
     if (LLARS_GUICompactMode)
     {
@@ -287,7 +285,6 @@ LLARS_CreateRunCountGUI()
         Gui, Add, Text, % "x" . LLARS_GUIRuntimeSize(265) . " y" . LLARS_GUIRuntimeY(ry) . " w" . LLARS_GUIRuntimeSize(166) . " h" . LLARS_GUIRuntimeControlHeight(24) . " Right +0x4000 v" . metric.id . " BackgroundTrans"
     }
     LLARS_GUIActivity(475, "running")
-    LLARS_GUIExit(575)
     GuiControl, 1:, ScriptRed, %name%
     GuiControl, 1:, State2, ** OFF **
     LLARS_VisualShowStatus("red")
@@ -311,12 +308,13 @@ LLARS_CreateTimerGUI()
     Gui, +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
     LLARS_GUIBase(name, LLARSMainGuiHwnd, "timer")
     LLARS_GUIActions(true)
-    LLARS_GUISection("TIME REMAINING", 39, 287)
+    ; The title and countdown share one centered content column.
+    Gui, Font, s9 Bold c4E6382, Segoe UI
+    Gui, Add, Text, % "x" . LLARS_GUIRuntimeSize(39) . " y" . LLARS_GUIRuntimeY(287) . " w" . LLARS_GUIRuntimeSize(390) . " h" . LLARS_GUIRuntimeControlHeight(18) . " Center BackgroundTrans", TIME REMAINING
     Gui, Font, s16 Bold c22334A, Segoe UI
     ; Center the remaining-time value within its section of the unified card.
     Gui, Add, Text, % "x" . LLARS_GUIRuntimeSize(39) . " y" . LLARS_GUIRuntimeY(321) . " w" . LLARS_GUIRuntimeSize(390) . " h" . LLARS_GUIRuntimeControlHeight(34) . " Center vTimerCount BackgroundTrans"
-    LLARS_GUIActivity(389, "initial")
-    LLARS_GUIExit(489)
+    LLARS_GUIActivity(377, "initial")
     GuiControl, 1:, ScriptRed, %name%
     GuiControl, 1:, State2, ** OFF **
     LLARS_VisualShowStatus("red")
@@ -339,7 +337,6 @@ LLARS_CreateUntilDoneGUI()
     LLARS_GUIBase(name, LLARSMainGuiHwnd, "until_done")
     LLARS_GUIActions(true)
     LLARS_GUIActivity(273, "initial")
-    LLARS_GUIExit(375)
     GuiControl, 1:, ScriptRed, %name%
     GuiControl, 1:, State2, ** OFF **
     LLARS_VisualShowStatus("red")
@@ -375,6 +372,7 @@ LLARS_GUIRuntimeSection(caption, x, y, width := 325)
 
 LLARS_GUIRuntimeActions()
 {
+    global LLARSRunPauseButton
     ; Removing the redundant label keeps the full button grid and its hotkeys.
     Gui, Font, s10 Norm c20334E, Segoe UI
     left := LLARS_GUIRuntimeSize(36), right := LLARS_GUIRuntimeSize(240)
@@ -382,8 +380,8 @@ LLARS_GUIRuntimeActions()
     width := LLARS_GUIRuntimeSize(190), topH := LLARS_GUIRuntimeControlHeight(36), bottomH := LLARS_GUIRuntimeControlHeight(35)
     Gui, Add, Button, % "x" . left . " y" . top . " w" . width . " h" . topH . " gStart", Start
     Gui, Add, Button, % "x" . right . " y" . top . " w" . width . " h" . topH . " gInfo", Information
-    Gui, Add, Button, % "x" . left . " y" . bottom . " w" . width . " h" . bottomH . " gPauseb", Pause
-    Gui, Add, Button, % "x" . right . " y" . bottom . " w" . width . " h" . bottomH . " gResumeb", Resume
+    Gui, Add, Button, % "x" . left . " y" . bottom . " w" . width . " h" . bottomH . " gTogglePauseResume vLLARSRunPauseButton", Pause
+    Gui, Add, Button, % "x" . right . " y" . bottom . " w" . width . " h" . bottomH . " gExitb", Exit LLARS
 }
 
 LLARS_GUIRuntimeActivity(y, mode := "initial")
@@ -394,7 +392,7 @@ LLARS_GUIRuntimeActivity(y, mode := "initial")
     Gui, Add, Text, % "x" . LLARS_GUIRuntimeSize(341) . " y" . LLARS_GUIRuntimeY(y+14) . " w" . LLARS_GUIRuntimeSize(90) . " h" . LLARS_GUIRuntimeControlHeight(19) . " Right BackgroundTrans", STATUS
     nameX := LLARS_GUIRuntimeSize(37), nameW := LLARS_GUIRuntimeSize(184)
     stateX := LLARS_GUIRuntimeSize(224), stateW := LLARS_GUIRuntimeSize(206)
-    textY := LLARS_GUIRuntimeY(y+45), textH := LLARS_GUIRuntimeControlHeight(24)
+    textY := LLARS_GUIRuntimeY(y+45) + 4, textH := LLARS_GUIRuntimeControlHeight(24)
     Gui, Font, s11 Bold c20334E, Segoe UI
     if (mode = "running")
     {
@@ -413,8 +411,3 @@ LLARS_GUIRuntimeActivity(y, mode := "initial")
     Gui, Add, Text, % "x" . stateX . " y" . textY . " w" . stateW . " h" . textH . " Right +0x4000 vState2 BackgroundTrans"
 }
 
-LLARS_GUIRuntimeExit(y)
-{
-    Gui, Font, s10 Norm c20334E, Segoe UI
-    Gui, Add, Button, % "x" . LLARS_GUIRuntimeSize(158) . " y" . LLARS_GUIRuntimeY(y) . " w" . LLARS_GUIRuntimeSize(150) . " h" . LLARS_GUIRuntimeControlHeight(36) . " gExitb", Exit LLARS
-}

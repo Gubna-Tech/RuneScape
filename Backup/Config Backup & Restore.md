@@ -1,4 +1,4 @@
-# Config Backup and Restore
+﻿# Config Backup and Restore
 
 LLARS includes `Backup\Config Backup.bat` and `Backup\Config Restore.bat` to protect both the shared LLARS configuration and script-specific settings during updates or manual changes.
 
@@ -25,6 +25,10 @@ You can also use **Information → Restore Config**. LLARS asks for confirmation
 ## Safe restoration of user-owned files
 
 The restore tool first verifies the `User Files` snapshot and restores only missing user-owned files. A conflict with a changed installed file stops the restore without replacing that file; resolve it by reviewing both copies rather than deleting either. A snapshot created by older LLARS versions without the `User Files` folder remains usable for config restoration. Always keep a separate complete installation backup when migrating to a new folder or moving projects not registered in the Selector.
+
+## Upgrading an older shared configuration
+
+LLARS v2.3.5 requires root `LLARS Config.ini` schema `2` and identifies older schema `1` configurations from v2.3.4 and earlier. If the startup warning appears, save a copy of your existing root config, copy `Documentation/LLARS Config - Current.ini` to the LLARS root as `LLARS Config.ini`, then reconfigure shared hotkeys and other preferences through the LLARS GUI. The warning does not overwrite your file or start automation. Existing script-local `Config.ini` files can be kept. Restoring a root configuration from an older backup can bring back the incompatible layout; do not use an older root backup to replace the current template.
 
 ## Updates
 

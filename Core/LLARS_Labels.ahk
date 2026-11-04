@@ -4,6 +4,13 @@
 
 ; Provides Escape-key shortcuts for closing the various secondary LLARS GUIs through the same close paths used by their Close buttons.
 ~Esc::
+; The active RuneScape client is in a different process. Cancel a live
+; capture before checking GUI ownership so Escape works while sampling.
+if (LLARS_ConfigCaptureActive != "")
+{
+    GoSub, CancelConfigCapture
+    Return
+}
 WinGet, LLARS_EscapeActivePID, PID, A
 if (LLARS_EscapeActivePID != DllCall("GetCurrentProcessId"))
 	Return
@@ -97,6 +104,27 @@ Else IfWinActive, Game Not Found ahk_class AutoHotkeyGUI
 	GoSub, CloseGNF
 }
 
+Return
+
+; One cancellation path shared by point/rectangle/color capture. No
+; coordinates, colors, or hotkeys are written when Escape is pressed.
+CancelConfigCapture:
+if (LLARS_ConfigCaptureActive = "")
+    Return
+cancelledCaptureKind := LLARS_ConfigCaptureActive
+LLARS_ConfigCaptureActive := ""
+SetTimer, CheckClicks, Off
+SetTimer, CheckClicksPixel, Off
+SetTimer, CheckColorClick, Off
+Gui, 11:Destroy
+Gui, 11u:Destroy
+Gui, 12:Destroy
+Gui, 12u:Destroy
+LLARS_HideCoordinatePreview()
+LLARS_DeveloperUIAction(cancelledCaptureKind = "color" ? "Colors" : "Coordinates", "Closed")
+Gui, 2:Destroy
+LLARS_VisualRestoreMain()
+EnableHotkey()
 Return
 
 ; Refreshes shared LLARS hotkeys and the main GUI configuration status.
@@ -289,7 +317,7 @@ Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . set
 setupY += setupLayout.step
 Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gLLARS_SetupHeaderStyle", Header Style
 Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupLayout.footerButtonY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCloseCombo", Close Setup
-Gui Combo: +ToolWindow
+Gui Combo: -ToolWindow +E0x40000
 Gui Combo: -caption
 Gui Combo: Show, % "Center w" . setupLayout.width . " h" . setupLayout.height, Setup
 LLARS_VisualFinish("Combo")
@@ -388,6 +416,21 @@ Gui SetupCheck: Destroy
 Gui Combo: Show
 return
 
+; Opens the matching setup editor after the blocked-Start warning is dismissed.
+LLARS_ConfigRepairOpen:
+SetTimer, LLARS_ConfigRepairOpen, Off
+repairKind := LLARS_ConfigRepairKind
+LLARS_ConfigRepairKind := ""
+if (repairKind = "color")
+    GoSub, Color
+else if (repairKind = "coordinate")
+    GoSub, Coordinates
+else if (repairKind = "hotkey")
+    GoSub, Hotkey
+else
+    GoSub, Combo
+return
+
 ; Action buttons from the preflight result reuse the existing editors.
 SetupCheckHotkeys:
 Gui SetupCheck: Destroy
@@ -476,7 +519,7 @@ Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settin
 Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+3*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoRestoreConfig", Restore Config
 Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+4*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gResetConfig", Reset Config
 Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . settingsLayout.footerButtonY . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gCloseConfigSettings", Close Config Settings
-Gui ConfigSettings: +ToolWindow
+Gui ConfigSettings: -ToolWindow +E0x40000
 Gui ConfigSettings: -caption
 Gui ConfigSettings: Show, % "Center w" . settingsLayout.width . " h" . settingsLayout.height, Config Settings
 LLARS_VisualFinish("ConfigSettings")
@@ -551,7 +594,7 @@ Gui Reset: -Caption
 Gui Reset: Show, w320 h274 Center, Reset Configuration
 LLARS_VisualFinish("Reset")
 LLARS_DeveloperUIAction("Reset Configuration")
-Gui Reset: +ToolWindow
+Gui Reset: -ToolWindow +E0x40000
 return
 
 ; Enables the reset button only after a real, framework-recognized item
@@ -647,6 +690,7 @@ return
 ; to each configuration section. Sections marked type=coordinate are
 ; automatically included without requiring their names in the script.
 Coordinates:
+LLARS_ConfigCaptureActive := ""
 LLARS_MainSavePosition()
 Gui 1: Hide
 LLARS_DeveloperUIAction("Setup", "Closed")
@@ -715,7 +759,7 @@ Gui 2: -Caption
 Gui, 2: Show, w320 h198 Center, Coordinates
 LLARS_VisualFinish("2")
 LLARS_DeveloperUIAction("Coordinates")
-Gui 2: +ToolWindow
+Gui 2: -ToolWindow +E0x40000
 return
 
 ; Closes the coordinate editor and returns to the main LLARS window.
@@ -767,8 +811,9 @@ if (pointCoordinateSection)
     y := ""
     ButtonText := selectedSection
     CoordinateRButtonWasDown := false
-    SetTimer, CheckClicksPixel, 10
     LLARS_VisualCapturePrompt("11", "Update Coordinates", "Right-click the pixel for [ " . selectedSection . " ]")
+    LLARS_ConfigCaptureActive := "coordinate"
+    SetTimer, CheckClicksPixel, 10
 }
 
 else
@@ -782,8 +827,9 @@ else
     ymax := ""
     ButtonText := selectedSection
     CoordinateRButtonWasDown := false
-    SetTimer, CheckClicks, 10
     LLARS_VisualCapturePrompt("11", "Update Coordinates", "Right-click the top-left corner for [ " . selectedSection . " ]")
+    LLARS_ConfigCaptureActive := "coordinate"
+    SetTimer, CheckClicks, 10
 }
 
 return
@@ -792,7 +838,8 @@ return
 CheckClicks:
 if GetKeyState("Esc", "P")
 {
-	Reload
+    GoSub, CancelConfigCapture
+    Return
 }
 
 CoordinateRButtonDown := GetKeyState("RButton")
@@ -819,6 +866,7 @@ if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 		; Show the selected area while the saved confirmation is visible.
 		LLARS_ShowCoordinatePreview(xmin, ymin, xmax, ymax)
 		SetTimer, CheckClicks, Off
+        LLARS_ConfigCaptureActive := ""
 		configFile := (coordinateConfigFile != "") ? coordinateConfigFile : ((ButtonText = "Logout") ? LLARS_CONFIG_FILE : "Config.ini")
 		LLARS_ConfigWriteFile(configFile, ButtonText, "xmin", xmin)
 		LLARS_ConfigWriteFile(configFile, ButtonText, "xmax", xmax)
@@ -844,7 +892,8 @@ return
 CheckClicksPixel:
 if GetKeyState("Esc", "P")
 {
-	Reload
+    GoSub, CancelConfigCapture
+    Return
 }
 
 CoordinateRButtonDown := GetKeyState("RButton")
@@ -857,6 +906,7 @@ if (CoordinateRButtonDown && !CoordinateRButtonWasDown)
 	x := MouseX
 	y := MouseY
 	SetTimer, CheckClicksPixel, Off
+    LLARS_ConfigCaptureActive := ""
 	configFile := (coordinateConfigFile != "") ? coordinateConfigFile : "Config.ini"
 	; Point sections are authoritative single X/Y coordinates.
 	LLARS_ConfigDeleteFile(configFile, ButtonText, "xmin")
@@ -1081,6 +1131,7 @@ LLARS_HideCoordinatePreview()
 ; each configuration section. Sections marked type=color are
 ; automatically included without requiring their names in the script.
 Color:
+LLARS_ConfigCaptureActive := ""
 LLARS_MainSavePosition()
 Gui 1: Hide
 LLARS_DeveloperUIAction("Setup", "Closed")
@@ -1114,7 +1165,7 @@ Gui 2: -Caption
 Gui, 2: Show, w320 h198 Center, Colors
 LLARS_VisualFinish("2")
 LLARS_DeveloperUIAction("Colors")
-Gui 2: +ToolWindow
+Gui 2: -ToolWindow +E0x40000
 return
 
 ; Closes the color editor and returns to the main LLARS GUI.
@@ -1161,9 +1212,10 @@ if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 }
 if (colorCoordinateSection = "" || colorCoordinateSection = "ERROR")
 {
-	SetTimer, CheckColorClick, 25
 	colorHoverText := "Right-click the exact color for [ " . selectedSection . " ] | RGB: ------"
 	LLARS_VisualCapturePrompt("11", "Update Colors", colorHoverText, 880)
+    LLARS_ConfigCaptureActive := "color"
+	SetTimer, CheckColorClick, 25
 	return
 }
 
@@ -1225,7 +1277,8 @@ LLARS_ColorMatchingPointSection(configFile, colorSection)
 CheckColorClick:
 if GetKeyState("Esc", "P")
 {
-	Reload
+    GoSub, CancelConfigCapture
+    Return
 }
 
 hoverColor := "------"
@@ -1246,6 +1299,7 @@ if GetKeyState("RButton", "P")
 	MouseGetPos, x, y
 	PixelGetColor, color, %x%, %y%, RGB
 	SetTimer, CheckColorClick, Off
+    LLARS_ConfigCaptureActive := ""
 	Gui 11: Destroy
 	Gui 11u: Destroy
 	GoSub, SaveColorSelection
@@ -1255,18 +1309,15 @@ return
 
 ; Saves and displays the sampled RGB.
 SaveColorSelection:
+LLARS_ConfigCaptureActive := ""
 StringUpper, color, color
 colorKey := LLARS_GetColorKey(colorConfigFile, ButtonText)
 LLARS_ConfigWriteFile(colorConfigFile, ButtonText, colorKey, color)
 duplicateColors := LLARS_ColorDuplicateSections(colorConfigFile, ButtonText, color)
-if (duplicateColors = "")
-	colorResultText := ButtonText . " = " . color . " | Unique"
-else
-	colorResultText := ButtonText . " = " . color . " | Matches: " . duplicateColors
 LLARS_DeveloperAction("Color || " . ButtonText . " || RGB=" . color . ((duplicateColors != "") ? " || Matches=" . duplicateColors : ""), false)
 LLARS_DeveloperColorConfigAction(ButtonText " | " colorKey " = " color . ((duplicateColors != "") ? " | Matches: " . duplicateColors : ""))
 colorConfigDisplay := (colorConfigFile = LLARS_CONFIG_FILE) ? "LLARS Config.ini" : "Config.ini"
-LLARS_VisualConfigNotice("COLOR UPDATED", colorResultText, "Saved to " . colorConfigDisplay, 1800)
+LLARS_VisualColorNotice(ButtonText, color, duplicateColors, "Saved to " . colorConfigDisplay, 1800)
 LLARS_DeveloperUIAction("Colors", "Closed")
 Gui, 2: Destroy
 LLARS_VisualRestoreMain()
@@ -1368,8 +1419,9 @@ Loop, Parse, llarsContents, `n
 	currentSection := Trim(currentSection)
 	if (GetConfigType(LLARS_CONFIG_FILE, currentSection) = "hotkey")
 	{
-		sectionList .= "|" currentSection
-		hotkeyConfigFiles[currentSection] := LLARS_CONFIG_FILE
+		displaySection := (currentSection = "Color/Coordinate/Hotkey Hotkey") ? "Setup/Pause/Resume Hotkey" : currentSection
+		sectionList .= "|" displaySection
+		hotkeyConfigFiles[displaySection] := LLARS_CONFIG_FILE
 	}
 }
 
@@ -1385,7 +1437,7 @@ Gui 3: -Caption
 Gui, 3: Show, w320 h270 Center, Hotkeys
 LLARS_VisualFinish("3")
 LLARS_DeveloperUIAction("Hotkeys")
-Gui 3: +ToolWindow
+Gui 3: -ToolWindow +E0x40000
 return
 
 ; Closes the hotkey editor and returns to the main LLARS GUI.
@@ -1430,18 +1482,23 @@ if (configFile = "")
 ; from the dropdown selection.
 selectedHotkeySection := selectedSection
 selectedHotkeyConfigFile := configFile
-existingHotkey := LLARS_ConfigReadFile(configFile, selectedSection, "Hotkey", "ERROR")
+configSection := selectedSection
+if (selectedSection = "Setup/Pause/Resume Hotkey" && LLARS_ConfigReadFile(configFile, selectedSection, "Hotkey", "ERROR") = "ERROR")
+    configSection := "Color/Coordinate/Hotkey Hotkey"
+selectedHotkeySection := configSection
+existingHotkey := LLARS_ConfigReadFile(configFile, configSection, "Hotkey", "ERROR")
 GuiControl,, ChosenHotkey, %existingHotkey%
 GuiControl, Enable, ChosenHotkey
 GoSub, ButtonClicked2
 return
 
-; Gives focus to the hotkey input control and allows Escape to
-; reload the script while the hotkey-selection process is active.
+; Gives focus to the hotkey input control. Escape cancels the editor
+; without restarting LLARS or spawning another main window.
 ButtonClicked2:
 if GetKeyState("Esc", "P")
 {
-	Reload
+    GoSub, Close2
+    Return
 }
 
 GuiControl,, HotkeysText, Enter new hotkey
@@ -1486,39 +1543,43 @@ return
 ; |     PAUSE/RESUME BUTTON LOGIC     -     PAUSE/RESUME BUTTON LOGIC     -     PAUSE/RESUME BUTTON LOGIC     |
 ; =============================================================================================================
 
-; Updates the main GUI state and resumes normal script execution.
+; Pause and Resume use one non-blocking transition and one visible control.
+TogglePauseResume:
+if (!LLARS_RUNNING)
+    Return
+if (LLARS_PAUSED)
+    GoSub, ResumeB
+else
+    GoSub, PauseB
+Return
+
 ResumeB:
+if (!LLARS_PAUSED)
+    Return
 LLARS_PAUSED := false
+Pause, Off, 1
 LLARS_DeveloperAction("Script || Resumed")
-GuiControl,,ScriptBlue, % LLARS_DisplayScriptName()
-GuiControl,,State3, Running
+GuiControl, 1:, ScriptBlue, % LLARS_DisplayScriptName()
+GuiControl, 1:, State3, Running
 LLARS_VisualShowStatus("blue")
+GuiControl, 1:, LLARSRunPauseButton, Pause
 GuiControl, Dev:, DeveloperRunningText, Running
 Return
 
-; Pauses the interrupted automation thread while keeping this hotkey thread
-; alive so Developer Mode can continue refreshing elapsed time and live data.
 PauseB:
+if (LLARS_PAUSED || !LLARS_RUNNING)
+    Return
 if IsFunc("LLARS_AHI_ReleaseAllInput")
-	LLARS_AHI_ReleaseAllInput()
+    LLARS_AHI_ReleaseAllInput()
 LLARS_PAUSED := true
 LLARS_DeveloperAction("Script || Paused")
-GuiControl,,State2, Paused
-GuiControl,,ScriptRed, % LLARS_DisplayScriptName()
+GuiControl, 1:, State2, Paused
+GuiControl, 1:, ScriptRed, % LLARS_DisplayScriptName()
 LLARS_VisualShowStatus("red")
+GuiControl, 1:, LLARSRunPauseButton, Resume
 GuiControl, Dev:, DeveloperRunningText, Paused
-
+; Suspend the interrupted automation thread but return from this control callback.
 Pause, On, 1
-
-while (LLARS_PAUSED)
-{
-	if WinExist("Developer Mode ahk_class AutoHotkeyGUI")
-		Gosub, LLARS_DeveloperAutoRefresh
-
-	Sleep, 250
-}
-
-Pause, Off, 1
 Return
 
 ; =========================================================================
@@ -1559,7 +1620,7 @@ if (LLARS_lhk1 != "")
 if (LLARS_lhk2 != "")
 	scriptHotkeys .= "Information: " . LLARS_lhk2 . "`n"
 if (LLARS_lhk3 != "")
-	scriptHotkeys .= "Setup: " . LLARS_lhk3 . "`n"
+	scriptHotkeys .= "Setup / Pause / Resume: " . LLARS_lhk3 . "`n"
 if (LLARS_lhk4 != "")
 	scriptHotkeys .= "Exit: " . LLARS_lhk4 . "`n"
 if (LLARS_lhk5 != "")
@@ -1624,7 +1685,7 @@ resourceButtonY2 := resourceButtonY + 40
 closeInfoY := resourceButtonY2 + 45
 informationHeight := closeInfoY + 45
 
-Gui 20: +AlwaysOnTop +OwnDialogs +LastFound +HwndLLARSInfoGuiHwnd -ToolWindow -Caption
+Gui 20: +AlwaysOnTop +OwnDialogs +LastFound +HwndLLARSInfoGuiHwnd -ToolWindow +E0x40000 -Caption
 LLARS_VisualPrepare("20")
 Gui 20: Color, FFFFFF, FFFFFF
 LLARS_VisualBanner("20", 360, 73)
@@ -1807,7 +1868,7 @@ InputSettings:
 EnableHotkey()
 Gui Combo: Hide
 Gui 21: Destroy
-Gui 21: +AlwaysOnTop +OwnDialogs +LastFound -ToolWindow -caption +HwndLLARSInputSettingsGuiHwnd
+Gui 21: +AlwaysOnTop +OwnDialogs +LastFound -ToolWindow +E0x40000 -caption +HwndLLARSInputSettingsGuiHwnd
 LLARS_VisualPrepare("21")
 Gui 21: Color, FFFFFF, FFFFFF
 LLARS_VisualModalHeader("21", 500, "Input Settings")
@@ -1993,8 +2054,8 @@ developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : 
 developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 developerConfigState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 
-developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
-developerConfigName := LLARS_RUNNING ? "Resume" : "Setup"
+developerInfoName := "Information"
+developerConfigName := LLARS_RUNNING ? "Pause/Resume" : "Setup"
 
 developerHotkeys := ""
 developerHotkeys .= "Start: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk1) . " (" . developerStartState . ")`n"
@@ -2082,7 +2143,7 @@ Gui Dev: Add, Button, x20 y671 w125 h27 gToggleDeveloperLightweight, Lightweight
 Gui Dev: Add, Button, x152 y671 w125 h27 gDeveloperTimingAudit, Timing Audit
 Gui Dev: Add, Button, x284 y671 w125 h27 gCopyAHISupportReport, Copy Support
 Gui Dev: Add, Button, x416 y671 w124 h27 gCloseDeveloperMode, Close
-Gui Dev: -ToolWindow
+Gui Dev: -ToolWindow +E0x40000
 Gui Dev: -Caption
 ; Build the full dashboard while the parent is hidden so the hotkey toggle
 ; never exposes the unfinished Developer Mode shell before its child panes exist.
@@ -2211,7 +2272,7 @@ Gui Dev: Add, Button, x20 y424 w125 h27 gToggleDeveloperLightweight, Full Mode
 Gui Dev: Add, Button, x152 y424 w125 h27 gDeveloperTimingAudit, Timing Audit
 Gui Dev: Add, Button, x284 y424 w125 h27 gCopyAHISupportReport, Copy Support
 Gui Dev: Add, Button, x416 y424 w124 h27 gCloseDeveloperMode, Close
-Gui Dev: -ToolWindow
+Gui Dev: -ToolWindow +E0x40000
 Gui Dev: -Caption
 if LLARS_DeveloperLoadPosition(DeveloperGUIx, DeveloperGUIy)
 {
@@ -2276,7 +2337,7 @@ DeveloperTimingAuditLastText := ""
 DeveloperTimingAuditFilter := ""
 DeveloperTimingAuditSortColumn := 0
 DeveloperTimingAuditSortDirection := "Asc"
-Gui Audit: +AlwaysOnTop +OwnDialogs -ToolWindow +HwndDeveloperTimingAuditHwnd
+Gui Audit: +AlwaysOnTop +OwnDialogs -ToolWindow +E0x40000 +HwndDeveloperTimingAuditHwnd
 LLARS_VisualPrepare("Audit")
 LLARS_VisualBanner("Audit", 540, 77)
 LLARS_VisualCard("Audit", 12, 80, 516, 295)
@@ -2701,8 +2762,8 @@ developerStartState := (!LLARS_RUNNING && !LLARS_CONTROLS_LOCKED) ? "Enabled" : 
 developerInfoState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 developerConfigState := (!LLARS_CONTROLS_LOCKED) ? "Enabled" : "Disabled"
 
-developerInfoName := LLARS_RUNNING ? "Pause" : "Information"
-developerConfigName := LLARS_RUNNING ? "Resume" : "Setup"
+developerInfoName := "Information"
+developerConfigName := LLARS_RUNNING ? "Pause/Resume" : "Setup"
 
 developerHotkeys := ""
 developerHotkeys .= "Start: " . LLARS_DeveloperHotkeyDisplay(LLARS_lhk1) . " (" . developerStartState . ")`n"
@@ -3344,7 +3405,7 @@ if FileExist("C:\Program Files (x86)\Jagex Launcher\JagexLauncher.exe")
 		Gui Client: Add, Text, center x5 w220,
 		Gui Client: Add, Button, gJagex w150 x40 center, Jagex
 		Gui Client: Add, Button, gRuneScape w150 x40 center, RuneScape
-		Gui Client: +ToolWindow
+		Gui Client: -ToolWindow +E0x40000
 		Gui Client: -caption
 		Gui Client: Show, center w230, Multiple Client
 		LLARS_VisualFinish("Client")
@@ -3382,7 +3443,7 @@ else
 	Gui Client: Add, Text, Center w220 x5, Please ensure that RuneScape is open before attempting to start the script again.
 	Gui Client: Add, Text, center x5 w220,
 	Gui Client: Add, Button, gCloseClient w150 x40 center, Close Error
-	Gui Client: +ToolWindow
+	Gui Client: -ToolWindow +E0x40000
 	Gui Client: -caption
 	Gui Client: Show, center w230, No Client Detected
 	LLARS_VisualFinish("Client")
