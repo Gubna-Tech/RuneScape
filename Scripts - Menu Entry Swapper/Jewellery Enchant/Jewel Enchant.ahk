@@ -36,17 +36,17 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Jewellery")
-	LLARS_RedClick("Bank Coords")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Brief")
 
 	LLARS_SetStatus("Enchanting", "Jewellery")
-	LLARS_PressHotkey("Skillbar Hotkey")
+	LLARS_PressHotkey("Skillbar")
 
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Selecting", "Jewellery")
-	LLARS_Click("Jewellery Coords")
+	LLARS_Click("Jewellery")
 
 	LLARS_Sleep("Sleep Short")
 

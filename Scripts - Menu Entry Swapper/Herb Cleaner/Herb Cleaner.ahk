@@ -36,12 +36,12 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Herbs")
-	LLARS_RedClick("Bank Coords")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Brief")
 
 	LLARS_SetStatus("Cleaning", "Herbs")
-	LLARS_PressHotkey("Skillbar Hotkey")
+	LLARS_PressHotkey("Skillbar")
 
 	LLARS_Sleep("Sleep Short")
 

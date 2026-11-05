@@ -36,12 +36,12 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Ink")
-	LLARS_RedClick("Bank Coords")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Brief")
 
 	LLARS_SetStatus("Opening", "Ink Interface")
-	LLARS_PressHotkey("Skillbar Hotkey")
+	LLARS_PressHotkey("Skillbar")
 
 	LLARS_Sleep("Sleep Short")
 

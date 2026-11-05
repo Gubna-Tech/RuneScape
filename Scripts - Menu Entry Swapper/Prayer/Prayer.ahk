@@ -45,7 +45,7 @@ Run(ctx)
 		{
 
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_RedClick("Bank Coords")
+			LLARS_RedClick("Bank")
 
 			LLARS_Sleep("Sleep Short")
 
@@ -73,7 +73,7 @@ Run(ctx)
 		{
 
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_RedClick("Bank Coords")
+			LLARS_RedClick("Bank")
 
 			LLARS_Sleep("Sleep Short")
 
@@ -100,17 +100,17 @@ Run(ctx)
 	}
 
 	LLARS_SetStatus("Banking", "Prayer")
-	LLARS_RedClick("Bank Coords")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Brief")
 
-	hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+	hkdown := LLARS_ConfigReadHotkey("Skillbar", "hotkey")
 	LLARS_SetStatus("Praying", "Bones / Ashes")
 	LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
 	LLARS_Sleep("Sleep Prayer")
 
-	hkup := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+	hkup := LLARS_ConfigReadHotkey("Skillbar", "hotkey")
 	LLARS_CreatorSendInput("{" . hkup . " up}", "Key Up")
 
 	option := LLARS_ConfigReadBool("beast of burden")
@@ -123,12 +123,12 @@ Run(ctx)
 
 		LLARS_Sleep("Sleep Short")
 
-		hkdown := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+		hkdown := LLARS_ConfigReadHotkey("Skillbar", "hotkey")
 		LLARS_SetStatus("Praying", "Bones / Ashes")
 		LLARS_CreatorSendInput("{" . hkdown . " down}", "Key Down")
 
 		LLARS_Sleep("Sleep Prayer Extra")
-		hkup := LLARS_ConfigReadHotkey("Skillbar Hotkey", "hotkey")
+		hkup := LLARS_ConfigReadHotkey("Skillbar", "hotkey")
 		LLARS_CreatorSendInput("{" . hkup . " up}", "Key Up")
 
 		LLARS_Sleep("Sleep Brief")
@@ -143,7 +143,7 @@ Run(ctx)
 		If (bobtime <= 60000)
 		{
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_RedClick("Bank Coords")
+			LLARS_RedClick("Bank")
 
 			LLARS_Sleep("Sleep Short")
 
@@ -175,7 +175,7 @@ Run(ctx)
 		If (powdertime <= 60000)
 		{
 			LLARS_SetStatus("Banking", "Prayer")
-			LLARS_RedClick("Bank Coords")
+			LLARS_RedClick("Bank")
 
 			LLARS_Sleep("Sleep Short")
 

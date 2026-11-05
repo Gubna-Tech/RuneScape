@@ -38,12 +38,12 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Banking", "Bows")
-		LLARS_RedClick("Bank Coords")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Brief")
 
 		LLARS_SetStatus("Fletching", "Bows")
-		LLARS_PressHotkey("Skillbar Hotkey")
+		LLARS_PressHotkey("Skillbar")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -57,12 +57,12 @@ Run(ctx)
 	else
 	{
 		LLARS_SetStatus("Banking", "Bows")
-		LLARS_RedClick("Bank Coords")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Brief")
 
 		LLARS_SetStatus("Fletching", "Bows")
-		LLARS_PressHotkey("Skillbar Hotkey")
+		LLARS_PressHotkey("Skillbar")
 
 	}
 

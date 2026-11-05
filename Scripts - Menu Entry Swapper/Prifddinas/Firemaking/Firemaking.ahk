@@ -38,7 +38,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Banking", "Logs")
-		LLARS_RedClick("Bank Prime Coords")
+		LLARS_RedClick("Bank Prime")
 
 		LLARS_Sleep("Sleep Brief")
 	}
@@ -49,12 +49,12 @@ Run(ctx)
 	}
 
 	LLARS_SetStatus("Firemaking", "Bonfire")
-	LLARS_RedClick("Bonfire Coords")
+	LLARS_RedClick("Bonfire")
 
 	LLARS_Sleep("Sleep Burn")
 
 	LLARS_SetStatus("Banking", "Logs")
-	LLARS_RedClick("Bank Main Coords")
+	LLARS_RedClick("Bank Main")
 
 	LLARS_Sleep("Sleep Walk", true)
 }
