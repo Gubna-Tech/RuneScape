@@ -38,7 +38,7 @@ Run(ctx)
 	LLARS_Sleep("Sleep Short")
 
 	LLARS_SetStatus("Opening", "Candle Interface")
-	LLARS_PressHotkey("Skillbar Hotkey")
+	LLARS_PressHotkey("Skillbar")
 
 	LLARS_Sleep("Sleep Short")
 
