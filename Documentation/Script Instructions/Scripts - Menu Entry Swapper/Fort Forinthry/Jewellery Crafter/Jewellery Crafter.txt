@@ -1,0 +1,36 @@
+﻿JEWELLERY CRAFTER - MES
+Script variant: Fort Forinthry / Jewellery Crafter (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- Have the supplies and bank preset ready for jewellery.
+
+- Capture the bank and workstation coordinates from the standing positions given in the steps below.
+
+- START THIS SCRIPT STANDING WEST OF THE BANK CHEST.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Bank Prime] while standing at the bank.
+
+2. Capture [Furnace] while standing at the bank.
+
+3. Capture [Bank Main] while standing at the furnace. These are two views of the same bank; capture each separately from the specified tile.
+
+4. Capture [Bar] on the metal type you want to use in the furnace interface.
+
+5. Capture [Item] on the jewellery item you want to make after selecting the metal.
+
+6. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+7. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+OPTIONAL SETTINGS
+
+- [Scroll]: Only enable when the desired interface item is off-screen; change scroll bounds in Setup > Script Config.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

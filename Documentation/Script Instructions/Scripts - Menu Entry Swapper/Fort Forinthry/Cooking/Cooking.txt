@@ -1,0 +1,26 @@
+﻿COOKING - MES
+Script variant: Fort Forinthry / Cooking (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- Have the supplies and bank preset ready for food to cook.
+
+- Capture the bank and workstation coordinates from the standing positions given in the steps below.
+
+- START THIS SCRIPT IN FRONT OF THE FORTS BANK CHEST LOCATED IN THE KITCHEN.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Bank] while standing in front of the bank chest in the forts kitchen.
+
+2. Capture [Range] while standing in front of the bank chest in the forts kitchen.
+
+3. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+4. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

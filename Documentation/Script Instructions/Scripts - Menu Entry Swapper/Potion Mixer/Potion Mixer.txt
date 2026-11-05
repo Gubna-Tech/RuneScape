@@ -1,0 +1,22 @@
+﻿POTION MIXER - MES
+Script variant: Potion Mixer (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- Have the ingredients for the potions you want to mix ready, and check your bank preset.
+
+STEPS TO RUN
+
+1. Put the potion ingredient used to start mixing on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Open Setup > Coordinates and capture [Bank] on the banker, chest or bank booth used on the return leg.
+
+3. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+4. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

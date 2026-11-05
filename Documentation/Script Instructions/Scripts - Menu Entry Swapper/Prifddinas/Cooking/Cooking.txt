@@ -1,0 +1,24 @@
+﻿COOKING - MES
+Script variant: Prifddinas / Cooking (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- At the Prifddinas bonfire, set its selected activity to cooking before capturing clicks.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Bank Prime]. These coordinates are set when standing at the banker.
+
+2. Capture [Bonfire] on the bonfire you use for cooking.
+
+3. Capture [Bank Main] while standing at the bonfire. These are two views of the same bank; capture each separately from the specified tile.
+
+4. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+5. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

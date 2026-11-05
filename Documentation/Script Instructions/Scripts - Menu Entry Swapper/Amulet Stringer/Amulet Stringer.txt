@@ -1,0 +1,26 @@
+﻿AMULET STRINGER - MES
+Script variant: Amulet Stringer (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- Have unstrung amulets and balls of wool ready in your bank preset.
+
+- Keep their inventory slots in a consistent position when capturing coordinates.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Bank] on the banker, chest or bank booth used on the return leg.
+
+2. In the Coordinates list, select [Amulet], then right-click the unstrung amulet in your inventory to capture its position.
+
+3. Select [Ball of Wool], then right-click a ball of wool in your inventory to capture its position.
+
+4. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+5. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

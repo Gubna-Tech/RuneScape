@@ -1,0 +1,24 @@
+﻿JEWEL ENCHANT - MES
+Script variant: Jewellery Enchant (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- Have the jewellery you want to enchant ready and keep your spellbook or action bar available.
+
+STEPS TO RUN
+
+1. Put the jewellery-enchanting spell on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Open Setup > Coordinates and capture [Jewellery] on the jewellery choice the script clicks after activating the enchantment spell.
+
+3. Capture [Bank] on the banker, chest or bank booth used on the return leg.
+
+4. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+5. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

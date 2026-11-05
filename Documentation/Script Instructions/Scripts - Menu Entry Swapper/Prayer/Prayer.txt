@@ -1,0 +1,32 @@
+﻿PRAYER - MES
+Script variant: Prayer (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- Prepare the ashes or bones you need and the correct bank preset.
+
+- If using a Beast of Burden, prepare its pouch, familiar action-bar slot and matching preset items.
+
+STEPS TO RUN
+
+1. Put the bones or ashes you want to offer on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Open Setup > Coordinates and capture [Bank] on the banker, chest or bank booth used on the return leg.
+
+3. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+4. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+OPTIONAL SETTINGS
+
+- [Powder of burials]: Enable or adjust powder usage only if using that item.
+
+- [Beast of Burden]: Optional familiar supplies, hotkeys and timing; use only with a matching bank preset.
+
+ADDITIONAL SCRIPT NOTES
+
+- When using a Beast of Burden, include the familiar scroll and super restore in your bank preset.
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

@@ -1,0 +1,24 @@
+﻿GLASSBLOWING - MES
+Script variant: Glassblowing (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Load the correct bank preset manually before starting. Menu Entry Swapper (MES) reuses your last loaded preset instead of pressing a Bank Preset hotkey.
+
+- Have molten glass ready and set up your bank preset for the glass items you want to make.
+
+STEPS TO RUN
+
+1. Put the molten glass used for glassblowing on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Open Setup > Coordinates and capture [Bank] on the banker, chest or bank booth used on the return leg.
+
+3. Capture [Item] on the glass item you want to make in the glassblowing interface.
+
+4. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+5. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.
