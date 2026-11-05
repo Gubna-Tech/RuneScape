@@ -6,11 +6,178 @@
 ; Low-level INI access is centralized here so Core, Selector, and Creator API
 ; consumers share one implementation path. Migration/backup may still use
 ; whole-file operations where transactional semantics require them.
+; Bank coordinate section labels were simplified in v2.3.6. Existing user
+; Config.ini files may still contain the prior labels. Resolve those names in
+; memory rather than rewriting or discarding a user's saved coordinates.
+; This is deliberately limited to the four confirmed Bank coordinate aliases.
+LLARS_ConfigCanonicalBankSection(section)
+{
+    if (section = "Bank Coords" || section = "Bank Chest")
+        return "Bank"
+    if (section = "Bank Prime Coords")
+        return "Bank Prime"
+    if (section = "Bank Main Coords")
+        return "Bank Main"
+    return section
+}
+
+LLARS_ConfigResolveBankSection(configPath, section)
+{
+    canonical := LLARS_ConfigCanonicalBankSection(section)
+    if (canonical != "Bank" && canonical != "Bank Prime" && canonical != "Bank Main")
+        return section
+    if !FileExist(configPath)
+        return canonical
+
+    ; Prefer the new section if both new and old labels are present.
+    IniRead, sectionContents, %configPath%, %canonical%
+    if !ErrorLevel
+        return canonical
+
+    if (canonical = "Bank")
+    {
+        IniRead, sectionContents, %configPath%, Bank Coords
+        if !ErrorLevel
+            return "Bank Coords"
+        IniRead, sectionContents, %configPath%, Bank Chest
+        if !ErrorLevel
+            return "Bank Chest"
+    }
+    else if (canonical = "Bank Prime")
+    {
+        IniRead, sectionContents, %configPath%, Bank Prime Coords
+        if !ErrorLevel
+            return "Bank Prime Coords"
+    }
+    else if (canonical = "Bank Main")
+    {
+        IniRead, sectionContents, %configPath%, Bank Main Coords
+        if !ErrorLevel
+            return "Bank Main Coords"
+    }
+    return canonical
+}
+
+; Previously saved coordinate names remain readable, editable and discoverable.
+; Pixel Coordinate is deliberately not normalized: it identifies a color-search target.
+LLARS_ConfigCanonicalCoordinateSection(section)
+{
+    if (section = "Smelter Coords")
+        return "Smelter"
+    if (section = "Anvil Coords")
+        return "Anvil"
+    if (section = "Furnace Coords")
+        return "Furnace"
+    if (section = "Range Coords")
+        return "Range"
+    if (section = "Jewellery Coords")
+        return "Jewellery"
+    if (section = "Bonfire Coords")
+        return "Bonfire"
+    if (section = "Example Coordinate")
+        return "Target"
+    return section
+}
+
+LLARS_ConfigResolveCoordinateSection(configPath, section)
+{
+    canonical := LLARS_ConfigCanonicalCoordinateSection(section)
+    if (canonical != "Smelter" && canonical != "Anvil" && canonical != "Furnace"
+        && canonical != "Range" && canonical != "Jewellery" && canonical != "Bonfire"
+        && canonical != "Target")
+        return section
+    if !FileExist(configPath)
+        return canonical
+
+    ; An explicit current field takes precedence over a legacy field.
+    IniRead, sectionData, %configPath%, %canonical%
+    if !ErrorLevel
+        return canonical
+    if (canonical = "Smelter")
+        oldSection := "Smelter Coords"
+    else if (canonical = "Anvil")
+        oldSection := "Anvil Coords"
+    else if (canonical = "Furnace")
+        oldSection := "Furnace Coords"
+    else if (canonical = "Range")
+        oldSection := "Range Coords"
+    else if (canonical = "Jewellery")
+        oldSection := "Jewellery Coords"
+    else if (canonical = "Bonfire")
+        oldSection := "Bonfire Coords"
+    else if (canonical = "Target")
+        oldSection := "Example Coordinate"
+    IniRead, sectionData, %configPath%, %oldSection%
+    if !ErrorLevel
+        return oldSection
+    return canonical
+}
+
+; Only the labels of confirmed type=hotkey fields changed. Keep earlier
+; saved values usable without modifying a user's existing configuration file.
+LLARS_ConfigCanonicalHotkeySection(section)
+{
+    if (section = "Skillbar Hotkey")
+        return "Skillbar"
+    if (section = "Cape Hotkey")
+        return "Cape"
+    if (section = "Start Hotkey")
+        return "Start"
+    if (section = "Information Hotkey")
+        return "Information"
+    if (section = "Setup/Pause/Resume Hotkey")
+        return "Setup/Pause/Resume"
+    if (section = "Exit Hotkey")
+        return "Exit"
+    if (section = "Example Hotkey")
+        return "Example"
+    return section
+}
+
+LLARS_ConfigResolveHotkeySection(configPath, section)
+{
+    canonical := LLARS_ConfigCanonicalHotkeySection(section)
+    if (canonical != "Skillbar" && canonical != "Cape" && canonical != "Start"
+        && canonical != "Information" && canonical != "Setup/Pause/Resume"
+        && canonical != "Exit" && canonical != "Example")
+        return section
+    if !FileExist(configPath)
+        return canonical
+
+    ; Prefer the current field when both current and earlier labels exist.
+    IniRead, sectionData, %configPath%, %canonical%
+    if !ErrorLevel
+        return canonical
+
+    if (canonical = "Skillbar")
+        oldSection := "Skillbar Hotkey"
+    else if (canonical = "Cape")
+        oldSection := "Cape Hotkey"
+    else if (canonical = "Start")
+        oldSection := "Start Hotkey"
+    else if (canonical = "Information")
+        oldSection := "Information Hotkey"
+    else if (canonical = "Setup/Pause/Resume")
+        oldSection := "Setup/Pause/Resume Hotkey"
+    else if (canonical = "Exit")
+        oldSection := "Exit Hotkey"
+    else if (canonical = "Example")
+        oldSection := "Example Hotkey"
+
+    IniRead, sectionData, %configPath%, %oldSection%
+    if !ErrorLevel
+        return oldSection
+    return canonical
+}
+
 LLARS_ConfigReadFile(configPath, section, key, default := "ERROR")
 {
     if !FileExist(configPath)
         return default
 
+    section := LLARS_ConfigResolveBankSection(configPath, section)
+    section := LLARS_ConfigResolveHotkeySection(configPath, section)
+    section := LLARS_ConfigResolveCoordinateSection(configPath, section)
     IniRead, value, %configPath%, %section%, %key%, %default%
     return value
 }
@@ -20,6 +187,9 @@ LLARS_ConfigReadSection(configPath, section, default := "ERROR")
     if !FileExist(configPath)
         return default
 
+    section := LLARS_ConfigResolveBankSection(configPath, section)
+    section := LLARS_ConfigResolveHotkeySection(configPath, section)
+    section := LLARS_ConfigResolveCoordinateSection(configPath, section)
     IniRead, sectionData, %configPath%, %section%
     if ErrorLevel
         return default
@@ -33,6 +203,9 @@ LLARS_ConfigWriteFile(configPath, section, key, value)
     if (configPath = "" || section = "" || key = "")
         return false
 
+    section := LLARS_ConfigResolveBankSection(configPath, section)
+    section := LLARS_ConfigResolveHotkeySection(configPath, section)
+    section := LLARS_ConfigResolveCoordinateSection(configPath, section)
     IniWrite, %value%, %configPath%, %section%, %key%
     if ErrorLevel
         return false
@@ -47,6 +220,9 @@ LLARS_ConfigDeleteFile(configPath, section, key := "")
     if (configPath = "" || section = "")
         return false
 
+    section := LLARS_ConfigResolveBankSection(configPath, section)
+    section := LLARS_ConfigResolveHotkeySection(configPath, section)
+    section := LLARS_ConfigResolveCoordinateSection(configPath, section)
     if (key = "")
         IniDelete, %configPath%, %section%
     else
@@ -60,7 +236,7 @@ LLARS_ConfigDeleteFile(configPath, section, key := "")
 
 LLARS_ConfigSectionExistsFile(configPath, section)
 {
-    section := Trim(section)
+    section := LLARS_ConfigCanonicalCoordinateSection(LLARS_ConfigCanonicalHotkeySection(LLARS_ConfigCanonicalBankSection(Trim(section))))
     if (section = "")
         return false
 
@@ -182,6 +358,7 @@ LLARS_ConfigSnapshotReload(configPath)
 
 LLARS_ConfigSnapshotRead(snapshot, section, key, default := "ERROR")
 {
+    section := LLARS_ConfigCanonicalCoordinateSection(LLARS_ConfigCanonicalHotkeySection(LLARS_ConfigCanonicalBankSection(section)))
     if !IsObject(snapshot) || !snapshot.Valid
         return default
     if !snapshot.Sections.HasKey(section)
@@ -266,6 +443,9 @@ LLARS_ConfigSectionList(ConfigPath)
 		section := Trim(sectionMatch1)
 		if (section = "")
 			continue
+		section := LLARS_ConfigCanonicalCoordinateSection(LLARS_ConfigCanonicalHotkeySection(LLARS_ConfigCanonicalBankSection(section)))
+		if InStr("`n" . sectionList . "`n", "`n" . section . "`n")
+			continue
 
 		if (sectionList != "")
 			sectionList .= "`n"
@@ -294,7 +474,7 @@ LLARS_ConfigCapabilitySectionType(configPath, section)
 
     sectionLower := section
     StringLower, sectionLower, sectionLower
-    if (sectionLower = "timer")
+    if (sectionLower = "timer" || RegExMatch(sectionLower, "^(sleep |timer )"))
     {
         timerMin := LLARS_ConfigReadFile(configPath, section, "min", "__LLARS_MISSING__")
         timerMax := LLARS_ConfigReadFile(configPath, section, "max", "__LLARS_MISSING__")
@@ -425,7 +605,7 @@ LLARS_ValidateRootConfigFile(configPath, ByRef schema := 0, ByRef errorDetail :=
     }
 
     sectionEnvelope := "`n" . StrReplace(sectionList, "`r") . "`n"
-    if (!InStr(sectionEnvelope, "`nStart Hotkey`n") || !InStr(sectionEnvelope, "`nExit Hotkey`n"))
+    if (!InStr(sectionEnvelope, "`nStart`n") || !InStr(sectionEnvelope, "`nExit`n"))
     {
         errorDetail := "LLARS Config.ini is missing required root configuration sections."
         return false
@@ -542,17 +722,17 @@ LLARS_MigrateConfig(oldSchema, targetSchema, root := "", ByRef errorDetail := ""
     return true
 }
 
-; Validate the v2.3.5 F11 layout even when a file declares schema 2.
+; Validate the F11 setup/pause/resume hotkey even when a file declares schema 2.
 LLARS_ConfigHasCurrentHotkeyLayout(configPath, ByRef errorDetail := "")
 {
     errorDetail := ""
-    currentSection := "Setup/Pause/Resume Hotkey"
+    currentSection := "Setup/Pause/Resume"
     if !LLARS_ConfigSectionExistsFile(configPath, currentSection)
     {
         if LLARS_ConfigSectionExistsFile(configPath, "Color/Coordinate/Hotkey Hotkey")
             errorDetail := "This LLARS Config.ini uses the v2.3.4-or-earlier Setup hotkey section."
         else
-            errorDetail := "The required [Setup/Pause/Resume Hotkey] section is missing."
+            errorDetail := "The required [Setup/Pause/Resume] section is missing."
         return false
     }
 
@@ -560,7 +740,7 @@ LLARS_ConfigHasCurrentHotkeyLayout(configPath, ByRef errorDetail := "")
     StringLower, sectionType, sectionType
     if (sectionType != "hotkey")
     {
-        errorDetail := "The [Setup/Pause/Resume Hotkey] section must contain type=hotkey."
+        errorDetail := "The [Setup/Pause/Resume] section must contain type=hotkey."
         return false
     }
     return true
@@ -587,7 +767,7 @@ LLARS_CheckConfigCompatibility(root := "")
 
     if (configSchema < currentSchema)
     {
-        MsgBox, 262192, LLARS Configuration Update Required, % "This LLARS Config.ini uses configuration schema " . configSchema . ", but LLARS v2.3.5 requires schema " . currentSchema . ".`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then configure your shared hotkeys and preferences using the LLARS GUI and restart.`n`nThe existing file was not modified. Script-specific Config.ini files do not need replacing."
+        MsgBox, 262192, LLARS Configuration Update Required, % "This LLARS Config.ini uses configuration schema " . configSchema . ", but LLARS v2.3.6 requires schema " . currentSchema . ".`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then configure your shared hotkeys and preferences using the LLARS GUI and restart.`n`nThe existing file was not modified. Script-specific Config.ini files do not need replacing."
         return false
     }
 
@@ -596,7 +776,7 @@ LLARS_CheckConfigCompatibility(root := "")
     layoutError := ""
     if !LLARS_ConfigHasCurrentHotkeyLayout(configPath, layoutError)
     {
-        MsgBox, 262192, LLARS Configuration Update Required, % "LLARS v2.3.5 needs the current LLARS Config.ini before startup can continue.`n`n" . layoutError . "`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then set up your shared hotkeys and preferences in LLARS and restart.`n`nYour existing file was not changed. Script-specific Config.ini files do not need replacing."
+        MsgBox, 262192, LLARS Configuration Update Required, % "LLARS v2.3.6 needs the current LLARS Config.ini before startup can continue.`n`n" . layoutError . "`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then set up your shared hotkeys and preferences in LLARS and restart.`n`nYour existing file was not changed. Script-specific Config.ini files do not need replacing."
         return false
     }
 

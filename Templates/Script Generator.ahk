@@ -3647,9 +3647,9 @@ Generator_SuggestParamValue(param)
 	if (param.Default != "")
 		return Generator_DefaultExpressionToValue(param.Default)
 	if (param.Type = "config_coordinate")
-		return "Example Coordinate"
+		return "Target"
 	if (param.Type = "config_hotkey")
-		return "Example Hotkey"
+		return "Example"
     if (param.Type = "config_timing_range")
         return Generator_SuggestUniqueTimingName()
 	if (param.Type = "config_color")

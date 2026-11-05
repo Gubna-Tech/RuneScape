@@ -46,8 +46,8 @@ Run(ctx)
 	; LLARS_SetDetection("Target", "Searching")
 	; LLARS_Warn("Script Warning", "What happened", "What LLARS did", "What the user should do", "Optional detail", false)
 	; LLARS_SetStatus("Banking", "Bank")
-	; LLARS_Click("Example Coordinate")
-	; LLARS_PressHotkey("Example Hotkey")
+	; LLARS_Click("Target")
+	; LLARS_PressHotkey("Example")
 	; LLARS_PressKey("Space")  ; purposeful fixed key
 	; LLARS_Sleep("Sleep Short")
 	; LLARS_Sleep("Sleep Short", true)  ; use true only for the true final wait

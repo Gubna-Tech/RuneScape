@@ -364,7 +364,7 @@ LLARS_VisualDashboard(guiName, mode := "setup")
     ; This avoids storing repeated full-window themed composites while preserving the same UI.
     dashboardAssetPath := LLARS_VisualHeaderAsset("dashboard", mode)
     w := (mode = "setup") ? 432 : 417
-    h := (mode = "setup") ? 606 : (mode = "running") ? 472 : (mode = "timer") ? 395 : 309
+    h := (mode = "setup") ? 450 : (mode = "running") ? 472 : (mode = "timer") ? 395 : 309
     headerH := 96
     bodyH := h - headerH
     if (dashboardAssetPath = "")
@@ -421,6 +421,29 @@ LLARS_VisualStackLayout(rows, width := 300)
         , step:buttonStep, bodyY:bodyY, bodyH:bodyH
         , footerCardY:footerCardY, footerButtonY:footerCardY+15
         , height:footerCardY+80}
+}
+
+; Compact stacked setup/config dialogs: the Close action is the final row
+; inside one panel. Other dialogs continue to use the original two-card layout.
+LLARS_VisualCompactStackLayout(rows, width := 300)
+{
+    if (rows < 1)
+        rows := 1
+    bodyY := 88
+    buttonTop := bodyY + 20
+    buttonHeight := 36
+    buttonStep := 46
+    lastBottom := buttonTop + (rows-1)*buttonStep + buttonHeight
+    return {width:width, rows:rows, cardX:14, cardW:width-28, buttonX:36
+        , buttonW:width-72, buttonY:buttonTop, buttonH:buttonHeight
+        , step:buttonStep, bodyY:bodyY, bodyH:lastBottom+18-bodyY
+        , footerButtonY:buttonTop+(rows-1)*buttonStep
+        , height:lastBottom+32}
+}
+
+LLARS_VisualCompactStackCard(guiName, layout)
+{
+    LLARS_VisualCard(guiName, layout.cardX, layout.bodyY, layout.cardW, layout.bodyH)
 }
 
 ; Small read-only confirmation for successful config edits and resets.

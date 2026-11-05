@@ -36,5 +36,11 @@
 ; Loads the main, RunCount, and Timer GUI builders.
 #Include %A_LineFile%\..\LLARS_GUI.ahk
 
+; Loads the read-only script instructions window.
+#Include %A_LineFile%\..\LLARS_Instructions.ahk
+
+; Shared Config.ini timer-range setup editor (not script-owned timer GUIs).
+#Include %A_LineFile%\..\LLARS_TimerSetup.ahk
+
 ; Loads runtime estimation and shared completion helpers.
 #Include %A_LineFile%\..\LLARS_Runtime.ahk

@@ -66,7 +66,7 @@ LLARS is designed for both:
 - [LLARS Documentation](#llars-documentation)
   - [Setup Guide](#setup-guide)
   - [Script Creator Documentation](#script-creator-documentation)
-  - [Config.ini Instructions](#configini-instructions)
+  - [Script Instructions](#script-instructions)
   - [Configuration Backup & Restore](#configuration-backup--restore)
 - [Requirements](#requirements)
 - [Support](#support)
@@ -79,7 +79,7 @@ LLARS is designed for both:
 >
 > **You do not need to make changes to the script itself.**
 >
-> Normal script configuration should be performed through the **LLARS GUI**, the root `LLARS Config.ini`, and any script-local `Config.ini` provided for that activity. Some scripts do not require a local `Config.ini`.
+> For normal setup, use the **Instructions** button on the idle LLARS window and the editors in **Setup**. You do not need to open or edit `Config.ini` files to follow a bundled script's walkthrough. Only open a configuration file when an instruction or a specific advanced setting requires it.
 
 **The included scripts are designed for RuneScape 3 (RS3/EoC) only.** LLARS recognizes Old School RuneScape (OSRS) through the official client and RuneLite, and creators can use its framework and Script Generator to build OSRS scripts. **No ready-made OSRS scripts are included.**
 
@@ -102,10 +102,10 @@ Before setting up or running a script, **please read the [LLARS - Setup Guide](D
 The LLARS Setup Guide is the primary guide for learning how to:
 
 - Set up LLARS and its scripts
-- Configure a script through the LLARS GUI
-- Configure hotkeys, coordinates, and colors
-- Understand the root LLARS configuration and script-local `Config.ini` files when a script provides one
-- Understand required and optional settings
+- Open script-specific **Instructions** and follow the setup walkthrough
+- Use **Setup > Hotkeys**, **Coordinates**, **Colors**, and **Timer** when the script needs them
+- Confirm required settings with **Setup > Check Setup**
+- Understand when an advanced option genuinely requires opening a configuration file
 - Run scripts correctly
 - Understand timer and run-count settings
 - Pause, resume, and stop scripts
@@ -125,21 +125,15 @@ Script creators who want to create or update LLARS-compatible scripts should rea
 
 These are the recommended resources for LLARS v2.x and newer scripts. They cover the current Creator API, framework behavior, reusable components, templates, and copy/paste patterns used throughout the project.
 
-### Config.ini Instructions
+### Script Instructions
 
-When setting up a script for the first time, read its **Information** text and, if the script folder includes one, its `Config.ini`.
+**Instructions is the starting point for setting up a bundled script.** Choose your script in Script Selector, then select **Instructions** from its idle LLARS window, below **Setup**. Each script's guide explains its starting position, required items or settings, and the steps to follow before pressing **Start**.
 
-A script-local `Config.ini` may contain important instructions and information specific to that activity. Some scripts do not need a local `Config.ini` because their behavior is driven by shared LLARS settings or by the script itself.
+Read **Before You Start** first, then follow **Steps to Run** in order. **Optional Settings** and **Additional Script Notes** appear separately when applicable. The Instructions window includes **Colors**, **Coordinates**, **Hotkeys**, and **Timer** shortcuts; categories the selected script does not use are disabled. You can also open the same editors through **Setup**. For coordinates, select the named field in **Setup > Coordinates** and right-click the indicated in-game target to capture it. Finish by using **Setup > Check Setup** to check the applicable settings.
 
-> **Pay close attention to the instructions and comments above each section.**
->
-> They may explain how a setting works or exactly what should be selected when configuring it through the LLARS GUI.
+**Follow the guide for the exact script variant you selected.** For example, standard banking scripts can use a configured **[Bank Preset]** hotkey, while Menu Entry Swapper (**MES**) variants may require the correct preset to have been loaded first. Do not carry setup assumptions from one script to another.
 
-Different scripts can require different configurations—or no script-local configuration at all—so **do not assume that the settings or instructions from one script apply to another**.
-
-When a supported activity has both versions, Script Selector offers **Normal** and **Menu Entry Swapper** variants. Normal scripts remain under `Scripts`; Menu Entry Swapper variants are kept separately under `Scripts - Menu Entry Swapper` and rely on the bank interaction to load the last preset instead of pressing a Bank Preset hotkey. The Selector uses the shorter `- MES` suffix for these alternate entries while the type filter keeps the full Menu Entry Swapper family name. Use the Selector's type filter to show either family.
-
-For normal setup, use the **LLARS GUI whenever possible** rather than manually editing configuration files.
+The root `LLARS Config.ini` and script-local `Config.ini` files store settings, but **routine setup should not require editing them by hand**. Use the LLARS editors first. Open **Setup > Script Config** or **Config Settings** only when a script-specific instruction, unsupported advanced option, or troubleshooting situation actually requires it. Back up your configuration before making manual changes.
 
 ### Configuration Backup & Restore
 

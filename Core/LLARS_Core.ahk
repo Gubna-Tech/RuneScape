@@ -276,7 +276,7 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	global LLARS_RUNNING
 	global LLARS_CONTROLS_LOCKED
 
-	lhk1 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Start Hotkey", "hotkey", "ERROR")
+	lhk1 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Start", "hotkey", "ERROR")
 	if (lhk1 = "ERROR")
 		lhk1 := ""
 	lhk1 := Trim(lhk1)
@@ -304,11 +304,11 @@ SetLLARSHOTKEYS(state := "On", startOnly := false)
 	if (startOnly)
 		return true
 
-	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information Hotkey", "hotkey", "ERROR")
-	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Setup/Pause/Resume Hotkey", "hotkey", "ERROR")
+	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information", "hotkey", "ERROR")
+	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Setup/Pause/Resume", "hotkey", "ERROR")
 	if (lhk3 = "ERROR")
 		lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Color/Coordinate/Hotkey Hotkey", "hotkey", "ERROR")
-	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Exit Hotkey", "hotkey", "ERROR")
+	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Exit", "hotkey", "ERROR")
 	if (lhk2 = "ERROR")
 		lhk2 := ""
 	if (lhk3 = "ERROR")
@@ -425,12 +425,12 @@ LLARS_CheckHotkeyConfig()
 {
 	global LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5
 
-	lhk1 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Start Hotkey", "hotkey", "ERROR")
-	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information Hotkey", "hotkey", "ERROR")
-	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Setup/Pause/Resume Hotkey", "hotkey", "ERROR")
+	lhk1 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Start", "hotkey", "ERROR")
+	lhk2 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Information", "hotkey", "ERROR")
+	lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Setup/Pause/Resume", "hotkey", "ERROR")
 	if (lhk3 = "ERROR")
 		lhk3 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Color/Coordinate/Hotkey Hotkey", "hotkey", "ERROR")
-	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "exit Hotkey", "hotkey", "ERROR")
+	lhk4 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Exit", "hotkey", "ERROR")
 	lhk5 := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Developer Mode", "hotkey", "ERROR")
 
 	if (lhk1 = "ERROR" || lhk2 = "ERROR" || lhk3 = "ERROR" || lhk4 = "ERROR")
@@ -746,7 +746,7 @@ LLARS_SetupItemIsAvailable(itemName)
 ; object also powers Selector metadata, main Setup Status, and Setup controls.
 LLARS_ShowSetupPreflight()
 {
-    global LLARS_SETUP_PREFLIGHT, LLARS_COMBO_TIMER_LABEL
+    global LLARS_SETUP_PREFLIGHT
 
     LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(true)
     LLARS_SupportEvent("Setup preflight", LLARS_SETUP_PREFLIGHT.Overall)
@@ -781,7 +781,7 @@ LLARS_ShowSetupPreflight()
                 Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckCoordinates", Open
             else if (itemName = "Colors")
                 Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckColors", Open
-            else if (itemName = "Timer" && LLARS_COMBO_TIMER_LABEL != "")
+            else if (itemName = "Timer")
                 Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckTimer", Open
             else if (itemName = "Input Backend")
                 Gui SetupCheck: Add, Button, % "x344 y" . (y-3) . " w73 h28 gSetupCheckInput", Open
@@ -1695,9 +1695,13 @@ LLARS_ShowConfigError(file, message, logDetails, section, key)
         editorName := "Setup"
     }
 
-    GuiControl, 1:, ScriptRed, CONFIG
-    GuiControl, 1:, State2, ERROR
-    LLARS_VisualShowStatus("red")
+    GuiControlGet, statusHwnd, 1:Hwnd, ScriptRed
+    if (statusHwnd)
+    {
+        GuiControl, 1:, ScriptRed, CONFIG
+        GuiControl, 1:, State2, ERROR
+        LLARS_VisualShowStatus("red")
+    }
     LLARS_ReportError("Config Error", message, "Start was blocked; no automation began."
         , "Correct the indicated setting in " . editorName . " and try Start again."
         , logDetails, false, "Configuration")

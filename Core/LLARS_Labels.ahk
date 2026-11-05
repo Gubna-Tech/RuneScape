@@ -29,6 +29,11 @@ Else IfWinActive, Timer ahk_class AutoHotkeyGUI
 	Gui 1: Show
 }
 
+Else IfWinActive, Script Instructions ahk_class AutoHotkeyGUI
+{
+    GoSub, CloseInstructions
+}
+
 Else IfWinActive, Information ahk_class AutoHotkeyGUI
 {
 	GoSub, CloseInfo
@@ -285,11 +290,11 @@ Gui Combo: Destroy
 Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSetupGuiHwnd
 LLARS_VisualPrepare("Combo")
 setupCaps := LLARS_GetScriptCapabilities()
-setupHasTimer := (setupCaps.Timer && LLARS_COMBO_TIMER_LABEL != "")
+setupHasTimer := setupCaps.Timer
 setupButtonCount := 7 + (setupHasTimer ? 1 : 0)
-setupLayout := LLARS_VisualStackLayout(setupButtonCount)
+setupLayout := LLARS_VisualCompactStackLayout(setupButtonCount + 1)
 LLARS_VisualModalHeader("Combo", setupLayout.width, "Setup")
-LLARS_VisualModalCards("Combo", setupLayout)
+LLARS_VisualCompactStackCard("Combo", setupLayout)
 setupY := setupLayout.buttonY
 Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gColor vSetupColorsButton", Colors
 if (!setupCaps.Colors)
@@ -391,14 +396,9 @@ Gui Combo: Hide
 LLARS_ShowSetupPreflight()
 return
 
-; Opens the optional script-owned Timer/setup editor.
+; Opens the same Config.ini-driven timer editor from Setup, Checklist and Instructions.
 LLARS_CustomComboTimer:
-if (LLARS_COMBO_TIMER_LABEL != "")
-{
-	LLARS_DeveloperUIAction("Setup", "Closed")
-	LLARS_DeveloperUIAction("Timer Configuration")
-	GoSub, %LLARS_COMBO_TIMER_LABEL%
-}
+LLARS_TimerSetupShow()
 return
 
 ; Returns from Setup to the main LLARS window.
@@ -452,6 +452,20 @@ Gui SetupCheck: Destroy
 GoSub, LLARS_CustomComboTimer
 return
 
+TimerSetupChoose:
+LLARS_TimerSetupLoadSelected()
+return
+
+TimerSetupSave:
+LLARS_TimerSetupSaveSelected()
+return
+
+TimerSetupGuiClose:
+TimerSetupGuiEscape:
+TimerSetupClose:
+LLARS_TimerSetupClose()
+return
+
 SetupCheckInput:
 Gui SetupCheck: Destroy
 GoSub, InputSettings
@@ -480,7 +494,7 @@ return
 
 SetupStatusTimer:
 LLARS_UpdateConfigStatus()
-if (LLARS_SetupItemIsAvailable("Timer") && LLARS_COMBO_TIMER_LABEL != "")
+if LLARS_SetupItemIsAvailable("Timer")
 	GoSub, LLARS_CustomComboTimer
 return
 
@@ -508,9 +522,9 @@ DisableHotkey()
 Gui ConfigSettings: Destroy
 Gui ConfigSettings: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSettingsGuiHwnd
 LLARS_VisualPrepare("ConfigSettings")
-settingsLayout := LLARS_VisualStackLayout(5)
+settingsLayout := LLARS_VisualCompactStackLayout(6)
 LLARS_VisualModalHeader("ConfigSettings", settingsLayout.width, "Config Settings")
-LLARS_VisualModalCards("ConfigSettings", settingsLayout)
+LLARS_VisualCompactStackCard("ConfigSettings", settingsLayout)
 Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . settingsLayout.buttonY . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoLLARS", LLARS Config
 Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoConfig vConfigSettingsScriptButton", Script Config
 if !FileExist(LLARS_SCRIPT_DIR . "\Config.ini")
@@ -1419,7 +1433,7 @@ Loop, Parse, llarsContents, `n
 	currentSection := Trim(currentSection)
 	if (GetConfigType(LLARS_CONFIG_FILE, currentSection) = "hotkey")
 	{
-		displaySection := (currentSection = "Color/Coordinate/Hotkey Hotkey") ? "Setup/Pause/Resume Hotkey" : currentSection
+		displaySection := (currentSection = "Color/Coordinate/Hotkey Hotkey") ? "Setup/Pause/Resume" : currentSection
 		sectionList .= "|" displaySection
 		hotkeyConfigFiles[displaySection] := LLARS_CONFIG_FILE
 	}
@@ -1483,7 +1497,7 @@ if (configFile = "")
 selectedHotkeySection := selectedSection
 selectedHotkeyConfigFile := configFile
 configSection := selectedSection
-if (selectedSection = "Setup/Pause/Resume Hotkey" && LLARS_ConfigReadFile(configFile, selectedSection, "Hotkey", "ERROR") = "ERROR")
+if (selectedSection = "Setup/Pause/Resume" && LLARS_ConfigReadFile(configFile, selectedSection, "Hotkey", "ERROR") = "ERROR")
     configSection := "Color/Coordinate/Hotkey Hotkey"
 selectedHotkeySection := configSection
 existingHotkey := LLARS_ConfigReadFile(configFile, configSection, "Hotkey", "ERROR")
@@ -1607,6 +1621,36 @@ ExitApp
 
 ; Builds the Information window with current LLARS/script hotkeys,
 ; shared options, developer/community resources, and project details.
+Instructions:
+LLARS_InstructionsShow()
+return
+
+InstructionsGuiClose:
+InstructionsGuiEscape:
+CloseInstructions:
+LLARS_InstructionsClose()
+return
+
+InstructionsOpenColors:
+LLARS_InstructionsClose()
+GoSub, Color
+return
+
+InstructionsOpenCoordinates:
+LLARS_InstructionsClose()
+GoSub, Coordinates
+return
+
+InstructionsOpenHotkeys:
+LLARS_InstructionsClose()
+GoSub, Hotkey
+return
+
+InstructionsOpenTimer:
+LLARS_InstructionsClose()
+GoSub, LLARS_CustomComboTimer
+return
+
 Info:
 LLARS_DeveloperHotkey("Information")
 logout := LLARS_ConfigReadFile(LLARS_CONFIG_FILE, "Logout", "option", "ERROR")
@@ -1745,7 +1789,7 @@ Gui 20: Font, s11 Bold c1D4F8D, Segoe UI
 Gui 20: Add, Text, % "x25 y" . (notesHeadingY+4) . " w310 h22 Center BackgroundTrans", Script Notes
 Gui 20: Add, Text, % "x21 y" . (notesHeadingY+28) . " w318 h1 Disabled BackgroundD0DAE7"
 Gui 20: Font, s11 Norm c24324A, Segoe UI
-Gui 20: Add, Text, x30 y%notesTextY% w301 h%notesTextHeight% Center BackgroundTrans, Additional notes/comments can be found in the script Config.ini file, available from Config Settings.
+Gui 20: Add, Text, x30 y%notesTextY% w301 h%notesTextHeight% Center BackgroundTrans, Open Instructions on the idle LLARS window for script setup steps, requirements, and additional notes.
 Gui 20: Add, Text, % "x21 y" . (mitY-7) . " w318 h1 Disabled BackgroundD0DAE7"
 Gui 20: Font, s11 Bold c2868D9 underline, Segoe UI
 Gui 20: Add, Text, x24 y%mitY% w312 h20 Center BackgroundTrans gMIT, MIT License

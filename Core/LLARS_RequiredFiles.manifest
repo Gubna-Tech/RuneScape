@@ -1,4 +1,4 @@
-# LLARS v2.3.5 required runtime manifest
+# LLARS v2.3.6 required runtime manifest
 # Runtime dependencies required for a complete LLARS installation.
 # User-editable Config.ini values are intentionally not hash-enforced.
 required	VERSION
@@ -53,6 +53,7 @@ required	Assets/UI/panel_532x103.png
 required	Assets/UI/panel_532x173.png
 required	Assets/UI/panel_532x120.png
 required	Assets/UI/panel_532x258.png
+required	Core/LLARS_Instructions.ahk
 required	Core/LLARS_GUI.ahk
 required	Core/LLARS_Labels.ahk
 required	Core/LLARS_Runtime.ahk
@@ -175,6 +176,238 @@ required	Scripts - Menu Entry Swapper/Prifddinas/Cooking/Cooking.ahk
 required	Scripts - Menu Entry Swapper/Prifddinas/Firemaking/Firemaking.ahk
 required	Scripts - Menu Entry Swapper/Pyre Crafter/Pyre Crafter.ahk
 required	Scripts - Menu Entry Swapper/Wine Maker/Wine Maker.ahk
+# Additional packaged dependencies: guide coverage, script configs, templates and manuals.
+required	Core/LLARS_TimerSetup.ahk
+required	Documentation/AI Script Authoring Reference.pdf
+required	Documentation/LLARS - Script Creator & Framework Guide.pdf
+required	Documentation/LLARS - Script Creator Library.pdf
+required	Documentation/LLARS - Setup Guide.pdf
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Amulet Stringer/Amulet Stringer.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Armour Crafter/Armour Crafter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Bones 2 Bananas/Bones 2 Bananas.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Bow Cutter/Bow Cutter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Bow Stringer/Bow Stringer.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Cooking/Cooking.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fletching - Corrupted Magic Logs/Fletching.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Cooking/Cooking.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Frame Maker/Frame Maker.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Jewellery Crafter/Jewellery Crafter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Limestone Brick/Brick Maker.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Plank + Refined/Plank + Refined.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Plank Maker/Plank Maker.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Refined Plank/Refined Plank.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Spinning Wheel/Spinning Wheel.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Fort Forinthry/Stone Wall/Stone Wall.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Gem Cutter/Gem Cutter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Glassblowing/Glassblowing.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Herb Cleaner - Skillcape/Skillcape Cleaner.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Herb Cleaner/Herb Cleaner.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Incense/Ash to Incense/Ash to Incense.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Incense/Herb to Incense/Herb to Incense.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Incense/Incense Crafter/Incense Crafter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Jewellery Crafter/Jewellery Crafter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Jewellery Enchant/Jewel Enchant.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Lunar Spells/Bake Pie/Bake Pie.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Lunar Spells/Fire Urn/Fire Urn.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Lunar Spells/Sift Soil/Sift Soil.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Lunar Spells/String Jewellery/Jewel Stringer.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Lunar Spells/Telekinetic Grind/Telekinetic Grind with Banking/Tele Grind.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Necromancy/Ink Crafter/Ink Crafter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Potion Mixer/Potion Mixer.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Prayer/Prayer.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Prifddinas/Cooking/Cooking.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Prifddinas/Firemaking/Firemaking.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Pyre Crafter/Pyre Crafter.txt
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Wine Maker/Wine Maker.txt
+required	Documentation/Script Instructions/Scripts/AFK Combat/AFK Combat.txt
+required	Documentation/Script Instructions/Scripts/Agility/Barbarian/Advanced/Barbarian Course.txt
+required	Documentation/Script Instructions/Scripts/Agility/Barbarian/Basic/Barbarian Course.txt
+required	Documentation/Script Instructions/Scripts/Agility/Burthorpe/Burthorpe.txt
+required	Documentation/Script Instructions/Scripts/Agility/Gnome/Advanced/Gnome Course.txt
+required	Documentation/Script Instructions/Scripts/Agility/Gnome/Basic/Gnome Course.txt
+required	Documentation/Script Instructions/Scripts/Agility/Het's Oasis/Het's Oasis.txt
+required	Documentation/Script Instructions/Scripts/Agility/Watchtower Shortcut/Watchtower.txt
+required	Documentation/Script Instructions/Scripts/Agility/Wilderness/Wilderness.txt
+required	Documentation/Script Instructions/Scripts/Alchemy/Alchemy.txt
+required	Documentation/Script Instructions/Scripts/Amulet Stringer/Amulet Stringer.txt
+required	Documentation/Script Instructions/Scripts/Anti-AFK/Anti-AFK.txt
+required	Documentation/Script Instructions/Scripts/Archaeology/Excavate/Excavate.txt
+required	Documentation/Script Instructions/Scripts/Armour Crafter/Armour Crafter.txt
+required	Documentation/Script Instructions/Scripts/Arrow Fletcher/Arrow Fletcher.txt
+required	Documentation/Script Instructions/Scripts/AutoClicker/AutoClicker.txt
+required	Documentation/Script Instructions/Scripts/AutoTele/AutoTele.txt
+required	Documentation/Script Instructions/Scripts/Bar Smelter/Bar Smelter.txt
+required	Documentation/Script Instructions/Scripts/Bar Smelter/Smelting Glove.txt
+required	Documentation/Script Instructions/Scripts/Bones 2 Bananas/Bones 2 Bananas.txt
+required	Documentation/Script Instructions/Scripts/Bow Cutter/Bow Cutter.txt
+required	Documentation/Script Instructions/Scripts/Bow Stringer/Bow Stringer.txt
+required	Documentation/Script Instructions/Scripts/Contract Binding/Contract Binding.txt
+required	Documentation/Script Instructions/Scripts/Cooking/Cooking.txt
+required	Documentation/Script Instructions/Scripts/Croesus Front/Croesus Front.txt
+required	Documentation/Script Instructions/Scripts/Divination/Divine Conversion - Monolith Power/Divination - High Contrast.txt
+required	Documentation/Script Instructions/Scripts/Divination/Normal - Non-Monolith Power/Divination - High Contrast.txt
+required	Documentation/Script Instructions/Scripts/Eternal Tree/Eternal Tree.txt
+required	Documentation/Script Instructions/Scripts/Fletching - Corrupted Magic Logs/Fletching.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Cooking/Cooking.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Frame Maker/Frame Maker.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Jewellery Crafter/Jewellery Crafter.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Limestone Brick/Brick Maker.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Plank + Refined/Plank + Refined.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Plank Maker/Plank Maker.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Refined Plank/Refined Plank.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Spinning Wheel/Fungal Bowstring.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Spinning Wheel/Spinning Wheel.txt
+required	Documentation/Script Instructions/Scripts/Fort Forinthry/Stone Wall/Stone Wall.txt
+required	Documentation/Script Instructions/Scripts/Gem Cutter/Gem Cutter.txt
+required	Documentation/Script Instructions/Scripts/Glassblowing/Glassblowing.txt
+required	Documentation/Script Instructions/Scripts/Herb Cleaner - Skillcape/Skillcape Cleaner.txt
+required	Documentation/Script Instructions/Scripts/Herb Cleaner/Herb Cleaner.txt
+required	Documentation/Script Instructions/Scripts/Incense/Ash to Incense/Ash to Incense.txt
+required	Documentation/Script Instructions/Scripts/Incense/Herb to Incense/Herb to Incense.txt
+required	Documentation/Script Instructions/Scripts/Incense/Incense Crafter/Incense Crafter.txt
+required	Documentation/Script Instructions/Scripts/Invention/Disassembly/Disassembly.txt
+required	Documentation/Script Instructions/Scripts/Jewellery Crafter/Jewellery Crafter.txt
+required	Documentation/Script Instructions/Scripts/Jewellery Enchant/Jewel Enchant.txt
+required	Documentation/Script Instructions/Scripts/Lunar Spells/Bake Pie/Bake Pie.txt
+required	Documentation/Script Instructions/Scripts/Lunar Spells/Fire Urn/Fire Urn.txt
+required	Documentation/Script Instructions/Scripts/Lunar Spells/Sift Soil/Sift Soil.txt
+required	Documentation/Script Instructions/Scripts/Lunar Spells/String Jewellery/Jewel Stringer.txt
+required	Documentation/Script Instructions/Scripts/Lunar Spells/Telekinetic Grind/Telekinetic Grind with Banking/Tele Grind.txt
+required	Documentation/Script Instructions/Scripts/Lunar Spells/Telekinetic Grind/Telekinetic Grind with No Banking/Tele Grind.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Candle Crafter/Candle Crafter.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Ink Crafter/Ink Crafter.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Rituals/Communion & Material/Focus Storage/Rituals.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Rituals/Communion & Material/Without Focus Storage/Rituals.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Rituals/Ectoplasm/Focus Storage/Rituals.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Rituals/Ectoplasm/Without Focus Storage/Rituals.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Rituals/Essence & Necroplasm/Focus Storage/Rituals.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Rituals/Essence & Necroplasm/Without Focus Storage/Rituals.txt
+required	Documentation/Script Instructions/Scripts/Necromancy/Slime Collector - Notepaper/Slime Collector.txt
+required	Documentation/Script Instructions/Scripts/Potion Mixer/Potion Mixer.txt
+required	Documentation/Script Instructions/Scripts/Prayer/Prayer.txt
+required	Documentation/Script Instructions/Scripts/Prifddinas/Cooking/Cooking.txt
+required	Documentation/Script Instructions/Scripts/Prifddinas/Firemaking/Firemaking.txt
+required	Documentation/Script Instructions/Scripts/Pyre Crafter/Pyre Crafter.txt
+required	Documentation/Script Instructions/Scripts/Sharp Shell Burning/Shell Burning.txt
+required	Documentation/Script Instructions/Scripts/Smithing/Smithing.txt
+required	Documentation/Script Instructions/Scripts/Wine Maker/Wine Maker.txt
+required	Scripts - Menu Entry Swapper/Amulet Stringer/Config.ini
+required	Scripts - Menu Entry Swapper/Armour Crafter/Config.ini
+required	Scripts - Menu Entry Swapper/Bones 2 Bananas/Config.ini
+required	Scripts - Menu Entry Swapper/Bow Cutter/Config.ini
+required	Scripts - Menu Entry Swapper/Bow Stringer/Config.ini
+required	Scripts - Menu Entry Swapper/Cooking/Config.ini
+required	Scripts - Menu Entry Swapper/Fletching - Corrupted Magic Logs/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Cooking/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Frame Maker/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Jewellery Crafter/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Limestone Brick/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Plank + Refined/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Plank Maker/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Refined Plank/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Spinning Wheel/Config.ini
+required	Scripts - Menu Entry Swapper/Fort Forinthry/Stone Wall/Config.ini
+required	Scripts - Menu Entry Swapper/Gem Cutter/Config.ini
+required	Scripts - Menu Entry Swapper/Glassblowing/Config.ini
+required	Scripts - Menu Entry Swapper/Herb Cleaner - Skillcape/Config.ini
+required	Scripts - Menu Entry Swapper/Herb Cleaner/Config.ini
+required	Scripts - Menu Entry Swapper/Incense/Ash to Incense/Config.ini
+required	Scripts - Menu Entry Swapper/Incense/Herb to Incense/Config.ini
+required	Scripts - Menu Entry Swapper/Incense/Incense Crafter/Config.ini
+required	Scripts - Menu Entry Swapper/Jewellery Crafter/Config.ini
+required	Scripts - Menu Entry Swapper/Jewellery Enchant/Config.ini
+required	Scripts - Menu Entry Swapper/Lunar Spells/Bake Pie/Config.ini
+required	Scripts - Menu Entry Swapper/Lunar Spells/Fire Urn/Config.ini
+required	Scripts - Menu Entry Swapper/Lunar Spells/Sift Soil/Config.ini
+required	Scripts - Menu Entry Swapper/Lunar Spells/String Jewellery/Config.ini
+required	Scripts - Menu Entry Swapper/Lunar Spells/Telekinetic Grind/Telekinetic Grind with Banking/Config.ini
+required	Scripts - Menu Entry Swapper/Necromancy/Ink Crafter/Config.ini
+required	Scripts - Menu Entry Swapper/Potion Mixer/Config.ini
+required	Scripts - Menu Entry Swapper/Prayer/Config.ini
+required	Scripts - Menu Entry Swapper/Prifddinas/Cooking/Config.ini
+required	Scripts - Menu Entry Swapper/Prifddinas/Firemaking/Config.ini
+required	Scripts - Menu Entry Swapper/Pyre Crafter/Config.ini
+required	Scripts - Menu Entry Swapper/Wine Maker/Config.ini
+required	Scripts/AFK Combat/Config.ini
+required	Scripts/Agility/Barbarian/Advanced/Config.ini
+required	Scripts/Agility/Barbarian/Basic/Config.ini
+required	Scripts/Agility/Burthorpe/Config.ini
+required	Scripts/Agility/Gnome/Advanced/Config.ini
+required	Scripts/Agility/Gnome/Basic/Config.ini
+required	Scripts/Agility/Het's Oasis/Config.ini
+required	Scripts/Agility/Watchtower Shortcut/Config.ini
+required	Scripts/Agility/Wilderness/Config.ini
+required	Scripts/Alchemy/Config.ini
+required	Scripts/Amulet Stringer/Config.ini
+required	Scripts/Anti-AFK/Config.ini
+required	Scripts/Archaeology/Excavate/Config.ini
+required	Scripts/Armour Crafter/Config.ini
+required	Scripts/Arrow Fletcher/Config.ini
+required	Scripts/AutoClicker/Config.ini
+required	Scripts/AutoTele/Config.ini
+required	Scripts/Bar Smelter/Config.ini
+required	Scripts/Bones 2 Bananas/Config.ini
+required	Scripts/Bow Cutter/Config.ini
+required	Scripts/Bow Stringer/Config.ini
+required	Scripts/Contract Binding/Config.ini
+required	Scripts/Cooking/Config.ini
+required	Scripts/Croesus Front/Config.ini
+required	Scripts/Fletching - Corrupted Magic Logs/Config.ini
+required	Scripts/Fort Forinthry/Cooking/Config.ini
+required	Scripts/Fort Forinthry/Frame Maker/Config.ini
+required	Scripts/Fort Forinthry/Jewellery Crafter/Config.ini
+required	Scripts/Fort Forinthry/Limestone Brick/Config.ini
+required	Scripts/Fort Forinthry/Plank + Refined/Config.ini
+required	Scripts/Fort Forinthry/Plank Maker/Config.ini
+required	Scripts/Fort Forinthry/Refined Plank/Config.ini
+required	Scripts/Fort Forinthry/Spinning Wheel/Config.ini
+required	Scripts/Fort Forinthry/Stone Wall/Config.ini
+required	Scripts/Gem Cutter/Config.ini
+required	Scripts/Glassblowing/Config.ini
+required	Scripts/Herb Cleaner - Skillcape/Config.ini
+required	Scripts/Herb Cleaner/Config.ini
+required	Scripts/Incense/Ash to Incense/Config.ini
+required	Scripts/Incense/Herb to Incense/Config.ini
+required	Scripts/Incense/Incense Crafter/Config.ini
+required	Scripts/Invention/Disassembly/Config.ini
+required	Scripts/Jewellery Crafter/Config.ini
+required	Scripts/Jewellery Enchant/Config.ini
+required	Scripts/Lunar Spells/Bake Pie/Config.ini
+required	Scripts/Lunar Spells/Fire Urn/Config.ini
+required	Scripts/Lunar Spells/Sift Soil/Config.ini
+required	Scripts/Lunar Spells/String Jewellery/Config.ini
+required	Scripts/Lunar Spells/Telekinetic Grind/Telekinetic Grind with Banking/Config.ini
+required	Scripts/Lunar Spells/Telekinetic Grind/Telekinetic Grind with No Banking/Config.ini
+required	Scripts/Necromancy/Candle Crafter/Config.ini
+required	Scripts/Necromancy/Ink Crafter/Config.ini
+required	Scripts/Necromancy/Rituals/Communion & Material/Focus Storage/Config.ini
+required	Scripts/Necromancy/Rituals/Communion & Material/Without Focus Storage/Config.ini
+required	Scripts/Necromancy/Rituals/Ectoplasm/Focus Storage/Config.ini
+required	Scripts/Necromancy/Rituals/Ectoplasm/Without Focus Storage/Config.ini
+required	Scripts/Necromancy/Rituals/Essence & Necroplasm/Focus Storage/Config.ini
+required	Scripts/Necromancy/Rituals/Essence & Necroplasm/Without Focus Storage/Config.ini
+required	Scripts/Necromancy/Slime Collector - Notepaper/Config.ini
+required	Scripts/Potion Mixer/Config.ini
+required	Scripts/Prayer/Config.ini
+required	Scripts/Prifddinas/Cooking/Config.ini
+required	Scripts/Prifddinas/Firemaking/Config.ini
+required	Scripts/Pyre Crafter/Config.ini
+required	Scripts/Sharp Shell Burning/Config.ini
+required	Scripts/Smithing/Config.ini
+required	Scripts/Waterfall Fishing/Config.ini
+required	Scripts/Wine Maker/Config.ini
+required	Templates/Color/Color Detection Script Template.ahk
+required	Templates/Color/Config.ini
+required	Templates/MultiColor/Config.ini
+required	Templates/MultiColor/Multi Color Detection Script Template.ahk
+required	Templates/MultiTimer/Config.ini
+required	Templates/MultiTimer/MultiTimer Script Template.ahk
+required	Templates/RunCount/Advanced Loop/Advanced Loop Script Template.ahk
+required	Templates/RunCount/Advanced Loop/Config.ini
+required	Templates/RunCount/Basic Loop/Basic Loop Script Template.ahk
+required	Templates/RunCount/Basic Loop/Config.ini
+required	Templates/Timer/Config.ini
+required	Templates/Timer/Timer Script Template.ahk
 sha256	Vendor/AutoHotInterception/Lib/AutoHotInterception.dll	f993d7c9c9f37f1ff28246cfe620caae9efab92aa0fa1b57a7c615d68d034a17
 sha256	Vendor/AutoHotInterception/Lib/x64/interception.dll	ab88164c11b1b48488772d4c3bfaa4509d5b0ae9dbc5a691dc4f96f0260443c8
 sha256	Vendor/AutoHotInterception/Lib/x86/interception.dll	9e1def27b804df9ba97fd07f9de835c70660ae568c00950102f70034e293a684
@@ -194,3 +427,4 @@ required	Assets/UI/panel_688x116.png
 required	Assets/UI/panel_688x142.png
 required	Assets/UI/panel_688x170.png
 required	Assets/UI/panel_1218x67.png
+required	Documentation/Script Instructions/Scripts/Waterfall Fishing/Waterfall Fishing.txt

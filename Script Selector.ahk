@@ -145,7 +145,7 @@ LLARS_VisualPrepare("1")
 LLARS_VisualAccent("1", 420)
 LLARS_VisualBanner("1", 420, 88)
 LLARS_VisualCard("1", 8, 92, 404, 68)
-LLARS_VisualCard("1", 8, 430, 404, 150)
+LLARS_VisualCard("1", 8, 420, 404, 142)
 LLARS_SelectorMoving := false
 ; Register borderless-window movement before the first handler label so these
 ; callbacks are active during the Selector's entire lifetime. Display changes
@@ -172,19 +172,19 @@ Gui, Add, Text, x20 y171 w250 h19, AVAILABLE SCRIPTS
 Gui, Font, s11 Norm c24324A, Segoe UI
 Gui, Add, ListBox, vScriptListBox gScriptSelect x12 y194 w396 h226, %scriptArray%
 Gui, Font, s10 Bold c24324A, Segoe UI
-Gui, Add, Button, gSelect w110 h34 x24 y446 Center +0xB hwndLLARSSelectorSelectButtonHwnd, Select Script
-Gui, Add, Button, gSelectorToggleFavorite w128 h34 x146 y446 vSelectorFavoriteButton Center +0xB hwndLLARSSelectorFavoriteButtonHwnd, Add Favorite
-Gui, Add, Button, gSelectorClearFilters w110 h34 x286 y446 Center +0xB hwndLLARSSelectorClearButtonHwnd, Clear Filters
-Gui, Add, Button, gSelectorHeaderPreferences w112 h34 x24 y488 Center +0xB hwndLLARSSelectorHeaderButtonHwnd, Header Style
-Gui, Add, Button, gSelectorCreateScript w128 h34 x146 y488 Center +0xB hwndLLARSSelectorCreateButtonHwnd, Create Script
-Gui, Add, Button, gExit w128 h34 x146 y532 Center +0xB hwndLLARSSelectorExitButtonHwnd, Close Selector
-Gui, Add, Button, gSelectorCustomScripts w110 h34 x286 y488 Center +0xB hwndLLARSSelectorImportButtonHwnd, Import Scripts
+Gui, Add, Button, gSelect w110 h34 x24 y432 Center +0xB hwndLLARSSelectorSelectButtonHwnd, Select Script
+Gui, Add, Button, gSelectorToggleFavorite w128 h34 x146 y432 vSelectorFavoriteButton Center +0xB hwndLLARSSelectorFavoriteButtonHwnd, Add Favorite
+Gui, Add, Button, gSelectorClearFilters w110 h34 x286 y432 Center +0xB hwndLLARSSelectorClearButtonHwnd, Clear Filters
+Gui, Add, Button, gSelectorHeaderPreferences w112 h34 x24 y474 Center +0xB hwndLLARSSelectorHeaderButtonHwnd, Header Style
+Gui, Add, Button, gSelectorCreateScript w128 h34 x146 y474 Center +0xB hwndLLARSSelectorCreateButtonHwnd, Create Script
+Gui, Add, Button, gExit w128 h34 x146 y516 Center +0xB hwndLLARSSelectorExitButtonHwnd, Close Selector
+Gui, Add, Button, gSelectorCustomScripts w110 h34 x286 y474 Center +0xB hwndLLARSSelectorImportButtonHwnd, Import Scripts
 ; Register Selector buttons before the window first becomes visible.
 LLARS_SelectorRegisterButtons()
 if LLARS_SelectorLoadWindowPosition(selectorX, selectorY)
-	selectorShowOptions := "w420 h592 x" . selectorX . " y" . selectorY
+	selectorShowOptions := "w420 h570 x" . selectorX . " y" . selectorY
 else
-	selectorShowOptions := "w420 h592 Center"
+	selectorShowOptions := "w420 h570 Center"
 ; The shared visual finalizer also styles remaining native controls.
 LLARS_VisualStyleControls(LLARSSelectorHwnd)
 Gui, Show, %selectorShowOptions%, Script Selector
@@ -291,8 +291,8 @@ LLARS_SelectorBuildRegistry()
 	LLARS_SelectorRegistryAdd(registry, "Agility - Het's Oasis", "Het's Oasis", "Hard", "Runs laps of the Het's Oasis agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Het's Oasis", "Het's Oasis.ahk", "Agility")
 	LLARS_SelectorRegistryAdd(registry, "Incense Crafter", "Incense Crafter", "Easy", "Cuts logs into incense sticks. Use this before 'Ash to Incense'.", "Incense\Incense Crafter", "Incense Crafter.ahk", "Firemaking")
 	LLARS_SelectorRegistryAdd(registry, "Ink Crafter", "Ink Crafter", "Easy", "Crafts ink for the Necromancy skill.", "Necromancy\Ink Crafter", "Ink Crafter.ahk", "Necromancy")
-	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Lumbridge", "Jewellery Crafter", "Hard", "Runs between the Combat Academy bank chest and Lumbridge Furnace to craft your selected Jewellery. Config.ini needs manual setup to work.", "Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting")
-	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Fort Forinthry", "Jewellery Crafter", "Hard", "Runs between the bank chest and furnace at the Fort to craft your selected Jewellery. Config.ini needs manual setup to work.", "Fort Forinthry\Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Lumbridge", "Jewellery Crafter", "Hard", "Runs between the Combat Academy bank chest and Lumbridge Furnace to craft your selected Jewellery. Follow Instructions and complete Setup before starting.", "Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting")
+	LLARS_SelectorRegistryAdd(registry, "Jewellery Crafter - Fort Forinthry", "Jewellery Crafter", "Hard", "Runs between the bank chest and furnace at the Fort to craft your selected Jewellery. Follow Instructions and complete Setup before starting.", "Fort Forinthry\Jewellery Crafter", "Jewellery Crafter.ahk", "Crafting")
 	LLARS_SelectorRegistryAdd(registry, "Jewellery Enchanter", "Jewel Enchant", "Easy", "Casts the selected 'Enchanted Cast' spell to enchant jewellery in your inventory.", "Jewellery Enchant", "Jewel Enchant.ahk", "Magic")
 	LLARS_SelectorRegistryAdd(registry, "Jewellery Stringer - Lunar Spell", "String Jewellery", "Easy", "String an inventory of jewellery using the Lunar Spell.", "Lunar Spells\String Jewellery", "Jewel Stringer.ahk", "Magic")
 	LLARS_SelectorRegistryAdd(registry, "Plank + Refined - Fort Forinthry", "Plank + Refined", "Hard", "Cuts and refines the plank at the Fort.", "Fort Forinthry\Plank + Refined", "Plank + Refined.ahk", "Construction")
@@ -403,6 +403,24 @@ LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Descripti
 	registry.Entries.Push(record)
 	registry.ByName[Name] := record
 	return record
+}
+
+
+; The Selector highlights only the setup choices a player must configure.
+; Timer availability remains derived from Config.ini and visible in Setup.
+LLARS_SelectorVisibleSetupText(capabilities)
+{
+    if !IsObject(capabilities)
+        return "None"
+
+    summary := ""
+    if (capabilities.Hotkeys)
+        summary .= "Hotkeys"
+    if (capabilities.Coordinates)
+        summary .= (summary = "" ? "" : " + ") . "Coordinates"
+    if (capabilities.Colors)
+        summary .= (summary = "" ? "" : " + ") . "Colors"
+    return (summary = "") ? "None" : summary
 }
 
 LLARS_SelectorRegistryAddMenuEntrySwapper(ByRef registry, SourceName)
@@ -1360,7 +1378,7 @@ if A_GuiEvent = Normal
 	scriptinfo := record.Description
 	difficulty := record.Difficulty
 	category := record.Category
-	setupType := record.SetupText
+	setupType := LLARS_SelectorVisibleSetupText(record.Capabilities)
 	localConfigText := record.RequiresLocalConfig ? "Yes" : "No"
 	GuiReset()
 	Gui Info: +LastFound +AlwaysOnTop +OwnDialogs +Disabled +ToolWindow -Caption

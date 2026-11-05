@@ -146,6 +146,9 @@ LLARS_GUIActions(active := false)
     {
         Gui, Add, Button, x33 y172 w175 h35 gCombo, Setup
         Gui, Add, Button, x222 y172 w175 h35 gConfigSettings, Config Settings
+        ; Two matching vertical action columns, with no bottom footer row.
+        Gui, Add, Button, x33 y213 w175 h35 gInstructions, Instructions
+        Gui, Add, Button, x222 y213 w175 h35 gExitB, Exit LLARS
     }
 }
 
@@ -228,34 +231,25 @@ LLARS_CreateMainGUI()
     LLARS_GUIBase(name, LLARSMainGuiHwnd, "setup")
     LLARS_GUIActions(false)
 
-    LLARS_GUISection("SETUP CHECKLIST", 39, 286)
+    LLARS_GUISection("SETUP CHECKLIST", 39, 332)
     Gui, Font, s10 Bold c253650, Segoe UI
-    Gui, Add, Text, x36 y274 w209 h23 vConfigStatusHotkeysLabel gSetupStatusHotkeys BackgroundTrans, Hotkeys
-    Gui, Add, Text, x36 y301 w209 h23 vConfigStatusCoordinatesLabel gSetupStatusCoordinates BackgroundTrans, Coordinates
-    Gui, Add, Text, x36 y328 w209 h23 vConfigStatusColorsLabel gSetupStatusColors BackgroundTrans, Colors
-    Gui, Add, Text, x36 y355 w209 h23 vConfigStatusTimerLabel gSetupStatusTimer BackgroundTrans, Timer
-    Gui, Add, Text, x36 y382 w209 h23 vConfigStatusScriptConfigLabel gSetupStatusScriptConfig BackgroundTrans, Script Config
+    Gui, Add, Text, x36 y295 w209 h23 vConfigStatusHotkeysLabel gSetupStatusHotkeys BackgroundTrans, Hotkeys
+    Gui, Add, Text, x36 y322 w209 h23 vConfigStatusCoordinatesLabel gSetupStatusCoordinates BackgroundTrans, Coordinates
+    Gui, Add, Text, x36 y349 w209 h23 vConfigStatusColorsLabel gSetupStatusColors BackgroundTrans, Colors
+    Gui, Add, Text, x36 y376 w209 h23 vConfigStatusTimerLabel gSetupStatusTimer BackgroundTrans, Timer
+    Gui, Add, Text, x36 y403 w209 h23 vConfigStatusScriptConfigLabel gSetupStatusScriptConfig BackgroundTrans, Script Config
     Gui, Font, s10 Bold c2868D9, Segoe UI
-    Gui, Add, Text, x252 y274 w146 h23 Right +0x4000 vConfigStatusHotkeys gSetupStatusHotkeys BackgroundTrans, Checking
-    Gui, Add, Text, x252 y301 w146 h23 Right +0x4000 vConfigStatusCoordinates gSetupStatusCoordinates BackgroundTrans, Checking
-    Gui, Add, Text, x252 y328 w146 h23 Right +0x4000 vConfigStatusColors gSetupStatusColors BackgroundTrans, Checking
-    Gui, Add, Text, x252 y355 w146 h23 Right +0x4000 vConfigStatusTimer gSetupStatusTimer BackgroundTrans, Checking
-    Gui, Add, Text, x252 y382 w146 h23 Right +0x4000 vConfigStatusScriptConfig gSetupStatusScriptConfig BackgroundTrans, Checking
+    Gui, Add, Text, x252 y295 w146 h23 Right +0x4000 vConfigStatusHotkeys gSetupStatusHotkeys BackgroundTrans, Checking
+    Gui, Add, Text, x252 y322 w146 h23 Right +0x4000 vConfigStatusCoordinates gSetupStatusCoordinates BackgroundTrans, Checking
+    Gui, Add, Text, x252 y349 w146 h23 Right +0x4000 vConfigStatusColors gSetupStatusColors BackgroundTrans, Checking
+    Gui, Add, Text, x252 y376 w146 h23 Right +0x4000 vConfigStatusTimer gSetupStatusTimer BackgroundTrans, Checking
+    Gui, Add, Text, x252 y403 w146 h23 Right +0x4000 vConfigStatusScriptConfig gSetupStatusScriptConfig BackgroundTrans, Checking
 
-    LLARS_GUISection("RUN CONFIGURATION", 39, 483)
-    Gui, Font, s10 Bold c253650, Segoe UI
-    Gui, Add, Text, x36 y449 w189 h23 BackgroundTrans, % (LLARS_SCRIPT_TYPE = "UntilDone" ? "Run mode" : "Run count")
-    Gui, Font, s11 Bold cEF4444, Segoe UI
-    Gui, Add, Text, x229 y448 w169 h24 Right vCounter BackgroundTrans, % (LLARS_SCRIPT_TYPE = "UntilDone" ? "Until complete" : "** NOT SET **")
-    LLARS_GUIActivity(559, "initial")
-    LLARS_GUIExit(654)
+    ; The setup screen ends after its checklist; Exit now shares the action grid.
     LLARS_UpdateConfigStatus()
-    GuiControl, 1:, ScriptRed, %name%
-    GuiControl, 1:, State2, ** OFF **
-    LLARS_VisualShowStatus("red")
     LLARS_VisualEnsureIcon(LLARS_ROOT)
     hasPosition := LLARS_MainLoadPosition(x, y)
-    LLARS_GUIPresent(title, 606, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, x, y)
+    LLARS_GUIPresent(title, 450, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, x, y)
 }
 
 LLARS_CreateRunCountGUI()
