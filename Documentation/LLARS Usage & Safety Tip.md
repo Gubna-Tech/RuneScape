@@ -7,8 +7,8 @@ LLARS is an automation framework for RuneScape3 (RS3). Before running any script
 1. **Read the Setup Guide**  
    Read the [LLARS - Setup Guide](LLARS%20-%20Setup%20Guide.pdf) before setting up or running LLARS. It explains the framework, GUI, hotkeys, coordinates, colors, timers, RunCount settings, and normal script operation.
 
-2. **Read the Script Information and Any Config.ini**  
-   Individual scripts can have their own requirements and instructions. Read the script's Information text and, when its folder includes one, the comments in its `Config.ini`. Some scripts do not require a local `Config.ini`, so do not assume that settings from one script apply to another.
+2. **Follow the Script Instructions**  
+   Open **Instructions** on the script's idle LLARS window. Read **Before You Start**, follow the numbered actions, and use the available Setup editors. Each script variant can have different requirements. Open a `Config.ini` file only when the guide or an advanced setting specifically requires it.
 
 3. **Understand the Account Risk**  
    Automation can violate game rules or terms of service and may result in account penalties. Only use LLARS after considering that risk and accepting responsibility for the account on which you run it.
