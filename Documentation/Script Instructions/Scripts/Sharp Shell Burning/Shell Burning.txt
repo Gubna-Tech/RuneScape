@@ -1,0 +1,24 @@
+﻿SHELL BURNING
+Script variant: Sharp Shell Burning (Standard)
+
+BEFORE YOU START
+
+- Have sharp shell shards in your inventory.
+
+- The default timing assumes at least 60 shards per run.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Sharp Shell Shard] on the inventory slot containing the sharp shell shards.
+
+2. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+3. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+OPTIONAL SETTINGS
+
+- [Offset - Shard]: Optional right-click menu adjustment; keep defaults unless the named option is missed.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

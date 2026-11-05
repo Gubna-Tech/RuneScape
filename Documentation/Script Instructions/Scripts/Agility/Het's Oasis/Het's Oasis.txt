@@ -1,0 +1,64 @@
+﻿HET'S OASIS
+Script variant: Agility / Het's Oasis (Standard)
+
+BEFORE YOU START
+
+- Capture the obstacles in course order. For each one, stand on the tile you would use to click it after finishing the previous obstacle.
+
+- Capture that target before moving on.
+
+- Use your normal starting tile for the first obstacle, and keep the same camera angle and zoom throughout.
+
+- YOU MUST WEAR THE AGILITY SKILLCAPE TO RUN THIS SCRIPT!
+
+- START THIS SCRIPT TO THE TILE WEST OF THE FALLEN PALM TREE IN THE MOST NORTH-WEST CORNER OF THE COURSE.
+
+- In RuneScape use Settings > Gameplay > Camera > System > Camera Mode > Freedom.
+
+- Face NORTH and zoom out so all obstacles remain visible without camera movement.
+
+- Dismiss pets before starting so obstacle clicks remain unobstructed.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Fallen Palm Tree Prime]. Stand on the tile WEST of the north-west fallen palm tree for Prime. Prime is the opening approach; capture Main from the return approach later in the course.
+
+2. Capture [Fallen Palm Tree 1] from its approach tile, before clicking it.
+
+3. Capture [Rope Ladder] from its approach tile, before clicking it.
+
+4. Capture [Gap 1] from its approach tile, before clicking it.
+
+5. Capture [Stone Pillar] from its approach tile, before clicking it.
+
+6. Capture [Rock Wall] from its approach tile, before clicking it.
+
+7. Capture [Fallen Palm Tree 2] from its approach tile, before clicking it.
+
+8. Capture [Small Gap] from its approach tile, before clicking it.
+
+9. Capture [Medium Gap] from its approach tile, before clicking it.
+
+10. Capture [Fallen Palm Tree 3] from its approach tile, before clicking it.
+
+11. Capture [Collapsed Walls] from its approach tile, before clicking it.
+
+12. Capture [Large Rock 1] from its approach tile, before clicking it.
+
+13. Capture [Ledge 1] from its approach tile, before clicking it.
+
+14. Capture [Gap 2] from its approach tile, before clicking it.
+
+15. Capture [Ledge 2] from its approach tile, before clicking it.
+
+16. Capture [Large Rock 2] from its approach tile, before clicking it.
+
+17. Capture [Fallen Palm Tree Main]. Capture Main from the course-return approach to the same fallen palm tree. Prime and Main are the same target viewed from different tiles. Capture each position separately.
+
+18. Return to the tile where you captured Prime, keep the same camera angle and zoom, and check that every obstacle shows Ready in the Setup Checklist.
+
+19. Press Start and choose how many laps you want to run. Watch the first lap to make sure each obstacle is clicked correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

@@ -1,0 +1,20 @@
+﻿ANTI-AFK
+Script variant: Anti-AFK (Standard)
+
+BEFORE YOU START
+
+- Keep RuneScape open. The script moves the mouse occasionally; it does not click.
+
+- Change the movement interval in Setup > Timer if needed.
+
+STEPS TO RUN
+
+1. Open Setup > Timer and select [AFK]. Review or adjust the minimum and maximum interval (in milliseconds).
+
+2. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+3. Press Start and choose how long you want to run. Check that the cursor occasionally moves inside RuneScape without clicking anything.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

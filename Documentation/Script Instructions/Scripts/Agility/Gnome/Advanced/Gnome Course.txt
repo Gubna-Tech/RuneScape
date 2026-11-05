@@ -1,0 +1,46 @@
+﻿GNOME COURSE
+Script variant: Agility / Gnome / Advanced (Standard)
+
+BEFORE YOU START
+
+- Capture the obstacles in course order. For each one, stand on the tile you would use to click it after finishing the previous obstacle.
+
+- Capture that target before moving on.
+
+- Use your normal starting tile for the first obstacle, and keep the same camera angle and zoom throughout.
+
+- FOR BEST RESULTS, USE NORTH-FACING CAMERA WITH THE TOP-DOWN VIEW.
+
+- YOU MUST WEAR THE AGILITY SKILLCAPE TO RUN THIS SCRIPT OR 89 AGILITY!
+
+- Begin in front of the log balance.
+
+- Capture Prime here, then capture Main on the return approach after the barrier.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Log balance prime]. Stand in front of the log balance for Prime. Prime is the opening approach; capture Main from the return approach later in the course.
+
+2. Capture [Obstacle net] from its approach tile, before clicking it.
+
+3. Capture [Tree branch] from its approach tile, before clicking it.
+
+4. Capture [Tree] from its approach tile, before clicking it.
+
+5. Capture [Signpost] from its approach tile, before clicking it.
+
+6. Capture [Pole] from its approach tile, before clicking it.
+
+7. Capture [Tile]. After the pole, target the far north-east tile before [Barrier]. The landing position varies, so place the area far enough north-east to reach that tile.
+
+8. Capture [Barrier] from its approach tile, before clicking it.
+
+9. Capture [Log balance main] on the return-side approach after the barrier, before clicking the log balance again. Prime and Main are the same target viewed from different tiles. Capture each position separately.
+
+10. Return to the tile where you captured Prime, keep the same camera angle and zoom, and check that every obstacle shows Ready in the Setup Checklist.
+
+11. Press Start and choose how many laps you want to run. Watch the first lap to make sure each obstacle is clicked correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

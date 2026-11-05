@@ -1,0 +1,40 @@
+﻿BURTHORPE
+Script variant: Agility / Burthorpe (Standard)
+
+BEFORE YOU START
+
+- Capture the obstacles in course order. For each one, stand on the tile you would use to click it after finishing the previous obstacle.
+
+- Capture that target before moving on.
+
+- Use your normal starting tile for the first obstacle, and keep the same camera angle and zoom throughout.
+
+- FOR BEST RESULTS, USE SOUTH-FACING CAMERA WITH THE TOP-DOWN VIEW.
+
+- START THIS SCRIPT WHILST STANDING NEXT TO THE LOG BEAM.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Log Beam Prime]. Stand beside the log beam for Prime.
+
+2. Capture [Wall] from its approach tile, before clicking it.
+
+3. Capture [Balancing ledge] from its approach tile, before clicking it.
+
+4. Capture [Obstacle low wall] from its approach tile, before clicking it.
+
+5. Capture [Rope swing] from its approach tile, before clicking it.
+
+6. Capture [Monkey bars] from its approach tile, before clicking it.
+
+7. Capture [Ledge] from its approach tile, before clicking it.
+
+8. Capture [Log beam main] after descending from the [Ledge]. Use the landing tile after the ledge to capture Main. Prime and Main are the same target viewed from different tiles. Capture each position separately.
+
+9. Return to the tile where you captured Prime, keep the same camera angle and zoom, and check that every obstacle shows Ready in the Setup Checklist.
+
+10. Press Start and choose how many laps you want to run. Watch the first lap to make sure each obstacle is clicked correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

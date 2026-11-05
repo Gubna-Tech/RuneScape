@@ -1,0 +1,18 @@
+﻿CANDLE CRAFTER
+Script variant: Necromancy / Candle Crafter (Standard)
+
+BEFORE YOU START
+
+- Put all required necroplasm and candles in your inventory before starting.
+
+STEPS TO RUN
+
+1. Put the item used to open the candle-crafting interface on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+3. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

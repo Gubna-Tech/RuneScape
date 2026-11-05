@@ -1,0 +1,16 @@
+﻿AUTOCLICKER
+Script variant: AutoClicker (Standard)
+
+BEFORE YOU START
+
+- Choose a safe, unambiguous on-screen click target and review its repeat interval before starting.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Click] on the on-screen position you want AutoClicker to click repeatedly.
+
+2. Open Setup > Timer and select [Timer]. Review or adjust the minimum and maximum click intervals (in milliseconds).
+
+3. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+4. Press Start and choose how long you want to run. Check that the script clicks only the saved click location at the interval you selected.

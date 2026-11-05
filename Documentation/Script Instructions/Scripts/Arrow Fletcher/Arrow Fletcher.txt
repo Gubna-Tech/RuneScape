@@ -1,0 +1,20 @@
+﻿ARROW FLETCHER
+Script variant: Arrow Fletcher (Standard)
+
+BEFORE YOU START
+
+- Have arrowheads and headless shafts ready in your inventory to make arrows.
+
+- Keep the action bar visible so you can test the arrowhead hotkey.
+
+STEPS TO RUN
+
+1. Put the arrowheads you want to use to make arrows on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+3. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

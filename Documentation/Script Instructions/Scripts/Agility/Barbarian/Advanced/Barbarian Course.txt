@@ -1,0 +1,46 @@
+﻿BARBARIAN COURSE
+Script variant: Agility / Barbarian / Advanced (Standard)
+
+BEFORE YOU START
+
+- Capture the obstacles in course order. For each one, stand on the tile you would use to click it after finishing the previous obstacle.
+
+- Capture that target before moving on.
+
+- Use your normal starting tile for the first obstacle, and keep the same camera angle and zoom throughout.
+
+- FOR BEST RESULTS, USE NORTH-FACING CAMERA WITH THE TOP-DOWN VIEW.
+
+- YOU MUST WEAR THE AGILITY SKILLCAPE TO RUN THIS SCRIPT!
+
+- START THIS SCRIPT IN FRONT OF THE ROPE SWING.
+
+- Dismiss pets before starting so obstacle clicks remain unobstructed.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Rope swing prime]. Stand in front of the rope swing for Prime. Prime is the opening approach; capture Main from the return approach later in the course.
+
+2. Capture [Log balance] from its approach tile, before clicking it.
+
+3. Capture [Wall 1] from its approach tile, before clicking it.
+
+4. Capture [Wall 2] from its approach tile, before clicking it.
+
+5. Capture [Spring Device] from its approach tile, before clicking it.
+
+6. Capture [Balance Beam] from its approach tile, before clicking it.
+
+7. Capture [Gap] from its approach tile, before clicking it.
+
+8. Capture [Roof] from its approach tile, before clicking it.
+
+9. Capture [Rope swing main]. Capture Main on your return to the rope swing at the end of the course. Prime and Main are the same target viewed from different tiles. Capture each position separately.
+
+10. Return to the tile where you captured Prime, keep the same camera angle and zoom, and check that every obstacle shows Ready in the Setup Checklist.
+
+11. Press Start and choose how many laps you want to run. Watch the first lap to make sure each obstacle is clicked correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

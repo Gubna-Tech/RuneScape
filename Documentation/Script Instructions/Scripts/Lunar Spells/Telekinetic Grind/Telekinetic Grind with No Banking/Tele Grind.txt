@@ -1,0 +1,22 @@
+﻿TELE GRIND
+Script variant: Lunar Spells / Telekinetic Grind / Telekinetic Grind with No Banking (Standard)
+
+BEFORE YOU START
+
+- Have the items to grind and the required runes ready.
+
+- Keep the item in the same inventory slot. This variant does not bank.
+
+STEPS TO RUN
+
+1. Put the Telekinetic Grind spell on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Open Setup > Coordinates and capture [Item] on the inventory item you want to grind with Telekinetic Grind.
+
+3. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+4. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

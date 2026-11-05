@@ -1,0 +1,20 @@
+﻿DIVINATION - HIGH CONTRAST
+Script variant: Divination / Divine Conversion - Monolith Power (Standard)
+
+BEFORE YOU START
+
+- HIGH CONTRAST MODE IS REQUIRED
+
+- In RuneScape, right-click the world map and select "Toggle High Contrast Mode" to turn it on. The script detects high-contrast colors and will not work with normal graphics.
+
+- Activate the Divine Conversion Monolith Power before starting. This script variant requires it to be active.
+
+- Keep both wisps and the energy rift visible. The script finds its targets automatically, so no manual coordinate or hotkey capture is needed.
+
+- Keep RuneScape's "You do not have any inventory space" dialog visible when your inventory fills. The script uses this message to know when to deposit energy.
+
+STEPS TO RUN
+
+1. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+2. Press Start and choose how long you want to run. Watch the first collection and deposit: the script prioritizes enriched wisps and deposits energy when the inventory-full message appears.

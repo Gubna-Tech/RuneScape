@@ -1,0 +1,24 @@
+﻿SMELTING GLOVE
+Script variant: Bar Smelter / Smelting Glove (Standard)
+
+BEFORE YOU START
+
+- Equip your smelting gauntlets and have your ores and other smelting materials ready.
+
+- Stand next to the smelter before capturing its coordinates.
+
+- This variant uses a longer smelting delay.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and select [Smelter], then right-click the smelter from where you will stand to use it.
+
+2. In the Coordinates list, select [Bar Type], then right-click the bar you want to make in the smelting interface.
+
+3. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+4. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

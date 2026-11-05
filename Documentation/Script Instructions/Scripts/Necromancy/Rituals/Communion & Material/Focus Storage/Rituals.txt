@@ -1,0 +1,32 @@
+﻿RITUALS
+Script variant: Necromancy / Rituals / Communion & Material / Focus Storage (Standard)
+
+BEFORE YOU START
+
+- Set up the ritual site, glyphs, light sources and required focus. This variant uses Focus Storage; clear any existing pedestal focus before the FIRST run.
+
+- START THIS SCRIPT NEXT TO THE PEDESTAL.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Pedestal - Pedestal] while standing on the tile to the south of the pedestal.
+
+2. Capture [Pedestal - Platform] while standing on the platform.
+
+3. Capture [Platform] while standing next to the pedestal.
+
+4. Capture [Ritual Type] on the ritual choice in the left side of the ritual selection interface.
+
+5. Capture [Input] - the circular input-material selector in the ritual interface; check its scroll setting if that option is off-screen.
+
+6. Return to the tile south of the pedestal, closest to the platform. Make sure no focus is set, then check that the chosen ritual, materials and captured coordinates are correct.
+
+7. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+OPTIONAL SETTINGS
+
+- [Offset]: Optional right-click menu alignment; keep defaults unless Repair All is missed.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

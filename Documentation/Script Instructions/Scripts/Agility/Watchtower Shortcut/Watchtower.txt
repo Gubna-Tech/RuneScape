@@ -1,0 +1,28 @@
+﻿WATCHTOWER
+Script variant: Agility / Watchtower Shortcut (Standard)
+
+BEFORE YOU START
+
+- Capture the obstacles in course order. For each one, stand on the tile you would use to click it after finishing the previous obstacle.
+
+- Capture that target before moving on.
+
+- Use your normal starting tile for the first obstacle, and keep the same camera angle and zoom throughout.
+
+- Best to use camera angle facing North with top-down view.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Trellis prime] while standing in front of the trellis on your starting approach tile.
+
+2. Capture [Ladder] from its approach tile, before clicking it.
+
+3. Capture [Trellis main] after climbing down the ladder. Climb down the ladder, then capture Main from the bottom. Prime and Main are the same target viewed from different tiles. Capture each position separately.
+
+4. Return to the tile where you captured Prime, keep the same camera angle and zoom, and check that every obstacle shows Ready in the Setup Checklist.
+
+5. Press Start and choose how many laps you want to run. Watch the first lap to make sure each obstacle is clicked correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

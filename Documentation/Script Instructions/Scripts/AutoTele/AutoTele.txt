@@ -1,0 +1,18 @@
+﻿AUTOTELE
+Script variant: AutoTele (Standard)
+
+BEFORE YOU START
+
+- Place the intended teleport spell on the action bar and verify its key binding.
+
+STEPS TO RUN
+
+1. Put the teleport spell you want to cast on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+3. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

@@ -1,0 +1,16 @@
+﻿ETERNAL TREE
+Script variant: Eternal Tree (Standard)
+
+BEFORE YOU START
+
+- Stand where the Eternal Tree is visible and keep the camera steady.
+
+- Normal graphics and High Contrast Mode both work.
+
+- The script finds the tree automatically; no manual coordinate or hotkey capture is needed.
+
+STEPS TO RUN
+
+1. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+2. Press Start and choose how long you want to run. Watch the first tree selection and make sure the script clicks the Eternal Tree, then waits for it to be depleted before selecting another.

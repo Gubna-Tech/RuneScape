@@ -1,0 +1,32 @@
+﻿SMITHING
+Script variant: Smithing (Standard)
+
+BEFORE YOU START
+
+- Choose simple smithing products such as arrowheads or dart tips.
+
+- The script does NOT automatically bank, reheat, or select upgraded (+1 through +5) smithing products.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Quantity] on the additional-item button in the smithing interface (used when Extra Items is greater than zero).
+
+2. Capture [Anvil] on the anvil the script will use for smithing.
+
+3. Capture [Bar] on the bar or metal category in the smithing interface.
+
+4. Capture [Item] on the item you want to smith in the smithing interface.
+
+5. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+6. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+OPTIONAL SETTINGS
+
+- [Scroll]: Only enable when the desired interface item is off-screen; change scroll bounds in Setup > Script Config.
+
+- [Extra Items]: Change the additional smithing-item count in Setup > Script Config only if needed.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

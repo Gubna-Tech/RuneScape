@@ -1,0 +1,30 @@
+﻿SPINNING WHEEL
+Script variant: Fort Forinthry / Spinning Wheel (Standard)
+
+BEFORE YOU START
+
+- Have the supplies and bank preset ready for spinning-wheel products.
+
+- Capture the bank and workstation coordinates from the standing positions given in the steps below.
+
+- Only keep materials for one type of item at a time in inventory/preset, this lets the spinning-wheel interface auto-select the item to make.
+
+STEPS TO RUN
+
+1. In Setup > Hotkeys, set [Bank Preset] to the in-game hotkey for the preset containing your supplies. The script presses this hotkey when banking.
+
+2. Open Setup > Coordinates and capture [Bank Prime] while standing at the bank.
+
+3. Capture [Spinning Wheel] while standing at the bank.
+
+4. Capture [Bank Main] while standing at the spinning wheel. These are two views of the same bank; capture each separately from the specified tile.
+
+5. Capture [Spinning Wheel - Fungal Only] while standing at the spinning wheel. The shared Setup Checklist requires this entry, but the regular Spinning Wheel script does not click it.
+
+6. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+7. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

@@ -1,0 +1,24 @@
+﻿JEWEL ENCHANT
+Script variant: Jewellery Enchant (Standard)
+
+BEFORE YOU START
+
+- Have the jewellery you want to enchant ready and keep your spellbook or action bar available.
+
+STEPS TO RUN
+
+1. Put the jewellery-enchanting spell on your action bar. In Setup > Hotkeys, assign [Skillbar] to that slot.
+
+2. In Setup > Hotkeys, set [Bank Preset] to the in-game hotkey for the preset containing your supplies. The script presses this hotkey when banking.
+
+3. Open Setup > Coordinates and capture [Jewellery] on the jewellery choice the script clicks after activating the enchantment spell.
+
+4. Capture [Bank] on the banker, chest or bank booth used on the return leg.
+
+5. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+6. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

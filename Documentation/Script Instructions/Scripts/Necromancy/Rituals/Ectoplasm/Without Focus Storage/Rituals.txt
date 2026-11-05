@@ -1,0 +1,36 @@
+﻿RITUALS
+Script variant: Necromancy / Rituals / Ectoplasm / Without Focus Storage (Standard)
+
+BEFORE YOU START
+
+- Set up the ritual site, glyphs and light sources.
+
+- Keep all ritual materials in your INVENTORY, not Focus Storage; this variant cannot use stored focus.
+
+- IMPORTANT: Clear any existing pedestal focus before the first run.
+
+- Start with the pedestal empty so the first focus selection works correctly.
+
+- START THIS SCRIPT NEXT TO THE PEDESTAL.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Pedestal - Pedestal] while standing on the tile to the south of the pedestal.
+
+2. Capture [Pedestal - Platform] while standing on the platform.
+
+3. Capture [Platform] while standing next to the pedestal.
+
+4. Capture [Ritual Type] on the ritual choice in the left side of the ritual selection interface.
+
+5. Return to the tile south of the pedestal, closest to the platform. Make sure no focus is set, then check that the chosen ritual, materials and captured coordinates are correct.
+
+6. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+OPTIONAL SETTINGS
+
+- [Offset]: Optional right-click menu alignment; keep defaults unless Repair All is missed.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

@@ -1,0 +1,46 @@
+﻿CONTRACT BINDING
+Script variant: Contract Binding (Standard)
+
+BEFORE YOU START
+
+- Go to the Magestix shop and the binding obelisk.
+
+- Keep both available and the shop interface positioned so it does not cover the obelisk.
+
+- KNOWN LIMITATION - Buying the last four or fewer shop items can fail, and selling the last item may shift another inventory slot.
+
+- Monitor quantities rather than leaving a low-stock cycle unattended.
+
+- DO NOT SELL ALL ITEMS FROM INVENTORY, LEAVE AT LEAST 1 OF EACH MATERIAL!
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Magestix] on Magestix, the shopkeeper.
+
+2. Capture [Buy Tab] on the Buy tab in the open Magestix shop.
+
+3. Capture [Sell Tab] on the Sell tab in the open Magestix shop.
+
+4. Capture [Obelisk] on the obelisk while Magestix’s shop is open. Ensure the shop window does not cover the obelisk.
+
+5. Capture [Hellfire Metal - Buy] on the matching material in the shop Buy view (not Sell).
+
+6. Capture [Hellfire Metal - Sell] on the matching material in the shop Sell view (not Buy).
+
+7. Capture [Blood of Orcus - Buy] on the matching material in the shop Buy view (not Sell).
+
+8. Capture [Blood of Orcus - Sell] on the matching material in the shop Sell view (not Buy).
+
+9. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+10. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+OPTIONAL SETTINGS
+
+- [Offset - Buy]: Optional right-click menu adjustment; keep defaults unless the named option is missed.
+
+- [Offset - Sell]: Optional right-click menu adjustment; keep defaults unless the named option is missed.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

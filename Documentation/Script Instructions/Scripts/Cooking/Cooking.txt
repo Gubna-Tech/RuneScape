@@ -1,0 +1,26 @@
+﻿COOKING
+Script variant: Cooking (Standard)
+
+BEFORE YOU START
+
+- Have the food you want to cook ready.
+
+- Capture the bank and cooking range from the standing positions described in the steps below.
+
+STEPS TO RUN
+
+1. In Setup > Hotkeys, set [Bank Preset] to the in-game hotkey for the preset containing your supplies. The script presses this hotkey when banking.
+
+2. Open Setup > Coordinates and capture [Bank Prime] on the bank from the starting tile, before walking to the cooking range.
+
+3. Capture [Range] on the cooking range from your bank-side starting position.
+
+4. Capture [Bank Main] on that same bank from your position at the cooking range, for the return trip.
+
+5. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+6. Press Start and choose how many runs you want to complete. Watch the first cycle to make sure the clicks and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

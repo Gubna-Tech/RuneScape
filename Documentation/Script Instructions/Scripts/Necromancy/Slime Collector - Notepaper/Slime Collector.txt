@@ -1,0 +1,24 @@
+﻿SLIME COLLECTOR
+Script variant: Necromancy / Slime Collector - Notepaper (Standard)
+
+BEFORE YOU START
+
+- Keep magic notepaper and the other required supplies in your inventory.
+
+- Magic notepaper is required for this variant.
+
+STEPS TO RUN
+
+1. Open Setup > Coordinates and capture [Pool of Slime] on the pool of slime you want the script to collect from.
+
+2. Capture [Bucket of Slime] on the bucket of slime in your inventory.
+
+3. Capture [Magic Notepaper] on the inventory slot containing magic/enchanted notepaper.
+
+4. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+5. Press Start and choose how many runs you want to complete. Watch the first run and check that the intended actions happen correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

@@ -1,0 +1,24 @@
+﻿CROESUS FRONT
+Script variant: Croesus Front (Standard)
+
+BEFORE YOU START
+
+- ALT1 IS REQUIRED FOR THIS SCRIPT TO WORK!
+
+STEPS TO RUN
+
+1. Open Alt1 AFK Warden and set its no-XP alert for Decaying Guard to about 14 seconds. Wait for the warning to turn red before capturing its position and color.
+
+2. Open Setup > Coordinates and capture [Pixel Coordinate] on the red Alt1 AFK Warden warning after it appears. Capture the warning itself, not a pixel in RuneScape.
+
+3. Open Setup > Colors and capture [Red] from that warning while it is red. Do not capture its normal color.
+
+4. Capture [Guard Location] over the Decaying Guard you want to click when the no-XP warning turns red.
+
+5. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+6. Press Start and choose how long you want to run. When the Alt1 warning turns red, check that the script clicks your saved guard location and resumes gathering.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.

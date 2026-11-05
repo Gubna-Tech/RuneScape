@@ -1,0 +1,34 @@
+﻿AFK COMBAT
+Script variant: AFK Combat (Standard)
+
+BEFORE YOU START
+
+- Equip your combat gear and put an aggression potion or flask on the action bar. It is required for runs longer than 10 minutes.
+
+- Other potions, prayers, abilities, looting and contract binding are optional; configure them only if you plan to use them.
+
+STEPS TO RUN
+
+1. In Setup > Hotkeys, assign [Agro] to the action-bar slot holding your aggression potion or flask. This is required for AFK Combat.
+
+2. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+3. Press Start and choose how long you want to run. Watch the first few actions to make sure your hotkeys and optional features work correctly.
+
+OPTIONAL SETTINGS
+
+- Optional potions, prayers and abilities ([Prayer], [Strength], [Attack], [Magic], [Ranged], [Overload], [Warmaster], [Antifire], [Antipoison], [Weapon Poison], [Saradomin Brew]): enable in Setup > Script Config and assign hotkeys only if used.
+
+- Other optional effects ([Animate Dead], [Vecna Skull], [Ancient Elven Ritual Shard], [Incense Sticks], [Prayer Powder], [Summon]): enable and assign their hotkeys only if used.
+
+- [AFK]: Optional idle actions and timing.
+
+- [Loot]: Optional ground-item pickup using Space; enable only if desired.
+
+- [Cannon Restock]: Enable only if restocking a cannon; capture its location in Setup > Coordinates.
+
+- [Binding Contract]: Enable only when using contracts. Capture [Notepaper - Binding Contract] and [Contract - Binding Contract] in Setup > Coordinates if enabled.
+
+ADDITIONAL SCRIPT NOTES
+
+- Timing: Keep the default Sleep values unless actions happen too early or too late. You can adjust them in Setup > Timer; test a full cycle after each change.
