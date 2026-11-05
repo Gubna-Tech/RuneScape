@@ -38,7 +38,7 @@ Run(ctx)
 	LLARS_RandomSleep()
 
 	LLARS_SetStatus("Casting", "High Alchemy")
-	LLARS_PressHotkey("Skillbar Hotkey")
+	LLARS_PressHotkey("Skillbar")
 
 	; Short randomized delay after skillbar activation.
 	LLARS_Sleep("Sleep Short")

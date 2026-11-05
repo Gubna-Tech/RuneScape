@@ -38,7 +38,7 @@ Run(ctx)
 	if (ctx.IsFirst)
 	{
 		LLARS_SetStatus("Banking", "Glass")
-		LLARS_RedClick("Bank Coords")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -48,7 +48,7 @@ Run(ctx)
 		LLARS_Sleep("Sleep Short")
 
 		LLARS_SetStatus("Glassblowing", "Glass")
-		LLARS_PressHotkey("Skillbar Hotkey")
+		LLARS_PressHotkey("Skillbar")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -62,7 +62,7 @@ Run(ctx)
 	else
 	{
 		LLARS_SetStatus("Banking", "Glass")
-		LLARS_RedClick("Bank Coords")
+		LLARS_RedClick("Bank")
 
 		LLARS_Sleep("Sleep Short")
 
@@ -74,7 +74,7 @@ Run(ctx)
 		LLARS_Sleep("Sleep Short")
 
 		LLARS_SetStatus("Glassblowing", "Glass")
-		LLARS_PressHotkey("Skillbar Hotkey")
+		LLARS_PressHotkey("Skillbar")
 
 	}
 

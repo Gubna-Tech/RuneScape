@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Food")
-	LLARS_RedClick("Bank Chest")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Short")
 

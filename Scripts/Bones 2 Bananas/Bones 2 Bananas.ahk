@@ -36,7 +36,7 @@ Run(ctx)
 	global
 
 	LLARS_SetStatus("Banking", "Bones to Bananas")
-	LLARS_RedClick("Bank Coords")
+	LLARS_RedClick("Bank")
 
 	LLARS_Sleep("Sleep Short")
 
@@ -48,7 +48,7 @@ Run(ctx)
 	LLARS_RandomSleep()
 
 	LLARS_SetStatus("Casting", "Bones to Bananas")
-	LLARS_PressHotkey("Skillbar Hotkey")
+	LLARS_PressHotkey("Skillbar")
 
 	LLARS_Sleep("Sleep Normal", true)
 }

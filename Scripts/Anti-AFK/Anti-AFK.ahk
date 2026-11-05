@@ -9,7 +9,6 @@
 SetBatchLines, -1
 
 LLARS_SCRIPT_TYPE := "Timer"
-LLARS_COMBO_TIMER_LABEL := "AntiAFKTimer"
 
 if !LLARS_FrameworkAvailable()
 	LLARS_FrameworkError()
@@ -219,95 +218,7 @@ AntiAFKChooseTarget(clientW, clientH, ByRef x, ByRef y)
 ; |     >>> END SCRIPT EDITING <<<     >>> END SCRIPT EDITING <<<  |
 ; ==================================================================
 
-; ======================================================================
-; |     TIMER BUTTON     -     TIMER BUTTON     -     TIMER BUTTON     |
-; ======================================================================
-; Opens Anti-AFK's randomized idle-interval editor from the LLARS Combo menu.
-AntiAFKTimer:
-
-Gui 1: Hide
-Gui Combo: Destroy
-DisableHotkey()
-
-sa1 := LLARS_ConfigRead("AFK", "min", "ERROR")
-sa2 := LLARS_ConfigRead("AFK", "max", "ERROR")
-
-Gui 5: +LastFound +AlwaysOnTop +OwnDialogs
-LLARS_VisualPrepare("5")
-Gui 5: Font, bold s12
-Gui 5: Add, Text, x5 w210 center, Anti-AFK Timer Interval
-Gui 5: Font, s10
-Gui 5: Add, Text, x5 w210 center, timers are in ms`n60000ms = 1min
-Gui 5: Add, Text,,
-Gui 5: Font, s11
-Gui 5: Add, Text, center x5 w210, Minimum AFK timer
-Gui 5: Add, Edit, vMinEdit center x55 w100, % sa1
-Gui 5: Add, Text,,
-Gui 5: Add, Text, center x5 w210, Maximum AFK timer
-Gui 5: Add, Edit, vMaxEdit center x55 w100, % sa2
-Gui 5: Add, Text,,
-Gui 5: Add, Button, Default gAntiAFKTimerSave x55 w100, Save Timer
-Gui 5: +ToolWindow
-Gui 5: -caption
-Gui 5: Show, center w220, Timer
-LLARS_VisualFinish("5")
-return
-
-AntiAFKTimerSave:
-GuiControlGet, NewMin,, MinEdit
-GuiControlGet, NewMax,, MaxEdit
-NewMin := Trim(NewMin)
-NewMax := Trim(NewMax)
-
-if (NewMin = "" || NewMax = "")
-{
-	MsgBox, 48, Timer Error, Minimum and maximum timer values cannot be blank.
-	return
-}
-
-if !RegExMatch(NewMin, "^\d+$") || !RegExMatch(NewMax, "^\d+$")
-{
-	MsgBox, 48, Timer Error, Minimum and maximum timer values must contain numbers only.
-	return
-}
-
-if (NewMin > NewMax)
-{
-	MsgBox, 48, Timer Error, Minimum timer cannot be greater than maximum timer.
-	return
-}
-
-LLARS_ConfigWrite("AFK", "min", NewMin)
-LLARS_ConfigWrite("AFK", "max", NewMax)
-
-Gui 5: Destroy
-Gui 13u: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13u: Color, Green
-Gui 13u: Font, cGreen
-Gui 13u: Font, s16 bold
-Gui 13u: Add, Text, valertlabel center, ----Timer has been updated in the Config.ini file`n----
-Gui 13u: +ToolWindow
-Gui 13u: -caption
-Gui 13u: Show, NoActivate xcenter y0, BottomGUI
-Gui 13: +LastFound +AlwaysOnTop +OwnDialogs +Disabled
-Gui 13: Color, White
-Gui 13: Font, cGreen
-Gui 13: Font, s16 bold
-Gui 13: Add, Text, vTthree center, Timer has been updated in the Config.ini file
-Gui 13: +ToolWindow
-Gui 13: -caption
-Gui 13: Show, NoActivate xcenter y9999, TopGUI
-WinGetPos,,,,bottomH, BottomGUI
-WinGetPos,,,,topH, TopGUI
-topPOS := (bottomH - topH) / 2
-Gui, TopGUI: +LabelTopGUI
-WinMove, TopGUI,, , %topPOS%
-Sleep, 1500
-Gui 13u: Destroy
-Gui 13: Destroy
-Gui 1: Show
-EnableHotkey()
-return
+; Timer ranges are now edited by the shared Setup > Timer interface.
 
 EndMsg:
 
