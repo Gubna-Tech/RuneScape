@@ -42,7 +42,8 @@ Run(ctx)
 
 	LLARS_RandomSleep()
 
-	hkbank := LLARS_ConfigReadHotkey("Bank Preset", "hotkey")
+	; This variant uses no bank-preset key; the shared Config.ini field
+	; belongs to the separate Spinning Wheel script.
 	LLARS_SetStatus("Spinning", "Fungal Bowstring")
 	LLARS_PressKey("Space")
 

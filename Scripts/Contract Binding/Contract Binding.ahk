@@ -221,10 +221,24 @@ Run(ctx)
 		LLARS_SetStatus("Infusing", "Binding Contract")
 		LLARS_PressKey("space")
 
-		LLARS_Sleep("Sleep Infuse", true)
+		LLARS_Sleep("Sleep Infuse", A_Index = 14)
 	}
 }
 
+
+
+; Contract Binding has 14 inner infusion cycles per RunCount run. Source-only
+; estimation sees each LLARS_Sleep call once and misses these repetitions.
+; Model the full cycle from the existing Config.ini timer ranges; measured
+; completed RunCount loops still refine the remaining-time prediction.
+LLARS_RuntimeEstimateMetadata()
+{
+    model := LLARS_RuntimeMetadataCreate("modeled")
+    LLARS_RuntimeMetadataAddSection(model, "Sleep Short", 62)
+    LLARS_RuntimeMetadataAddSection(model, "Sleep Brief", 42)
+    LLARS_RuntimeMetadataAddSection(model, "Sleep Infuse", 15, "both", 1.0, "script", true)
+    return model
+}
 
 
 ; ================================================================
