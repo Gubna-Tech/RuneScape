@@ -5,6 +5,10 @@ BEFORE YOU START
 
 - Go to the Magestix shop and the binding obelisk.
 
+- Bring spirit shards, blue charms, and the pouches you need for binding.
+
+- OPTIONAL: In the top-right of the Magestix shop, change "Item Display Mode" to "Icon Only". This can make it easier to locate Hellfire Metal and Blood of Orcus when capturing the Buy and Sell coordinates.
+
 - Keep both available and the shop interface positioned so it does not cover the obelisk.
 
 - KNOWN LIMITATION - Buying the last four or fewer shop items can fail, and selling the last item may shift another inventory slot.

@@ -5,25 +5,15 @@ BEFORE YOU START
 
 - Bring enough fungal bowstring materials for the runs you plan to complete. This Fungal Bowstring variant does not bank or load a preset during its crafting loop; it repeatedly clicks the fungal spinning-wheel target and presses Space.
 
-- Keep only the materials for the fungal bowstring you want to make so the spinning-wheel interface selects the intended product. LLARS still asks for the regular Spinning Wheel bank and coordinate settings in the Setup Checklist.
-
-- Complete them so Setup shows Ready; they are not used during fungal-bowstring runs.
+- Keep only the materials for the fungal bowstring you want to make so the spinning-wheel interface selects the intended product.
 
 STEPS TO RUN
 
-1. In Setup > Hotkeys, set [Bank Preset] to a valid in-game bank-preset hotkey. LLARS requires this entry to be set, but this variant does not press it.
+1. Open Setup > Coordinates and capture [Spinning Wheel - Fungal Only] on the spinning wheel from the tile where you will run the script. This is the only saved coordinate used during fungal-bowstring runs.
 
-2. Open Setup > Coordinates and capture [Bank Prime] while standing at the bank.
+2. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
 
-3. Capture [Spinning Wheel] while standing at the bank.
-
-4. Capture [Bank Main] from the spinning-wheel tile, looking back toward the bank.
-
-5. Capture [Spinning Wheel - Fungal Only] on the spinning wheel from the tile where you will run the script. This is the only saved coordinate used during fungal-bowstring runs.
-
-6. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
-
-7. Press Start and choose how many runs you want to complete. Check the first spin and confirm the selected materials craft correctly; this variant does not return to the bank.
+3. Press Start and choose how many runs you want to complete. Check the first spin and confirm the selected materials craft correctly; this variant does not return to the bank.
 
 ADDITIONAL SCRIPT NOTES
 
