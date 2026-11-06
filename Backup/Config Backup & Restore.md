@@ -28,7 +28,7 @@ The restore tool first verifies the `User Files` snapshot and restores only miss
 
 ## Upgrading an older shared configuration
 
-LLARS v2.3.6 requires root `LLARS Config.ini` schema `2` and identifies older schema `1` configurations from v2.3.4 and earlier. If the startup warning appears, save a copy of your existing root config, copy `Documentation/LLARS Config - Current.ini` to the LLARS root as `LLARS Config.ini`, then reconfigure shared hotkeys and other preferences through the LLARS GUI. The warning does not overwrite your file or start automation. Existing script-local `Config.ini` files can be kept. Restoring a root configuration from an older backup can bring back the incompatible layout; do not use an older root backup to replace the current template.
+LLARS v2.3.7 requires root `LLARS Config.ini` schema `2` and identifies older schema `1` configurations from v2.3.4 and earlier. If the startup warning appears, save a copy of your existing root config, copy `Documentation/LLARS Config - Current.ini` to the LLARS root as `LLARS Config.ini`, then reconfigure shared hotkeys and other preferences through the LLARS GUI. The warning does not overwrite your file or start automation. Existing script-local `Config.ini` files can be kept. Restoring a root configuration from an older backup can bring back the incompatible layout; do not use an older root backup to replace the current template.
 
 ## Updates
 

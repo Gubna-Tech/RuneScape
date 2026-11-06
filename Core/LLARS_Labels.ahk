@@ -420,16 +420,142 @@ return
 LLARS_ConfigRepairOpen:
 SetTimer, LLARS_ConfigRepairOpen, Off
 repairKind := LLARS_ConfigRepairKind
+repairSection := LLARS_ConfigRepairSection
 LLARS_ConfigRepairKind := ""
+LLARS_ConfigRepairSection := ""
 if (repairKind = "color")
+{
     GoSub, Color
+    LLARS_SetupFocusSection("Colors", repairSection)
+}
 else if (repairKind = "coordinate")
+{
     GoSub, Coordinates
+    ; Focus the correct section, but never start an in-game capture automatically.
+    LLARS_SetupFocusSection("Coordinates", repairSection)
+}
 else if (repairKind = "hotkey")
+{
     GoSub, Hotkey
+    if (LLARS_SetupFocusSection("Hotkeys", repairSection))
+        GoSub, DropDownChanged2
+}
+else if (repairKind = "timer")
+{
+    GoSub, LLARS_CustomComboTimer
+    LLARS_SetupFocusSection("Timer", repairSection)
+}
 else
     GoSub, Combo
 return
+
+; Move through every exact-field issue without losing the issue-to-editor mapping.
+; Each redraw refreshes preflight and clamps the page when values were fixed.
+SetupCheckPreviousPage:
+LLARS_ShowSetupPreflight(LLARS_SETUP_PREFLIGHT_PAGE - 1)
+return
+
+SetupCheckNextPage:
+LLARS_ShowSetupPreflight(LLARS_SETUP_PREFLIGHT_PAGE + 1)
+return
+
+; An issue's Edit action navigates to the exact section in its existing editor.
+; Selection alone never begins coordinate/color capture or writes an INI.
+SetupCheckEditIssue:
+; Four fixed global GUI control variables are reused on each page.
+; Convert the displayed row to the actual FieldIssues index.
+if (!RegExMatch(A_GuiControl, "^SetupCheckIssue([1-4])$", issueMatch))
+    return
+issueRow := issueMatch1 + 0
+issueNumber := (LLARS_SETUP_PREFLIGHT_PAGE - 1) * 4 + issueRow
+if (!IsObject(LLARS_SETUP_PREFLIGHT) || !IsObject(LLARS_SETUP_PREFLIGHT.FieldIssues)
+    || issueNumber < 1 || issueNumber > LLARS_SETUP_PREFLIGHT.FieldIssues.Length())
+    return
+issue := LLARS_SETUP_PREFLIGHT.FieldIssues[issueNumber]
+issueCategory := issue.Category
+issueSection := issue.Section
+Gui SetupCheck: Destroy
+if (issueCategory = "Hotkeys")
+{
+    GoSub, Hotkey
+    if (LLARS_SetupFocusSection("Hotkeys", issueSection))
+        GoSub, DropDownChanged2
+}
+else if (issueCategory = "Coordinates")
+{
+    GoSub, Coordinates
+    LLARS_SetupFocusSection("Coordinates", issueSection)
+}
+else if (issueCategory = "Colors")
+{
+    GoSub, Color
+    LLARS_SetupFocusSection("Colors", issueSection)
+}
+else if (issueCategory = "Timer")
+{
+    GoSub, LLARS_CustomComboTimer
+    LLARS_SetupFocusSection("Timer", issueSection)
+}
+else
+    GoSub, Combo
+return
+
+; Find the exact dropdown index rather than ChooseString's prefix match, so
+; [Bank] cannot be mistaken for [Bank Prime] or another longer section.
+; A missing or changed section fails closed without triggering capture or saving.
+LLARS_SetupFocusSection(category, section)
+{
+    global LLARS_TIMER_SECTIONS, sectionList
+    if (section = "")
+        return false
+    if (category = "Hotkeys" && section = "Color/Coordinate/Hotkey Hotkey")
+        section := "Setup/Pause/Resume"
+    if (category = "Hotkeys" || category = "Coordinates" || category = "Colors")
+    {
+        matchedIndex := 0
+        choices := StrSplit(sectionList, "|")
+        for index, candidate in choices
+        {
+            if (Trim(candidate) = section)
+            {
+                matchedIndex := index
+                break
+            }
+        }
+        if (!matchedIndex)
+            return false
+        if (category = "Hotkeys")
+        {
+            GuiControl, 3:Choose, SectionList, %matchedIndex%
+            GuiControlGet, chosen, 3:, SectionList
+            if (chosen != section)
+                return false
+            GuiControl, 3:Focus, SectionList
+        }
+        else
+        {
+            GuiControl, 2:Choose, SectionList, %matchedIndex%
+            GuiControlGet, chosen, 2:, SectionList
+            if (chosen != section)
+                return false
+            GuiControl, 2:Focus, SectionList
+        }
+        return true
+    }
+    if (category = "Timer" && IsObject(LLARS_TIMER_SECTIONS))
+    {
+        for index, timerSection in LLARS_TIMER_SECTIONS
+        {
+            if (timerSection != section)
+                continue
+            GuiControl, TimerSetup:Choose, LLARSTimerSelection, %index%
+            LLARS_TimerSetupLoadSelected()
+            GuiControl, TimerSetup:Focus, LLARSTimerMin
+            return true
+        }
+    }
+    return false
+}
 
 ; Action buttons from the preflight result reuse the existing editors.
 SetupCheckHotkeys:
@@ -735,7 +861,8 @@ Loop, Parse, allContents, `n, `r
 	StringReplace, currentSection, currentSection, [, , All
 	StringReplace, currentSection, currentSection, ], , All
 	currentSection := Trim(currentSection)
-	if (GetConfigType(scriptHotkeyConfigFile, currentSection) = "coordinate")
+	if (LLARS_ConfigSectionUsedByScript(scriptHotkeyConfigFile, A_ScriptFullPath, currentSection)
+        && GetConfigType(scriptHotkeyConfigFile, currentSection) = "coordinate")
 	{
 		sectionList .= "|" currentSection
 		coordinateConfigFiles[currentSection] := scriptHotkeyConfigFile
@@ -768,7 +895,8 @@ Loop, Parse, llarsContents, `n, `r
 }
 
 Gui, 2: Add, DropDownList, x30 y98 w260 vSectionList Choose1 gDropDownChanged, % sectionList
-Gui, 2: Add, Button, x42 y144 w236 h34 gClose, Close Coordinates
+Gui, 2: Add, Button, x30 y144 w128 h34 gDropDownChanged, Capture Selected
+Gui, 2: Add, Button, x166 y144 w124 h34 gClose, Close
 Gui 2: -Caption
 Gui, 2: Show, w320 h198 Center, Coordinates
 LLARS_VisualFinish("2")
@@ -1169,12 +1297,14 @@ Loop, Parse, allContents, `n, `r
 	StringReplace, currentSection, currentSection, [, , All
 	StringReplace, currentSection, currentSection, ], , All
 	currentSection := Trim(currentSection)
-	if (GetConfigType(colorConfigFile, currentSection) = "color")
+	if (LLARS_ConfigSectionUsedByScript(colorConfigFile, A_ScriptFullPath, currentSection)
+        && GetConfigType(colorConfigFile, currentSection) = "color")
 		sectionList .= "|" currentSection
 }
 
 Gui, 2: Add, DropDownList, x30 y98 w260 vSectionList Choose1 gDropDownChanged1, % sectionList
-Gui, 2: Add, Button, x42 y144 w236 h34 gClose1, Close Colors
+Gui, 2: Add, Button, x30 y144 w128 h34 gDropDownChanged1, Capture Selected
+Gui, 2: Add, Button, x166 y144 w124 h34 gClose1, Close
 Gui 2: -Caption
 Gui, 2: Show, w320 h198 Center, Colors
 LLARS_VisualFinish("2")
@@ -1407,7 +1537,8 @@ Loop, Parse, allContents, `n
 	StringReplace, currentSection, currentSection, [, , All
 	StringReplace, currentSection, currentSection, ], , All
 	currentSection := Trim(currentSection)
-	if (GetConfigType(scriptHotkeyConfigFile, currentSection) = "hotkey")
+	if (LLARS_ConfigSectionUsedByScript(scriptHotkeyConfigFile, A_ScriptFullPath, currentSection)
+        && GetConfigType(scriptHotkeyConfigFile, currentSection) = "hotkey")
 	{
 		sectionList .= "|" currentSection
 		hotkeyConfigFiles[currentSection] := scriptHotkeyConfigFile
@@ -1465,7 +1596,10 @@ return
 ; Loads the existing hotkey for the selected section and prepares
 ; the hotkey control for a replacement value.
 DropDownChanged2:
-GuiControlGet, selectedSection,, SectionList
+; A Check Setup Edit action invokes this label from another GUI's event.
+; Always activate the actual Hotkeys GUI before enabling its edit control.
+Gui, 3:Default
+GuiControlGet, selectedSection, 3:, SectionList
 
 ; Always invalidate the previously selected hotkey first.
 selectedHotkeySection := ""

@@ -499,6 +499,30 @@ LLARS_ConfigScriptDisabled(scriptPath)
     return RegExMatch(scriptContents, "im)^\s*LLARS_DISABLE_SCRIPT_CONFIG\s*:=\s*true\b") ? true : false
 }
 
+; Two shipped scripts intentionally share one Config.ini, but use different
+; sections. Keep their original user config file and names untouched; filter only
+; the *requirements* for the selected source file. Other scripts (including
+; imported Creator projects) use the unchanged all-sections contract.
+LLARS_ConfigSectionUsedByScript(configPath, scriptPath, section)
+{
+    if (configPath = "" || scriptPath = "")
+        return true
+    ; Scope the exception to this exact bundled shared directory.
+    if !RegExMatch(configPath, "i)\\(?:Scripts|Scripts - Menu Entry Swapper)\\Fort Forinthry\\Spinning Wheel\\Config\.ini$")
+        return true
+    SplitPath, scriptPath, fileName, scriptDir
+    SplitPath, configPath,, configDir
+    if (scriptDir != configDir)
+        return true
+    if (fileName = "Fungal Bowstring.ahk")
+        return (section = "Spinning Wheel - Fungal Only" || section = "Sleep Short" || section = "Sleep Fungal")
+    if (fileName = "Spinning Wheel.ahk")
+        return (section = "Bank Prime" || section = "Bank Main" || section = "Spinning Wheel"
+            || section = "Sleep Brief" || section = "Sleep Short" || section = "Sleep Walk" || section = "Sleep Craft"
+            || (section = "Bank Preset" && RegExMatch(configPath, "i)\\Scripts\\Fort Forinthry\\Spinning Wheel\\Config\.ini$")))
+    return true
+}
+
 ; Builds the authoritative mechanical setup-capability object for one script.
 ; Human metadata (name/category/difficulty/description/launch target) stays in
 ; the Selector registry; setup requirements come only from the script config.
@@ -534,7 +558,7 @@ LLARS_ConfigCapabilityScan(configPath, scriptPath := "", disabledOverride := "")
         Loop, Parse, sections, `n, `r
         {
             section := Trim(A_LoopField)
-            if (section = "")
+            if (section = "" || !LLARS_ConfigSectionUsedByScript(configPath, scriptPath, section))
                 continue
 
             capabilityType := LLARS_ConfigCapabilitySectionType(configPath, section)
@@ -767,7 +791,7 @@ LLARS_CheckConfigCompatibility(root := "")
 
     if (configSchema < currentSchema)
     {
-        MsgBox, 262192, LLARS Configuration Update Required, % "This LLARS Config.ini uses configuration schema " . configSchema . ", but LLARS v2.3.6 requires schema " . currentSchema . ".`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then configure your shared hotkeys and preferences using the LLARS GUI and restart.`n`nThe existing file was not modified. Script-specific Config.ini files do not need replacing."
+        MsgBox, 262192, LLARS Configuration Update Required, % "This LLARS Config.ini uses configuration schema " . configSchema . ", but LLARS v2.3.7 requires schema " . currentSchema . ".`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then configure your shared hotkeys and preferences using the LLARS GUI and restart.`n`nThe existing file was not modified. Script-specific Config.ini files do not need replacing."
         return false
     }
 
@@ -776,7 +800,7 @@ LLARS_CheckConfigCompatibility(root := "")
     layoutError := ""
     if !LLARS_ConfigHasCurrentHotkeyLayout(configPath, layoutError)
     {
-        MsgBox, 262192, LLARS Configuration Update Required, % "LLARS v2.3.6 needs the current LLARS Config.ini before startup can continue.`n`n" . layoutError . "`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then set up your shared hotkeys and preferences in LLARS and restart.`n`nYour existing file was not changed. Script-specific Config.ini files do not need replacing."
+        MsgBox, 262192, LLARS Configuration Update Required, % "LLARS v2.3.7 needs the current LLARS Config.ini before startup can continue.`n`n" . layoutError . "`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then set up your shared hotkeys and preferences in LLARS and restart.`n`nYour existing file was not changed. Script-specific Config.ini files do not need replacing."
         return false
     }
 

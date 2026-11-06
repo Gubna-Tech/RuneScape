@@ -11,7 +11,8 @@ LLARS_TimerSetupSections()
     Loop, Parse, sections, `n, `r
     {
         section := LLARS_NormalizeConfigSectionName(A_LoopField)
-        if (section = "" || LLARS_ConfigCapabilitySectionType(configPath, section) != "timer")
+        if (section = "" || !LLARS_ConfigSectionUsedByScript(configPath, A_ScriptFullPath, section)
+            || LLARS_ConfigCapabilitySectionType(configPath, section) != "timer")
             continue
         ; Both keys must already exist; this editor never invents config fields.
         if (!LLARS_ConfigKeyExistsFile(configPath, section, "min") || !LLARS_ConfigKeyExistsFile(configPath, section, "max"))

@@ -15,6 +15,7 @@
 EnvGet, LLARSValidationMode, LLARS_VALIDATION_MODE
 if (LLARSValidationMode = "1")
 	ExitApp
+LLARS_SelectorPerfMark("autoexecute_start")
 LLARS_VisualEnsureIcon(A_ScriptDir)
 
 ; Confirms the complete LLARS project structure is available before the
@@ -60,6 +61,7 @@ LLARS_VisualEnsureIcon(A_ScriptDir)
 LLARS_GetVersion(A_ScriptDir)
 if !LLARS_CheckConfigCompatibility(A_ScriptDir)
 	ExitApp
+LLARS_SelectorPerfMark("config_compatible")
 
 ; Close an older LLARS/script-selector window before any update prompt or Save As dialog.
 CloseOtherLLARS()
@@ -68,11 +70,13 @@ CloseOtherLLARS()
 ; Selected scripts inherit the completed-check marker and do not check twice.
 LLARS_StartupContinuation := true
 LLARS_CheckForUpdates()
+LLARS_SelectorPerfMark("update_finished")
 LLARS_StartupStage("Checking input setup...", "Checking keyboard and mouse input readiness.")
 
 ; Applies AHI input-backend setup/readiness checks before the selector opens.
 ; AHI is recommended; Standard AutoHotkey remains available as a fallback.
 LLARS_AHI_StartupGate(A_ScriptDir, true)
+LLARS_SelectorPerfMark("ahi_gate_finished")
 
 ; =======================================================================
 ; |     LLARS PATH SETUP     -     LLARS PATH SETUP                     |
@@ -91,6 +95,7 @@ LLARS_MENU_ENTRY_SWAPPER_DIR := A_ScriptDir . "\Scripts - Menu Entry Swapper"
 LLARS_StartupStage("Loading available scripts...", "Reading script entries and their Setup requirements.")
 LLARS_SelectorRegistryLoadError := ""
 LLARS_SelectorRegistry := LLARS_SelectorBuildRegistry()
+LLARS_SelectorPerfMark("registry_built")
 if (LLARS_SelectorRegistryLoadError != "")
 {
     LLARS_HideUpdateCheckSplash()
@@ -105,9 +110,13 @@ if !LLARS_SelectorValidateRegistry(LLARS_SelectorRegistry, LLARS_SelectorRegistr
 	ExitApp
 }
 
+LLARS_SelectorPerfMark("registry_validated")
 LLARS_StartupStage("Preparing script choices...", "Restoring filters and preparing the script list.")
 ; Compatibility list generated from the registry for existing filter/preferences logic.
 scriptArray := LLARS_SelectorRegistryNameList(LLARS_SelectorRegistry)
+; Sort before creating the ListBox. The normal All Scripts filter would
+; otherwise sort and fully replace the same 100+ entries immediately after Show.
+Sort, scriptArray, D|
 ScriptTotal := LLARS_SelectorRegistry.Entries.Length()
 LLARS_SelectorCategoryList := LLARS_SelectorRegistryCategoryList(LLARS_SelectorRegistry)
 LLARS_SelectorCategoryOptions := "All Categories" . (LLARS_SelectorCategoryList = "" ? "" : "|" . LLARS_SelectorCategoryList)
@@ -117,7 +126,9 @@ LLARS_SelectorCategoryOptions := "All Categories" . (LLARS_SelectorCategoryList 
 LLARS_SelectorFavorites := ""
 LLARS_SelectorRecent := ""
 LLARS_SelectorFilteredCount := ScriptTotal
+LLARS_SelectorVisibleList := scriptArray
 LLARS_SelectorLoadPreferences()
+LLARS_SelectorPerfMark("preferences_ready")
 
 ; ======================================================================
 ; |     HOTKEY SETUP     -     HOTKEY SETUP     -     HOTKEY SETUP     |
@@ -188,12 +199,18 @@ else
 ; The shared visual finalizer also styles remaining native controls.
 LLARS_VisualStyleControls(LLARSSelectorHwnd)
 Gui, Show, %selectorShowOptions%, Script Selector
+LLARS_SelectorPerfMark("gui_shown")
 LLARS_VisualWindow(LLARSSelectorHwnd)
 LLARS_HideUpdateCheckSplash()
 LLARS_VisualMainIcon(LLARSSelectorHwnd, A_ScriptDir)
 CheckPOS(LLARSSelectorHwnd)
 LLARS_SelectorSavePosition(LLARSSelectorHwnd)
-LLARS_SelectorApplyFilter()
+; All five filters are at their initial All/blank values. The pre-sorted
+; list is already visible, so select its first entry instead of rebuilding it.
+if (ScriptTotal > 0)
+    GuiControl, 1:Choose, ScriptListBox, 1
+LLARS_SelectorUpdateFavoriteButton()
+LLARS_SelectorPerfMark("selector_input_ready")
 GuiControl, 1:Focus, ScriptListBox
 ; Recheck native button painting after the initial window messages settle.
 LLARS_SelectorPaintCallback := Func("LLARS_SelectorFinalizeButtonPaint")
@@ -232,6 +249,7 @@ LLARS_SelectorFinalizeButtonPaint()
         return
     LLARS_SelectorRegisterButtons()
     LLARS_VisualPaintReady(LLARSSelectorHwnd)
+    LLARS_SelectorPerfMark("first_paint_finalized")
     for _, button in [LLARSSelectorSelectButtonHwnd, LLARSSelectorFavoriteButtonHwnd, LLARSSelectorClearButtonHwnd
         , LLARSSelectorHeaderButtonHwnd, LLARSSelectorCreateButtonHwnd, LLARSSelectorExitButtonHwnd, LLARSSelectorImportButtonHwnd]
     {
@@ -251,6 +269,32 @@ LLARS_SelectorRegisterButtons()
     LLARS_VisualRegisterButton(LLARSSelectorCreateButtonHwnd, "Create Script")
     LLARS_VisualRegisterButton(LLARSSelectorExitButtonHwnd, "Close Selector")
     LLARS_VisualRegisterButton(LLARSSelectorImportButtonHwnd, "Import Scripts")
+}
+
+; Opt-in startup evidence for v2.3.7. Set LLARS_SELECTOR_PROFILE=1 before
+; launching the Selector. No persistent logging, new UI, or disk writes by default.
+; Records timestamped stage deltas in Logs\Selector-Startup-Performance.log.
+LLARS_SelectorPerfMark(stage)
+{
+    static enabled := "", started := 0, previous := 0, seen := {}
+    if (enabled = "")
+    {
+        EnvGet, requested, LLARS_SELECTOR_PROFILE
+        enabled := (requested = "1") ? "yes" : "no"
+    }
+    if (enabled != "yes" || seen.HasKey(stage))
+        return
+    seen[stage] := true
+    now := A_TickCount
+    if (!started)
+        started := now
+    delta := (previous = 0) ? 0 : (now - previous)
+    previous := now
+    logDir := A_ScriptDir . "\Logs"
+    FileCreateDir, %logDir%
+    logFile := logDir . "\Selector-Startup-Performance.log"
+    entry := A_NowUTC . " UTC`t" . stage . "`t" . (now - started) . "`t" . delta . "`n"
+    FileAppend, %entry%, %logFile%, UTF-8
 }
 
 ; Builds the single authoritative in-code catalog used by list, info, and launch paths.
@@ -396,7 +440,8 @@ LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Descripti
 	scriptDir := A_ScriptDir . "\" . RootDirectory . "\" . RelativeDirectory
 	scriptPath := scriptDir . "\" . FileName
 	configPath := scriptDir . "\Config.ini"
-	capabilities := LLARS_ConfigCapabilityScan(configPath, scriptPath)
+    ; Startup-only one-pass scan; unusual INIs use the canonical shared scanner.
+    capabilities := LLARS_SelectorCapabilitiesFast(configPath, scriptPath)
 	record := {Name: Name, InfoTitle: InfoTitle, Difficulty: Difficulty, Description: Description, RelativeDirectory: RelativeDirectory, FileName: FileName, Category: Category
 		, RootDirectory: RootDirectory, ScriptFamily: ScriptFamily
 		, Capabilities: capabilities, SetupType: capabilities.SetupType, SetupText: capabilities.SetupText, RequiresLocalConfig: capabilities.RequiresLocalConfig}
@@ -405,6 +450,124 @@ LLARS_SelectorRegistryAdd(ByRef registry, Name, InfoTitle, Difficulty, Descripti
 	return record
 }
 
+
+; Startup-only capability discovery. The shared LLARS_ConfigCapabilityScan remains
+; authoritative for editors, scripts, Creator, and unusual user configurations.
+; Read each simple local INI once instead of performing a separate Windows INI
+; lookup for every field/section. Any ambiguous section/key layout falls back
+; to the canonical scanner rather than guessing about setup requirements.
+LLARS_SelectorCapabilitiesFast(configPath, scriptPath)
+{
+    disabled := LLARS_ConfigScriptDisabled(scriptPath)
+    if (disabled || !FileExist(configPath))
+        return LLARS_ConfigCapabilityScan(configPath, scriptPath, disabled ? true : false)
+
+    FileRead, contents, %configPath%
+    if (ErrorLevel || contents = "")
+        return LLARS_ConfigCapabilityScan(configPath, scriptPath, false)
+
+    sections := {}
+    order := []
+    sectionName := ""
+    Loop, Parse, contents, `n, `r
+    {
+        line := Trim(StrReplace(A_LoopField, Chr(0xFEFF)))
+        if (line = "" || SubStr(line, 1, 1) = ";" || SubStr(line, 1, 1) = "#")
+            continue
+        if RegExMatch(line, "^\[(.*)\]$", header)
+        {
+            sectionName := Trim(header1)
+            if (sectionName = "")
+                continue
+            sectionName := LLARS_ConfigCanonicalCoordinateSection(LLARS_ConfigCanonicalHotkeySection(LLARS_ConfigCanonicalBankSection(sectionName)))
+            ; Duplicate or case-variant headings can follow Windows INI merging
+            ; rules; delegate those files to the unchanged canonical scanner.
+            key := sectionName
+            StringLower, key, key
+            if sections.HasKey(key)
+                return LLARS_ConfigCapabilityScan(configPath, scriptPath, false)
+            sections[key] := {Name: sectionName, Type: "", TypeSeen: false, Min: false, Max: false}
+            order.Push(key)
+            continue
+        }
+        if (sectionName = "")
+            continue
+        pos := InStr(line, "=")
+        if (!pos)
+            continue
+        field := Trim(SubStr(line, 1, pos - 1))
+        StringLower, field, field
+        value := Trim(SubStr(line, pos + 1))
+        sectionKey := sectionName
+        StringLower, sectionKey, sectionKey
+        item := sections[sectionKey]
+        if (field = "type")
+        {
+            if (item.TypeSeen || InStr(value, ";"))
+                return LLARS_ConfigCapabilityScan(configPath, scriptPath, false)
+            item.TypeSeen := true
+            StringLower, value, value
+            item.Type := value
+        }
+        else if (field = "min")
+            item.Min := true
+        else if (field = "max")
+            item.Max := true
+    }
+    if (!order.Length())
+        return LLARS_ConfigCapabilityScan(configPath, scriptPath, false)
+
+    caps := {ConfigPath: configPath, ScriptPath: scriptPath, Disabled: false
+        , ConfigExists: true, RequiresLocalConfig: true, Hotkeys: false
+        , Coordinates: false, Colors: false, Timer: false, ScriptConfig: true
+        , SetupType: "None", SetupText: "None"}
+    for _, key in order
+    {
+        item := sections[key]
+        if !LLARS_ConfigSectionUsedByScript(configPath, scriptPath, item.Name)
+            continue
+        kind := item.Type
+        if (kind != "hotkey" && kind != "coordinate" && kind != "color" && kind != "timer")
+        {
+            ; Legacy timer sections without type=timer keep their v2.3.6 meaning.
+            label := item.Name
+            StringLower, label, label
+            if ((label = "timer" || RegExMatch(label, "^(sleep |timer )")) && (item.Min || item.Max))
+                kind := "timer"
+        }
+        if (kind = "hotkey")
+            caps.Hotkeys := true
+        else if (kind = "coordinate")
+            caps.Coordinates := true
+        else if (kind = "color")
+            caps.Colors := true
+        else if (kind = "timer")
+            caps.Timer := true
+    }
+    setup := ""
+    if (caps.Hotkeys)
+        setup .= "Hotkeys"
+    if (caps.Coordinates)
+        setup .= (setup = "" ? "" : " + ") . "Coordinates"
+    if (caps.Colors)
+        setup .= (setup = "" ? "" : " + ") . "Colors"
+    if (caps.Timer)
+        setup .= (setup = "" ? "" : " + ") . "Timer"
+    caps.SetupText := (setup = "") ? "None" : setup
+    if (caps.Hotkeys && !caps.Coordinates && !caps.Colors && !caps.Timer)
+        caps.SetupType := "Hotkey"
+    else if (caps.Coordinates && !caps.Hotkeys && !caps.Colors && !caps.Timer)
+        caps.SetupType := "Coordinate"
+    else if (caps.Colors && caps.Coordinates && !caps.Hotkeys && !caps.Timer)
+        caps.SetupType := "Color+Coordinate"
+    else if (caps.Timer && !caps.Hotkeys && !caps.Coordinates && !caps.Colors)
+        caps.SetupType := "Timer"
+    else if (!caps.Hotkeys && !caps.Coordinates && !caps.Colors && !caps.Timer)
+        caps.SetupType := "None"
+    else
+        caps.SetupType := "Mixed"
+    return caps
+}
 
 ; The Selector highlights only the setup choices a player must configure.
 ; Timer availability remains derived from Config.ini and visible in Setup.

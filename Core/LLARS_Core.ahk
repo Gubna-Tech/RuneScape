@@ -1,4 +1,4 @@
-; ================================================================
+﻿; ================================================================
 ; |     LLARS CORE     -     LLARS CORE                          |
 ; ================================================================
 
@@ -503,6 +503,13 @@ LLARS_SetupCategoryState(capabilityAvailable, requiredCount, missingCount, inval
 	return "Ready"
 }
 
+; Stable per-field findings for Check Setup. Aggregated category states remain
+; backward compatible for the main status panel and support bundles.
+LLARS_SetupRecordIssue(ByRef result, section, category, state, reason)
+{
+    result.FieldIssues.Push({Section: section, Category: category, State: state, Reason: reason})
+}
+
 ; Builds one side-effect-free setup result used by the main status panel,
 ; Setup preflight, diagnostics, and actionable setup navigation.
 LLARS_BuildSetupPreflight(includeInput := true)
@@ -510,7 +517,7 @@ LLARS_BuildSetupPreflight(includeInput := true)
 	global LLARS_ROOT, LLARS_SCRIPT_DIR, LLARS_DISABLE_SCRIPT_CONFIG
 
 	caps := LLARS_GetScriptCapabilities()
-	result := {Capabilities: caps, Items: {}, Overall: "Ready", IssueCount: 0, RequiredCount: 0}
+	result := {Capabilities: caps, Items: {}, FieldIssues: [], Overall: "Ready", IssueCount: 0, RequiredCount: 0}
 	counts := {hotkey: {required: 0, missing: 0, invalid: 0}
 		, coordinate: {required: 0, missing: 0, invalid: 0}
 		, color: {required: 0, missing: 0, invalid: 0}
@@ -525,7 +532,8 @@ LLARS_BuildSetupPreflight(includeInput := true)
 			Loop, Parse, sections, `n, `r
 			{
 				section := LLARS_NormalizeConfigSectionName(A_LoopField)
-				if (section = "" || !LLARS_ConfigSectionEnabled(configPath, section))
+				if (section = "" || !LLARS_ConfigSectionEnabled(configPath, section)
+                    || !LLARS_ConfigSectionUsedByScript(configPath, A_ScriptFullPath, section))
 					continue
 
 				configType := LLARS_ConfigCapabilitySectionType(configPath, section)
@@ -537,9 +545,15 @@ LLARS_BuildSetupPreflight(includeInput := true)
 					counts.hotkey.required++
 					hotkeyValue := LLARS_ConfigReadFile(configPath, section, "hotkey", "ERROR")
 					if (hotkeyValue = "ERROR" || Trim(hotkeyValue) = "")
+					{
 						counts.hotkey.missing++
+						LLARS_SetupRecordIssue(result, section, "Hotkeys", "Missing", "Assign a hotkey")
+					}
 					else if !LLARS_IsValidConfigHotkey(hotkeyValue)
+					{
 						counts.hotkey.invalid++
+						LLARS_SetupRecordIssue(result, section, "Hotkeys", "Invalid", "Invalid hotkey")
+					}
 					continue
 				}
 
@@ -558,19 +572,34 @@ LLARS_BuildSetupPreflight(includeInput := true)
 					if (hasPoint)
 					{
 						if (x = "ERROR" || y = "ERROR" || Trim(x) = "" || Trim(y) = "")
+						{
 							counts.coordinate.missing++
+							LLARS_SetupRecordIssue(result, section, "Coordinates", "Missing", "Set both X and Y")
+						}
 						else if (!LLARS_IsNumericConfigValue(x) || !LLARS_IsNumericConfigValue(y))
+						{
 							counts.coordinate.invalid++
+							LLARS_SetupRecordIssue(result, section, "Coordinates", "Invalid", "Invalid X or Y")
+						}
 					}
 					else if (hasRectangle)
 					{
 						if (xmin = "ERROR" || xmax = "ERROR" || ymin = "ERROR" || ymax = "ERROR" || Trim(xmin) = "" || Trim(xmax) = "" || Trim(ymin) = "" || Trim(ymax) = "")
+						{
 							counts.coordinate.missing++
+							LLARS_SetupRecordIssue(result, section, "Coordinates", "Missing", "Pick top-left, then bottom-right")
+						}
 						else if (!LLARS_IsNumericConfigValue(xmin) || !LLARS_IsNumericConfigValue(xmax) || !LLARS_IsNumericConfigValue(ymin) || !LLARS_IsNumericConfigValue(ymax) || (xmin + 0) > (xmax + 0) || (ymin + 0) > (ymax + 0))
+						{
 							counts.coordinate.invalid++
+							LLARS_SetupRecordIssue(result, section, "Coordinates", "Invalid", "Check the selected area corners")
+						}
 					}
 					else
+					{
 						counts.coordinate.missing++
+						LLARS_SetupRecordIssue(result, section, "Coordinates", "Missing", "Choose the point or area")
+					}
 					continue
 				}
 
@@ -580,9 +609,15 @@ LLARS_BuildSetupPreflight(includeInput := true)
 					colorKey := LLARS_GetColorKey(configPath, section)
 					colorValue := LLARS_ConfigReadFile(configPath, section, colorKey, "ERROR")
 					if (colorValue = "ERROR" || Trim(colorValue) = "")
+					{
 						counts.color.missing++
+						LLARS_SetupRecordIssue(result, section, "Colors", "Missing", "Choose a color")
+					}
 					else if !RegExMatch(Trim(colorValue), "i)^0x[0-9A-F]{6}$")
+					{
 						counts.color.invalid++
+						LLARS_SetupRecordIssue(result, section, "Colors", "Invalid", "Expected 0xRRGGBB")
+					}
 					continue
 				}
 
@@ -592,9 +627,15 @@ LLARS_BuildSetupPreflight(includeInput := true)
 					minValue := LLARS_ConfigReadFile(configPath, section, "min", "ERROR")
 					maxValue := LLARS_ConfigReadFile(configPath, section, "max", "ERROR")
 					if (minValue = "ERROR" || maxValue = "ERROR" || Trim(minValue) = "" || Trim(maxValue) = "")
+					{
 						counts.timer.missing++
+						LLARS_SetupRecordIssue(result, section, "Timer", "Missing", "Set min and max")
+					}
 					else if (!LLARS_IsNumericConfigValue(minValue) || !LLARS_IsNumericConfigValue(maxValue) || (minValue + 0) > (maxValue + 0))
+					{
 						counts.timer.invalid++
+						LLARS_SetupRecordIssue(result, section, "Timer", "Invalid", "Invalid time range")
+					}
 				}
 			}
 		}
@@ -744,11 +785,19 @@ LLARS_SetupItemIsAvailable(itemName)
 
 ; Shows a compact preflight result. The exact same derived capability/state
 ; object also powers Selector metadata, main Setup Status, and Setup controls.
-LLARS_ShowSetupPreflight()
+LLARS_ShowSetupPreflight(page := 1)
 {
-    global LLARS_SETUP_PREFLIGHT
+    ; AHK v1 GUI vOptions inside a function must name globals/statics. Use
+    ; four fixed row identifiers, then resolve the absolute issue via the page.
+    global LLARS_SETUP_PREFLIGHT, LLARS_SETUP_PREFLIGHT_PAGE
+    global SetupCheckIssue1, SetupCheckIssue2, SetupCheckIssue3, SetupCheckIssue4
 
     LLARS_SETUP_PREFLIGHT := LLARS_BuildSetupPreflight(true)
+    ; Every issue remains reachable without opening the editor manually.
+    ; Clamp on every refresh because fixing a field changes the page count.
+    issueTotal := LLARS_SETUP_PREFLIGHT.FieldIssues.Length()
+    pageCount := Max(1, Ceil(issueTotal / 4))
+    LLARS_SETUP_PREFLIGHT_PAGE := Max(1, Min(page, pageCount))
     LLARS_SupportEvent("Setup preflight", LLARS_SETUP_PREFLIGHT.Overall)
     Gui SetupCheck: Destroy
     Gui SetupCheck: +LastFound +OwnDialogs +AlwaysOnTop -ToolWindow +E0x40000 -Caption +HwndLLARSSetupCheckHwnd
@@ -797,9 +846,56 @@ LLARS_ShowSetupPreflight()
     severityColor := overall = "Ready" ? "128C79" : "EF4444"
     Gui SetupCheck: Font, s10 Bold c%severityColor%, Segoe UI
     Gui SetupCheck: Add, Text, % "x181 y" . (y+16) . " w146 h25 Center +0x200 BackgroundTrans", %overall%
+    ; Show the actual fields that need attention; do not require users to
+    ; open every editor just to discover which section is missing.
+    closeY := y + 68
+    if (LLARS_SETUP_PREFLIGHT.FieldIssues.Length())
+    {
+        firstIssue := (LLARS_SETUP_PREFLIGHT_PAGE - 1) * 4 + 1
+        showIssues := Min(4, issueTotal - firstIssue + 1)
+        Gui SetupCheck: Font, s11 Bold c24324A, Segoe UI
+        Gui SetupCheck: Add, Text, % "x25 y" . (y+54) . " w390 h26 BackgroundTrans", % "Needs attention (" . issueTotal . " fields)"
+        ; Keep the section name and actionable category visible. The longer
+        ; reason remains in FieldIssues for diagnostics and editor routing.
+        ; Larger text and a 30px row pitch prevent the Edit buttons touching.
+        rowTop := y + 86
+        rowStep := 30
+        Loop, %showIssues%
+        {
+            issueIndex := firstIssue + A_Index - 1
+            issue := LLARS_SETUP_PREFLIGHT.FieldIssues[issueIndex]
+            summary := issue.State . " " . issue.Category
+            sectionName := issue.Section
+            ; Shorten only a genuinely long section name; never hide the
+            ; status/category (e.g. Missing Coordinates) behind an ellipsis.
+            maxNameLength := Max(12, 49 - StrLen(summary) - 3)
+            if (StrLen(sectionName) > maxNameLength)
+                sectionName := SubStr(sectionName, 1, maxNameLength-3) . "..."
+            detail := "[" . sectionName . "] " . summary
+            rowY := rowTop + (A_Index-1)*rowStep
+            Gui SetupCheck: Font, s10 Norm cB33C3C, Segoe UI
+            Gui SetupCheck: Add, Text, % "x25 y" . rowY . " w334 h26 +0x200 BackgroundTrans", %detail%
+            Gui SetupCheck: Font, s10 Bold c24324A, Segoe UI
+            ; Fixed global vOptions are required by AutoHotkey v1 GUI controls.
+            ; Resolve this row to the displayed absolute issue in the g-label.
+            Gui SetupCheck: Add, Button, % "x366 y" . (rowY-1) . " w52 h26 gSetupCheckEditIssue vSetupCheckIssue" . A_Index, Edit
+        }
+        if (pageCount > 1)
+        {
+            pagerY := rowTop + 4*rowStep + 5
+            Gui SetupCheck: Font, s10 Bold c24324A, Segoe UI
+            if (LLARS_SETUP_PREFLIGHT_PAGE > 1)
+                Gui SetupCheck: Add, Button, % "x25 y" . pagerY . " w100 h26 gSetupCheckPreviousPage", Previous
+            Gui SetupCheck: Add, Text, % "x148 y" . pagerY . " w144 h26 Center +0x200 BackgroundTrans", % "Page " . LLARS_SETUP_PREFLIGHT_PAGE . " of " . pageCount
+            if (LLARS_SETUP_PREFLIGHT_PAGE < pageCount)
+                Gui SetupCheck: Add, Button, % "x315 y" . pagerY . " w100 h26 gSetupCheckNextPage", Next
+        }
+        ; Preserve a stable dialog height across all pages, including the last.
+        closeY := (pageCount > 1) ? (pagerY + 37) : (rowTop + showIssues*rowStep + 22)
+    }
     Gui SetupCheck: Font, s10 Bold c24324A, Segoe UI
-    Gui SetupCheck: Add, Button, % "x128 y" . (y+68) . " w184 h34 gCloseSetupCheck", Close Check Setup
-    height := y + 115
+    Gui SetupCheck: Add, Button, % "x128 y" . closeY . " w184 h34 gCloseSetupCheck", Close Check Setup
+    height := closeY + 47
     Gui SetupCheck: Show, Center w440 h%height%, Check Setup
     LLARS_VisualFinish("SetupCheck")
     return LLARS_SETUP_PREFLIGHT
@@ -1679,16 +1775,25 @@ ConfigError()
 ; Reports a blocked Start and sends the user to the existing setup editor.
 LLARS_ShowConfigError(file, message, logDetails, section, key)
 {
-    global LLARS_SCRIPT_DIR, LLARS_ConfigRepairKind
+    global LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE, LLARS_ConfigRepairKind, LLARS_ConfigRepairSection
 
     configPath := InStr(file, ":\") ? file : LLARS_SCRIPT_DIR . "\" . file
     editor := GetConfigType(configPath, section)
+    ; Match Check Setup: a script-owned min/max timer is edited in Timer,
+    ; never by inventing new Config.ini keys or rewriting a shared config.
+    if (editor = "" && configPath != LLARS_CONFIG_FILE
+        && LLARS_ConfigCapabilitySectionType(configPath, section) = "timer"
+        && LLARS_ConfigKeyExistsFile(configPath, section, "min")
+        && LLARS_ConfigKeyExistsFile(configPath, section, "max"))
+        editor := "timer"
     if (editor = "color")
         editorName := "Colors"
     else if (editor = "coordinate")
         editorName := "Coordinates"
     else if (editor = "hotkey")
         editorName := "Hotkeys"
+    else if (editor = "timer")
+        editorName := "Timer"
     else
     {
         editor := "setup"
@@ -1705,11 +1810,15 @@ LLARS_ShowConfigError(file, message, logDetails, section, key)
     LLARS_ReportError("Config Error", message, "Start was blocked; no automation began."
         , "Correct the indicated setting in " . editorName . " and try Start again."
         , logDetails, false, "Configuration")
-    notice := message . "`n`nStart was stopped. Select OK to open " . editorName . "."
+    notice := message . "`n`nStart was stopped. Select OK to open " . editorName
+    if (editor != "setup" && Trim(section) != "")
+        notice .= " at [" . LLARS_NormalizeConfigSectionName(section) . "]"
+    notice .= "."
     if (editor = "setup")
         notice .= "`nUse Script Config in Setup only if this field has no dedicated editor."
     MsgBox, 0x40030, LLARS Setup Required, %notice%
     LLARS_ConfigRepairKind := editor
+    LLARS_ConfigRepairSection := LLARS_NormalizeConfigSectionName(section)
     SetTimer, LLARS_ConfigRepairOpen, -10
 }
 
@@ -1780,6 +1889,11 @@ CheckConfigFile(file)
 		section := Trim(A_LoopField)
 		if (section = "")
 			continue
+        ; Match Check Setup and Selector: only validate fields used by this
+        ; script when several bundled variants share one Config.ini.
+        ; The root LLARS Config.ini and every other script retain full checks.
+        if (ConfigPath != LLARS_CONFIG_FILE && !LLARS_ConfigSectionUsedByScript(ConfigPath, A_ScriptFullPath, section))
+            continue
 
 		keys := LLARS_ConfigReadSection(ConfigPath, section)
 
