@@ -1,0 +1,40 @@
+﻿FIRE + FORM - MES
+Script variant: Crafting Guild / Fire + Form (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- You need level 40 Crafting to enter the Crafting Guild.
+
+- Complete the Hard Falador achievements to unlock the Crafting Guild bank chest. The deposit box cannot load a preset.
+
+- Prepare a bank preset containing soft clay. Load it manually once before starting; Menu Entry Swapper uses the last loaded preset when the script clicks the bank chest.
+
+- Start beside the Crafting Guild bank chest. Keep the camera and game layout consistent when capturing coordinates and running the script.
+
+STEPS TO RUN
+
+1. In Setup > Coordinates, capture [Bank Prime] on the bank chest from your starting position.
+
+2. Capture [Pottery Wheel] while standing at the bank chest.
+
+3. At the pottery wheel, open the interface and capture [Pottery Menu] on the first menu option for your recipe.
+
+4. Open that menu and capture [Pottery Sub-Menu] on the next option.
+
+5. Open the sub-menu and capture [Item] on the pottery item you want to make.
+
+6. Capture [Pottery Oven] while standing at the pottery wheel.
+
+7. Capture [Bank Main] on the bank chest while standing at the pottery oven.
+
+8. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+9. Press Start and choose how many runs to complete. Watch the first two inventories to confirm forming, firing, and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- The first inventory selects [Pottery Menu], [Pottery Sub-Menu], and [Item]. Later inventories press Space at the wheel to repeat the selected recipe.
+
+- The script completes [Sleep Form] at the wheel, moves to the pottery oven, presses Space to fire, waits for [Sleep Fire], and returns to the bank.
+
+- The bank chest loads your last used preset when clicked. Adjust the three independent walking timers and the forming and firing timers in Setup > Timer if needed.
