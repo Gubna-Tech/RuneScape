@@ -72,6 +72,21 @@ required	Scripts/Amulet Stringer/Amulet Stringer.ahk
 required	Scripts/Anti-AFK/Anti-AFK.ahk
 required	Scripts/Armour Crafter/Armour Crafter.ahk
 required	Scripts/Arrow Fletcher/Arrow Fletcher.ahk
+required	Scripts/Crafting Guild/Clay/Clay Fire/Clay Fire.ahk
+required	Scripts/Crafting Guild/Clay/Clay Fire/Config.ini
+required	Scripts/Crafting Guild/Clay/Clay Form/Clay Form.ahk
+required	Scripts/Crafting Guild/Clay/Clay Form/Config.ini
+required	Scripts/Crafting Guild/Clay/Fire + Form/Config.ini
+required	Scripts/Crafting Guild/Clay/Fire + Form/Fire + Form.ahk
+required	Scripts - Menu Entry Swapper/Crafting Guild/Clay/Clay Form/Clay Form.ahk
+required	Scripts - Menu Entry Swapper/Crafting Guild/Clay/Clay Form/Config.ini
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Crafting Guild/Clay/Clay Form/Clay Form.txt
+required	Scripts - Menu Entry Swapper/Crafting Guild/Clay/Clay Fire/Clay Fire.ahk
+required	Scripts - Menu Entry Swapper/Crafting Guild/Clay/Clay Fire/Config.ini
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Crafting Guild/Clay/Clay Fire/Clay Fire.txt
+required	Scripts - Menu Entry Swapper/Crafting Guild/Clay/Fire + Form/Fire + Form.ahk
+required	Scripts - Menu Entry Swapper/Crafting Guild/Clay/Fire + Form/Config.ini
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Crafting Guild/Clay/Fire + Form/Fire + Form.txt
 required	Scripts/Incense/Ash to Incense/Ash to Incense.ahk
 required	Scripts/AutoClicker/AutoClicker.ahk
 required	Scripts/AutoTele/AutoTele.ahk
@@ -91,6 +106,7 @@ required	Scripts/Cooking/Cooking.ahk
 required	Scripts/Fort Forinthry/Cooking/Cooking.ahk
 required	Scripts/Lunar Spells/Fire Urn/Fire Urn.ahk
 required	Scripts/Fort Forinthry/Frame Maker/Frame Maker.ahk
+required	Scripts/Generic Action Bar/Generic Action Bar.ahk
 required	Scripts/Gem Cutter/Gem Cutter.ahk
 required	Scripts/Glassblowing/Glassblowing.ahk
 required	Scripts/Agility/Gnome/Advanced/Gnome Course.ahk
@@ -243,6 +259,9 @@ required	Documentation/Script Instructions/Scripts/Bow Cutter/Bow Cutter.txt
 required	Documentation/Script Instructions/Scripts/Bow Stringer/Bow Stringer.txt
 required	Documentation/Script Instructions/Scripts/Contract Binding/Contract Binding.txt
 required	Documentation/Script Instructions/Scripts/Cooking/Cooking.txt
+required	Documentation/Script Instructions/Scripts/Crafting Guild/Clay/Clay Fire/Clay Fire.txt
+required	Documentation/Script Instructions/Scripts/Crafting Guild/Clay/Clay Form/Clay Form.txt
+required	Documentation/Script Instructions/Scripts/Crafting Guild/Clay/Fire + Form/Fire + Form.txt
 required	Documentation/Script Instructions/Scripts/Croesus Front/Croesus Front.txt
 required	Documentation/Script Instructions/Scripts/Divination/Divine Conversion - Monolith Power/Divination - High Contrast.txt
 required	Documentation/Script Instructions/Scripts/Divination/Normal - Non-Monolith Power/Divination - High Contrast.txt
@@ -258,6 +277,7 @@ required	Documentation/Script Instructions/Scripts/Fort Forinthry/Refined Plank/
 required	Documentation/Script Instructions/Scripts/Fort Forinthry/Spinning Wheel/Fungal Bowstring.txt
 required	Documentation/Script Instructions/Scripts/Fort Forinthry/Spinning Wheel/Spinning Wheel.txt
 required	Documentation/Script Instructions/Scripts/Fort Forinthry/Stone Wall/Stone Wall.txt
+required	Documentation/Script Instructions/Scripts/Generic Action Bar/Generic Action Bar.txt
 required	Documentation/Script Instructions/Scripts/Gem Cutter/Gem Cutter.txt
 required	Documentation/Script Instructions/Scripts/Glassblowing/Glassblowing.txt
 required	Documentation/Script Instructions/Scripts/Herb Cleaner - Skillcape/Skillcape Cleaner.txt
@@ -362,6 +382,7 @@ required	Scripts/Fort Forinthry/Plank Maker/Config.ini
 required	Scripts/Fort Forinthry/Refined Plank/Config.ini
 required	Scripts/Fort Forinthry/Spinning Wheel/Config.ini
 required	Scripts/Fort Forinthry/Stone Wall/Config.ini
+required	Scripts/Generic Action Bar/Config.ini
 required	Scripts/Gem Cutter/Config.ini
 required	Scripts/Glassblowing/Config.ini
 required	Scripts/Herb Cleaner - Skillcape/Config.ini
