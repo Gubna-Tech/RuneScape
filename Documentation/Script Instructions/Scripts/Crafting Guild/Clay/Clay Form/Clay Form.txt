@@ -1,0 +1,38 @@
+CLAY FORM
+Script variant: Crafting Guild / Clay Form
+
+BEFORE YOU START
+
+- You need level 40 Crafting to enter the Crafting Guild.
+
+- Complete the Hard Falador achievements to unlock the Crafting Guild bank chest. The deposit box cannot load bank presets.
+
+- Prepare a bank preset containing soft clay.
+
+- Start beside the Crafting Guild bank chest. Keep the camera and game layout consistent when capturing coordinates and running the script.
+
+STEPS TO RUN
+
+1. In Setup > Hotkeys, set [Bank Preset] to the in-game hotkey for your soft clay preset.
+
+2. In Setup > Coordinates, capture [Bank Prime] on the bank chest from your starting position.
+
+3. Capture [Pottery Wheel] while standing at the bank chest.
+
+4. Capture [Bank Main] on that same bank chest while standing at the pottery wheel.
+
+5. Open the pottery wheel interface and capture [Pottery Menu] on the menu option for your recipe.
+
+6. Open that menu and capture [Pottery Sub-Menu] on the next option.
+
+7. Open the sub-menu and capture [Item] on the item you want to make.
+
+8. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+9. Press Start and choose how many runs to complete. Watch the first two inventories to confirm crafting and banking work correctly.
+
+ADDITIONAL SCRIPT NOTES
+
+- The first inventory selects [Pottery Menu], [Pottery Sub-Menu], and [Item], then starts forming. Later inventories use Space at the wheel to repeat the selected item.
+
+- Timing: [Sleep Form] must allow the entire inventory to finish before the bank return. Adjust timers in Setup > Timer if needed; test a complete cycle after changes.

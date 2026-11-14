@@ -1,0 +1,24 @@
+﻿GENERIC ACTION BAR
+Script variant: Generic Action Bar (Standard)
+
+BEFORE YOU START
+
+- Add the desired skilling action to your RuneScape 3 action bar.
+
+- Have the required materials ready, and confirm the action opens a Make-X or similar interface that starts with Space.
+
+STEPS TO RUN
+
+1. In Setup > Hotkeys, assign [Skillbar] to the key bound to the action-bar slot.
+
+2. In Setup > Timer, set [Action Sleep] to the time needed to finish one full action before repeating. Adjust [Sleep Short] if the interface needs more time to open.
+
+3. Check the Setup Checklist and resolve any Missing or Invalid entries before starting.
+
+4. Press Start, choose the number of runs, and watch the first cycle to confirm the selected action and timing.
+
+ADDITIONAL SCRIPT NOTES
+
+- The script uses the action-bar hotkey, waits, presses Space, and waits for the action to finish before repeating. It does not bank or restock supplies.
+
+- Optional LLARS Random Sleep may add a pause when enabled. Adjust the timers to suit your activity.
