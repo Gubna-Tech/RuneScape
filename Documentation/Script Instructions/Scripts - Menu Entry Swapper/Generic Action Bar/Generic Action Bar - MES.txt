@@ -1,0 +1,26 @@
+﻿GENERIC ACTION BAR - MES
+Script variant: Generic Action Bar (Menu Entry Swapper)
+
+BEFORE YOU START
+
+- IMPORTANT: Manually load and verify the intended last-used bank preset before starting.
+
+- Configure Menu Entry Swapper so a single click on the bank reloads that last-used preset. Verify the one-click action manually.
+
+STEPS TO RUN
+
+1. In Setup > Coordinates, set [Bank] to the bank location that performs the one-click MES preset load.
+
+2. In Setup > Hotkeys, set [Skillbar] to the action-bar hotkey.
+
+3. In Setup > Timer, set [Sleep Short] to allow the one-click bank preset to load and the action interface to open, and [Action Sleep] for the action duration.
+
+4. Verify that the selected preset and one-click MES bank action are correct, and resolve any setup checklist warnings.
+
+5. Press Start and choose one run. Watch the first cycle to confirm the bank preset loads and the action-bar sequence works.
+
+ADDITIONAL SCRIPT NOTES
+
+- Every run: click [Bank], wait [Sleep Short], then run the original Generic Action Bar sequence: [Skillbar], [Sleep Short], optional Random Sleep, Space, [Action Sleep].
+
+- The MES script does not press a separate bank-preset hotkey or choose a preset; its correctness depends on your manually configured last-used preset.
