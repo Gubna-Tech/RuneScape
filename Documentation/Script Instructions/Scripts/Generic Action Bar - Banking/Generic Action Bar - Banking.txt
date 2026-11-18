@@ -1,0 +1,26 @@
+﻿GENERIC ACTION BAR - BANKING
+Script variant: Generic Action Bar (Banking with preset hotkey)
+
+BEFORE YOU START
+
+- Verify your RuneScape bank preset is configured and its in-game hotkey loads the correct materials.
+
+- Use a bank booth/chest that opens with one click and keep the desired action on the action bar.
+
+STEPS TO RUN
+
+1. In Setup > Coordinates, set [Bank] to a clickable bank location.
+
+2. In Setup > Hotkeys, set [Bank Preset] to your configured bank-preset key, and [Skillbar] to the action-bar key.
+
+3. In Setup > Timer, set [Sleep Short] for the bank to open and for the preset to finish loading, and [Action Sleep] for the full activity duration.
+
+4. Verify the configuration checklist. Test opening the bank and loading the preset manually before starting.
+
+5. Press Start and choose one run. Watch the first cycle to confirm the bank, preset and action work in order.
+
+ADDITIONAL SCRIPT NOTES
+
+- Every run: click [Bank], wait [Sleep Short], press [Bank Preset], wait [Sleep Short], then run the original Generic Action Bar sequence: [Skillbar], [Sleep Short], optional Random Sleep, Space, [Action Sleep].
+
+- [Sleep Short] is used three times per run: after the bank click, after the preset hotkey, and after the action-bar hotkey. No walking or inventory layout change is handled automatically.

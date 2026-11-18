@@ -1,5 +1,5 @@
 ﻿GENERIC ACTION BAR
-Script variant: Generic Action Bar (Standard)
+Script variant: Generic Action Bar (No Banking)
 
 BEFORE YOU START
 
