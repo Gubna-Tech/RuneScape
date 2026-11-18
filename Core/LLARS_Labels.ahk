@@ -1,4 +1,4 @@
-; ================================================================
+﻿; ================================================================
 ; |     LLARS LABEL LIBRARY     -     LLARS LABEL LIBRARY        |
 ; ================================================================
 
@@ -27,6 +27,16 @@ Else IfWinActive, Timer ahk_class AutoHotkeyGUI
 	LLARS_DeveloperUIAction("Timer Configuration", "Closed")
 	Gui 5: Destroy
 	Gui 1: Show
+}
+
+Else IfWinActive, Coordinate Verifier ahk_class AutoHotkeyGUI
+{
+    GoSub, LLARS_CloseCoordinateVerifier
+}
+
+Else IfWinActive, Timer Helper ahk_class AutoHotkeyGUI
+{
+    GoSub, LLARS_CloseTimerHelper
 }
 
 Else IfWinActive, Script Instructions ahk_class AutoHotkeyGUI
@@ -290,41 +300,40 @@ Gui Combo: Destroy
 Gui Combo: +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSSetupGuiHwnd
 LLARS_VisualPrepare("Combo")
 setupCaps := LLARS_GetScriptCapabilities()
-setupHasTimer := setupCaps.Timer
-setupButtonCount := 7 + (setupHasTimer ? 1 : 0)
-setupLayout := LLARS_VisualCompactStackLayout(setupButtonCount + 1)
-LLARS_VisualModalHeader("Combo", setupLayout.width, "Setup")
-LLARS_VisualCompactStackCard("Combo", setupLayout)
-setupY := setupLayout.buttonY
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gColor vSetupColorsButton", Colors
+; All setup actions stay on this window, grouped by purpose.
+LLARS_VisualModalHeader("Combo", 480, "Setup")
+Gui Combo: Color, FFFFFF, FFFFFF
+Gui Combo: Font, s11 Bold c24324A, Segoe UI
+Gui Combo: Add, Text, x20 y90 w440 h22 Center BackgroundTrans, Script Setup
+Gui Combo: Font, s10 Bold c24324A, Segoe UI
+Gui Combo: Add, Button, x20 y117 w210 h35 gColor vSetupColorsButton, Colors
 if (!setupCaps.Colors)
     GuiControl, Combo:Disable, SetupColorsButton
-setupY += setupLayout.step
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCoordinates vSetupCoordinatesButton", Coordinates
+Gui Combo: Add, Button, x250 y117 w210 h35 gCoordinates vSetupCoordinatesButton, Coordinates
 if (!setupCaps.Coordinates)
     GuiControl, Combo:Disable, SetupCoordinatesButton
-setupY += setupLayout.step
-; LLARS-wide hotkeys must remain reachable even without script hotkeys.
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gHotkey vSetupHotkeysButton", Hotkeys
-setupY += setupLayout.step
-if (setupHasTimer)
-{
-    Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gLLARS_CustomComboTimer vSetupTimerButton", Timer
-    setupY += setupLayout.step
-}
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gSetupOpenScriptConfig vSetupScriptConfigButton", Script Config
+Gui Combo: Add, Button, x20 y159 w210 h35 gHotkey vSetupHotkeysButton, Hotkeys
+Gui Combo: Add, Button, x250 y159 w210 h35 gLLARS_CustomComboTimer vSetupTimerButton, Timer
+if (!setupCaps.Timer)
+    GuiControl, Combo:Disable, SetupTimerButton
+Gui Combo: Font, s11 Bold c24324A, Segoe UI
+Gui Combo: Add, Text, x20 y220 w440 h22 Center BackgroundTrans, Settings
+Gui Combo: Font, s10 Bold c24324A, Segoe UI
+Gui Combo: Add, Button, x20 y247 w210 h35 gCheckSetup, Check Setup
+Gui Combo: Add, Button, x250 y247 w210 h35 gLLARS_SetupHeaderStyle, Header Style
+Gui Combo: Add, Button, x20 y289 w210 h35 gInputSettings, Input Settings
+Gui Combo: Add, Button, x250 y289 w210 h35 gSetupOpenScriptConfig vSetupScriptConfigButton, Script Config
 if (!setupCaps.ScriptConfig)
     GuiControl, Combo:Disable, SetupScriptConfigButton
-setupY += setupLayout.step
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gInputSettings", Input Settings
-setupY += setupLayout.step
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCheckSetup", Check Setup
-setupY += setupLayout.step
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gLLARS_SetupHeaderStyle", Header Style
-Gui Combo: Add, Button, % "x" . setupLayout.buttonX . " y" . setupLayout.footerButtonY . " w" . setupLayout.buttonW . " h" . setupLayout.buttonH . " gCloseCombo", Close Setup
+Gui Combo: Font, s11 Bold c24324A, Segoe UI
+Gui Combo: Add, Text, x20 y350 w440 h22 Center BackgroundTrans, Helpers
+Gui Combo: Font, s10 Bold c24324A, Segoe UI
+Gui Combo: Add, Button, x20 y377 w210 h35 gLLARS_OpenCoordinateVerifier, Coordinate Verifier
+Gui Combo: Add, Button, x250 y377 w210 h35 gLLARS_OpenTimerHelper, Timer Helper
+Gui Combo: Add, Button, x130 y428 w220 h33 gCloseCombo, Close Setup
 Gui Combo: -ToolWindow +E0x40000
 Gui Combo: -caption
-Gui Combo: Show, % "Center w" . setupLayout.width . " h" . setupLayout.height, Setup
+Gui Combo: Show, Center w480 h475, Setup
 LLARS_VisualFinish("Combo")
 LLARS_DeveloperUIAction("Setup")
 return
@@ -651,13 +660,13 @@ LLARS_VisualPrepare("ConfigSettings")
 settingsLayout := LLARS_VisualCompactStackLayout(6)
 LLARS_VisualModalHeader("ConfigSettings", settingsLayout.width, "Config Settings")
 LLARS_VisualCompactStackCard("ConfigSettings", settingsLayout)
-Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . settingsLayout.buttonY . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoLLARS", LLARS Config
-Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoConfig vConfigSettingsScriptButton", Script Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . settingsLayout.buttonY . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoBackupConfig", Backup Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoLLARS", LLARS Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+2*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gResetConfig", Reset Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+3*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoRestoreConfig", Restore Config
+Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+4*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoConfig vConfigSettingsScriptButton", Script Config
 if !FileExist(LLARS_SCRIPT_DIR . "\Config.ini")
     GuiControl, ConfigSettings:Disable, ConfigSettingsScriptButton
-Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+2*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoBackupConfig", Backup Config
-Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+3*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gInfoRestoreConfig", Restore Config
-Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . (settingsLayout.buttonY+4*settingsLayout.step) . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gResetConfig", Reset Config
 Gui ConfigSettings: Add, Button, % "x" . settingsLayout.buttonX . " y" . settingsLayout.footerButtonY . " w" . settingsLayout.buttonW . " h" . settingsLayout.buttonH . " gCloseConfigSettings", Close Config Settings
 Gui ConfigSettings: -ToolWindow +E0x40000
 Gui ConfigSettings: -caption
@@ -672,6 +681,65 @@ Gui ConfigSettings: Destroy
 Gui 1: Show
 EnableHotkey()
 return
+
+; The two helpers open directly from Setup.
+CoordinateVerifierGuiClose:
+CoordinateVerifierGuiEscape:
+LLARS_CoordinateVerifierClose()
+return
+
+TimerHelperGuiClose:
+TimerHelperGuiEscape:
+LLARS_TimerHelperClose()
+return
+
+LLARS_OpenCoordinateVerifier:
+LLARS_CoordinateVerifierShow()
+return
+
+LLARS_CoordinateVerifierChoose:
+LLARS_CoordinateVerifierPreview()
+return
+
+LLARS_CoordinateVerifierClear:
+LLARS_HideCoordinatePreview()
+GuiControl, CoordinateVerifier:, LLARSVerifierStatus, Preview cleared.
+return
+
+LLARS_CloseCoordinateVerifier:
+LLARS_CoordinateVerifierClose()
+return
+
+LLARS_OpenTimerHelper:
+LLARS_TimerHelperShow()
+return
+
+LLARS_TimerHelperStart:
+LLARS_TimerHelperStart()
+return
+
+LLARS_TimerHelperStop:
+LLARS_TimerHelperStop()
+return
+
+LLARS_TimerHelperEdit:
+LLARS_TimerHelperOpenEditor()
+return
+
+LLARS_CloseTimerHelper:
+LLARS_TimerHelperClose()
+return
+
+; Timer calibration shortcuts work while the helper is open, even when its window
+; is not focused. Outside the helper, F11 keeps its normal LLARS binding.
+#If LLARS_TimerHelperHotkeysActive()
+F10::
+    LLARS_TimerHelperStart()
+return
+F11::
+    LLARS_TimerHelperStop()
+return
+#If
 
 ; =====================================================================
 ; |     RESET CONFIG GUI     -     RESET CONFIG GUI                    |
@@ -1116,6 +1184,7 @@ LLARS_ShowCoordinatePreview(x1, y1, x2, y2)
 	Gui, 17: Color, Red
 	Gui, 17: Show, NoActivate x%rightX% y%top% w%border% h%height%, LLARSCoordinatePreviewRight
 	LLARS_MakeCoordinateOverlayLayered(overlayRightHwnd)
+	return true
 }
 
 ; Makes the already-created border strip fully opaque while retaining its layered/click-through window style.

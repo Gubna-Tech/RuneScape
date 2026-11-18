@@ -73,7 +73,7 @@ LLARS_StartRun()
 	{
 		GuiControl,, EstLoopRemaining, Estimate Error
 		GuiControl,, EstRunRemaining, Estimate Error
-		Gui, Show
+		Gui, 1:Show
 		Sleep, 250
 		MsgBox, 262192, LLARS Estimate Error, Unable to calculate the estimated loop/run time.`n`nRunCount scripts need at least one enabled LLARS_Sleep("Sleep Section") or LLARS_RandomSleep() call inside the editable script section so LLARS can estimate the loop safely.`n`nThe automation loop will not start.
 		LLARS_RUNNING := false
@@ -82,7 +82,7 @@ LLARS_StartRun()
 	}
 
 	Gosub, UpdateEstimatedTime
-	Gui, Show
+	Gui, 1:Show
 	Sleep, 500
 	SetTimer, UpdateEstimatedTime, 250
 	if IsFunc("LLARS_ActivateRuneScapeAtRunStart")

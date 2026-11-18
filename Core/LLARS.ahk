@@ -42,5 +42,8 @@
 ; Shared Config.ini timer-range setup editor (not script-owned timer GUIs).
 #Include %A_LineFile%\..\LLARS_TimerSetup.ahk
 
+; Setup-only coordinate overlays and timer measurement.
+#Include %A_LineFile%\..\LLARS_SetupTools.ahk
+
 ; Loads runtime estimation and shared completion helpers.
 #Include %A_LineFile%\..\LLARS_Runtime.ahk

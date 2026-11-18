@@ -202,14 +202,14 @@ LLARS_GUIPresent(title, height, hwnd, root, hasPosition := false, x := "", y := 
         width := LLARS_GUIRuntimeSize(468)
         height := LLARS_GUIRuntimeHeight(LLARS_GUIRuntimeMode)
         if (hasPosition)
-            Gui, Show, % "x" . x . " y" . y . " w" . width . " h" . height, %title%
+            Gui, 1:Show, % "x" . x . " y" . y . " w" . width . " h" . height, %title%
         else
-            Gui, Show, % "w" . width . " h" . height, %title%
+            Gui, 1:Show, % "w" . width . " h" . height, %title%
     }
     else if (hasPosition)
-        Gui, Show, % "x" . x . " y" . y . " w432 h" . height, %title%
+        Gui, 1:Show, % "x" . x . " y" . y . " w432 h" . height, %title%
     else
-        Gui, Show, % "w432 h" . height, %title%
+        Gui, 1:Show, % "w432 h" . height, %title%
     LLARS_VisualWindow(hwnd)
     ; Use native fully opaque dashboard rendering for reliable text and panel painting.
     WinSet, Transparent, Off, % "ahk_id " . hwnd
@@ -252,6 +252,20 @@ LLARS_CreateMainGUI()
     LLARS_GUIPresent(title, 450, LLARSMainGuiHwnd, LLARS_ROOT, hasPosition, x, y)
 }
 
+; Replace the idle dashboard within GUI 1 only. Dialog callbacks can change
+; the implicit default GUI, so the startup transition must use explicit GUI IDs.
+LLARS_GUIReplaceMainForRun()
+{
+    global LLARSMainGuiHwnd
+    oldHwnd := LLARSMainGuiHwnd
+    if (oldHwnd && DllCall("IsWindow", "Ptr", oldHwnd, "Int"))
+        WinHide, % "ahk_id " . oldHwnd
+    Gui, 1:Hide
+    Gui, 1:Destroy
+    LLARSMainGuiHwnd := 0
+    Gui, 1:Default
+}
+
 LLARS_CreateRunCountGUI()
 {
     global scriptname, X, Y, frcount, count, LLARS_RUNNING, LLARS_ROOT, LLARS_SCRIPT_DIR, LLARSMainGuiHwnd, LLARS_CONFIG_FILE
@@ -264,8 +278,8 @@ LLARS_CreateRunCountGUI()
     hasPosition := LLARS_MainGetPosition(X, Y)
     if (!hasPosition)
         hasPosition := LLARS_MainLoadPosition(X, Y)
-    Gui, Destroy
-    Gui, +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
+    LLARS_GUIReplaceMainForRun()
+    Gui, 1:+LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
     LLARS_GUIBase(name, LLARSMainGuiHwnd, "running")
     LLARS_GUIActions(true)
     LLARS_GUISection("RUN PROGRESS", 39, 285)
@@ -298,8 +312,8 @@ LLARS_CreateTimerGUI()
     hasPosition := LLARS_MainGetPosition(X, Y)
     if (!hasPosition)
         hasPosition := LLARS_MainLoadPosition(X, Y)
-    Gui, Destroy
-    Gui, +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
+    LLARS_GUIReplaceMainForRun()
+    Gui, 1:+LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
     LLARS_GUIBase(name, LLARSMainGuiHwnd, "timer")
     LLARS_GUIActions(true)
     ; The title and countdown share one centered content column.
@@ -326,8 +340,8 @@ LLARS_CreateUntilDoneGUI()
     hasPosition := LLARS_MainGetPosition(X, Y)
     if (!hasPosition)
         hasPosition := LLARS_MainLoadPosition(X, Y)
-    Gui, Destroy
-    Gui, +LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
+    LLARS_GUIReplaceMainForRun()
+    Gui, 1:+LastFound +OwnDialogs +AlwaysOnTop +HwndLLARSMainGuiHwnd
     LLARS_GUIBase(name, LLARSMainGuiHwnd, "until_done")
     LLARS_GUIActions(true)
     LLARS_GUIActivity(273, "initial")

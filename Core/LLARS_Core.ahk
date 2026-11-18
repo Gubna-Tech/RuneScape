@@ -58,7 +58,7 @@ CheckPOS(hwnd := "")
 	isLLARSMainTitle := (guiTitle = "LLARS" || InStr(guiTitle, "LLARS - v") = 1)
 	if (!isLLARSMainTitle)
 	{
-		if guiTitle not in Combo,Reset Configuration,Coordinates,Colors,Hotkeys,Information,Input Settings,Developer Mode,Multiple Client,No Client Detected,Config Error,Game Not Found,Timer
+		if guiTitle not in Combo,Reset Configuration,Coordinates,Colors,Hotkeys,Information,Input Settings,Developer Mode,Multiple Client,No Client Detected,Config Error,Game Not Found,Timer,Coordinate Verifier,Timer Helper
 			return
 	}
 
@@ -969,6 +969,7 @@ LLARS_Initialize()
 	if (LLARSValidationMode = "1")
 		ExitApp
 	global LLARS_ROOT, LLARS_SCRIPT_DIR, LLARS_CONFIG_FILE
+	global LLARS_TARGET_EXE
 	global LLARS_RUNNING, LLARS_PAUSED, LLARS_lhk1, LLARS_lhk2, LLARS_lhk3, LLARS_lhk4, LLARS_lhk5, LLARS_CONTROLS_LOCKED, LLARS_CHECKPOS_DISABLED
 	global LLARS_DeveloperActions, LLARS_DeveloperActionSerial, LLARS_DeveloperAuditActions, LLARS_DeveloperLastHotkey, LLARS_RunStartTick, LLARS_RUN_TYPE
 	global LLARS_DeveloperLastSleepValue, LLARS_DeveloperLastSleepName
@@ -988,6 +989,11 @@ global LLARS_DetectionName, LLARS_DetectionState, LLARS_DetectionConfidence, LLA
 	CoordMode, Pixel, Client
 	CoordMode, Mouse, Client
 	LLARS_SCRIPT_DIR := A_ScriptDir
+    if (Trim(LLARS_TARGET_EXE) != "" && LLARS_TargetExecutable() = "")
+    {
+        MsgBox, 262192, LLARS Target, Target executable must be a simple filename such as notepad.exe (not a path or window title).
+        return false
+    }
 	LLARS_ROOT := LLARS_FindRoot()
 	LLARS_VisualEnsureIcon(LLARS_ROOT)
 	LLARS_CONFIG_FILE := LLARS_ROOT "\LLARS Config.ini"
@@ -1668,6 +1674,12 @@ LLARS_CheckGame()
 {
 	if LLARS_FindRuneScapeWindow()
 		return true
+    target := LLARS_TargetExecutable()
+    if (target != "")
+    {
+        MsgBox, 262192, LLARS Target Not Found, % "The configured target application is not running: " . target . "`nOpen that application before starting the script."
+        return false
+    }
 
 	Gui 1: Hide
 	Gui GNF: +LastFound +OwnDialogs +AlwaysOnTop
@@ -2685,9 +2697,33 @@ LLARS_DeveloperClickTarget(x, y)
 	return ""
 }
 
+; An explicit script-level executable target allows LLARS to run outside RuneScape.
+; Only exact, ordinary .exe names are accepted; the current LLARS process
+; cannot become the target. Scripts without this opt-in keep RuneScape rules.
+LLARS_TargetExecutable()
+{
+    global LLARS_TARGET_EXE
+    target := Trim(LLARS_TARGET_EXE)
+    StringLower, target, target
+    return RegExMatch(target, "i)^[a-z0-9][a-z0-9_.-]{0,95}\.exe$") ? target : ""
+}
+
+LLARS_IsApplicationWindow(hwnd)
+{
+    target := LLARS_TargetExecutable()
+    if (target = "" || !hwnd || !DllCall("IsWindow", "Ptr", hwnd))
+        return false
+    WinGet, processName, ProcessName, ahk_id %hwnd%
+    StringLower, processName, processName
+    WinGet, processId, PID, ahk_id %hwnd%
+    return (processName = target && processId != DllCall("GetCurrentProcessId", "UInt"))
+}
+
 ; Recognizes RuneScape 3, the official Old School RuneScape client, and RuneLite.
 LLARS_IsRuneScapeWindow(hwnd)
 {
+    if (LLARS_TargetExecutable() != "")
+        return LLARS_IsApplicationWindow(hwnd)
 	if (!hwnd)
 		return false
 

@@ -791,7 +791,7 @@ LLARS_CheckConfigCompatibility(root := "")
 
     if (configSchema < currentSchema)
     {
-        MsgBox, 262192, LLARS Configuration Update Required, % "This LLARS Config.ini uses configuration schema " . configSchema . ", but LLARS v2.3.8 requires schema " . currentSchema . ".`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then configure your shared hotkeys and preferences using the LLARS GUI and restart.`n`nThe existing file was not modified. Script-specific Config.ini files do not need replacing."
+        MsgBox, 262192, LLARS Configuration Update Required, % "This LLARS Config.ini uses configuration schema " . configSchema . ", but LLARS v2.3.9 requires schema " . currentSchema . ".`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config.ini into the LLARS main folder. Then configure your shared hotkeys and preferences using the LLARS GUI and restart.`n`nThe existing file was not modified. Script-specific Config.ini files do not need replacing."
         return false
     }
 
@@ -800,7 +800,7 @@ LLARS_CheckConfigCompatibility(root := "")
     layoutError := ""
     if !LLARS_ConfigHasCurrentHotkeyLayout(configPath, layoutError)
     {
-        MsgBox, 262192, LLARS Configuration Update Required, % "LLARS v2.3.8 needs the current LLARS Config.ini before startup can continue.`n`n" . layoutError . "`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config - Current.ini into the LLARS main folder and rename the copy to LLARS Config.ini. Then set up your shared hotkeys and preferences in LLARS and restart.`n`nYour existing file was not changed. Script-specific Config.ini files do not need replacing."
+        MsgBox, 262192, LLARS Configuration Update Required, % "LLARS v2.3.9 needs the current LLARS Config.ini before startup can continue.`n`n" . layoutError . "`n`nBack up your existing LLARS Config.ini. Copy Documentation\LLARS Config.ini into the LLARS main folder. Then set up your shared hotkeys and preferences in LLARS and restart.`n`nYour existing file was not changed. Script-specific Config.ini files do not need replacing."
         return false
     }
 

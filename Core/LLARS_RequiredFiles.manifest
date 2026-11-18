@@ -1,14 +1,15 @@
-# LLARS v2.3.6 required runtime manifest
+# LLARS required runtime manifest
 # Runtime dependencies required for a complete LLARS installation.
 # User-editable Config.ini values are intentionally not hash-enforced.
 required	VERSION
 required	LLARS Config.ini
-required	Documentation/LLARS Config - Current.ini
+required	Documentation/LLARS Config.ini
 required	Script Selector.ahk
 required	Core/LLARS.ahk
 required	Core/LLARS_Timing.ahk
 required	Core/LLARS_Config.ahk
 required	Backup/User Files Snapshot.ps1
+required	Core/LLARS_SetupTools.ahk
 required	Core/LLARS_RunTiming.ahk
 required	Core/LLARS_Support.ahk
 required	Core/LLARS_Update.ahk
@@ -107,6 +108,12 @@ required	Scripts/Fort Forinthry/Cooking/Cooking.ahk
 required	Scripts/Lunar Spells/Fire Urn/Fire Urn.ahk
 required	Scripts/Fort Forinthry/Frame Maker/Frame Maker.ahk
 required	Scripts/Generic Action Bar/Generic Action Bar.ahk
+required	Scripts/Generic Action Bar - Banking/Generic Action Bar - Banking.ahk
+required	Scripts/Generic Action Bar - Banking/Config.ini
+required	Documentation/Script Instructions/Scripts/Generic Action Bar - Banking/Generic Action Bar - Banking.txt
+required	Scripts - Menu Entry Swapper/Generic Action Bar/Generic Action Bar - MES.ahk
+required	Scripts - Menu Entry Swapper/Generic Action Bar/Config.ini
+required	Documentation/Script Instructions/Scripts - Menu Entry Swapper/Generic Action Bar/Generic Action Bar - MES.txt
 required	Scripts/Gem Cutter/Gem Cutter.ahk
 required	Scripts/Glassblowing/Glassblowing.ahk
 required	Scripts/Agility/Gnome/Advanced/Gnome Course.ahk

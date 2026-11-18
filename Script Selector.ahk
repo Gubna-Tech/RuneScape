@@ -271,7 +271,7 @@ LLARS_SelectorRegisterButtons()
     LLARS_VisualRegisterButton(LLARSSelectorImportButtonHwnd, "Import Scripts")
 }
 
-; Opt-in startup evidence for v2.3.8. Set LLARS_SELECTOR_PROFILE=1 before
+; Opt-in startup evidence for v2.3.10. Set LLARS_SELECTOR_PROFILE=1 before
 ; launching the Selector. No persistent logging, new UI, or disk writes by default.
 ; Records timestamped stage deltas in Logs\Selector-Startup-Performance.log.
 LLARS_SelectorPerfMark(stage)
@@ -329,7 +329,9 @@ LLARS_SelectorBuildRegistry()
 	LLARS_SelectorRegistryAdd(registry, "Cooking - Fort Forinthry", "Cooking", "Hard", "Cooks food at the Fort using the bank chest next to the Range.", "Fort Forinthry\Cooking", "Cooking.ahk", "Cooking")
 	LLARS_SelectorRegistryAdd(registry, "Fire Urn - Lunar Spell", "Fire Urn", "Easy", "Uses the Lunar Spell 'Fire Urn' to fire an inventory of unfired urns.", "Lunar Spells\Fire Urn", "Fire Urn.ahk", "Magic")
 	LLARS_SelectorRegistryAdd(registry, "Frame Maker - Fort Forinthry", "Frame Maker", "Hard", "Walks between the bank chest and woodworking bench to make frames.", "Fort Forinthry\Frame Maker", "Frame Maker.ahk", "Construction")
-	LLARS_SelectorRegistryAdd(registry, "Generic Action Bar", "Generic Action Bar", "Easy", "Presses a configured action-bar hotkey, confirms with Space, and waits for a configurable action duration before repeating.", "Generic Action Bar", "Generic Action Bar.ahk", "Utility")
+	LLARS_SelectorRegistryAdd(registry, "Generic Action Bar - No Banking", "Generic Action Bar - No Banking", "Easy", "Original action-bar cycle without banking. Existing Generic Action Bar settings remain in their original folder.", "Generic Action Bar", "Generic Action Bar.ahk", "Utility")
+	LLARS_SelectorRegistryAdd(registry, "Generic Action Bar - Banking", "Generic Action Bar - Banking", "Easy", "Clicks a bank, waits, presses a bank preset hotkey, waits, then runs the original action-bar cycle.", "Generic Action Bar - Banking", "Generic Action Bar - Banking.ahk", "Utility")
+	LLARS_SelectorRegistryAdd(registry, "Generic Action Bar - MES", "Generic Action Bar - MES", "Easy", "One-click bank preset loading with Menu Entry Swapper, followed by the original action-bar cycle.", "Generic Action Bar", "Generic Action Bar - MES.ahk", "Utility", "Scripts - Menu Entry Swapper", "Menu Entry Swapper")
 	LLARS_SelectorRegistryAdd(registry, "Gem Cutter", "Gem Cutter", "Easy", "Cuts an inventory of uncut gems, opens the bank, withdraws more, and repeats.", "Gem Cutter", "Gem Cutter.ahk", "Crafting")
 	LLARS_SelectorRegistryAdd(registry, "Glassblowing", "Glassblowing", "Intermediate", "Turns molten glass into your selected glass item. Crafts full inventories, banks, and repeats.", "Glassblowing", "Glassblowing.ahk", "Crafting")
 	LLARS_SelectorRegistryAdd(registry, "Agility - Gnome - Advanced", "Gnome Course", "Hard", "Runs laps of the Gnome - Advanced agility course. Can be tricky to configure coordinates due to large amounts of walking.", "Agility\Gnome\Advanced", "Gnome Course.ahk", "Agility")
