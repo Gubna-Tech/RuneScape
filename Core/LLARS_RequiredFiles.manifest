@@ -8,6 +8,8 @@ required	Script Selector.ahk
 required	Core/LLARS.ahk
 required	Core/LLARS_Timing.ahk
 required	Core/LLARS_Config.ahk
+required	Backup/Config Backup.bat
+required	Backup/Config Restore.bat
 required	Backup/User Files Snapshot.ps1
 required	Core/LLARS_SetupTools.ahk
 required	Core/LLARS_RunTiming.ahk
