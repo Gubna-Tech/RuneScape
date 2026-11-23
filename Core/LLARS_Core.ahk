@@ -3531,10 +3531,14 @@ LLARS_RedClickArmPresent(centerX, centerY, signX, signY, clientWidth, clientHeig
 	if (x1 > x2 || y1 > y2)
 		return false
 
-	; Calibrated against the recorded solid-core red. A small variation allows
-	; minor render/anti-alias differences while remaining far tighter than the
-	; generic "red" search.
+	; Preserve the original calibrated dark-red marker for older rendering.
+	; The 2026-11-23 field screenshots also contain a centered, solid
+	; #FF0000 interaction X. Search only these two narrow color families,
+	; inside the existing small arm quadrant (never generic red/pink).
 	PixelSearch, redX, redY, %x1%, %y1%, %x2%, %y2%, 0x9C0906, 18, Fast RGB
+	if (!ErrorLevel)
+		return true
+	PixelSearch, redX, redY, %x1%, %y1%, %x2%, %y2%, 0xFF0000, 18, Fast RGB
 	return !ErrorLevel
 }
 

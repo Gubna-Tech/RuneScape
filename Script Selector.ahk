@@ -271,7 +271,7 @@ LLARS_SelectorRegisterButtons()
     LLARS_VisualRegisterButton(LLARSSelectorImportButtonHwnd, "Import Scripts")
 }
 
-; Opt-in startup evidence for v2.3.11. Set LLARS_SELECTOR_PROFILE=1 before
+; Opt-in startup evidence for v2.3.12. Set LLARS_SELECTOR_PROFILE=1 before
 ; launching the Selector. No persistent logging, new UI, or disk writes by default.
 ; Records timestamped stage deltas in Logs\Selector-Startup-Performance.log.
 LLARS_SelectorPerfMark(stage)
